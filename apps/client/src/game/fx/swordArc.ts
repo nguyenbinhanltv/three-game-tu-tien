@@ -32,7 +32,7 @@ export class SwordArc {
     g.setIndex(idx);
     this.mat = new THREE.MeshBasicMaterial({
       // Pha trộn thường (không cộng sáng): lưỡi kiếm và nền đá đều trắng nên tia cộng sáng sẽ biến mất; tím điện đậm đọc được trên nền sáng.
-      color: 0x7a5cff,
+      color: 0x3a7bff,
       transparent: true,
       opacity: 0.95,
       depthWrite: false,

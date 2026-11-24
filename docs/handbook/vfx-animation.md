@@ -60,3 +60,9 @@ Kiểm từng bộ: `pnpm shots clothcheck --out <thư mục> --set <bộ> --gen
 | Phục Mạch | 0,33 | đợt 2 |
 | Thần Tạng | 0,60 với `maxLagS` 0,08 → 0,36 với 0,12 | đợt 2 |
 
+## Clip Patch (CC0) nối locomotion Thân Pháp (`?thanphap=1`, cờ `patch`)
+
+Nguồn: 10 clip "anymove" của Patch (CC0 1.0) trong `starter-man-clips.glb` (dự án painted-valley), cùng bộ xương UE5 Mannequin với `anim_ual_native`. Lưu bản gốc trong kho nguồn asset (thư mục `anim/patch`, ngoài repo); `tools/asset-pipeline/src/patch-clips.ts` lọc 10 clip, đổi tên `PM_*`, BỎ `root.translation` (vị trí do server quyết) và in bảng chuyển động gốc (đo): `PM_Run` 3,68 m/chu kỳ 0,67 s (5,5 m/s), `PM_Sprint` 4,06 m/0,60 s (6,8 m/s), `PM_Idle_To_Run` 2,33 s, `PM_Run_To_Idle` 2,23 s, `PM_Sprint_To_Idle` 2,53 s, `PM_Idle_Tired` 2,67 s. Lệnh: `pnpm --filter @dtl/asset-pipeline exec tsx src/patch-clips.ts` rồi `... tsx src/cli.ts optimize --only anim_patch_move --force`, `pnpm assets:push --only assets/anim_patch_move.<hash10>.glb` (tên có hash; xem mục R2 bất biến).
+
+Nối vào locomotion (`patchMove.ts`, `MannequinCharacter.stepPatch`): bắt đầu (vọt qua 0,8 m/s, chờ 0,12 s lấy tốc độ đích: đi / chạy / chạy nhanh → `PM_Idle_To_Walk/Run/Sprint`), dừng (`PM_Walk/Run/Sprint_To_Idle` theo tốc độ đỉnh), thở dốc (`PM_Idle_Tired` sau clip dừng nếu vừa chạy liên tục ≥ 8 s). Clip dài 2–2,5 s phát nhanh (bắt đầu ~0,85 s, dừng ~1,0 s) như đòn một lần đè nền; hủy khi có việc khác chen vào (đòn, bay, chết, lại chạy giữa clip dừng). `pelvis.position` nhân theo tỉ lệ hông như clip UAL; ARM_FIT/procedural giữ nguyên. Chỉ nạp thư viện khi bật cờ. **Chưa làm:** thay vòng chạy UAL bằng `PM_Run`/`PM_Sprint` (đã nhập sẵn; cần hiệu chỉnh pha bước chân để trộn không trượt chân).
+

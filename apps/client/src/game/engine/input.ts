@@ -1,6 +1,8 @@
 // R-8: tách từ game/engine.ts (hàm nhận `g: Game`, trước là phương thức private của lớp Game).
 import { C, BAR_SIZE, CLONE_UNLOCK_LEVEL } from '@dtl/shared';
 import { t } from '@dtl/content';
+import { levelId } from '../../base/levelCtx';
+import { spotAt } from '../camera/vista';
 import { closeTopPanel, get, pushToast, set, setHudPref, togglePanel } from '../../ui/store';
 import { closeChapters, toggleChapters, useChapters } from '../../ui/chapters/chaptersStore';
 import { unlockAudio } from '../audio/audio';
@@ -159,6 +161,10 @@ function onKeyDown(eng: Game, e: KeyboardEvent): void {
   }
   // Phím G: trong Thiên Nhân Kiếp là thế thân của kiếp (E4-D), ngoài kiếp là phân thân thần niệm (E4-K, Hóa Thần).
   // Chỉ gửi ý định; server kiểm cấp, linh lực, hồi chiêu, tần suất, nơi đặt.
+  if (code === 'KeyU') {
+    eng.vista.dismiss(spotAt(levelId(), eng.renderPos.x, eng.renderPos.z));
+    return;
+  }
   if (code === 'KeyG' && !e.shiftKey) {
     if (eng.tribId === 'hoa_than' && get().tribEnd > Date.now()) eng.send(C.TRIB_CLONE, {});
     else if ((get().char?.level ?? 0) >= CLONE_UNLOCK_LEVEL) eng.send(C.CLONE, {});

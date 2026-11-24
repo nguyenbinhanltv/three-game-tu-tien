@@ -1,0 +1,44 @@
+{
+  "skillId": "skl_loi_phat",
+  "idea": "Lôi Phạt: một chiếc LỆNH BÀI đạo gia cổ phong (tấm bài hình chữ nhật đỉnh bo tròn, mép chạm mây, khắc nét bút phù lôi phát sáng, không có chữ đọc được) từ mây giáng thẳng xuống đầu mục tiêu như tờ lệnh trời, quanh bài sét bò thành xích, chạm đất nổ chớp lớn và tia điện lan trên đất. Màu: lõi trắng xanh lạnh RẤT SÁNG, thân xanh lam điện/chàm (hue 215–240°), chỉ viền ngoài rất mỏng mới hơi tím chàm; KHÔNG tím đậm, KHÔNG hồng; vàng chỉ là điểm nhỏ.",
+  "element": "kim",
+  "path": "loi_tu",
+  "shapeLang": [
+    "spike",
+    "line"
+  ],
+  "timing": {
+    "anticipationMs": 400,
+    "impactMs": 80,
+    "lingerMs": 500
+  },
+  "footprint": {
+    "lengthM": 5,
+    "widthM": 5,
+    "heightM": 2
+  },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": {
+    "drawCalls": 8,
+    "particles": 233,
+    "screenCover": 0.17,
+    "overdraw": 3
+  },
+  "textures": [
+    {
+      "id": "proc:spark_burst",
+      "kind": "flipbook"
+    },
+    {
+      "id": "proc:dust_kick",
+      "kind": "flipbook"
+    }
+  ],
+  "silhouette": "một lệnh bài đạo gia cao hình chữ nhật đỉnh bo tròn, mép chạm mây, nét phù sét sáng trên mặt bài, giáng thẳng từ trên xuống, sét quấn quanh như xích",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles"
+  ]
+}

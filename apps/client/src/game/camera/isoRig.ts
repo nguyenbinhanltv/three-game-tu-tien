@@ -20,6 +20,8 @@ export class IsoRig {
   baseFar = 0;
   /** Tỉ lệ khoảng cách camera do địa hình che (1 = không che), co ngay khi bị che, nở ra từ từ. */
   occ = 1;
+  /** Địa hình đang dùng bán kính ô của camera chéo (tạm tắt khi vista mở để thấy cảnh xa). */
+  terrainIso = false;
   /** Cảnh xa (biển mây, trời, núi nền) đang bị ẩn do iso; khôi phục khi iso tạm tắt. */
   farHidden = false;
   /** Đã áp cấu hình dựng hình iso (ô địa hình, bóng) hay chưa. */
