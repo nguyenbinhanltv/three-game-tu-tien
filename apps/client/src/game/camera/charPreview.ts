@@ -12,7 +12,7 @@ const previewLog = logger('preview');
 const PREVIEW_W = 256;
 const PREVIEW_H = 352;
 /** Lề (tỉ lệ chiều cao nhân vật) chừa mỗi phía khi dựng khung: 0 = vừa khít (cắt chân). */
-const PREVIEW_MARGIN = 0.09;
+const PREVIEW_MARGIN = 0.1;
 /** Số mẫu khử răng cưa của render target xem trước. */
 const PREVIEW_SAMPLES = 4;
 /** Khung hình/giây của xem trước. */
@@ -51,6 +51,7 @@ interface PreviewStats {
 
 export class CharPreview {
   private scene = new THREE.Scene();
+  private fitted = 0;
   private camera = new THREE.PerspectiveCamera(28, PREVIEW_W / PREVIEW_H, 0.1, 40);
   private rt: THREE.RenderTarget | null = null;
   private model: CharacterView | null = null;
@@ -137,12 +138,25 @@ export class CharPreview {
     this.model.root.rotation.y = this.yaw;
     this.scene.add(this.model.root);
     this.model.setView?.({ dist: 0, inView: true, allowLod0: true, self: true });
-    const h = this.model.height;
+    this.fitted = 0;
+    this.fit(0, this.model.height);
+  }
+
+  /** Dựng khung theo hộp bao thật của model (tư thế nghỉ) để không cắt chân/mũ/tóc; `lo`/`hi` mặc định theo chiều cao khai báo. */
+  private fit(lo: number, hi: number): void {
+    if (this.model) {
+      this.scene.updateMatrixWorld();
+      const box = new THREE.Box3().setFromObject(this.model.root, true);
+      if (Number.isFinite(box.min.y) && box.max.y - box.min.y > 0.5) {
+        lo = box.min.y;
+        hi = box.max.y;
+      }
+    }
     const fov = (this.camera.fov * Math.PI) / 180;
-    // Chừa lề trên/dưới (PREVIEW_MARGIN) để không cắt chân và mũ/tóc; tâm nhìn hạ nhẹ để bàn chân cách mép dưới.
-    const d = (h * (0.5 + PREVIEW_MARGIN)) / Math.tan(fov / 2);
-    this.camera.position.set(0, h * 0.5, d);
-    this.camera.lookAt(0, h * 0.5, 0);
+    const half = ((hi - lo) / 2) * (1 + PREVIEW_MARGIN);
+    const cy = (hi + lo) / 2;
+    this.camera.position.set(0, cy, half / Math.tan(fov / 2));
+    this.camera.lookAt(0, cy, 0);
     this.camera.updateMatrixWorld();
   }
 
@@ -168,6 +182,11 @@ export class CharPreview {
     m.setWeaponGlow?.(this.host.weaponGlow());
     m.update(step, IDLE);
     this.scene.updateMatrixWorld();
+    // Đo lại hộp bao khi tư thế nghỉ đã áp (vài khung đầu), rồi thôi.
+    if (this.fitted < 2 && this.stats.frames >= 2 + this.fitted * 20) {
+      this.fitted++;
+      this.fit(0, m.height);
+    }
     this.renderToTarget();
     const cost = performance.now() - t0;
     // Vài khung đầu biên dịch pipeline (một lần): không tính vào ngân sách.
