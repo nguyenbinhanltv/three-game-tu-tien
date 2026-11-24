@@ -57,7 +57,7 @@ export function celFactor(t: number, edge = CEL_EDGE, soft = CEL_SOFT): number {
  * ngắn bề rộng `soft` mỗi bên. Cùng công thức với `celFactor`.
  */
 export function cel2(lit: Node, shade: Node, t: Node, edge: Node | number = CEL_EDGE, soft: Node | number = CEL_SOFT): Node {
-  const e = float(edge);
-  const w = float(soft);
+  const e = typeof edge === 'number' ? float(edge) : float(edge);
+  const w = typeof soft === 'number' ? float(soft) : float(soft);
   return mix(shade, lit, smoothstep(e.sub(w), e.add(w), t));
 }
