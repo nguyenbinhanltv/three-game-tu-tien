@@ -14,7 +14,7 @@ import { pull } from './pull.js';
 import { push } from './push.js';
 import { assetBase } from './r2/env.js';
 import { readLock, scanLock, unhashedBinaries, writeLock } from './r2/lock.js';
-import { verifyLock, verifyRemote } from './r2/verify.js';
+import { changedKeys, hasR2Credentials, readBaseLock, verifyLock, verifyRemote, verifyRemoteList } from './r2/verify.js';
 import { validate } from './validate.js';
 
 const [cmd = 'build', ...args] = process.argv.slice(2).filter((a) => a !== '--');
@@ -54,8 +54,17 @@ async function runValidate(): Promise<boolean> {
     for (const e of lockErrs) console.error(`[validate] LỖI sổ khóa ${e}`);
     ok = ok && lockErrs.length === 0;
     const base = assetBase();
-    if (base) {
-      const r = await verifyRemote(base);
+    // Có khóa R2 (máy dev) → một lượt ListObjectsV2; không có (CI) → HEAD công khai chỉ cho file mới/đổi so với main (cờ --all-head: HEAD tất cả).
+    if (hasR2Credentials() && !args.includes('--all-head')) {
+      const r = await verifyRemoteList();
+      for (const w of r.warnings) console.warn(`[validate] cảnh báo R2: ${w}`);
+      for (const e of r.errors) console.error(`[validate] LỖI R2 ${e}`);
+      console.log(`[validate] R2 (ListObjectsV2): ${r.checked} file, ${r.errors.length} lỗi`);
+      ok = ok && r.errors.length === 0;
+    } else if (base) {
+      const lockNow = readLock();
+      const baseLock = args.includes('--all-head') ? null : readBaseLock();
+      const r = await verifyRemote(base, lockNow, baseLock ? changedKeys(lockNow, baseLock) : undefined);
       for (const w of r.warnings) console.warn(`[validate] cảnh báo R2: ${w}`);
       for (const e of r.errors) console.error(`[validate] LỖI R2 ${e}`);
       console.log(`[validate] R2: ${r.checked} file, ${r.errors.length} lỗi`);

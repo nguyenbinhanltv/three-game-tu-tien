@@ -1,6 +1,13 @@
-// Kiểm sổ khóa khớp đĩa và khớp R2 (HEAD qua URL công khai, không cần khóa).
+// Kiểm sổ khóa khớp đĩa và khớp R2. Giảm số yêu cầu tới R2/CDN:
+//   - có khóa R2 (máy dev): MỘT lượt ListObjectsV2 (1 thao tác mỗi 1000 file) rồi so kích thước, không HEAD từng file;
+//   - không có khóa (CI): HEAD qua URL công khai CHỈ cho file mới/đổi so với sổ khóa của nhánh gốc (main), vì phần còn lại đã được CI của main kiểm; không đọc được sổ gốc thì HEAD tất cả.
 
+import { execFileSync } from 'node:child_process';
+import { ROOT } from '../config.js';
 import { urlOf } from '../pull.js';
+import { listBucket } from '../push.js';
+import { makeClient } from './client.js';
+import { loadR2Env } from './env.js';
 import { type Lock, pool, readGrace, readLock, scanLock, unhashedBinaries } from './lock.js';
 
 export interface VerifyReport {
@@ -26,9 +33,66 @@ export async function verifyLock(): Promise<string[]> {
   return errs;
 }
 
-export async function verifyRemote(base: string, lock: Lock = readLock()): Promise<VerifyReport> {
+/** Khóa có trong `lock` mà mới hoặc khác (sha256/kích thước) so với `base` (sổ khóa nhánh gốc). */
+export function changedKeys(lock: Lock, base: Lock): string[] {
+  return Object.keys(lock.files)
+    .filter((k) => {
+      const b = base.files[k];
+      const e = lock.files[k]!;
+      return !b || b.sha256 !== e.sha256 || b.bytes !== e.bytes;
+    })
+    .sort();
+}
+
+/** Sổ khóa ở nhánh gốc (mặc định `origin/main`, đổi bằng ASSET_LOCK_BASE_REF); null nếu không đọc được (checkout nông, chưa fetch). */
+export function readBaseLock(ref = process.env.ASSET_LOCK_BASE_REF || 'origin/main'): Lock | null {
+  try {
+    const text = execFileSync('git', ['show', `${ref}:assets/asset-lock.json`], {
+      cwd: ROOT,
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore'],
+      maxBuffer: 64 * 1024 * 1024,
+    });
+    return JSON.parse(text) as Lock;
+  } catch {
+    return null;
+  }
+}
+
+/** So sổ khóa với kết quả ListObjectsV2 (hàm thuần): thiếu khóa hoặc lệch kích thước là lỗi. `keys` giới hạn phạm vi so. */
+export function compareListing(lock: Lock, listing: Map<string, { size: number }>, keys: string[] = Object.keys(lock.files)): string[] {
+  const errs: string[] = [];
+  for (const key of keys) {
+    const r = listing.get(key);
+    const e = lock.files[key]!;
+    if (!r) errs.push(`${key}: chưa có trên R2 (chạy pnpm assets:push)`);
+    else if (r.size !== e.bytes) errs.push(`${key}: kích thước R2 ${r.size} ≠ sổ khóa ${e.bytes}`);
+  }
+  return errs;
+}
+
+/** Có đủ khóa R2 để dùng S3 API (ListObjectsV2) không? */
+export function hasR2Credentials(): boolean {
+  try {
+    loadR2Env();
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/** Kiểm R2 bằng MỘT lượt ListObjectsV2 (1 thao tác mỗi 1000 file) thay vì HEAD từng file. Cần khóa R2 (xem env.ts, không in ra). */
+export async function verifyRemoteList(lock: Lock = readLock()): Promise<VerifyReport> {
+  const env = loadR2Env();
+  const listing = await listBucket(makeClient(env), env.bucket);
   const keys = Object.keys(lock.files);
+  return { checked: keys.length, errors: compareListing(lock, listing, keys), warnings: [] };
+}
+
+export async function verifyRemote(base: string, lock: Lock = readLock(), only?: string[]): Promise<VerifyReport> {
+  const keys = only ?? Object.keys(lock.files);
   const rep: VerifyReport = { checked: keys.length, errors: [], warnings: [] };
+  if (only) rep.warnings.push(`chỉ kiểm ${keys.length}/${Object.keys(lock.files).length} khóa mới/đổi so với sổ khóa nhánh gốc`);
   let network = 0;
   await pool(keys, 16, async (key) => {
     try {
