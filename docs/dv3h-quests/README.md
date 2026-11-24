@@ -37,7 +37,7 @@ Khi dữ liệu thật vào: đổi id trong nhiệm vụ cho khớp, gỡ khỏ
 - `levels/bac_hoang.json` (sinh bằng `gen-bac-hoang.mjs`, phần thêm nằm SAU mọi bước dùng RNG nên bố cục cũ không đổi): spots `mach_nhan_1..3`, `xac_tho_san_1..6`, escort `esc_tinh_quang`.
 - Client: `ch5` ở `chapter.ts` + `engine.ts`; màu điểm chạm `xac_tho_san_|tran_gioi_bia_|mach_nhan_` ở `questSpots.ts`; skin NPC ở `npcSkins.ts`.
 - `check.ts`: chuỗi chương 5, **trận mở bằng nhiệm vụ phải có `minLevel` ≥ cấp vào level đích** (server kiểm minLevel lúc cấp vé, #213), NPC/điểm/quái phải có trên `bac_hoang`. `sim.ts`: khối "Nhiệm vụ chương 5" (bảng `xpNeed` thiết kế cấp 28–31).
-- `pnpm shots quest5 --out <thư mục tuyệt đối>`: thẻ chương + hội thoại.
+- `pnpm shots quest5 --out <thư mục tuyệt đối>` (kịch bản đã gỡ ở tối ưu Đợt C): thẻ chương + hội thoại.
 
 ## Số đo
 

@@ -18,7 +18,7 @@ Gói bản đồ của chương 5 (`docs/DIVUC_DESIGN.md` mục 4, DV3-A kéo l�
 | Màu đất tro (bảng tro/huyết sậm, lòng khe tối) | `apps/client/src/game/terrain.ts` `ashColor` |
 | Cỏ tắt theo `features.grass: false` (trước đây lớp cỏ tự bật lại mỗi lần cập nhật) | `game/grass.ts` `setEnabled` |
 | Bộ sinh tất định | `tools/maps/gen-bac-hoang.mjs` (~3 phút) |
-| Kịch bản bay ngang (webm + ảnh mốc) | `pnpm shots flyover --level bac_hoang --out <thư mục tuyệt đối>` (`tools/perf/src/scenarios/flyover.ts`) |
+| Kịch bản bay ngang (webm + ảnh mốc) | `pnpm shots flyover --level bac_hoang --out <thư mục tuyệt đối>` (kịch bản đã gỡ ở tối ưu Đợt C) (`tools/perf/src/scenarios/flyover.ts` (kịch bản đã gỡ ở tối ưu Đợt C)) |
 | Test | `packages/content/src/bachoang.test.ts`, `apps/server/src/game/bachoang.test.ts`, `teleport.levels.test.ts` |
 
 Server không phải sửa gì: `index.ts` đăng ký room `world-bac_hoang` từ `LEVELS`; vào bản đồ bằng vé của Truyền Tống như các bản đồ trước (xác thực ở `static onAuth`). Không đụng `rooms.ts`, `index.ts`, `auth.ts`.

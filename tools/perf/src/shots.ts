@@ -8,23 +8,13 @@
 import { args, flag } from './lib/env';
 import { runScenario, type Scenario } from './lib/scenario';
 import asset from './scenarios/asset';
-import calli from './scenarios/calli';
-import calli3d from './scenarios/calli3d';
-import calliscreen from './scenarios/calliscreen';
-import calliset from './scenarios/calliset';
-import clone from './scenarios/clone';
 import collwalk from './scenarios/collwalk';
-import divuc from './scenarios/divuc';
 import daotuhit from './scenarios/daotuhit';
-import hitdir from './scenarios/hitdir';
 import clothcheck from './scenarios/clothcheck';
 import herocheck from './scenarios/herocheck';
 import herolight from './scenarios/herolight';
-import breakables from './scenarios/breakables';
-import hitfeel from './scenarios/hitfeel';
 import bossfaces from './scenarios/bossfaces';
 import dungeon from './scenarios/dungeon';
-import flyover from './scenarios/flyover';
 import hires from './scenarios/hires';
 import lackiem from './scenarios/lackiem';
 import tieucanh from './scenarios/tieucanh';
@@ -43,15 +33,8 @@ import mons from './scenarios/mons';
 import camiso from './scenarios/camiso';
 import points from './scenarios/points';
 import propstc from './scenarios/propstc';
-import quest4 from './scenarios/quest4';
-import quest5 from './scenarios/quest5';
-import thiennhan from './scenarios/thiennhan';
-import ngusuy from './scenarios/ngusuy';
 import huyenkiep from './scenarios/huyenkiep';
 import kiepch6 from './scenarios/kiepch6';
-import anhbien from './scenarios/anhbien';
-import fly from './scenarios/fly';
-import thanpham from './scenarios/thanpham';
 import ual from './scenarios/ual';
 import chrv3 from './scenarios/chrv3';
 import chrv3anim from './scenarios/chrv3anim';
@@ -81,19 +64,8 @@ import hudplay from './scenarios/hudplay';
 import touch from './scenarios/touch';
 import ui from './scenarios/ui';
 import minimap from './scenarios/minimap';
-import chat from './scenarios/chat';
 import vfx from './scenarios/vfx';
-import tn1 from './scenarios/tn1';
-import recap from './scenarios/recap';
-import tipchieu from './scenarios/tipchieu';
-import uxhint from './scenarios/uxhint';
-import nameplate from './scenarios/nameplate';
-import partyframe from './scenarios/partyframe';
-import charbag from './scenarios/charbag';
-import uicpu from './scenarios/uicpu';
 import uichecks from './scenarios/uichecks';
-import settingstabs from './scenarios/settingstabs';
-import loginfit from './scenarios/loginfit';
 import vs2 from './scenarios/vs2';
 import hontu from './scenarios/hontu';
 import realmaura from './scenarios/realmaura';
@@ -101,7 +73,6 @@ import fxlib from './scenarios/fxlib';
 import xichkhe from './scenarios/xichkhe';
 import dye23 from './scenarios/dye23';
 import silk from './scenarios/silk';
-import n7 from './scenarios/n7';
 import dungeonart from './scenarios/dungeonart';
 import collscan from './scenarios/collscan';
 
@@ -110,8 +81,6 @@ const SCENARIOS: Scenario[] = [
   points,
   collscan,
   propstc,
-  calli,
-  calli3d,
   lackiem,
   tieucanh,
   collwalk,
@@ -130,44 +99,22 @@ const SCENARIOS: Scenario[] = [
   dungeon,
   asset,
   vfx,
-  tn1,
-  recap,
-  tipchieu,
-  uxhint,
-  nameplate,
-  partyframe,
-  charbag,
-  uicpu,
   uichecks,
-  settingstabs,
-  loginfit,
   vs2,
   hontu,
   ui,
   minimap,
-  chat,
   hudplay,
   touch,
   hoatruc,
   thiengiai,
-  thiennhan,
-  ngusuy,
   huyenkiep,
   kiepch6,
-  anhbien,
-  thanpham,
   ual,
-  quest4,
-  quest5,
-  calliscreen,
-  calliset,
-  clone,
-  fly,
   chrv3,
   chrv3anim,
   chrv3feet,
   v3sets,
-  n7,
   dye23,
   silk,
   v3views,
@@ -188,15 +135,10 @@ const SCENARIOS: Scenario[] = [
   rigstretch,
   neck,
   skinv3,
-  divuc,
   daotuhit,
-  hitdir,
   clothcheck,
   herocheck,
   herolight,
-  breakables,
-  hitfeel,
-  flyover,
   xichkhe,
   dungeonart,
   hires,
