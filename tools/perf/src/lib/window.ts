@@ -89,7 +89,7 @@ export interface AnimLabDebug {
   poses(): string[];
   hitSelf(from: 'front' | 'back' | 'left' | 'right', tier: number, knock?: boolean): boolean;
   hitMon(from: 'front' | 'back' | 'left' | 'right', tier: number, knock?: boolean): { x: number; y: number } | null;
-  cutin(skill: string): boolean;
+  cutin(skill: string, setKey?: string, g?: string): boolean;
 }
 
 /** `window.__game`: phần ổn định có kiểu; phần ruột engine mà bench cố ý bọc/đọc (renderer, vfx, monFx…) để `any`. */

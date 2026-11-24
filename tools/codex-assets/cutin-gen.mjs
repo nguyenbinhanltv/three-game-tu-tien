@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Thân Pháp T7: tranh cut-in chiêu cuối theo từng bộ nhân vật, do Codex vẽ (codex exec + công cụ ảnh tích hợp, không Tripo, không API key).
-// Dùng: node tools/codex-assets/cutin-gen.mjs [kiem_tu_m|kiem_tu_f …] [--force] [--timeout <phút, mặc định 8>]
+// Dùng: node tools/codex-assets/cutin-gen.mjs [<bộ>_<m|f> …] [--force] [--timeout <phút, mặc định 8>] (chạy TỪNG tranh một: mỗi lúc một việc Codex)
 // Ra: <DTL_ASSET_SOURCE>/2d/cutin/<id>.png (+ .prompt.txt, .log). Ảnh nguồn nằm NGOÀI repo; bản đưa vào game là WebP nhỏ ở apps/client/public/assets/cutin/
 // (xem `--pack`: node tools/codex-assets/cutin-gen.mjs --pack). Quá giờ thì giết cả cây tiến trình con (taskkill /T trên Windows), không để codex treo.
 import { spawn, spawnSync } from 'node:child_process';
@@ -28,18 +28,41 @@ const force = args.includes('--force');
 const pack = args.includes('--pack');
 const ids = args.filter((a) => !a.startsWith('--'));
 
-// Bộ mặc định của Kiếm tu (Tinh Khuyết Kiếm Bào, v3): ảnh multiview làm tham chiếu mặt, tóc, áo.
-const SETS = {
-  kiem_tu_m: { ref: 'tinh_khuyet_nam_front.png', who: 'young male sword cultivator' },
-  kiem_tu_f: { ref: 'tinh_khuyet_nu_front.png', who: 'young female sword cultivator' },
+// Mỗi bộ trang phục v3 (khóa của `v3SetKeyOf`) có hai tranh `<bộ>_<m|f>`. Tham chiếu: ảnh multiview Thiên Giải (`2d/hoa-truc/thien_giai/<tiền tố>_<nam|nu>_front.png`)
+// hoặc, nếu bộ chưa có, ảnh nhân vật thật chụp trong game (`2d/cutin/ref/<bộ>_<m|f>.png`, `pnpm shots animlab --stills ref`).
+const THIEN_GIAI = {
+  tinh_khuyet: 'tinh_khuyet',
+  co_thanh: 'co_thanh',
+  dia_long: 'dia_giap',
+  van_kinh: 'van_kinh',
+  luu_ly: 'luu_ly',
+  phuc_mach: 'phuc_mach',
+  than_tang: 'than_tang',
+  kinh_quang: 'kinh_quang',
+  liet_mach: 'liet_mach',
 };
+const GAME_REF = ['de_tu', 'lac_kiem', 'huyen_giap', 'dan_tam'];
+const SETS = {};
+for (const g of ['m', 'f']) {
+  // Giới tính phải đọc ra ngay (tranh nữ từng ra trung tính/nam): nêu rõ đặc điểm.
+  const who =
+    g === 'm'
+      ? 'young MALE cultivator (unmistakably masculine: strong jawline, broad shoulders, masculine face and hands)'
+      : 'young FEMALE cultivator (unmistakably feminine and must read as a woman at a glance: soft oval face, delicate jaw, long lashes, soft lips, slender neck and shoulders, graceful slim hands, elegant hair with hair ornaments)';
+  for (const [k, pre] of Object.entries(THIEN_GIAI))
+    SETS[`${k}_${g}`] = { ref: path.join(refDir, `${pre}_${g === 'm' ? 'nam' : 'nu'}_front.png`), who, game: false };
+  for (const k of GAME_REF) SETS[`${k}_${g}`] = { ref: path.join(outDir, 'ref', `${k}_${g}.png`), who, game: true };
+}
 
-const prompt = (who) =>
-  `Use case: game cut-in illustration. Landscape 16:9 image, 2400x1350. An original east-asian cultivation-fantasy ${who}, SAME character, face, hairstyle and robe as the attached reference image, ` +
+const prompt = (who, game) =>
+  `Use case: game cut-in illustration. Landscape 16:9 image, 2400x1350. An original east-asian cultivation-fantasy ${who}, SAME character, face, hairstyle and outfit (robe colors, trims, sash, shoulder armor, boots) as the attached reference image, ` +
+  (game
+    ? 'which is a low-resolution in-game screenshot: keep the outfit design and colors, redraw the face and details beautifully; IGNORE the glowing rings, the scenery and the ground in the screenshot. '
+    : '') +
   'shown from the waist up in a dramatic ultimate-skill pose: leaping forward-left, long sword swept across the body toward the viewer, robe sleeves and hair whipped back by the motion, intense focused eyes, strong diagonal composition, camera slightly below eye level. ' +
   'Style: semi-realistic cinematic painting blended with Chinese ink-wash (thuy mac) brushwork, bold dry-brush speed streaks and ink splashes behind the figure. ' +
-  'Palette: pale sky-blue and white sword-light (#9fd8ff, #ffffff), deep ink black, a touch of antique gold (#C9A45C). No red, no orange, no purple, no neon. ' +
-  'BACKGROUND MUST BE SOLID PURE BLACK (#000000) everywhere except the figure and a few white-blue ink streaks, so it can be screen-blended over the game. Figure on the right 60% of the frame, empty black on the left 35%. ' +
+  'Palette for the energy and ink streaks: pale sky-blue and white sword-light (#9fd8ff, #ffffff), deep ink black, a touch of antique gold (#C9A45C); the outfit keeps its own colors from the reference. No red, no orange, no purple energy, no neon. ' +
+  'BACKGROUND MUST BE SOLID PURE BLACK (#000000) everywhere except the figure and a few white-blue ink streaks, so it can be keyed out. Figure on the right 60% of the frame, empty black on the left 35%. ' +
   'No text, no letters, no calligraphy, no logo, no watermark, no border, no frame, no weapon trails drawn as flat shapes. Original design, not copied from any existing game, anime or artwork.';
 
 const NOTE =
@@ -74,13 +97,15 @@ function rescue(logFile, out) {
 
 function run(id) {
   const set = SETS[id];
-  const ref = path.join(refDir, set.ref);
+  const ref = set.ref;
   const out = path.join(outDir, `${id}.png`);
   if (fs.existsSync(out) && !force) return Promise.resolve({ id, ok: true, skipped: true });
   if (!fs.existsSync(ref)) return Promise.resolve({ id, ok: false, note: `thiếu ảnh tham chiếu ${ref}` });
   fs.mkdirSync(outDir, { recursive: true });
-  const body = `${NOTE.replace('./OUT', `./${id}.png`)}\n\n${prompt(set.who)}\n`;
-  fs.writeFileSync(path.join(outDir, `${id}.prompt.txt`), prompt(set.who) + '\n');
+  // `--force`: bỏ file cũ trước, để file cũ không bị tính là kết quả (và không chặn bước cứu ảnh từ kho Codex).
+  if (fs.existsSync(out)) fs.unlinkSync(out);
+  const body = `${NOTE.replace('./OUT', `./${id}.png`)}\n\n${prompt(set.who, set.game)}\n`;
+  fs.writeFileSync(path.join(outDir, `${id}.prompt.txt`), prompt(set.who, set.game) + '\n');
   const log = fs.createWriteStream(path.join(outDir, `${id}.log`));
   const win = process.platform === 'win32';
   const q = (a) => (win && /[\s"]/.test(a) ? `"${a.replace(/"/g, '\\"')}"` : a);
