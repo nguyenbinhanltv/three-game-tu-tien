@@ -1283,6 +1283,9 @@ export function monFlagFx(eng: Game, m: MonVis, e: MonFlagEdge): void {
   if ((e.on | e.off) & MF_BURROW) {
     _v2.set(m.x, m.y + 0.4, m.z);
     v.burst(_v2, MON_BURROW_DIRT, Math.min(3, 1 + m.model.height * 0.5), 0.4);
+    // Chui đất: thân thụt xuống + ụ đất chạy tới điểm trồi + trồi lên (BurrowFx, xem fx/burrowFx.ts).
+    if (e.on & MF_BURROW) eng.burrowFx.start(m.id, m.x, m.z, Date.now());
+    else eng.burrowFx.finish(m.id);
   }
 }
 

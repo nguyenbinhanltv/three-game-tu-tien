@@ -202,6 +202,8 @@ export class EntityManager {
   onMonsterDeath: ((m: MonVis) => void) | null = null;
   /** Cờ quái mở rộng vừa bật/tắt (E1-E): vẽ vòng phản đòn/yếu điểm, bụi chui đất. */
   onMonFlags: ((m: MonVis, e: MonFlagEdge) => void) | null = null;
+  /** Chui đất/trồi lên (chỉ hiển thị): độ chìm của thân và chỗ đặt thân ở phòng thử; engine gắn `BurrowFx`. */
+  burrow: { depth(id: string): number | undefined; override(id: string): { x: number; z: number } | null } | null = null;
   /** Dựng model quái (model có xương hoặc khối); giữ asset mẫu suốt đời EntityManager. */
   private skins = new MonsterSkins();
   /** Dựng model người chơi (Thanh Phong có xương hoặc khối dự phòng), màu áo theo lựa chọn. */
@@ -655,7 +657,16 @@ export class EntityManager {
       const edge = monFlagEdge(v.mf0, mf);
       v.mf0 = mf;
       if (edge) this.onMonFlags?.(v, edge);
-      v.model.root.visible = !(dead && (v as MonVis & { deadFor?: number }).deadFor! > 3) && !monHidden(mf);
+      // Đang chui/trồi: thân thụt dần xuống mặt đất (hạ y) rồi ẩn hẳn khi chìm; không có thì theo cờ như cũ.
+      const bd = this.burrow?.depth(id);
+      let hidden = monHidden(mf);
+      if (bd !== undefined) {
+        const ov = this.burrow!.override(id);
+        if (ov) v.model.root.position.set(ov.x, groundAt(ov.x, ov.z), ov.z);
+        v.model.root.position.y -= bd * v.model.height * 1.2;
+        hidden = bd >= 0.98;
+      }
+      v.model.root.visible = !(dead && (v as MonVis & { deadFor?: number }).deadFor! > 3) && !hidden;
       const vv = v as MonVis & { deadFor?: number };
       // deadFor === 0: khung trước còn sống (mô hình mới dựng của quái đã chết sẵn thì là undefined).
       if (dead && vv.deadFor === 0) this.onMonsterDeath?.(v);
@@ -677,7 +688,7 @@ export class EntityManager {
       }
       // Bảng tên (U7): quái thường chỉ hiện khi ở gần, đang giao chiến hoặc là mục tiêu (camera chéo thấy cả bầy từ xa nên không gắn tên khắp nơi); tinh anh/boss luôn hiện.
       const named = engaged || d2 < PLATE_NEAR * PLATE_NEAR || !!v.model.def.elite || !!v.model.def.boss;
-      if (v.label) v.label.visible = !dead && !monHidden(mf) && named && d2 < 70 * 70 && id !== this.hudBossId;
+      if (v.label) v.label.visible = !dead && !hidden && named && d2 < 70 * 70 && id !== this.hudBossId;
       v.wasAttack = s.st === MS_ATTACK;
     });
     for (const [id, v] of this.monsters) {

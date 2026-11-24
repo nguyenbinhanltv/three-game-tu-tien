@@ -1,0 +1,33 @@
+{
+  "monId": "boss_thon_mach_ngo_cong_vuong",
+  "move": "burrow",
+  "idea": "Thôn Mạch Ngô Công Vương chui xuống đất: 3 vòng ĐỎ tròn đúng 4 m hiện quanh người chơi, vân nứt đỏ tỏa từ tâm theo nhịp 2,0 s; đúng lúc đó đất sụt thành hố tối, đất bắn tung và gai rễ gỗ nâu nhô quanh miệng hố, bào tử xanh lục bay lên.",
+  "element": "moc",
+  "palette": {
+    "core": "1c140c",
+    "body": "6b4a32",
+    "rim": "bfe8a0",
+    "accent": "ff1f3d"
+  },
+  "shapeLang": [
+    "spike",
+    "ring"
+  ],
+  "zone": {
+    "shape": "circle",
+    "r": 4,
+    "at": "target"
+  },
+  "timing": {
+    "anticipationMs": 2000,
+    "impactMs": 140,
+    "lingerMs": 800
+  },
+  "readability": "Ba vòng đỏ đặc đúng 4 m, đủ xa nhau (cách 5 m) để đọc từng vòng; hố đất nâu tối và gai rễ không lẫn với vạch đỏ, bụi đất mỏng không che người chơi.",
+  "budget": {
+    "drawCalls": 10,
+    "particles": 300,
+    "screenCover": 0.3,
+    "overdraw": 5
+  }
+}

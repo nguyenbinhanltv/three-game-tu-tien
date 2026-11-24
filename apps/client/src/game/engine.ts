@@ -142,6 +142,7 @@ import { CharPreview } from './camera/charPreview';
 import { IsoRig } from './camera/isoRig';
 import { currentSearch, FLAGS } from '../base/flags';
 import { VistaRig } from './camera/vista';
+import { BurrowFx } from './fx/burrowFx';
 import { installVfxLab } from './debug/vfxLab';
 import { ANIM_LAB, VFX_LAB } from './engine/common';
 import { installAnimLab } from './debug/animLab';
@@ -445,6 +446,8 @@ export class Game {
   bossLineId = 0;
   /** Thẻ chương (C2): khung camera nhẹ, thẻ chờ tới khi thế giới đã dựng, đã xét lần đầu vào tông môn chưa. */
   camFrame = new CamFrame();
+  /** Chui đất/trồi lên của quái (chỉ hiển thị). */
+  burrowFx = new BurrowFx();
   /** Camera mở tầm nhìn (ngự kiếm / điểm ngắm cảnh), chỉ trình diễn. */
   vista = new VistaRig();
   /** Cảnh mở đầu (P2-B1): camera điện ảnh lần đầu vào Lạc Kiếm Tông; xong thì hiện thẻ chương 'sect'. */
@@ -816,6 +819,7 @@ export class Game {
     this.ents.onSkillEvent = (sid, e) => this.emitSkillEvent(sid, e);
     this.ents.onMonsterDeath = (m) => monsterInk(this, m);
     this.ents.onMonFlags = (m, e) => monFlagFx(this, m, e);
+    this.ents.burrow = this.burrowFx;
     this.minimap = renderMinimap(320);
     mark('minimap');
     this.startedAt = t0;

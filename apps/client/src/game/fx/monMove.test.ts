@@ -3,6 +3,7 @@ import { MONSTER } from '@dtl/content';
 import { moveOfHazard, movesOf } from './monMove';
 
 const han = MONSTER.get('boss_han_giao')!;
+const ngo = MONSTER.get('boss_thon_mach_ngo_cong_vuong')!;
 
 describe('moveOfHazard', () => {
   it('Hàn Giao: nhận slam, chant, sweep theo hình/bán kính/thời gian báo', () => {
@@ -10,6 +11,11 @@ describe('moveOfHazard', () => {
     expect(moveOfHazard(han, { r: 12, delay: 0.9 })).toBe('chant');
     expect(moveOfHazard(han, { r: 13, delay: 0.9 })).toBe('chant'); // pha 3
     expect(moveOfHazard(han, { r: 14, delay: 1.5, sh: 'cone' })).toBe('sweep');
+  });
+  it('Ngô Công: nhận slam, chant, chui đất (vòng r4, báo 2 s) và trồi lên (quạt r14, báo 1,5 s)', () => {
+    expect(moveOfHazard(ngo, { r: 5.5, delay: 1.7 })).toBe('slam');
+    expect(moveOfHazard(ngo, { r: 4, delay: 2 })).toBe('burrow');
+    expect(moveOfHazard(ngo, { r: 14, delay: 1.5, sh: 'cone' })).toBe('emerge');
   });
   it('khác hình hoặc lệch xa thì không đoán (dùng timeline chung)', () => {
     expect(moveOfHazard(han, { r: 8, delay: 1, sh: 'rect' })).toBeUndefined();
