@@ -58,6 +58,8 @@ function later(eng: Game, sec: number, fn: () => void): void {
 
 /** Vạch báo của server (S.HAZARD). Tách ra để phòng thử VFX phát lại đúng đường này cho chiêu của quái (V-P9). */
 export function onHazard(eng: Game, m: HazardMsg): void {
+  // Chui đất: vạch `burrow` đầu tiên là điểm quái trồi lên (BurrowFx vẽ ụ đất chạy tới đó).
+  if (m.mv === 'burrow' && m.src) eng.burrowFx.noteHazard(m.src, m.x, m.z, m.delay, Date.now());
   if (import.meta.env.DEV)
     (eng.hazardLog ??= []).push({
       k: m.kind,
@@ -182,6 +184,7 @@ export function rebind(eng: Game, room: Room, init: InitMsg): void {
   eng.camFrame.cancel();
   eng.ents.onMonsterDeath = (m) => monsterInk(eng, m);
   eng.ents.onMonFlags = (m, e) => monFlagFx(eng, m, e);
+  eng.ents.burrow = eng.burrowFx;
   eng.snapToServer = true;
   eng.dmg?.clear();
   eng.offscreen?.clear();

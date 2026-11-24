@@ -212,6 +212,16 @@ export function installVfxLab(g: Game, onHazard?: (g: Game, m: HazardMsg) => voi
         else onHazard(g, m);
         return true;
       }
+      // Chui đất ở phòng thử không có cờ MF_BURROW của server: tự dựng hình như game thật (thân thụt xuống, ụ đất chạy sang bên, trồi lên).
+      if (mv === 'burrow' || mv === 'emerge') {
+        const fx = (g as unknown as { burrowFx: import('../fx/burrowFx').BurrowFx }).burrowFx;
+        const to = { x: b.x + Math.cos(yaw) * 7, z: b.z - Math.sin(yaw) * 7 };
+        if (mv === 'burrow') fx.start(id, b.x, b.z, Date.now(), { move: true, auto: true, to, hide: cfg.delay });
+        else {
+          fx.start(id, b.x, b.z, Date.now(), { move: true, to: { x: b.x, z: b.z }, hide: 0 });
+          fx.finish(id);
+        }
+      }
       onHazard(g, m);
       return true;
     },
