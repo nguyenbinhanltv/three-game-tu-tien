@@ -38,7 +38,7 @@ import {
   ISO_CARD_SCALE,
   isoFxScaleY,
 } from '../../render/vfx/isoFx';
-import { forgeDecalIndex } from '../../render/vfx/forgeTex';
+import { forgeDecalIndex, forgeFlipIndex } from '../../render/vfx/forgeTex';
 import { shapeGeometry, shapeKind, QUAD_XZ } from '../../render/vfx/fxShapes';
 import {
   DECAL_CRACK,
@@ -329,7 +329,8 @@ export class FxRunner {
   startAt(tl: FxTimeline, o: FxAtOpts): void {
     const sid = `~mon${++this.serial}`;
     const tier = fxTierFor(this.env.quality(), !!o.mine);
-    const pal = paletteOf(o.palette);
+    // Timeline RIÊNG của một quái/chiêu (`mon_*__<quái>…`) được chọn bảng màu riêng (vd. lôi tím cho Thú Mộ Tướng); timeline chung theo hệ của quái.
+    const pal = paletteOf(tl.palette && tl.skill.includes('__') ? tl.palette : o.palette);
     const events = fxEventsFor(tl, -1, o.variant);
     const q = scheduleEvents(events, [o.hitAt ?? 0], tier).map((s, idx) => ({ ...s, idx, done: false }));
     const cast: Cast = {
@@ -663,6 +664,8 @@ export class FxRunner {
             m.fxA.y = sstep(erodeFrom, 1, k);
           } else if (kind === 'flip') {
             m.fxA.x = Math.max(0, (FLIP_ATLASES as readonly string[]).indexOf(ev.flip ?? 'ink_smoke'));
+          } else if (kind === 'mapFlip') {
+            m.fxA.x = forgeFlipIndex(ev.flip ?? 'ice_flip');
           }
           m.fxK = k;
           place(m, k, isShade ? 1.08 : 1, isShade ? 0.03 * (s0[0]! + 0.5) : 0);
@@ -677,6 +680,8 @@ export class FxRunner {
       c.mine,
     );
     main.fxA.z = seed;
+    // Tấm flipbook Codex: chọn đúng tấm ngay khung đầu (trước lần cập nhật đầu `fxA.x` còn 0 = tấm đầu tiên).
+    if (kind === 'mapFlip') main.fxA.x = forgeFlipIndex(ev.flip ?? 'ice_flip');
     if (shade) shade.fxA.z = seed;
     // Khung đầu: đặt ngay để không lóe một khung ở gốc.
     place(main, 0, 1, 0);
@@ -809,18 +814,28 @@ export class FxRunner {
       mapped ? (ev.top ? 'mapDecalTop' : 'mapDecal') : ev.top ? 'decalTop' : 'decal',
     );
     _col.setHex(c.pal.rim);
-    m.fxB.set(_col.r, _col.g, _col.b, mapped && ev.sector ? ev.sector * DEG : 0);
+    m.fxB.set(_col.r, _col.g, _col.b, mapped && ev.strip ? -(ev.strip[0] / ev.strip[1]) : mapped && ev.sector ? ev.sector * DEG : 0);
     m.fxA.z = (c.seed + idx * 3.3) % 40;
     m.fxA.w = mapped ? forgeDecalIndex(ev.tex) : kind;
     m.renderOrder = -3;
+    const aimed = ev.sector || ev.strip;
+    const baseYaw = aimed ? yaw + (ev.yaw ?? 0) * DEG : (ev.yaw ?? (c.seed * 57) % 360) * DEG;
     m.position.copy(at);
-    m.quaternion.setFromAxisAngle(UP, ev.sector ? yaw + (ev.yaw ?? 0) * DEG : (ev.yaw ?? (c.seed * 57) % 360) * DEG);
-    m.scale.setScalar(ev.r * c.mul);
+    m.quaternion.setFromAxisAngle(UP, baseYaw);
+    if (mapped && ev.strip) {
+      // Dải chữ nhật: quad phủ đúng dài × rộng (mét thật), tâm dịch tới giữa dải theo hướng vùng.
+      m.position.x += Math.sin(baseYaw) * ev.strip[0] * 0.5;
+      m.position.z += Math.cos(baseYaw) * ev.strip[0] * 0.5;
+      m.scale.set(ev.strip[1] * 0.5, 1, ev.strip[0] * 0.5);
+    } else m.scale.setScalar(ev.r * c.mul);
     const dur = ev.untilDelay && c.delay ? c.delay : ev.dur;
-    const grow = Math.max(0.05, ev.grow ?? 0.15);
+    const grow = Math.max(0.05, ev.growUntilDelay && c.delay ? c.delay : (ev.grow ?? 0.15));
     const swing = ev.sector && ev.swing ? ev.swing : null;
     const swingYaw = yaw;
     const swingDur = Math.max(0.05, ev.swingDur ?? 0.3);
+    // Khung đầu (trước lần cập nhật đầu): đã mọc gần xong nếu `grow` ngắn, để vùng nổ hiện ngay lúc trúng (+0 ms) thay vì trống.
+    m.fxA.x = easeOut(Math.min(1, 0.016 / grow));
+    m.fxK = 1;
     this.decals++;
     this.v.track(
       dur,

@@ -32,7 +32,8 @@
    "from": "start",
    "top": true,
    "untilDelay": true,
-   "sector": 35
+   "sector": 35,
+   "growUntilDelay": true
   },
   {
    "type": "particles",

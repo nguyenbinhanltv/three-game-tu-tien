@@ -1,0 +1,21 @@
+{
+ "skill": "mon_cast__boss_thon_mach_ngo_cong_vuong",
+ "palette": "mon_boss_moc",
+ "events": [
+  {
+   "type": "decal",
+   "tex": "rune",
+   "t": 0,
+   "r": 12,
+   "dur": 3.6,
+   "at": "self",
+   "grow": 0.35,
+   "tone": "accent",
+   "alpha": 0.75,
+   "tier": 0,
+   "from": "start",
+   "top": true,
+   "ink": true
+  }
+ ]
+}

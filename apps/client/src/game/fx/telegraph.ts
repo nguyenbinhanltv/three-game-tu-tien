@@ -42,8 +42,9 @@ export function telegraph(v: Vfx, m: HazardMsg, boss = false, danger: 0 | 1 | 2 
     },
     () => {
       v.drop(s);
-      // Nổ: vài chớp sáng dọc trục chiêu.
-      for (let i = 1; i <= 3; i++) {
+      // Nổ: vài chớp sáng dọc trục chiêu. Chiêu có timeline nổ riêng (`top` = `MonFx.ownWarn`) tự vẽ vùng nổ: bỏ chớp màu cảnh báo (đỏ) này
+      // vì đỏ chỉ dành cho vạch báo, và chớp tỏa tròn đỏ-hồng đè lên vùng nổ làm lẫn với cảnh báo.
+      for (let i = 1; i <= 3 && !top; i++) {
         const d = m.r * (i / 3.4);
         _p.set(m.x + fx * d, 0, m.z + fz * d);
         _p.y = groundAt(_p.x, _p.z) + 0.6;

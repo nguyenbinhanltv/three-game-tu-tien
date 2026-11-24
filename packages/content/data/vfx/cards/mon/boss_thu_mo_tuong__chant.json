@@ -1,0 +1,33 @@
+{
+  "monId": "boss_thu_mo_tuong",
+  "move": "chant",
+  "idea": "Thú Mộ Tướng niệm triệu lôi: vòng cảnh báo ĐỎ tròn rất lớn bán kính 10 m quanh boss, triện văn xoay chậm, tia điện tím lách tách tụ lên từ mặt đất trong lúc niệm; hết niệm đĩa đỏ đậm dần rồi nhiều cột sét tím-trắng giáng xuống khắp vùng, choáng toàn bộ.",
+  "element": "loi",
+  "palette": {
+    "core": "14103a",
+    "body": "7f8cff",
+    "rim": "fff4b0",
+    "accent": "ff1f3d"
+  },
+  "shapeLang": [
+    "beam",
+    "ring"
+  ],
+  "zone": {
+    "shape": "circle",
+    "r": 10,
+    "at": "self"
+  },
+  "timing": {
+    "anticipationMs": 900,
+    "impactMs": 160,
+    "lingerMs": 900
+  },
+  "readability": "Vòng đỏ mỏng lúc niệm rồi đặc dần ở 0,9 s cuối; cột sét trắng-tím rõ trên nền sáng nhờ lõi tối viền đậm; người chơi biết phải chạy ra ngoài vòng 10 m.",
+  "budget": {
+    "drawCalls": 8,
+    "particles": 300,
+    "screenCover": 0.3,
+    "overdraw": 5
+  }
+}

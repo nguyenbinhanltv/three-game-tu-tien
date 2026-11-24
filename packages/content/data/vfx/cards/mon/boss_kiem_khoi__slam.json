@@ -1,0 +1,33 @@
+{
+  "monId": "boss_kiem_khoi",
+  "move": "slam",
+  "idea": "Kiếm Khôi đâm thanh kiếm đá khổng lồ xuống đất: vòng cảnh báo ĐỎ tròn đúng 5,5 m dưới chân người bị nhắm, các vệt nứt kim loại đỏ tỏa từ tâm và đĩa đỏ tô dần theo nhịp nạp 1,7 s; nổ ra một vòng lưỡi kiếm thép xanh bạc nhọn trồi từ đất quanh rìa vùng, tia lửa kim loại và sóng ánh bạc.",
+  "element": "kim",
+  "palette": {
+    "core": "141b2b",
+    "body": "7f98bd",
+    "rim": "f4f9ff",
+    "accent": "ff1f3d"
+  },
+  "shapeLang": [
+    "spike",
+    "ring"
+  ],
+  "zone": {
+    "shape": "circle",
+    "r": 5.5,
+    "at": "target"
+  },
+  "timing": {
+    "anticipationMs": 1700,
+    "impactMs": 120,
+    "lingerMs": 700
+  },
+  "readability": "Đĩa đỏ tô lan từ tâm ra rìa trên nền đá sáng; rìa vùng đỏ nét liền; lưỡi kiếm thép trắng bạc đọc được cả nền sáng lẫn tối, không lẫn với vạch đỏ.",
+  "budget": {
+    "drawCalls": 8,
+    "particles": 300,
+    "screenCover": 0.3,
+    "overdraw": 5
+  }
+}

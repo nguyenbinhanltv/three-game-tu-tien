@@ -1,0 +1,33 @@
+{
+  "monId": "boss_thon_mach_ngo_cong_vuong",
+  "move": "chant",
+  "idea": "Thôn Mạch Ngô Công Vương niệm hút mạch: vòng cảnh báo ĐỎ lớn bán kính 12 m quanh boss, triện văn xoay chậm, sương xanh độc xoáy dồn vào boss; hết niệm đĩa đỏ đậm dần rồi bùng sóng bào tử xanh lục-độc và rễ gỗ nâu quất ra, hút sinh lực và gây choáng.",
+  "element": "moc",
+  "palette": {
+    "core": "10260f",
+    "body": "6fbf3a",
+    "rim": "dff7a8",
+    "accent": "ff1f3d"
+  },
+  "shapeLang": [
+    "spiral",
+    "cloud"
+  ],
+  "zone": {
+    "shape": "circle",
+    "r": 12,
+    "at": "self"
+  },
+  "timing": {
+    "anticipationMs": 900,
+    "impactMs": 160,
+    "lingerMs": 900
+  },
+  "readability": "Vòng đỏ mỏng lúc niệm rồi đặc ở 0,9 s cuối; sương xanh lục + rễ nâu đọc rõ, rìa 12 m chính xác.",
+  "budget": {
+    "drawCalls": 8,
+    "particles": 300,
+    "screenCover": 0.3,
+    "overdraw": 5
+  }
+}
