@@ -23,325 +23,532 @@
   },
   {
    "type": "decal",
-   "tex": "ice_crack",
+   "tex": "scorch",
    "t": 0,
    "r": 4,
    "dur": 2.8,
    "at": "area",
    "grow": 0.03,
    "tone": "core",
-   "alpha": 1.0,
+   "alpha": 0.95,
    "tier": 0,
    "from": "start",
    "lift": 0.35
   },
   {
+   "type": "decal",
+   "tex": "rune",
+   "t": 0,
+   "r": 3.8,
+   "dur": 2.4,
+   "at": "area",
+   "grow": 0.25,
+   "tone": "rim",
+   "alpha": 0.8,
+   "tier": 0,
+   "from": "start",
+   "ink": true,
+   "lift": 0.36
+  },
+  {
+   "type": "mesh",
+   "shape": "ribbon",
+   "t": 0.0,
+   "dur": 1.3,
+   "at": "area",
+   "tone": "rim",
+   "alpha": 0.9,
+   "seed": 740,
+   "tier": 0,
+   "offset": [
+    0,
+    0.05,
+    0
+   ],
+   "rot": [
+    -90,
+    0,
+    0
+   ],
+   "scale": [
+    3.6,
+    3.6,
+    0.5
+   ],
+   "sweep": 0.6,
+   "erodeFrom": 0.6,
+   "ragged": 0.5,
+   "spin": -260
+  },
+  {
+   "type": "mesh",
+   "shape": "ribbon",
+   "t": 0.05,
+   "dur": 1.3,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.9,
+   "seed": 750,
+   "tier": 0,
+   "offset": [
+    0,
+    0.15,
+    0
+   ],
+   "rot": [
+    -90,
+    0,
+    0
+   ],
+   "scale": [
+    2.5,
+    2.5,
+    0.5
+   ],
+   "sweep": 0.6,
+   "erodeFrom": 0.6,
+   "ragged": 0.5,
+   "spin": 320
+  },
+  {
+   "type": "mesh",
+   "shape": "ribbon",
+   "t": 0.1,
+   "dur": 1.3,
+   "at": "area",
+   "tone": "rim",
+   "alpha": 0.9,
+   "seed": 760,
+   "tier": 0,
+   "offset": [
+    0,
+    0.25,
+    0
+   ],
+   "rot": [
+    -90,
+    0,
+    0
+   ],
+   "scale": [
+    1.4,
+    1.4,
+    0.5
+   ],
+   "sweep": 0.6,
+   "erodeFrom": 0.6,
+   "ragged": 0.5,
+   "spin": -380
+  },
+  {
    "type": "mesh",
    "shape": "ripple",
-   "t": 0,
+   "t": 0.0,
    "dur": 0.55,
    "at": "area",
    "tone": "rim",
    "alpha": 0.95,
-   "seed": 2,
+   "seed": 770,
    "tier": 0,
-   "scale": 0.85,
+   "scale": 0.5,
    "scaleTo": 1.04,
    "fit": "area",
-   "sweep": 0.08,
+   "sweep": 0.1,
    "erodeFrom": 0.5,
-   "ragged": 0.4
+   "ragged": 0.5
   },
   {
    "type": "mesh",
-   "shape": "helix",
-   "t": 0,
-   "dur": 1.0,
+   "shape": "ripple",
+   "t": 0.08,
+   "dur": 0.55,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.95,
+   "seed": 771,
+   "tier": 0,
+   "scale": 0.56,
+   "scaleTo": 1.04,
+   "fit": "area",
+   "sweep": 0.1,
+   "erodeFrom": 0.5,
+   "ragged": 0.5
+  },
+  {
+   "type": "mesh",
+   "shape": "ripple",
+   "t": 0.16,
+   "dur": 0.55,
+   "at": "area",
+   "tone": "rim",
+   "alpha": 0.95,
+   "seed": 772,
+   "tier": 0,
+   "scale": 0.62,
+   "scaleTo": 1.04,
+   "fit": "area",
+   "sweep": 0.1,
+   "erodeFrom": 0.5,
+   "ragged": 0.5
+  },
+  {
+   "type": "mesh",
+   "shape": "ripple",
+   "t": 0.24,
+   "dur": 0.55,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.95,
+   "seed": 773,
+   "tier": 0,
+   "scale": 0.6799999999999999,
+   "scaleTo": 1.04,
+   "fit": "area",
+   "sweep": 0.1,
+   "erodeFrom": 0.5,
+   "ragged": 0.5
+  },
+  {
+   "type": "mesh",
+   "shape": "kite",
+   "t": 0.03,
+   "dur": 0.7,
    "at": "area",
    "tone": "rim",
    "alpha": 0.9,
-   "seed": 7,
+   "seed": 790,
    "tier": 0,
    "offset": [
+    3.33,
+    0.0,
+    0.68
+   ],
+   "rot": [
     0,
     0,
     0
    ],
-   "scale": 1.2,
-   "sweep": 0.2,
-   "erodeFrom": 0.55
-  },
-  {
-   "type": "mesh",
-   "shape": "flip",
-   "t": 0.0,
-   "dur": 0.9,
-   "at": "area",
-   "tone": "body",
-   "alpha": 0.95,
-   "seed": 700,
-   "tier": 0,
-   "flip": "ice_flip",
-   "scale": 2.0,
-   "offset": [
-    0.95,
-    0.9,
-    3.06
+   "scale": [
+    0.45,
+    1.92,
+    0.45
    ],
-   "sweep": 0
+   "sweep": 0.15,
+   "erodeFrom": 0.5
   },
   {
    "type": "mesh",
-   "shape": "flip",
-   "t": 0.02,
-   "dur": 0.9,
+   "shape": "kite",
+   "t": 0.055,
+   "dur": 0.7,
    "at": "area",
-   "tone": "body",
-   "alpha": 0.95,
-   "seed": 701,
+   "tone": "rim",
+   "alpha": 0.9,
+   "seed": 791,
    "tier": 1,
-   "flip": "ice_flip",
-   "scale": 2.15,
    "offset": [
-    2.69,
-    0.9,
-    1.73
+    2.55,
+    0.0,
+    2.25
    ],
-   "sweep": 0
+   "rot": [
+    0,
+    0,
+    0
+   ],
+   "scale": [
+    0.45,
+    2.4,
+    0.45
+   ],
+   "sweep": 0.15,
+   "erodeFrom": 0.5
   },
   {
    "type": "mesh",
-   "shape": "flip",
-   "t": 0.04,
-   "dur": 0.9,
-   "at": "area",
-   "tone": "body",
-   "alpha": 0.95,
-   "seed": 702,
-   "tier": 0,
-   "flip": "ice_flip",
-   "scale": 2.3,
-   "offset": [
-    3.17,
-    0.9,
-    -0.4
-   ],
-   "sweep": 0
-  },
-  {
-   "type": "mesh",
-   "shape": "flip",
-   "t": 0.06,
-   "dur": 0.9,
-   "at": "area",
-   "tone": "body",
-   "alpha": 0.95,
-   "seed": 703,
-   "tier": 1,
-   "flip": "ice_flip",
-   "scale": 2.0,
-   "offset": [
-    2.17,
-    0.9,
-    -2.35
-   ],
-   "sweep": 0
-  },
-  {
-   "type": "mesh",
-   "shape": "flip",
+   "shape": "kite",
    "t": 0.08,
-   "dur": 0.9,
+   "dur": 0.7,
    "at": "area",
-   "tone": "body",
-   "alpha": 0.95,
-   "seed": 704,
+   "tone": "rim",
+   "alpha": 0.9,
+   "seed": 792,
    "tier": 0,
-   "flip": "ice_flip",
-   "scale": 2.15,
    "offset": [
-    0.16,
-    0.9,
-    -3.2
+    1.08,
+    0.0,
+    3.22
    ],
-   "sweep": 0
+   "rot": [
+    0,
+    0,
+    0
+   ],
+   "scale": [
+    0.45,
+    2.8800000000000003,
+    0.45
+   ],
+   "sweep": 0.15,
+   "erodeFrom": 0.5
   },
   {
    "type": "mesh",
-   "shape": "flip",
-   "t": 0.1,
-   "dur": 0.9,
+   "shape": "kite",
+   "t": 0.10500000000000001,
+   "dur": 0.7,
    "at": "area",
-   "tone": "body",
-   "alpha": 0.95,
-   "seed": 705,
+   "tone": "rim",
+   "alpha": 0.9,
+   "seed": 793,
    "tier": 1,
-   "flip": "ice_flip",
-   "scale": 2.3,
    "offset": [
-    -1.93,
-    0.9,
+    -0.68,
+    0.0,
+    3.33
+   ],
+   "rot": [
+    0,
+    0,
+    0
+   ],
+   "scale": [
+    0.45,
+    1.92,
+    0.45
+   ],
+   "sweep": 0.15,
+   "erodeFrom": 0.5
+  },
+  {
+   "type": "mesh",
+   "shape": "kite",
+   "t": 0.13,
+   "dur": 0.7,
+   "at": "area",
+   "tone": "rim",
+   "alpha": 0.9,
+   "seed": 794,
+   "tier": 0,
+   "offset": [
+    -2.25,
+    0.0,
+    2.55
+   ],
+   "rot": [
+    0,
+    0,
+    0
+   ],
+   "scale": [
+    0.45,
+    2.4,
+    0.45
+   ],
+   "sweep": 0.15,
+   "erodeFrom": 0.5
+  },
+  {
+   "type": "mesh",
+   "shape": "kite",
+   "t": 0.155,
+   "dur": 0.7,
+   "at": "area",
+   "tone": "rim",
+   "alpha": 0.9,
+   "seed": 795,
+   "tier": 1,
+   "offset": [
+    -3.22,
+    0.0,
+    1.08
+   ],
+   "rot": [
+    0,
+    0,
+    0
+   ],
+   "scale": [
+    0.45,
+    2.8800000000000003,
+    0.45
+   ],
+   "sweep": 0.15,
+   "erodeFrom": 0.5
+  },
+  {
+   "type": "mesh",
+   "shape": "kite",
+   "t": 0.18000000000000002,
+   "dur": 0.7,
+   "at": "area",
+   "tone": "rim",
+   "alpha": 0.9,
+   "seed": 796,
+   "tier": 0,
+   "offset": [
+    -3.33,
+    0.0,
+    -0.68
+   ],
+   "rot": [
+    0,
+    0,
+    0
+   ],
+   "scale": [
+    0.45,
+    1.92,
+    0.45
+   ],
+   "sweep": 0.15,
+   "erodeFrom": 0.5
+  },
+  {
+   "type": "mesh",
+   "shape": "kite",
+   "t": 0.20500000000000002,
+   "dur": 0.7,
+   "at": "area",
+   "tone": "rim",
+   "alpha": 0.9,
+   "seed": 797,
+   "tier": 1,
+   "offset": [
+    -2.55,
+    0.0,
+    -2.25
+   ],
+   "rot": [
+    0,
+    0,
+    0
+   ],
+   "scale": [
+    0.45,
+    2.4,
+    0.45
+   ],
+   "sweep": 0.15,
+   "erodeFrom": 0.5
+  },
+  {
+   "type": "mesh",
+   "shape": "kite",
+   "t": 0.23,
+   "dur": 0.7,
+   "at": "area",
+   "tone": "rim",
+   "alpha": 0.9,
+   "seed": 798,
+   "tier": 0,
+   "offset": [
+    -1.08,
+    0.0,
+    -3.22
+   ],
+   "rot": [
+    0,
+    0,
+    0
+   ],
+   "scale": [
+    0.45,
+    2.8800000000000003,
+    0.45
+   ],
+   "sweep": 0.15,
+   "erodeFrom": 0.5
+  },
+  {
+   "type": "mesh",
+   "shape": "kite",
+   "t": 0.255,
+   "dur": 0.7,
+   "at": "area",
+   "tone": "rim",
+   "alpha": 0.9,
+   "seed": 799,
+   "tier": 1,
+   "offset": [
+    0.68,
+    0.0,
+    -3.33
+   ],
+   "rot": [
+    0,
+    0,
+    0
+   ],
+   "scale": [
+    0.45,
+    1.92,
+    0.45
+   ],
+   "sweep": 0.15,
+   "erodeFrom": 0.5
+  },
+  {
+   "type": "mesh",
+   "shape": "kite",
+   "t": 0.28,
+   "dur": 0.7,
+   "at": "area",
+   "tone": "rim",
+   "alpha": 0.9,
+   "seed": 800,
+   "tier": 0,
+   "offset": [
+    2.25,
+    0.0,
     -2.55
    ],
-   "sweep": 0
-  },
-  {
-   "type": "mesh",
-   "shape": "flip",
-   "t": 0.12,
-   "dur": 0.9,
-   "at": "area",
-   "tone": "body",
-   "alpha": 0.95,
-   "seed": 706,
-   "tier": 0,
-   "flip": "ice_flip",
-   "scale": 2.0,
-   "offset": [
-    -3.12,
-    0.9,
-    -0.71
+   "rot": [
+    0,
+    0,
+    0
    ],
-   "sweep": 0
+   "scale": [
+    0.45,
+    2.4,
+    0.45
+   ],
+   "sweep": 0.15,
+   "erodeFrom": 0.5
   },
   {
    "type": "mesh",
-   "shape": "flip",
-   "t": 0.14,
-   "dur": 0.9,
+   "shape": "kite",
+   "t": 0.30500000000000005,
+   "dur": 0.7,
    "at": "area",
-   "tone": "body",
-   "alpha": 0.95,
-   "seed": 707,
+   "tone": "rim",
+   "alpha": 0.9,
+   "seed": 801,
    "tier": 1,
-   "flip": "ice_flip",
-   "scale": 2.15,
    "offset": [
-    -2.85,
-    0.9,
-    1.46
+    3.22,
+    0.0,
+    -1.08
    ],
-   "sweep": 0
-  },
-  {
-   "type": "mesh",
-   "shape": "flip",
-   "t": 0.16,
-   "dur": 0.9,
-   "at": "area",
-   "tone": "body",
-   "alpha": 0.95,
-   "seed": 708,
-   "tier": 0,
-   "flip": "ice_flip",
-   "scale": 2.3,
-   "offset": [
-    -1.24,
-    0.9,
-    2.95
+   "rot": [
+    0,
+    0,
+    0
    ],
-   "sweep": 0
-  },
-  {
-   "type": "mesh",
-   "shape": "flip",
-   "t": 0.05,
-   "dur": 0.9,
-   "at": "area",
-   "tone": "body",
-   "alpha": 0.95,
-   "seed": 710,
-   "tier": 0,
-   "flip": "ice_flip",
-   "scale": 1.7,
-   "offset": [
-    0.44,
-    0.9,
-    1.43
+   "scale": [
+    0.45,
+    2.8800000000000003,
+    0.45
    ],
-   "sweep": 0
-  },
-  {
-   "type": "mesh",
-   "shape": "flip",
-   "t": 0.07,
-   "dur": 0.9,
-   "at": "area",
-   "tone": "body",
-   "alpha": 0.95,
-   "seed": 711,
-   "tier": 1,
-   "flip": "ice_flip",
-   "scale": 1.8499999999999999,
-   "offset": [
-    1.5,
-    0.9,
-    0.02
-   ],
-   "sweep": 0
-  },
-  {
-   "type": "mesh",
-   "shape": "flip",
-   "t": 0.09,
-   "dur": 0.9,
-   "at": "area",
-   "tone": "body",
-   "alpha": 0.95,
-   "seed": 712,
-   "tier": 0,
-   "flip": "ice_flip",
-   "scale": 2.0,
-   "offset": [
-    0.48,
-    0.9,
-    -1.42
-   ],
-   "sweep": 0
-  },
-  {
-   "type": "mesh",
-   "shape": "flip",
-   "t": 0.11,
-   "dur": 0.9,
-   "at": "area",
-   "tone": "body",
-   "alpha": 0.95,
-   "seed": 713,
-   "tier": 1,
-   "flip": "ice_flip",
-   "scale": 1.7,
-   "offset": [
-    -1.2,
-    0.9,
-    -0.9
-   ],
-   "sweep": 0
-  },
-  {
-   "type": "mesh",
-   "shape": "flip",
-   "t": 0.13,
-   "dur": 0.9,
-   "at": "area",
-   "tone": "body",
-   "alpha": 0.95,
-   "seed": 714,
-   "tier": 0,
-   "flip": "ice_flip",
-   "scale": 1.8499999999999999,
-   "offset": [
-    -1.23,
-    0.9,
-    0.86
-   ],
-   "sweep": 0
+   "sweep": 0.15,
+   "erodeFrom": 0.5
   },
   {
    "type": "particles",
    "kind": "dust",
    "t": 0,
-   "n": 32,
+   "n": 44,
    "speed": 4,
    "spread": 1,
    "life": 1.0,
@@ -360,10 +567,10 @@
    "type": "particles",
    "kind": "shard",
    "t": 0,
-   "n": 28,
+   "n": 36,
    "speed": 5,
    "spread": 1,
-   "life": 0.8,
+   "life": 0.9,
    "size": 0.1,
    "at": "area",
    "tone": "body",
@@ -373,7 +580,7 @@
     0.3,
     0
    ],
-   "grav": 6
+   "grav": 8
   }
  ]
 }
