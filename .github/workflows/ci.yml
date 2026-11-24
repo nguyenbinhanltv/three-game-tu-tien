@@ -48,8 +48,14 @@ jobs:
             apps/client/public/terrain*
             apps/client/public/grass*
             apps/client/public/thien_y
+            !apps/client/public/**/*.json
+            !apps/client/public/**/*.txt
           key: assets-r2-${{ hashFiles('assets/asset-lock.json') }}
           restore-keys: assets-r2-
+
+      # Cache chỉ có nhị phân, nhưng chắc chắn file git theo dõi (manifest json…) không bị bản cache cũ đè.
+      - name: Khôi phục file git theo dõi trong public
+        run: git checkout -- apps/client/public
 
       - name: Kéo asset từ R2 (chỉ file thiếu, kiểm sha256)
         run: pnpm assets:pull
