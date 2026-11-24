@@ -22,7 +22,7 @@
   "budget": {
     "drawCalls": 9,
     "particles": 160,
-    "screenCover": 0.2,
+    "screenCover": 0.06,
     "overdraw": 4
   },
   "textures": [],

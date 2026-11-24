@@ -26,14 +26,14 @@ let K = 1;
 const SCALE = {
   skl_kiem_anh_bo: 1,
   skl_phi_kiem_truy_hon: 1,
-  skl_van_kiem_quy_tong: 0.9,
-  skl_hoanh_kiem_pha_mach: 1,
+  skl_van_kiem_quy_tong: 0.75,
+  skl_hoanh_kiem_pha_mach: 0.8,
   skl_kiem_vu_tam_diep: 0.9,
   skl_kiem_dan_ban_menh: 1,
-  skl_nghich_kiem_chuyen_phong: 1,
+  skl_nghich_kiem_chuyen_phong: 0.8,
   skl_phan_anh_kiem_anh: 0.9,
   skl_thuan_di_tram: 0.9,
-  skl_thien_kiem_hoa_hinh: 0.8,
+  skl_thien_kiem_hoa_hinh: 0.55,
 };
 /** Hệ số alpha thân theo chiêu (không áp cho chớp `kiem_flash`). */
 let A = 1;
@@ -121,7 +121,7 @@ const SPEC = {
     flash('self', [0, 1.1, 0], 1.8, 0),
     strike('kiem_afterimages', { size: 7.5, at: 'ahead', off: [0, 1.1, 3.4], dur: 0.5, align: 'aim' }),
     flash('ahead', [0, 1.1, 6.4], 2.2, 0.02),
-    scorch('ahead', [0, 0.02, 6.2], 1.6),
+    scorch('ahead', [0, 0.02, 6.2], 2.4),
     after('ahead', [0, 1.2, 5], 2.2, 0.2, 1.1),
     sparks('ahead', [0, 1.1, 5], 8, 0.04),
   ],
@@ -195,7 +195,7 @@ const SPEC = {
     flash('self', [0, 1.1, 0], 1.8, 0),
     strike('kiem_drill', { size: 8.5, at: 'ahead', off: [0, 1.2, 4], dur: 0.55, align: 'aim', erodeFrom: 0.25 }),
     flash('ahead', [0, 1.2, 8], 2.2, 0.03),
-    scorch('ahead', [0, 0.02, 4.4], 2.2),
+    scorch('ahead', [0, 0.02, 4.4], 3.4),
     after('ahead', [0, 1.3, 5], 2.6, 0.22, 1.2),
     sparks('ahead', [0, 1.2, 5], 10, 0.05),
   ],

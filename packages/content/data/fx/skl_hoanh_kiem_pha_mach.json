@@ -116,8 +116,8 @@
     1,
     2
    ],
-   "scale": 2.5,
-   "scaleTo": 3.6,
+   "scale": 2,
+   "scaleTo": 2.88,
    "align": "aim"
   },
   {
@@ -159,8 +159,8 @@
     1,
     6.2
    ],
-   "scale": 9.02,
-   "scaleTo": 11,
+   "scale": 7.22,
+   "scaleTo": 8.8,
    "align": "aim"
   },
   {
@@ -183,8 +183,8 @@
     1.1,
     11
    ],
-   "scale": 2.2,
-   "scaleTo": 2.75
+   "scale": 1.76,
+   "scaleTo": 2.2
   },
   {
    "type": "decal",
@@ -223,8 +223,8 @@
     1.2,
     6
    ],
-   "scale": 3.2,
-   "scaleTo": 3.2,
+   "scale": 2.56,
+   "scaleTo": 2.56,
    "move": {
     "to": "ahead",
     "offset": [
@@ -276,8 +276,8 @@
      0.9,
      15
     ],
-    "scale": 6,
-    "scaleTo": 6,
+    "scale": 4.8,
+    "scaleTo": 4.8,
     "align": "aim"
    }
   ],
@@ -302,8 +302,8 @@
      0.9,
      1
     ],
-    "scale": 4,
-    "scaleTo": 4,
+    "scale": 3.2,
+    "scaleTo": 3.2,
     "align": "aim",
     "move": {
      "to": "ahead",
