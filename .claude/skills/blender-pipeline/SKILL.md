@@ -89,3 +89,7 @@ Phần dưới là thiết kế, chưa có script nào; vị trí quái/NPC hi�
 ## Đã thử, chưa dùng
 
 - **Texture Codex thay Poly Haven cho kit Lạc Kiếm** (24/11/2026, nhánh `ao/three-game-tu-tien-278/codex-tex-trial`, giữ để tham khảo, không PR): Codex sinh 5 texture (ngọc, đá, vữa, ngói, gỗ), liền mạch + normal/roughness suy từ độ sáng. Kết quả: mềm và phẳng hơn Poly Haven, mất vân nứt/gờ sắc (nguồn chỉ ~1254², làm liền mạch gây ghost, normal suy từ độ sáng yếu), lặp ô lộ trên sân lớn; chỉ nhẹ hơn (GLB −34%) vì giảm độ phân giải. Không đưa vào mặc định. Nếu thử lại: nâng 2× và sinh normal riêng, hoặc chỉ dùng cho vật liệu không có ảnh CC0 (ngói lưu ly, ngọc vân). Codex hay kẹt bước copy ảnh và đốt hạn mức: lấy ảnh từ `~/.codex/generated_images` rồi giết cây tiến trình. Chi tiết ở tài liệu đánh giá trên nhánh đó.
+
+## Họa Cảnh (`?style=painted`)
+
+Asset mới của chế độ này (kiến trúc, cây, thẻ cây xa) đi qua bảng phong cách chung của `docs/handbook/painted.md`: ít tông, màu theo bảng, chi tiết mái ngói và vôi vữa vẽ trong shader từ tọa độ mảnh thay vì texture ảnh chụp. Thẻ cây xa bake lại bằng `bake_impostor.py` theo bảng màu painted. Nhân vật cel (viền mực theo ID) CHỜ người dùng quyết sau P7; animation cần clip start, stop, pivot, sprint, thở dốc.

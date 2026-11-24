@@ -129,3 +129,7 @@ Lệnh:
 - `pnpm bench:client`, `pnpm bench:crowd`, `pnpm bench:switch` (skill `perf-budget`).
 - `pnpm test` (có `phases.test.ts`, `fxShapes.test.ts`, `fxTimeline.test.ts`, `fxBudget.test.ts`, `fxBatch.test.ts`), `pnpm content:check`.
 - Sau khi sửa VFX: gọi subagent `vfx-reviewer`.
+
+## Họa Cảnh (`?style=painted`)
+
+Khi viết shader cho chế độ này, theo `docs/handbook/painted.md`: hai tông sáng và tối pha tay từ một bảng chung (`cel2`, `meadowGreen`), không nhiễu hay texture ảnh chụp, chi tiết chỉ ở gần; dịch TỪNG DÒNG từ painted-valley (MIT, © 2026 Patch; dòng đầu file ghi nguồn), giữ hằng số, không "nhìn cho giống"; hậu kỳ chỉ Kuwahara (bỏ qua trời và điểm sáng HDR của VFX), không ACES hay hạt phim. VFX HPL2 giữ chuẩn riêng.

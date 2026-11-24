@@ -8,6 +8,26 @@ Phong cách nền hoạt hình vẽ tay, thử ở Vân Lam khởi đầu. **M�
 - KHÔNG dùng âm thanh Sonniss của bản gốc. KHÔNG tái tạo cảnh/nhân vật của phim nào. KHÔNG commit ảnh chụp hay ảnh tham khảo (ảnh duyệt PR để ở artifact phiên). Texture mới qua `pnpm assets:push`.
 - Vẫn tuân quy tắc chung: lore ở `lore-boundary.md`, chuỗi hiển thị qua i18n, ngân sách perf (<300 draw call, CPU <8 ms, 512 MB texture).
 
+## Nguyên tắc Họa Cảnh
+
+Rút từ painted-valley (xem README và LICENCE-NOTES của nó). **Phạm vi: chế độ `?style=painted` và các bản đồ làm mới theo hướng này.** Mặc định game vẫn là bán tả thực (art-bible v3) cho tới khi người dùng chốt ở P8.
+
+1. **Ít tông, một bảng màu chung.** Mỗi vật có hai màu (sáng, tối) nối bằng một bước ngắn; màu tối pha tay (lạnh hơn, ít bão hòa hơn), không phải màu sáng nhân cho tối. Một bảng dùng chung cho cỏ, đất, đồi, tán cây để cả cảnh là một bức tranh (`palette.ts`, `meadowGreen`).
+2. **Không texture ảnh chụp, không nhiễu ở mọi cỡ.** Nền là mảng màu chậm cộng nét cọ; chi tiết chỉ đặt nơi nét cọ cần (gần người chơi), mờ hết trước khi thành lấm tấm. Xa không có họa tiết mịn (lấp lánh).
+3. **Cảnh xa VẼ MỘT LẦN, rẻ mà rộng.** Núi xa nướng vào một dải sơn (màu sáng, màu tối, chỗ sáng, sương; trộn theo giờ, không nướng lại); mây đắp khối ray-march một lần vào cubemap rồi đứng yên; đồng xa là MỘT texture kèm thẻ cây; các lớp đồi lùi dần trong sương. Không tốn gì mỗi khung.
+4. **Cỏ chi tiết chỉ ở vòng gần.** Lá mảnh theo vòng (gần dày, xa to và thưa) mờ qua nhau theo khoảng cách tới camera; ngoài vòng, đất tự là cỏ vẽ sẵn.
+5. **Hậu kỳ tối giản.** Một lớp Kuwahara làm tròn thành nét cọ (trời và hiệu ứng sáng được bỏ qua); không ACES, hạt phim, bloom mạnh khi painted. VFX giữ chuẩn riêng (HPL2), không bị lớp vẽ làm nhòe.
+6. **Nền vẽ tay, người cel với viền mực.** Người vẽ ba tông phẳng (sáng, tối, nếp gấp), viền mực theo số nhận dạng từng bộ phận. **Hướng nhân vật CHỜ người dùng xem ảnh P7 rồi quyết**; trước đó nhân vật v3 đã duyệt giữ nguyên.
+7. **Animation cần clip chuyển tiếp.** Nhân vật đi bộ trên nền hoạt hình thiếu start, stop, pivot (xoay đột ngột), sprint và nhịp thở dốc (idle mệt) thì đọc là trượt; mỗi bộ cần các clip này (nối với `vfx-animation.md`, Thân Pháp).
+8. **Một hướng mỹ thuật thống nhất.** Mọi asset mới (kiến trúc, cây, prop, thẻ cây) đi qua bảng phong cách của chế độ này; không trộn bán tả thực với painted trong cùng một cảnh.
+9. **Đo khớp, không "nhìn cho giống".** Port từ nguồn phải dịch từng dòng, giữ hằng số, rồi so bằng số (SSIM, ΔE) ở cảnh thử cô lập (`tools/painted-compare`, `?paintedlab=1`) trước khi áp vào địa hình thật.
+10. **Giữ ngân sách.** Dưới 300 draw call, dưới 2 triệu tam giác, CPU dưới 8 ms; số đo trước/sau ở mỗi PR.
+
+### Ghi công
+
+- Code painted-valley: MIT, © 2026 Patch (nguyên văn ở `assets/LICENSES.md`); file nào dịch từ nguồn ghi ở dòng đầu. Art của nguồn: CC0 1.0. Clip chuyển tiếp của nguồn là Universal Animation Library của Quaternius (CC0) và clip riêng của Patch (CC0); ta chỉ tham khảo ý (danh sách clip cần có), không nhập asset.
+- KHÔNG dùng năm âm thanh Sonniss của bản gốc. KHÔNG tái tạo cảnh hay nhân vật của phim nào; không commit ảnh tham khảo hay ảnh chụp của nguồn.
+
 ## Các bước (mỗi bước một PR, tuần tự)
 
 | | Nội dung | Trạng thái |

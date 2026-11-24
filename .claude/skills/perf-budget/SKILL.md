@@ -84,3 +84,7 @@ Khi báo xong việc có ảnh hưởng hiệu năng, ghi số đo trước/sau 
 
 - Công cụ đo bọc `__game.frame`/`__game.onFx`: giữ hai phương thức này trên lớp `Game` (`apps/client/src/game/engine.ts`, phần còn lại nằm ở `game/engine/*.ts`). Tính năng mới vào đúng miền `game/<miền>/`, không nối vào `engine.ts`.
 - `pnpm bench:client`: so draw call/tam giác giữa hai lần đo để chắc không đổi; CPU/fps lệch nhiều khi máy đang chạy worker khác (đo lại lúc rảnh).
+
+## Họa Cảnh (`?style=painted`)
+
+Giữ đúng ngân sách (dưới 300 draw call, dưới 2 triệu tam giác, CPU dưới 8 ms). Mỗi PR Họa Cảnh ghi số trước và sau cùng điểm `?at=` cho `?style=painted` và mặc định, trên cả WebGPU lẫn WebGL2; cảnh xa vẽ một lần không được tốn gì mỗi khung. So chất lượng bằng số ở cảnh thử cô lập (`tools/painted-compare`: SSIM, ΔE). Xem `docs/handbook/painted.md`.
