@@ -30,6 +30,6 @@
   "standard": 2,
   "materials": [
     "sprite",
-    "smoke"
+    "particles"
   ]
 }

@@ -657,8 +657,8 @@ export class FxRunner {
             m.fxA.x = Math.min(1.2, (k / Math.max(sweep, 1e-3)) * 1.2);
             m.fxA.y = erode;
           } else if (kind === 'sprite') {
-            // Sprite vẽ tay: hiện cả hình ngay, tan theo ăn mòn.
-            m.fxA.y = erode;
+            // Sprite vẽ tay: hiện cả hình ngay, tan DẦN theo tuyến tính (khói mỏng đi từ `erodeFrom`), không dùng smoothstep nên khung +150 ms đã thấy thưa.
+            m.fxA.y = Math.min(1.1, Math.max(0, (k - erodeFrom) / Math.max(1e-3, 1 - erodeFrom)) * 1.1);
           } else if (kind === 'burst') {
             m.fxA.x = easeOut(Math.min(1, k * 1.2));
             m.fxA.y = Math.min(1, k * k * 1.4);

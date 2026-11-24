@@ -561,24 +561,22 @@ export function spriteNodes(U: FxUniforms): { color: N; opacity: N } {
   const sRow = floor(sk.div(SPRITE_COLS));
   const ts = texture(spriteAtlas(), vec2(q.x.add(sCol).div(SPRITE_COLS), q.y.add(float(SPRITE_ROWS - 1).sub(sRow)).div(SPRITE_ROWS)));
   const spLum = dot(ts.rgb, vec3(0.3, 0.59, 0.11));
-  const spTier = smoothstep(0.34, 0.88, spLum.sqrt());
+  // Độ sáng cảm nhận của tranh, kéo giãn tương phản: vùng tối = lõi, giữa = thân, sáng = viền/chi tiết (ngón tay, mặt, lưỡi giáo).
+  const spTier = smoothstep(0.2, 0.92, spLum.sqrt());
   const spBody = U.color;
   const spRim = U.b.xyz;
-  const spE = vnoise(q.mul(vec2(9, 12)).add(U.a.z.mul(7)))
-    .mul(0.7)
-    .add(q.y.mul(0.3));
-  const spAlive = dissolve(spE, U.a.y, 0.07);
-  const spEdge = one.sub(smoothstep(U.a.y, U.a.y.add(0.1), spE)).mul(step(0.02, U.a.y));
-  // Giữ màu vẽ tay (tím/lam), kéo lõi tối xuống theo độ sáng để đọc được trên nền đá trắng; viền sáng lạnh nhờ phần sáng của tranh + ánh viền khi tan.
-  const spGrey = vec3(spLum, spLum, spLum);
-  const spCol = min(
-    mix(spGrey, ts.rgb, 0.92)
-      .mul(mix(float(0.26), float(1.3), spTier))
-      .mul(vec3(1.1, 0.9, 1.0))
-      .add(spBody.mul(0.06))
-      .add(spRim.mul(spEdge.mul(0.7).add(smoothstep(0.78, 0.98, spLum.sqrt()).mul(0.25)))),
-    U.maxHdr,
-  );
-  const spOpacity = U.opacity.mul(smoothstep(0.02, 0.6, ts.a)).mul(spAlive);
+  const spCore = spBody.mul(spBody).mul(0.1);
+  // Gradient ba tầng theo bảng màu nhánh: lõi tối → thân tím → viền sáng lạnh, mềm (không cắt cứng).
+  const spRamp = mix(mix(spCore, spBody, smoothstep(0.02, 0.58, spTier)), spRim, smoothstep(0.6, 1.0, spTier));
+  const spPaint = ts.rgb.mul(mix(float(0.35), float(1.2), spTier));
+  // Tan như khói mỏng dần: nhiễu thấp tần + mép mỏng (tranh sáng/trong) tan trước, ngưỡng rộng nên không ra đường cắt răng cưa.
+  const spE = vnoise(q.mul(vec2(5, 7)).add(U.a.z.mul(7)))
+    .mul(0.55)
+    .add(one.sub(ts.a).mul(0.25))
+    .add(q.y.mul(0.2));
+  const spAlive = dissolve(spE, U.a.y, 0.2);
+  const spEdge = one.sub(smoothstep(U.a.y, U.a.y.add(0.16), spE)).mul(step(0.02, U.a.y));
+  const spCol = min(mix(spRamp, spPaint, 0.3).add(spRim.mul(spEdge.mul(0.55))), U.maxHdr);
+  const spOpacity = U.opacity.mul(smoothstep(0.0, 0.85, ts.a)).mul(spAlive);
   return { color: spCol, opacity: spOpacity };
 }

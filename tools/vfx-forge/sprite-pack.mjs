@@ -54,9 +54,9 @@ async function packSheet(sh) {
     rgba[i * 4] = rr;
     rgba[i * 4 + 1] = gg;
     rgba[i * 4 + 2] = bb;
-    // đường cong alpha: cắt nhiễu nền (< 0,14) và làm đặc phần thân (> 0,8)
-    const aa = Math.min(1, Math.max(0, (a - 0.14) / 0.66));
-    rgba[i * 4 + 3] = Math.round(aa * aa * (3 - 2 * aa) * 255);
+    // đường cong alpha mềm: chỉ cắt nhiễu nền (< 0,06), giữ độ trong của khói ở mép
+    const aa = Math.min(1, Math.max(0, (a - 0.06) / 0.88));
+    rgba[i * 4 + 3] = Math.round(aa * 255);
   }
   const cw = Math.floor(W / sh.cols);
   const ch = Math.floor(H / sh.rows);

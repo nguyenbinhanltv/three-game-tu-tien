@@ -34,7 +34,7 @@ export type FxShape =
   | 'card'
   /** Chùm đường gió: bảy vệt mảnh cuộn quanh trục +Z, đầu vệt chạy dọc đường rồi tan (kiểu `wind`, Storm & Wind CC BY). */
   | 'gust'
-  /** Sprite vẽ tay (Họa Pháp Lô 2): một ô của atlas `public/hoa-truc/vfx_sprites.webp` (lưới 4×4) (nền trong suốt) quay mặt về camera, tô ink theo bảng màu nhánh; chọn ô bằng `sprite` (kiểu `art`). */
+  /** Sprite vẽ tay (Họa Pháp Lô 2): một ô của atlas `public/hoa-truc/vfx_sprites.webp` (lưới 4×6) (nền trong suốt) quay mặt về camera, tô ink theo bảng màu nhánh; chọn ô bằng `sprite` (kiểu `art`). */
   | 'sprite'
   /** Tấm flipbook (VS-1): khói mực, tia lửa, bụi, nét bút... phát tuần tự 16 khung theo tiến độ vòng đời; chọn atlas bằng `flip` (kiểu `flip`). */
   | 'flip'
@@ -114,7 +114,7 @@ export const FLIP_ATLASES = ['ink_smoke', 'spark_burst', 'dust_kick', 'slash_str
 export type FlipAtlas = (typeof FLIP_ATLASES)[number];
 
 /**
- * Sprite vẽ tay (Codex, qua `tools/vfx-forge/sprite-pack.mjs`): thứ tự = ô trong atlas 4×4 (hàng trên trước, trái sang phải). Mỗi sprite là khối khói/hình có
+ * Sprite vẽ tay (Codex, qua `tools/vfx-forge/sprite-pack.mjs`): thứ tự = ô trong atlas 4×6 (hàng trên trước, trái sang phải). Mỗi sprite là khối khói/hình có
  * lõi tối + viền sáng lạnh; shader đọc độ sáng làm tầng màu theo bảng màu nhánh (đọc được cả nền sáng lẫn đêm).
  */
 export const FX_SPRITES = [
@@ -134,6 +134,14 @@ export const FX_SPRITES = [
   'hon_wraith',
   'hon_whips',
   'hon_wisps',
+  'hon_thread_s1',
+  'hon_thread_s2',
+  'hon_ring',
+  'hon_veil',
+  'hon_face_pale',
+  'hon_face_horn',
+  'hon_bone_hand',
+  'hon_swarm9',
 ] as const;
 export type FxSprite = (typeof FX_SPRITES)[number];
 
