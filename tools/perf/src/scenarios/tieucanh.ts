@@ -1,5 +1,6 @@
 // Chân Cảnh M1–M5 (pilot Lạc Kiếm Tông): ảnh tiểu cảnh camera chéo, 6 điểm × 4 thời điểm × 2 cỡ ảnh, cùng góc trước/sau, kèm số đo.
 //   pnpm shots tieucanh --out <thư mục> [--tag truoc|sau] [--moods dawn,day,dusk,night] [--views 720p,1080p] [--points a,b|all] [--perf 1] [--at x,z;x,z] (tọa độ tương đối tâm)
+//   `--deck 1` đi bộ lên cầu treo, ảnh đầu cầu/giữa cầu/bờ kia (ghi cao độ người);
 //   `--clip 1` quay đoạn đi bộ xuyên tông môn (webm ~60 s, 1080p, `--mood`); `--hit 1` thêm khung +30 ms sau trúng đòn ở điểm đánh.
 import { SECT } from '@dtl/shared';
 import type { Page } from 'playwright';
@@ -15,19 +16,28 @@ export const POINTS: { name: string; x: number; z: number }[] = [
   { name: 'aosen', x: -60, z: 58 },
   { name: 'kiembia', x: 66, z: 58 },
   { name: 'loivach', x: -112, z: 69 },
-  { name: 'cautreo', x: -134, z: 72 },
+  { name: 'cautreo', x: -136, z: 64 },
   { name: 'thachlam', x: 96, z: -8 },
 ];
-/** Lộ trình clip (tương đối tâm): cổng bài → đại lộ → ao sen → lối men vách → cầu treo → kiếm bia. */
+/** Lộ trình clip (tương đối tâm): cổng bài → đại lộ → ao sen → lối men vách → ĐI QUA cầu treo sang bờ bên kia và về → kiếm bia. */
 const ROUTE: [number, number][] = [
   [0, 100],
   [-30, 80],
   [-58, 56],
   [-92, 54],
-  [-116, 60],
-  [-134, 70],
-  [-146, 92],
-  [-120, 78],
+  [-107.5, 64.5],
+  [-116.5, 73.5],
+  [-119.5, 78],
+  [-125.5, 73.5],
+  [-135.7, 63],
+  [-137.5, 69.8],
+  [-143, 91],
+  [-148.9, 112.2],
+  [-143, 91],
+  [-137.5, 69.8],
+  [-125.5, 73.5],
+  [-119.5, 78],
+  [-116.5, 73.5],
   [-40, 70],
   [30, 62],
   [66, 58],
@@ -42,6 +52,7 @@ async function walkTo(page: Page, x: number, z: number, vp: [number, number]): P
           camera: { updateMatrixWorld(): void };
           renderPos: {
             x: number;
+            y: number;
             z: number;
             constructor: new (x: number, y: number, z: number) => { project(c: unknown): { x: number; y: number } };
           };
@@ -51,7 +62,7 @@ async function walkTo(page: Page, x: number, z: number, vp: [number, number]): P
         const d = Math.hypot(dx, dz);
         const k = Math.min(1, 9 / Math.max(d, 1e-6));
         g.camera.updateMatrixWorld();
-        const v = new g.renderPos.constructor(g.renderPos.x + dx * k, 1, g.renderPos.z + dz * k).project(g.camera);
+        const v = new g.renderPos.constructor(g.renderPos.x + dx * k, g.renderPos.y, g.renderPos.z + dz * k).project(g.camera);
         return { d, sx: (v.x * 0.5 + 0.5) * innerWidth, sy: (-v.y * 0.5 + 0.5) * innerHeight };
       },
       [x, z],
@@ -65,12 +76,55 @@ async function walkTo(page: Page, x: number, z: number, vp: [number, number]): P
   }
 }
 
+/** Vị trí người (thế giới) từ client. */
+const posOf = (page: Page) =>
+  page.evaluate(() => ({
+    x: (window.__game as unknown as { renderPos: { x: number; y: number; z: number } }).renderPos.x,
+    y: (window.__game as unknown as { renderPos: { x: number; y: number; z: number } }).renderPos.y,
+    z: (window.__game as unknown as { renderPos: { x: number; y: number; z: number } }).renderPos.z,
+  }));
+
+/**
+ * Đi tới (x, z) bằng WASD (không phụ thuộc vị trí chuột/HUD): đo hướng của W và D lúc đầu (camera chéo khóa góc), rồi giữ phím theo vòng lặp kín.
+ * Dừng khi cách đích < 1,2 m hoặc quá `maxMs`.
+ */
+async function keyWalk(page: Page, x: number, z: number, maxMs = 30000): Promise<void> {
+  const probe = async (key: string) => {
+    const a = await posOf(page);
+    await page.keyboard.down(key);
+    await sleep(450);
+    await page.keyboard.up(key);
+    await sleep(150);
+    const b = await posOf(page);
+    const d = Math.hypot(b.x - a.x, b.z - a.z) || 1;
+    return { x: (b.x - a.x) / d, z: (b.z - a.z) / d };
+  };
+  const fwd = await probe('w');
+  const right = await probe('d');
+  const t0 = Date.now();
+  while (Date.now() - t0 < maxMs) {
+    const p = await posOf(page);
+    const dx = x - p.x;
+    const dz = z - p.z;
+    const d = Math.hypot(dx, dz);
+    if (d < 1.2) return;
+    const f = (dx * fwd.x + dz * fwd.z) / d;
+    const rr = (dx * right.x + dz * right.z) / d;
+    const keys = [f > 0.38 ? 'w' : f < -0.38 ? 's' : '', rr > 0.38 ? 'd' : rr < -0.38 ? 'a' : ''].filter(Boolean);
+    for (const k of keys) await page.keyboard.down(k);
+    await sleep(d > 6 ? 250 : 100);
+    for (const k of keys) await page.keyboard.up(k);
+    await sleep(40);
+  }
+}
+
 const SIZES: Record<string, [number, number]> = { '720p': [1280, 720], '1080p': [1920, 1080] };
 
 export default {
   name: 'tieucanh',
   desc: 'Chân Cảnh M: ảnh tiểu cảnh Lạc Kiếm Tông (6 điểm × 4 giờ × 720p/1080p, camera chéo) + đo hiệu năng + clip đi bộ',
-  usage: '[--tag truoc|sau] [--moods dawn,day,dusk,night] [--views 720p,1080p] [--points a,b|all] [--perf 1] [--hit 1] [--clip 1]',
+  usage:
+    '[--tag truoc|sau] [--moods dawn,day,dusk,night] [--views 720p,1080p] [--points a,b|all] [--perf 1] [--hit 1] [--clip 1] [--deck 1]',
   async run(r) {
     const tag = opt('--tag', 'sau');
     const only = list('--points', 'all');
@@ -118,6 +172,45 @@ export default {
           if (flag('--perf')) perf[`${view}-${mood}-${p.name}`] = await perfSample(page);
         }
         await ctx.close();
+      }
+    }
+    if (flag('--deck')) {
+      // Đứng TRÊN ván cầu treo (đi bộ thật bằng chuột phải, server quyết định vị trí): ảnh giữa nhịp + ảnh khi sang tới bờ bên kia; ghi cao độ người so với mặt đất.
+      for (const view of list('--views', '720p,1080p')) {
+        for (const mood of list('--moods', 'day,dusk')) {
+          const { ctx, page } = await r.open({
+            name: `TcDeck${mood[0]}${view[0]}`,
+            quality: 'high',
+            hide: 'chat',
+            viewport: SIZES[view]!,
+            query: { mood, cam: 'iso', quiet: 1 },
+            extra: opt('--query', ''),
+            seenIntro: true,
+            warnings: true,
+          });
+          await gm(page, 'level 15', 2500);
+          await gm(page, 'god on', 2500);
+          await gm(page, 'killall', 2500);
+          await tp(page, SECT.x - 135.7, SECT.z + 63);
+          await sleep(5000);
+          for (const [wx, wz, label] of [
+            [-137.5, 69.8, 'dau-cau'],
+            [-143, 91, 'giua-cau'],
+            [-148.9, 112.2, 'bo-kia'],
+          ] as const) {
+            await keyWalk(page, SECT.x + wx, SECT.z + wz);
+            await sleep(800);
+            perf[`deck-${view}-${mood}-${label}`] = await page.evaluate(() => {
+              const g = window.__game as unknown as {
+                renderPos: { x: number; y: number; z: number };
+                heightAt?: (x: number, z: number) => number;
+              };
+              return { x: g.renderPos.x, y: g.renderPos.y, z: g.renderPos.z };
+            });
+            await snap(page, r.out, `${tag}-${view}-${mood}-${label}.png`, { wait: 1500 });
+          }
+          await ctx.close();
+        }
       }
     }
     if (flag('--hit')) {
