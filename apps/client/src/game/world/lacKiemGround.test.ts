@@ -5,13 +5,12 @@ import { SECT } from '@dtl/shared';
 import { buildGroundGeometry, groundLayout, groundStats } from './lacKiemGround';
 
 describe('lacKiemGround (Chân Cảnh M3)', () => {
-  it('tất định, ≤ 5 draw call (một mesh/loại) và ≤ 25k tam giác', () => {
+  it('tất định, 6 draw call (một mesh/loại) và ≤ 40k tam giác', () => {
     const a = groundStats();
     expect(groundStats()).toEqual(a);
-    expect(a.kinds).toBeLessThanOrEqual(5);
-    expect(a.kinds).toBe(5);
+    expect(a.kinds).toBe(6);
     expect(a.tris).toBeGreaterThan(500);
-    expect(a.tris).toBeLessThan(25_000);
+    expect(a.tris).toBeLessThan(40_000);
   });
 
   it('có đủ năm loại: vết chân, vũng nước, gạch vỡ, ấn trận, rễ', () => {

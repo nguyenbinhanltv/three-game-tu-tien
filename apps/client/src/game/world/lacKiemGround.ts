@@ -29,7 +29,7 @@ import { vnoise } from '../../render/materials/isoDetail';
  * Bố cục (tọa độ tương đối tâm tông môn): `groundLayout()`; lý do chọn chỗ: `docs/map/lac-kiem-tieu-canh.md` (M3).
  */
 
-export type DecalKind = 'foot' | 'puddle' | 'crack' | 'seal' | 'root';
+export type DecalKind = 'foot' | 'puddle' | 'crack' | 'seal' | 'root' | 'wash';
 
 /** Dải theo đường gấp khúc (vệt chân/vệt mòn). */
 export interface TrailDef {
@@ -39,7 +39,7 @@ export interface TrailDef {
 }
 /** Mảnh vuông/tròn quay `yaw`, nửa cạnh (hx, hz). */
 export interface PatchDef {
-  kind: Exclude<DecalKind, 'foot'>;
+  kind: Exclude<DecalKind, 'foot' | 'wash'>;
   x: number;
   z: number;
   hx: number;
@@ -68,10 +68,31 @@ function puddles(cx: number, cz: number, r: number, n: number, seed: number, siz
     const z = cz + Math.sin(a) * d;
     if (slopeAt(x, z) > PUDDLE_MAX_TAN) continue;
     if (Math.hypot(x - TC_POND.x, z - TC_POND.z) < TC_POND.r + 3.2) continue; // không đè lên mặt ao
-    const s = (0.55 + hash01(seed, i, 3) * 0.85) * size;
+    const s = (0.9 + hash01(seed, i, 3) * 1.3) * size;
     out.push({ kind: 'puddle', x, z, hx: s * 1.35, hz: s, yaw: hash01(seed, i, 4) * Math.PI, plaza: false });
   }
   return out;
+}
+
+/** Điểm kể chuyện: chỗ mặt đất được "bày" dày (lá rụng, rêu, đất trọc). [x, z, bán kính, mức]. */
+const HOT: [number, number, number, number][] = [
+  [0, 112, 16, 0.9], // hai bên cổng bài
+  [TC_POND.x, TC_POND.z, 20, 1],
+  [66, 62, 17, 1],
+  [96, -8, 17, 1],
+  [-112, 70, 16, 0.9],
+  [-136, 66, 14, 0.9],
+  [-52, 4, 12, 0.8],
+  [52, 4, 12, 0.8],
+];
+/** Mật độ "kể chuyện" tại (x, z) ∈ [0,1]: đậm ở điểm kể chuyện và rìa sân, sạch ở lối chính (đại lộ) và dưới chân công trình giữa sân. */
+export function groundWeight(x: number, z: number): number {
+  let w = 0.28;
+  for (const [hx, hz, r, k] of HOT) w = Math.max(w, k * Math.max(0, 1 - Math.hypot(x - hx, z - hz) / r));
+  const d = Math.hypot(x, z);
+  w = Math.max(w, Math.min(1, Math.max(0, (d - 62) / 30)) * 0.85); // rìa sân
+  const avenue = Math.max(0, 1 - Math.max(0, Math.abs(x) - 5) / 9) * (z > -30 && z < 140 ? 1 : 0); // đại lộ giữa
+  return w * (1 - 0.92 * avenue);
 }
 
 /** Bố cục tất định. Chỗ đặt khớp tiểu cảnh (docs/map/lac-kiem-tieu-canh.md). */
@@ -84,7 +105,7 @@ export function groundLayout(): GroundLayout {
         [40, 63],
         [56, 60],
       ],
-      hw: 1.5,
+      hw: 2,
     },
     {
       pts: [
@@ -93,7 +114,7 @@ export function groundLayout(): GroundLayout {
         [92, 8],
         [96, -4],
       ],
-      hw: 1.5,
+      hw: 2,
     },
     // từ sân tới đầu lối men vách (phần sau đã lát phiến đá)
     {
@@ -102,7 +123,7 @@ export function groundLayout(): GroundLayout {
         [-62, 50],
         [-92, 54],
       ],
-      hw: 1.5,
+      hw: 2,
     },
   ];
   const patches: PatchDef[] = [];
@@ -268,6 +289,9 @@ export function buildGroundGeometry(layout = groundLayout()): Map<DecalKind, { a
     append(e.acc, g);
     e.tris += g.idx.length / 3;
   });
+  const wash = get('wash');
+  wash.acc = washGeo();
+  wash.tris = wash.acc.idx.length / 3;
   for (const p of layout.patches) {
     const e = get(p.kind);
     const g = patchGeo(p, p.kind === 'puddle' ? 8 : 12);
@@ -275,6 +299,42 @@ export function buildGroundGeometry(layout = groundLayout()): Map<DecalKind, { a
     e.tris += g.idx.length / 3;
   }
   return out;
+}
+
+/** Lớp "wash": một lưới thưa phủ cả sân, trọng số mật độ theo đỉnh (aP.y); lá, rêu, đất trọc vẽ bằng nhiễu thế giới trong shader. */
+function washGeo(): Acc {
+  const a = empty();
+  const x0 = -150;
+  const z0 = -110;
+  const step = 3;
+  const nx = 100;
+  const nz = 90;
+  const id = new Map<number, number>();
+  const vtx = (i: number, j: number): number => {
+    const k = j * (nx + 1) + i;
+    let v = id.get(k);
+    if (v === undefined) {
+      const x = x0 + i * step;
+      const z = z0 + j * step;
+      v = a.pos.length / 3;
+      a.pos.push(x, gy(x, z) + 0.045, z);
+      a.uv.push(0, 0);
+      a.seed.push(0, groundWeight(x, z), 0);
+      id.set(k, v);
+    }
+    return v;
+  };
+  for (let j = 0; j < nz; j++)
+    for (let i = 0; i < nx; i++) {
+      const w = Math.max(groundWeight(x0 + i * step, z0 + j * step), groundWeight(x0 + (i + 1) * step, z0 + (j + 1) * step));
+      if (w < 0.06) continue;
+      const p = vtx(i, j);
+      const q = vtx(i + 1, j);
+      const r = vtx(i, j + 1);
+      const t = vtx(i + 1, j + 1);
+      a.idx.push(p, r, q, q, r, t);
+    }
+  return a;
 }
 
 /** Số liệu cho test: số loại (draw call) và tam giác. */
@@ -324,8 +384,12 @@ function footMaterial(): THREE.MeshStandardNodeMaterial {
   const print = max(smoothstep(1.0, 0.6, toe), smoothstep(1.0, 0.6, heel)).mul(smoothstep(hw.mul(0.9), hw.mul(0.5), x.abs()));
   // chỉ một phần dấu chân còn rõ (mòn dần): dựa trên nhiễu theo ô
   const keep = smoothstep(0.35, 0.6, vnoise(vec2(i.mul(1.7), p.x.mul(9))));
-  const a = clamp(worn.mul(0.5).add(print.mul(keep).mul(0.7)), 0, 0.85).mul(ends);
-  m.colorNode = mix(vec3(0.07, 0.05, 0.032), vec3(0.025, 0.017, 0.011), print.mul(keep));
+  // hai vệt bánh xe (rãnh sâu, hai bên tim 0,6·hw), đứt quãng theo nhiễu
+  const rut = smoothstep(0.14, 0.04, x.abs().sub(hw.mul(0.6)).abs())
+    .mul(smoothstep(0.3, 0.55, vnoise(vec2(s.mul(0.45), x.sign().mul(3.7)))))
+    .mul(worn);
+  const a = clamp(worn.mul(0.85).add(print.mul(keep).mul(0.6)).add(rut.mul(0.5)), 0, 0.95).mul(ends);
+  m.colorNode = mix(mix(vec3(0.2, 0.14, 0.085), vec3(0.06, 0.042, 0.027), rut), vec3(0.03, 0.02, 0.013), print.mul(keep));
   m.opacityNode = a;
   return m;
 }
@@ -426,14 +490,48 @@ function rootMaterial(): THREE.MeshStandardNodeMaterial {
   return m;
 }
 
+/** Lá rụng gom đống, rêu loang, đất trọc: ba lớp nhiễu thế giới, độ dày theo trọng số đỉnh (aP.y). */
+function washMaterial(): THREE.MeshStandardNodeMaterial {
+  const m = baseMat();
+  m.polygonOffsetFactor = -1;
+  m.polygonOffsetUnits = -1; // dưới các decal có chủ đích
+  const p = wp();
+  const w = aP().y;
+  const big = vnoise(p.mul(0.07).add(vec2(11, 3)));
+  const mid = vnoise(p.mul(0.21).add(vec2(2, 17)));
+  const fine = vnoise(p.mul(1.7));
+  // đất trọc: vài mảng lớn, mép rách theo nhiễu mịn
+  const bare = smoothstep(0.5, 0.56, big.mul(0.7).add(mid.mul(0.3)).add(fine.sub(0.5).mul(0.12))).mul(w);
+  // rêu: mảng vừa, xanh đậm
+  const moss = smoothstep(0.46, 0.6, mid.mul(0.65).add(vnoise(p.mul(0.6).add(5)).mul(0.35))).mul(w.mul(0.9));
+  // lá rụng: đống (cụm nhiễu thấp tần) × từng chiếc lá (nhiễu cao tần ngưỡng)
+  const pile = smoothstep(0.5, 0.68, vnoise(p.mul(0.33).add(vec2(7, 1)))).mul(w);
+  const leafA = smoothstep(0.58, 0.65, vnoise(p.mul(3.4).add(vec2(3, 9))));
+  const leafB = smoothstep(0.6, 0.67, vnoise(p.mul(5.2).add(vec2(8, 2))));
+  const leaf = max(leafA, leafB)
+    .mul(pile.mul(1.4).add(w.mul(0.08)))
+    .clamp(0, 1);
+  const tone = vnoise(p.mul(1.3));
+  const leafCol = mix(
+    mix(vec3(0.15, 0.095, 0.04), vec3(0.2, 0.16, 0.07), smoothstep(0.35, 0.6, tone)),
+    vec3(0.12, 0.18, 0.05),
+    smoothstep(0.62, 0.8, tone),
+  );
+  const col = mix(mix(vec3(0.1, 0.075, 0.045), vec3(0.04, 0.1, 0.025), moss.mul(1.2).clamp(0, 1)), leafCol, leaf);
+  m.colorNode = col;
+  m.opacityNode = clamp(max(bare.mul(0.9), max(moss.mul(0.7), leaf.mul(0.78))), 0, 0.95);
+  return m;
+}
+
 const MATERIALS: Record<DecalKind, () => THREE.Material> = {
+  wash: washMaterial,
   foot: footMaterial,
   puddle: puddleMaterial,
   crack: crackMaterial,
   seal: sealMaterial,
   root: rootMaterial,
 };
-const ORDER: Record<DecalKind, number> = { foot: 1, crack: 2, root: 3, puddle: 4, seal: 5 };
+const ORDER: Record<DecalKind, number> = { wash: 0, foot: 1, crack: 2, root: 3, puddle: 4, seal: 5 };
 
 export class LacKiemGround {
   readonly group = new THREE.Group();

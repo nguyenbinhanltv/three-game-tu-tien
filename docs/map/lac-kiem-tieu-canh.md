@@ -33,7 +33,7 @@ vài hác tự nhiên sâu 10–30 m ở vành ngoài. Chọn hác tại (−146
 ## M3: mặt đất kể chuyện
 
 Người chơi nhìn mặt đất ~90% thời gian, nên thêm lớp decal dẹt bám địa hình (`apps/client/src/game/world/lacKiemGround.ts`, tắt bằng `?ground=0`).
-Client-only, tất định, không va chạm; dẹt ≤ 0,15 m nên không bao giờ che người/mục tiêu của camera chéo (không cần sight fade). Mỗi loại gộp MỘT mesh (5 draw call), thủ tục hoàn toàn (không texture mới).
+Client-only, tất định, không va chạm; dẹt ≤ 0,15 m nên không bao giờ che người/mục tiêu của camera chéo (không cần sight fade). Mỗi loại gộp MỘT mesh (6 draw call), thủ tục hoàn toàn (không texture mới).
 
 | Loại | Chỗ đặt | Ghi chú |
 |---|---|---|
@@ -41,10 +41,11 @@ Client-only, tất định, không va chạm; dẹt ≤ 0,15 m nên không bao g
 | Vũng nước (`puddle`) | quanh ao, trước cổng, quanh kiếm bia, thạch lâm | chỉ chỗ gần phẳng (dốc ≤ ~5°), không đè mặt ao; roughness thấp phản chiếu trời |
 | Gạch vỡ + đá vụn (`crack`) | sân lát phía đông đại lộ | đường nứt đen + mảnh đá sáng, nâng 0,14 m trên mặt sân lát |
 | Ấn trận (`seal`) | kiếm bia, thạch lâm, đầu cầu, thoáng dưới cổng bài | vòng + vạch khắc + sao tám cánh, mòn theo nhiễu, nhịp thở; vàng/ngọc |
+| Lớp "wash" (`wash`) | cả sân (lưới thưa 3 m, mật độ `groundWeight`: đậm ở điểm kể chuyện + rìa, sạch ở đại lộ) | lá rụng gom đống, rêu loang, mảng đất trọc, vẽ bằng nhiễu thế giới trong shader; đây là lớp khiến mặt đất "khác ngay" khi nhìn |
 | Rễ cây (`root`) | ven ao, bờ hác, chân đồi thạch lâm, hai bên cổng | tám nhánh tỏa mảnh dần, bỏ ngẫu nhiên vài nhánh |
 
 Bẫy: đường lát đá trước cổng bài và phiến lối men vách là vật 3D nằm TRÊN mặt đất, decal bị che nên không đặt ở đó. Dải tam giác phải quay mặt lên (đã gặp: bị cắt mặt sau nên mất vết chân). Cộng sáng (additive) làm ấn trận trắng bệch giữa ngày, dùng pha trộn thường.
-Ngân sách đo (`pnpm shots tieucanh --perf 1`): +5 draw call, +~8k tam giác, khung không đổi trong nhiễu đo.
+Ngân sách đo (`pnpm shots tieucanh --perf 1`, trung bình 24 ảnh A/B): +~7 draw call, +~39k tam giác (+4%), khung ~+1,6 ms (lớp wash trong suốt phủ rộng; nhiễu đo ±1 ms). Ảnh cận: `--dpr 2`.
 
 ## Sight fade (bắt buộc)
 
