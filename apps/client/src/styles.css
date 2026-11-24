@@ -433,11 +433,7 @@ kbd {
 .ts-card {
   pointer-events: auto;
   margin-top: auto;
-  margin-bottom: min(9vh, 40px);
-  /* Không cao quá phần màn hình còn lại dưới phụ đề: nội dung dài hơn thì cuộn trong khung (nút vào game dính đáy, xem boot.css). */
-  max-height: calc(100% - min(9vh, 40px));
-  overflow-y: auto;
-  scrollbar-width: thin;
+  margin-bottom: 9vh;
   width: min(92vw, 400px);
   padding: 18px 28px 22px;
   text-align: center;
@@ -451,16 +447,23 @@ kbd {
   color: var(--u-p-text-ink);
   animation: ts-card-in 0.6s ease-out both;
 }
-/* Màn thấp (≤ 1000 px cao): khung rộng hơn để các hàng lựa chọn nằm một dòng, gọn lại; cao tối đa đã đặt ở `.ts-card`. */
-@media (max-height: 1000px) {
+/* Màn thấp (≤ 800 px): khung đăng nhập hạ xuống và gọn lại để dòng phụ đề dưới tiêu đề không chạm mép trên khung. */
+@media (max-height: 800px) {
   .ts-sub {
-    margin-bottom: 14px;
+    margin-bottom: 22px;
   }
   .ts-card {
     width: min(92vw, 620px);
-    margin-bottom: min(3vh, 24px);
-    max-height: calc(100% - min(3vh, 24px));
-    padding: 12px 28px 0;
+    margin-bottom: 3vh;
+    padding: 12px 28px 14px;
+    max-height: calc(84vh - clamp(64px, 10.5vw, 148px) * 1.1 - 56px);
+    overflow-y: auto;
+    scrollbar-width: thin;
+  }
+}
+@media (max-height: 1000px) {
+  .ts-sub {
+    margin-bottom: 14px;
   }
 }
 @keyframes ts-card-in {

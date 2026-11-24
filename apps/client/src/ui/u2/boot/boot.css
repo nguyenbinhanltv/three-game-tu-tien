@@ -350,6 +350,8 @@
 /* Đăng nhập / tạo nhân vật trên màn thấp (lỗi "không thấy nút vào game"): thẻ là cột flex, nội dung cuộn trong `.login-scroll`,
    thanh hành động `.login-actions` nằm NGOÀI vùng cuộn (nền đặc, viền + chuyển mờ phía trên) nên không đè lên gì. Cao tối đa ở `.ts-card`. */
 #root .ts-card.login-card {
+  margin-bottom: min(9vh, 40px);
+  max-height: calc(100% - min(9vh, 40px));
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -365,8 +367,8 @@
 #root .ts-card.login-card .login-actions {
   position: relative;
   flex: none;
-  margin: 0 -28px;
-  padding: 10px 28px 12px;
+  margin: 0 -22px 6px;
+  padding: 10px 22px 8px;
   background: var(--u-thanh-0);
   border-top: 1px solid var(--u-gold-line);
 }
@@ -384,6 +386,12 @@
   margin: 0 0 6px;
 }
 @media (max-height: 1000px) {
+  #root .ts-card.login-card {
+    width: min(92vw, 620px);
+    margin-bottom: min(3vh, 24px);
+    max-height: calc(100% - min(3vh, 24px));
+    padding: 12px 28px 0;
+  }
   #root .ts-card.u2-card .login-form {
     margin-top: 8px;
     gap: 6px;
