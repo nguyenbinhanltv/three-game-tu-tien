@@ -209,7 +209,9 @@ function bladeMaterial(
   live = live.mul(smoothstep(0, 0.22, growth.sub(q.y.mul(0.78))));
   live = live.toVar();
   // (the source moves a dead blade out of the clip volume; here it collapses to its root: the same, nothing drawn)
-  let alive: N = step(0.0000001, live);
+  // ?dbg=bladelive: vẽ mọi lá (dày gấp 8) tô màu (live, keep, growth) tính Ở VERTEX, để so với bản tính ở fragment
+  const DBG = new URLSearchParams(location.search).get('dbg') === 'bladelive';
+  let alive: N = DBG ? float(1) : step(0.0000001, live);
   alive = alive.toVar();
 
   // tState: 128 = no bend; cut height 255 = uncut; tFire: 0
@@ -319,7 +321,7 @@ function bladeMaterial(
   // stubble is the thick foot of the blade
   w = select(isCut, w.mul(float(1).add(float(1).sub(sCut).mul(0.7))), w);
   w = w.toVar();
-  w = w.mul(alive);
+  w = w.mul(alive).mul(DBG ? 8 : 1);
   w = w.toVar();
 
   let phi: N = theta0.add(A.mul(s));
@@ -416,6 +418,6 @@ function bladeMaterial(
   material.positionNode = world.sub(modelPosition);
   // fragment: c = vAlbedo * meadowLight(vLight.x) * mix(0.84, 1.0, vMisc.y), then the haze (no fire: it is 0 here)
   const c: N = vAlbedo.mul(F.meadowLight(vLightX)).mul(mix(0.84, 1.0, vUp));
-  material.colorNode = F.applyFog(c, positionWorld);
+  material.colorNode = DBG ? vec3(live.toVarying(), keep.toVarying(), growth.toVarying()) : F.applyFog(c, positionWorld);
   return material;
 }
