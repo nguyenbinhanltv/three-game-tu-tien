@@ -110,9 +110,9 @@ export const V3_MODELS_B = { m: 'chr_v3b_lac_kiem_nam', f: 'chr_v3b_lac_kiem_nu'
 /** Bản v3b2: cùng model v3b, vạt 12 chuỗi lò xo; cùng với cải tiến lò xo ở client (gấu cứng hơn, viên nang tay, vạt nằm lên đùi khi ngồi) là mặc định của `?chr=v3`; `?v3model=b` về v3b để so. */
 export const V3_MODELS_B2 = { m: 'chr_v3b2_lac_kiem_nam', f: 'chr_v3b2_lac_kiem_nu' } as const;
 const V3_PICK = FLAGS.v3Model;
-/** Bản v3b3: v3b2 + chuỗi lò xo dải đai/ngọc bội (`tassel`, Thân Pháp T6); chọn bằng `?v3model=c` cho tới khi người dùng duyệt ngoại hình. */
+/** Bản v3b3: v3b2 + chuỗi lò xo dải đai/ngọc bội (`tassel`, Thân Pháp T6); MẶC ĐỊNH cho bộ Lạc Kiếm và nhánh của nó (Hàn Giao, Trấn Khích, Vô Danh Kiếm). `?v3model=b2|b|a` về bản cũ để so ảnh. */
 export const V3_MODELS_B3 = { m: 'chr_v3b3_lac_kiem_nam', f: 'chr_v3b3_lac_kiem_nu' } as const;
-export const V3_MODELS = V3_PICK === 'a' ? V3_MODELS_A : V3_PICK === 'b' ? V3_MODELS_B : V3_PICK === 'c' ? V3_MODELS_B3 : V3_MODELS_B2;
+export const V3_MODELS = V3_PICK === 'a' ? V3_MODELS_A : V3_PICK === 'b' ? V3_MODELS_B : V3_PICK === 'b2' ? V3_MODELS_B2 : V3_MODELS_B3;
 /** Asset dùng lò xo v2 (`chr_v3b2_*` và các bộ dựng hàng loạt `chr_v3_<bộ>_*`): hệ số cứng gấu vạt, viên nang tay, phình viên nang khi ngồi. */
 export const isSpring2 = (assetId: string | undefined): boolean =>
   !!assetId &&
@@ -490,6 +490,8 @@ const _sm1 = new THREE.Vector3();
 const _tq = new THREE.Quaternion();
 const _tq2 = new THREE.Quaternion();
 /** Lò xo v3 (vạt dài + tóc): cứng vừa, cản nhiều, góc lệch hẹp để vạt không xé/xuyên khi ngồi, lăn, chém (N-4). */
+/** góc lệch tối đa (độ) mỗi đốt của chuỗi `tassel`: 20° cho biên độ đỉnh ≈ 0,7 rad khi chạy→dừng (đo: 42° chung nhóm tóc 1,04; 28° 0,94 rad). */
+export const TASSEL_MAX_ANGLE = 20;
 export const V3_SPRING: SpringParams = { stiffness: 130, drag: 8, maxAngle: 30, maxInward: 8 };
 
 /**
@@ -626,6 +628,8 @@ export class MannequinCharacter implements CharacterView {
   /** Lò xo vạt riêng của asset v2 (null với v3/v3b: vạt nằm chung trong `springs`). */
   private skirtSprings: SpringBones | null = null;
   private sleeveSprings: SpringBones | null = null;
+  /** Dải đai/ngọc bội (`dtl_o_tassel_*`, chr_v3b3): nhóm riêng, góc hẹp hơn tóc (đo b3: 1,0 rad khi chung nhóm tóc, đích ~0,7 như tóc). */
+  private tasselSprings: SpringBones | null = null;
   /** Số suất LOD0 mà nhân vật này chiếm (entities.applyLodBudget): LOD0 gốc Tripo ~100k tam giác (gồm cả mesh `_oldsleeve`) tính 3 suất (`lod0Slots`: ≤4 người LOD0 trong ngân sách 12). */
   get lod0Cost(): number {
     let tris = 0;
@@ -813,7 +817,17 @@ export class MannequinCharacter implements CharacterView {
       const isSleeve = (n: string) => n.startsWith('dtl_o_sleeve_');
       const skirt = defs.filter((d) => d.bone.startsWith('dtl_o_skirt_'));
       const sleeve = tune?.sleeve ? defs.filter((d) => isSleeve(d.bone)) : [];
-      const rest = defs.filter((d) => !d.bone.startsWith('dtl_o_skirt_') && !(tune?.sleeve && isSleeve(d.bone)));
+      const tassel = defs.filter((d) => d.bone.startsWith('dtl_o_tassel_'));
+      const rest = defs.filter(
+        (d) => !d.bone.startsWith('dtl_o_skirt_') && !d.bone.startsWith('dtl_o_tassel_') && !(tune?.sleeve && isSleeve(d.bone)),
+      );
+      if (tassel.length && !shadow)
+        this.tasselSprings = new SpringBones(
+          this.rig,
+          tassel,
+          { ...(ANIM_FX.spring ? SPRING_TP : V3_SPRING), maxAngle: TASSEL_MAX_ANGLE },
+          colliderDefs(this.rig, tpl.height),
+        );
       if (rest.length && !shadow)
         this.springs = new SpringBones(this.rig, rest, ANIM_FX.spring ? SPRING_TP : V3_SPRING, colliderDefs(this.rig, tpl.height));
       if (sleeve.length && !shadow)
@@ -1659,17 +1673,19 @@ export class MannequinCharacter implements CharacterView {
     const drawNow = this.combatT > 0 || !!a.combat;
     if (drawNow !== this.drawn) this.mountBlade(drawNow);
     // Lò xo vạt: chỉ LOD0 và trong khung nhìn; ma trận thế giới của xương phải mới (root vừa được đặt vị trí).
-    if (this.springs || this.skirtSprings || this.sleeveSprings) {
+    if (this.springs || this.skirtSprings || this.sleeveSprings || this.tasselSprings) {
       if (this.lodLevel === 0 && this.inner.visible) {
         this.root.updateMatrixWorld(true);
         const sit = this.spring2 && (this.baseName === 'Sitting_Idle_Loop' || this.baseName === 'pose_tam_thien');
         this.colScale += ((sit ? SPRING2.sitScale : 1) - this.colScale) * Math.min(1, this.acc * 6);
         this.springs?.update(this.acc, IDENT);
         this.sleeveSprings?.update(this.acc, IDENT);
+        this.tasselSprings?.update(this.acc, IDENT);
         this.skirtSprings?.update(this.acc, IDENT, this.colScale);
       } else {
         this.springs?.reset();
         this.sleeveSprings?.reset();
+        this.tasselSprings?.reset();
         this.skirtSprings?.reset();
       }
     }
@@ -1678,7 +1694,7 @@ export class MannequinCharacter implements CharacterView {
       this.cloth.setActive(on);
       const sitNow = this.baseName === 'Sitting_Idle_Loop' || this.baseName === 'pose_tam_thien';
       this.clothSit += ((sitNow ? 1 : 0) - this.clothSit) * Math.min(1, this.acc * 6);
-      if (on) this.cloth.update(this.acc, this.clothSit, !!(this.springs || this.skirtSprings || this.sleeveSprings));
+      if (on) this.cloth.update(this.acc, this.clothSit, !!(this.springs || this.skirtSprings || this.sleeveSprings || this.tasselSprings));
     }
     if (ANIM_FX.smear && this.lodLevel === 0 && this.inner.visible) this.updateSmear();
     this.acc = 0;

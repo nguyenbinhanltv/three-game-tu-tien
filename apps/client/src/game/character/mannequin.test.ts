@@ -202,3 +202,20 @@ describe('mergeLodMeshes (N-7: một draw call mỗi mức LOD xa)', () => {
     expect(meshesAt(scene, 1)).toHaveLength(4);
   });
 });
+
+describe('Lạc Kiếm mặc định = v3b3 (tua/dải đai lò xo)', () => {
+  it('bộ Lạc Kiếm và các bộ nhánh dùng chr_v3b3 khi không đặt ?v3model', () => {
+    for (const set of ['set_lac_kiem', 'set_han_giao', 'set_tran_khich', 'set_vo_danh_kiem']) {
+      expect(v3AssetOf('f', undefined, set)).toBe('chr_v3b3_lac_kiem_nu');
+      expect(v3AssetOf('m', undefined, set)).toBe('chr_v3b3_lac_kiem_nam');
+    }
+  });
+  it('bộ mặc định mới tạo vẫn là Đồ Đệ Tử (không đổi)', () => {
+    expect(v3AssetOf('f')).toBe('chr_v3_de_tu_nu');
+  });
+  it('b3 có bảng nhuộm như b2 (không mất nhuộm màu)', async () => {
+    const { v3DyeRefOf } = await import('@dtl/shared');
+    expect(v3DyeRefOf('chr_v3b3_lac_kiem_nu')).toEqual(v3DyeRefOf('chr_v3b2_lac_kiem_nu'));
+    expect(v3DyeRefOf('chr_v3b3_lac_kiem_nu')).not.toBeNull();
+  });
+});
