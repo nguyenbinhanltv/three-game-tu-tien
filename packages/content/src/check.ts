@@ -46,8 +46,10 @@ import {
   validatePose,
   validateFxTimeline,
   validateVfxCard,
+  validateMonVfxCard,
   FLIP_ATLASES,
   type VfxCard,
+  type MonVfxCard,
   fxDrawCount,
   fxParticleCount,
   FX_SKILL_DRAW_MAX,
@@ -225,6 +227,30 @@ for (const f of FX_TIMELINES) for (const m of validateFxTimeline(f, (id) => SKIL
       if (t.id.startsWith('proc:')) {
         if (!(FLIP_ATLASES as readonly string[]).includes(t.id.slice(5))) err(`vfxcard ${card.skillId}: atlas thủ tục lạ ${t.id}`);
       } else if (!vfxTexIds.has(t.id)) err(`vfxcard ${card.skillId}: texture ${t.id} chưa có trong assets/vfx/manifest.json`);
+    }
+  }
+}
+// Thẻ chiêu VFX của quái/boss (V-P9): data/vfx/cards/mon/<monId>__<move>.json; vùng và nhịp nạp phải bằng `ai` của quái (không vẽ nói dối hitbox).
+{
+  const dir = new URL('../data/vfx/cards/mon/', import.meta.url);
+  const moveOf = (key: string) => {
+    const [monId, mv] = key.split(':');
+    const def = MONSTER.get(monId!) as
+      | {
+          ai?: Record<string, { r: number; delay: number; shape?: string; cone?: { r: number; delay: number } } | undefined>;
+          phases?: { ai?: Record<string, { r: number; delay: number; shape?: string } | undefined> }[];
+        }
+      | undefined;
+    const c = def?.ai?.[mv!] ?? def?.phases?.map((p) => p.ai?.[mv!]).find(Boolean);
+    if (!c) return undefined;
+    const shape = mv === 'sweep' ? (c.shape === 'rect' ? 'rect' : 'cone') : mv === 'line' || mv === 'charge' ? 'rect' : 'circle';
+    return { r: c.r, delay: c.delay, shape: shape as 'circle' | 'cone' | 'rect' };
+  };
+  if (fs.existsSync(dir)) {
+    for (const f of fs.readdirSync(dir).filter((n) => n.endsWith('.json'))) {
+      const card = JSON.parse(fs.readFileSync(new URL(f, dir), 'utf8')) as MonVfxCard;
+      if (f !== `${card.monId}__${card.move}.json`) err(`vfxcard mon ${f}: tên file phải là ${card.monId}__${card.move}.json`);
+      for (const m of validateMonVfxCard(card, { move: moveOf, exists: (id) => MONSTER.has(id) })) err(m);
     }
   }
 }

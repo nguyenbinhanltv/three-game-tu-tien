@@ -100,3 +100,66 @@ export function validateVfxCard(c: VfxCard, isSkill: (id: string) => boolean, is
   }
   return e;
 }
+
+// ---- Thẻ chiêu của QUÁI/BOSS (V-P9): một file mỗi chiêu có vạch báo, `data/vfx/cards/mon/<monId>__<move>.json` ----
+
+/** Hình vùng server (khớp `HazardMsg`): tròn (r), nón (r + nửa góc w độ), chữ nhật (dài r × rộng w). */
+export interface MonVfxCardZone {
+  shape: 'circle' | 'cone' | 'rect';
+  /** Bán kính (tròn/nón) hoặc chiều dài (chữ nhật), mét — PHẢI bằng `ai` của quái (vùng vẽ không được nói dối hitbox). */
+  r: number;
+  /** Nửa góc (độ, nón) hoặc chiều rộng (mét, chữ nhật). */
+  w?: number;
+  /** Tâm vùng: dưới chân người chơi (nện), dưới chân boss, hoặc từ boss về phía người chơi. */
+  at: 'target' | 'self' | 'forward';
+}
+
+export interface MonVfxCard {
+  monId: string;
+  /** Khóa chiêu trong `ai` (slam, chant, sweep, line, charge, leap, burrow, emerge). */
+  move: string;
+  idea: string;
+  element: VfxElement;
+  /** Bảng màu (hex, không dấu #): thân/viền theo hệ quái, `accent` là đỏ cảnh báo của địch. */
+  palette: { core: string; body: string; rim: string; accent: string };
+  shapeLang: VfxShapeLang[];
+  zone: MonVfxCardZone;
+  /** Thời gian vạch báo nạp (ms): PHẢI bằng `delay` của chiêu (cộng thời gian niệm với chiêu chant); impact/linger là vùng nổ và dư ba. */
+  timing: VfxCardTiming;
+  /** Ghi chú duyệt: điều gì phải đọc được ở camera chéo 52° (nhịp nạp, rìa vùng, chỗ an toàn). */
+  readability: string;
+  budget: VfxCardBudget;
+}
+
+export function validateMonVfxCard(
+  c: MonVfxCard,
+  mon: { move(id: string): { r: number; delay: number; shape: MonVfxCardZone['shape'] } | undefined; exists(id: string): boolean },
+): string[] {
+  const e: string[] = [];
+  const at = `vfxcard mon ${c.monId}:${c.move}`;
+  if (!mon.exists(c.monId)) e.push(`${at}: quái không tồn tại`);
+  const mv = mon.move(`${c.monId}:${c.move}`);
+  if (!mv) e.push(`${at}: quái không có chiêu ${c.move}`);
+  else {
+    if (c.zone.shape !== mv.shape) e.push(`${at}: zone.shape ${c.zone.shape} ≠ server ${mv.shape}`);
+    if (Math.abs(c.zone.r - mv.r) > 0.01) e.push(`${at}: zone.r ${c.zone.r} ≠ server ${mv.r} (vùng vẽ phải bằng vùng server)`);
+    if (c.move !== 'chant' && Math.abs(c.timing.anticipationMs - mv.delay * 1000) > 1) {
+      e.push(`${at}: timing.anticipationMs ${c.timing.anticipationMs} ≠ delay server ${mv.delay * 1000} ms`);
+    }
+  }
+  if (!c.idea || c.idea.trim().length < 10) e.push(`${at}: thiếu idea`);
+  if (!VFX_ELEMENTS.includes(c.element)) e.push(`${at}: nguyên tố lạ ${c.element}`);
+  for (const k of ['core', 'body', 'rim', 'accent'] as const)
+    if (!/^[0-9a-fA-F]{6}$/.test(c.palette?.[k] ?? '')) e.push(`${at}: palette.${k} không phải hex 6 ký tự`);
+  if (!c.readability || c.readability.trim().length < 10) e.push(`${at}: thiếu readability`);
+  const t = c.timing;
+  if (!(t?.anticipationMs >= 300 && t.anticipationMs <= 6000)) e.push(`${at}: nhịp nạp ngoài 300..6000 ms (dưới 300 ms không né kịp)`);
+  if (!(t?.impactMs >= 20 && t.impactMs <= 3000) || !(t?.lingerMs >= 0 && t.lingerMs <= 3000)) e.push(`${at}: impact/linger ngoài khoảng`);
+  const b = c.budget;
+  const cap = VFX_CARD_CAPS;
+  if (!b || !(b.drawCalls >= 0 && b.drawCalls <= cap.drawCalls) || !(b.particles >= 0 && b.particles <= cap.particles))
+    e.push(`${at}: budget ngoài trần`);
+  else if (!(b.screenCover > 0 && b.screenCover <= cap.screenCover) || !(b.overdraw >= 1 && b.overdraw <= cap.overdraw))
+    e.push(`${at}: budget phủ/overdraw ngoài trần`);
+  return e;
+}

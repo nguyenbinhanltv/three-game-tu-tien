@@ -1,0 +1,33 @@
+{
+  "monId": "boss_han_giao",
+  "move": "slam",
+  "idea": "Hàn Giao nện đuôi xuống: một vòng tròn cảnh báo ĐỎ-CAM tròn đúng bán kính 5,5 m dưới chân người bị nhắm, các vết nứt băng đỏ tỏa từ tâm và vòng sáng co vào dần theo nhịp nạp 1,7 s; nổ ra cột băng xanh nhọn và sóng lạnh.",
+  "element": "thuy",
+  "palette": {
+    "core": "0a2a55",
+    "body": "3a8cf0",
+    "rim": "ffe9b0",
+    "accent": "ff1f3d"
+  },
+  "shapeLang": [
+    "ring",
+    "spike"
+  ],
+  "zone": {
+    "shape": "circle",
+    "r": 5.5,
+    "at": "target"
+  },
+  "timing": {
+    "anticipationMs": 1700,
+    "impactMs": 120,
+    "lingerMs": 700
+  },
+  "readability": "Vành ngoài đỏ nét liền phải thấy rõ ở góc 52° trên nền đá sáng; vòng sáng thứ hai co dần vào tâm (nhịp nạp) để biết còn bao lâu; trong vùng không có chữ/số.",
+  "budget": {
+    "drawCalls": 8,
+    "particles": 300,
+    "screenCover": 0.3,
+    "overdraw": 5
+  }
+}

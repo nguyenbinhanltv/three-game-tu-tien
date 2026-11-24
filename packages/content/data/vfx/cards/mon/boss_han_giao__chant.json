@@ -1,0 +1,33 @@
+{
+  "monId": "boss_han_giao",
+  "move": "chant",
+  "idea": "Hàn Giao niệm chú: vòng cảnh báo ĐỎ-CAM rất lớn bán kính 12 m quanh boss, triện văn xoay chậm, sương lạnh dâng; hết niệm vòng đỏ đậm dần rồi bùng thành sóng băng làm choáng.",
+  "element": "thuy",
+  "palette": {
+    "core": "0a2a55",
+    "body": "3a8cf0",
+    "rim": "ffe9b0",
+    "accent": "ff1f3d"
+  },
+  "shapeLang": [
+    "ring",
+    "cloud"
+  ],
+  "zone": {
+    "shape": "circle",
+    "r": 12,
+    "at": "self"
+  },
+  "timing": {
+    "anticipationMs": 900,
+    "impactMs": 160,
+    "lingerMs": 900
+  },
+  "readability": "Rìa vùng 12 m phải là một đường đỏ liền, rõ để bước ra ngoài kịp; nhịp nạp 0,9 s sau thời gian niệm 2,6 s: lúc niệm vòng mờ, lúc 0,9 s cuối vòng đậm và nhấp nháy.",
+  "budget": {
+    "drawCalls": 8,
+    "particles": 300,
+    "screenCover": 0.3,
+    "overdraw": 5
+  }
+}

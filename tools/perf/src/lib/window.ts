@@ -39,6 +39,7 @@ type Vec = { x: number; y: number; z: number; [method: string]: any };
 export interface VfxLabDebug {
   cast(skill: string): boolean;
   castMon(mon: string, mv: string): boolean;
+  monLab(on: boolean): void;
   pause(on: boolean): void;
   scale(x: number): void;
   step(ms: number): void;

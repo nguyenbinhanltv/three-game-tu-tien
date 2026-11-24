@@ -1,7 +1,7 @@
 import { CollisionSet } from './collision';
 import { fbm, lerp, ridged, smoothstep } from './noise';
 import { thienCongColliders } from './props.thiencong';
-import { lacKiemSceneColliders } from './tieucanh';
+import { gorgeDrop, lacKiemSceneColliders } from './tieucanh';
 import {
   type Biome,
   type CircleCollider,
@@ -73,6 +73,7 @@ export function makeTerrain(def: TerrainDef): Terrain {
   const islands = def.islands?.length ? def.islands : undefined;
   const bridges = def.bridges?.length ? def.bridges : undefined;
   const ponds = def.ponds?.length ? def.ponds : undefined;
+  const gorges = def.gorges?.length ? def.gorges : undefined;
   const canyon = def.canyon;
 
   /**
@@ -235,6 +236,8 @@ export function makeTerrain(def: TerrainDef): Terrain {
     }
 
     if (canyon) h += canyonRise(x, z);
+
+    if (gorges) for (const g of gorges) h -= gorgeDrop(g, x, z);
 
     if (bridges && withDeck) h = withBridges(h, x, z);
 
