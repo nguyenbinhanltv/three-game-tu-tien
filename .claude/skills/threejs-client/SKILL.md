@@ -65,4 +65,4 @@ description: Quy ước code client Three.js của Đạp Thiên Lộ — render
 
 ## Họa Cảnh (`?style=painted`)
 
-Mọi nhánh mới nằm sau `FLAGS.style === 'painted'` (đọc qua `src/base/flags.ts`), mặc định không đổi; lớp cỏ chi tiết chỉ vòng gần (theo khoảng cách tới camera), cảnh xa vẽ sẵn không tốn gì mỗi khung; cảnh thử đối chiếu `?paintedlab=1` và `tools/painted-compare` (SSIM, ΔE) trước khi áp vào địa hình thật. Xem `docs/handbook/painted.md`.
+Mọi nhánh mới nằm sau `FLAGS.style === 'painted'` (đọc qua `src/base/flags.ts`), mặc định không đổi; lớp cỏ chi tiết chỉ vòng gần (theo khoảng cách tới camera), cảnh xa vẽ sẵn không tốn gì mỗi khung; cảnh thử đối chiếu `?paintedlab=1` và `tools/painted-compare` (SSIM, ΔE) [CHƯA CÓ trên main: đang dựng ở nhánh riêng, dự kiến vào ở bước P2/P8; trước đó chỉ là kế hoạch] trước khi áp vào địa hình thật. Xem `docs/handbook/painted.md`.

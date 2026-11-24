@@ -20,7 +20,7 @@ Rút từ painted-valley (xem README và LICENCE-NOTES của nó). **Phạm vi: 
 6. **Nền vẽ tay, người cel với viền mực.** Người vẽ ba tông phẳng (sáng, tối, nếp gấp), viền mực theo số nhận dạng từng bộ phận. **Hướng nhân vật CHỜ người dùng xem ảnh P7 rồi quyết**; trước đó nhân vật v3 đã duyệt giữ nguyên.
 7. **Animation cần clip chuyển tiếp.** Nhân vật đi bộ trên nền hoạt hình thiếu start, stop, pivot (xoay đột ngột), sprint và nhịp thở dốc (idle mệt) thì đọc là trượt; mỗi bộ cần các clip này (nối với `vfx-animation.md`, Thân Pháp).
 8. **Một hướng mỹ thuật thống nhất.** Mọi asset mới (kiến trúc, cây, prop, thẻ cây) đi qua bảng phong cách của chế độ này; không trộn bán tả thực với painted trong cùng một cảnh.
-9. **Đo khớp, không "nhìn cho giống".** Port từ nguồn phải dịch từng dòng, giữ hằng số, rồi so bằng số (SSIM, ΔE) ở cảnh thử cô lập (`tools/painted-compare`, `?paintedlab=1`) trước khi áp vào địa hình thật.
+9. **Đo khớp, không "nhìn cho giống".** Port từ nguồn phải dịch từng dòng, giữ hằng số, rồi so bằng số (SSIM, ΔE) ở cảnh thử cô lập (`tools/painted-compare` và cờ `?paintedlab=1`) [CHƯA CÓ trên main: đang dựng ở nhánh riêng, dự kiến vào ở bước P2/P8; trước đó chỉ là kế hoạch] trước khi áp vào địa hình thật.
 10. **Giữ ngân sách.** Dưới 300 draw call, dưới 2 triệu tam giác, CPU dưới 8 ms; số đo trước/sau ở mỗi PR.
 
 ### Ghi công

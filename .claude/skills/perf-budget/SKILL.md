@@ -87,4 +87,4 @@ Khi báo xong việc có ảnh hưởng hiệu năng, ghi số đo trước/sau 
 
 ## Họa Cảnh (`?style=painted`)
 
-Giữ đúng ngân sách (dưới 300 draw call, dưới 2 triệu tam giác, CPU dưới 8 ms). Mỗi PR Họa Cảnh ghi số trước và sau cùng điểm `?at=` cho `?style=painted` và mặc định, trên cả WebGPU lẫn WebGL2; cảnh xa vẽ một lần không được tốn gì mỗi khung. So chất lượng bằng số ở cảnh thử cô lập (`tools/painted-compare`: SSIM, ΔE). Xem `docs/handbook/painted.md`.
+Giữ đúng ngân sách (dưới 300 draw call, dưới 2 triệu tam giác, CPU dưới 8 ms). Mỗi PR Họa Cảnh ghi số trước và sau cùng điểm `?at=` cho `?style=painted` và mặc định, trên cả WebGPU lẫn WebGL2; cảnh xa vẽ một lần không được tốn gì mỗi khung. So chất lượng bằng số ở cảnh thử cô lập (`tools/painted-compare`: SSIM, ΔE [CHƯA CÓ trên main: đang dựng ở nhánh riêng, dự kiến vào ở bước P2/P8; trước đó chỉ là kế hoạch]). Xem `docs/handbook/painted.md`.
