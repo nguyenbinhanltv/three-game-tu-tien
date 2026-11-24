@@ -1,0 +1,282 @@
+{
+ "skill": "mon_boom_circle__boss_van_hai_kinh_vuong__slam",
+ "palette": "mon_boss_thuy",
+ "events": [
+  {
+   "type": "mesh",
+   "shape": "burst",
+   "t": 0,
+   "dur": 0.16,
+   "at": "area",
+   "tone": "rim",
+   "alpha": 0.34,
+   "seed": 0,
+   "tier": 0,
+   "offset": [
+    0,
+    0.5,
+    0
+   ],
+   "scale": 1.5,
+   "billboard": true,
+   "sweep": 0
+  },
+  {
+   "type": "decal",
+   "tex": "ice_crack",
+   "t": 0,
+   "r": 4,
+   "dur": 2.4,
+   "at": "area",
+   "grow": 0.02,
+   "tone": "core",
+   "alpha": 1.0,
+   "tier": 0,
+   "from": "start",
+   "lift": 0.35
+  },
+  {
+   "type": "mesh",
+   "shape": "ripple",
+   "t": 0,
+   "dur": 0.55,
+   "at": "area",
+   "tone": "rim",
+   "alpha": 0.95,
+   "seed": 2,
+   "tier": 0,
+   "scale": 0.85,
+   "scaleTo": 1.04,
+   "fit": "area",
+   "sweep": 0.08,
+   "erodeFrom": 0.5,
+   "ragged": 0.4
+  },
+  {
+   "type": "mesh",
+   "shape": "ripple",
+   "t": 0.06,
+   "dur": 0.55,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.85,
+   "seed": 3,
+   "tier": 0,
+   "scale": 0.5,
+   "scaleTo": 0.85,
+   "fit": "area",
+   "sweep": 0.08,
+   "erodeFrom": 0.5,
+   "ragged": 0.4
+  },
+  {
+   "type": "mesh",
+   "shape": "helix",
+   "t": 0,
+   "dur": 0.9,
+   "at": "area",
+   "tone": "rim",
+   "alpha": 0.9,
+   "seed": 5,
+   "tier": 0,
+   "offset": [
+    0,
+    0,
+    0
+   ],
+   "scale": 1.1,
+   "sweep": 0.2,
+   "erodeFrom": 0.55
+  },
+  {
+   "type": "mesh",
+   "shape": "flip",
+   "t": 0.0,
+   "dur": 0.9,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.95,
+   "seed": 600,
+   "tier": 0,
+   "flip": "ice_flip",
+   "scale": 1.8,
+   "offset": [
+    0.8,
+    0.9,
+    2.58
+   ],
+   "sweep": 0
+  },
+  {
+   "type": "mesh",
+   "shape": "flip",
+   "t": 0.02,
+   "dur": 0.9,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.95,
+   "seed": 601,
+   "tier": 1,
+   "flip": "ice_flip",
+   "scale": 1.95,
+   "offset": [
+    2.51,
+    0.9,
+    0.98
+   ],
+   "sweep": 0
+  },
+  {
+   "type": "mesh",
+   "shape": "flip",
+   "t": 0.04,
+   "dur": 0.9,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.95,
+   "seed": 602,
+   "tier": 0,
+   "flip": "ice_flip",
+   "scale": 2.1,
+   "offset": [
+    2.34,
+    0.9,
+    -1.35
+   ],
+   "sweep": 0
+  },
+  {
+   "type": "mesh",
+   "shape": "flip",
+   "t": 0.06,
+   "dur": 0.9,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.95,
+   "seed": 603,
+   "tier": 1,
+   "flip": "ice_flip",
+   "scale": 1.8,
+   "offset": [
+    0.4,
+    0.9,
+    -2.67
+   ],
+   "sweep": 0
+  },
+  {
+   "type": "mesh",
+   "shape": "flip",
+   "t": 0.08,
+   "dur": 0.9,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.95,
+   "seed": 604,
+   "tier": 0,
+   "flip": "ice_flip",
+   "scale": 1.95,
+   "offset": [
+    -1.84,
+    0.9,
+    -1.98
+   ],
+   "sweep": 0
+  },
+  {
+   "type": "mesh",
+   "shape": "flip",
+   "t": 0.1,
+   "dur": 0.9,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.95,
+   "seed": 605,
+   "tier": 1,
+   "flip": "ice_flip",
+   "scale": 2.1,
+   "offset": [
+    -2.69,
+    0.9,
+    0.2
+   ],
+   "sweep": 0
+  },
+  {
+   "type": "mesh",
+   "shape": "flip",
+   "t": 0.12,
+   "dur": 0.9,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.95,
+   "seed": 606,
+   "tier": 0,
+   "flip": "ice_flip",
+   "scale": 1.8,
+   "offset": [
+    -1.52,
+    0.9,
+    2.23
+   ],
+   "sweep": 0
+  },
+  {
+   "type": "mesh",
+   "shape": "flip",
+   "t": 0.0,
+   "dur": 0.9,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.95,
+   "seed": 609,
+   "tier": 0,
+   "flip": "ice_flip",
+   "scale": 2.2,
+   "offset": [
+    0,
+    1.1,
+    0
+   ],
+   "sweep": 0
+  },
+  {
+   "type": "particles",
+   "kind": "dust",
+   "t": 0,
+   "n": 26,
+   "speed": 3.5,
+   "spread": 0.9,
+   "life": 1.0,
+   "size": 0.24,
+   "at": "area",
+   "tone": "rim",
+   "tier": 1,
+   "offset": [
+    0,
+    0.3,
+    0
+   ],
+   "grav": 0.8
+  },
+  {
+   "type": "particles",
+   "kind": "shard",
+   "t": 0,
+   "n": 22,
+   "speed": 6,
+   "spread": 0.9,
+   "life": 0.7,
+   "size": 0.1,
+   "at": "area",
+   "tone": "body",
+   "tier": 0,
+   "offset": [
+    0,
+    0.3,
+    0
+   ],
+   "grav": 9
+  }
+ ]
+}
