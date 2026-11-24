@@ -17,29 +17,31 @@ import {
   vec2,
   vec3,
 } from 'three/tsl';
-import { BRIDGE_A, gorgeDrop, hash01, SECT, TC_GATE, TC_GORGE, TC_POND } from '@dtl/shared';
+import { BRIDGE_A, hash01, SECT, TC_POND } from '@dtl/shared';
 import { heightAt } from '../../base/levelCtx';
 import { vnoise } from '../../render/materials/isoDetail';
 
 /**
- * Mặt đất "kể chuyện" Lạc Kiếm Tông (Chân Cảnh M3): decal bám địa hình, thứ người chơi nhìn 90% thời gian.
- * Vết chân + vệt mòn dọc lối, vũng nước phản chiếu, gạch vỡ + đá vụn trên sân, ấn trận mờ phát sáng, rễ cây trồi.
- * Client-only, tất định, không va chạm. Mỗi loại gộp MỘT mesh (đúng 6 draw call: foot, puddle, crack, seal, root, wash), thủ tục hoàn toàn (không texture mới).
- * Dẹt sát đất (≤ 0,15 m) nên không bao giờ che người/mục tiêu của camera chéo; không cần sight fade.
- * Bố cục (tọa độ tương đối tâm tông môn): `groundLayout()`; lý do chọn chỗ: `docs/map/lac-kiem-tieu-canh.md` (M3).
+ * Sáu tiểu cảnh kể chuyện trên mặt đất Lạc Kiếm Tông (Chân Cảnh M3). Mỗi cảnh đặt tay ở chỗ người chơi chắc chắn đi qua, bám vào prop có sẵn của tiểu cảnh
+ * (kiếm gãy, đèn đá, đá rêu, tre…) và đọc được trong một giây từ camera chéo. Chỉ là decal dẹt bám địa hình (≤ 0,15 m, không che người/mục tiêu),
+ * client-only, tất định, không va chạm. Chỉ HAI mesh = hai draw call: `ground` (vệt chân/bánh xe, nứt, rêu, rễ, lá, đá vụn, ấn trận; một shader chọn mẫu theo thuộc tính `aK`)
+ * và `puddle` (phản chiếu trời + lá nổi). Tắt bằng `?ground=0`. Tọa độ tương đối tâm tông môn. Lời kể từng cảnh: `docs/map/lac-kiem-tieu-canh.md` (M3).
  */
 
-export type DecalKind = 'foot' | 'puddle' | 'crack' | 'seal' | 'root' | 'wash';
+/** Mẫu của decal `ground` (thuộc tính `aK`). */
+const K = { foot: 0, crack: 1, burst: 2, root: 3, moss: 4, leaves: 5, chips: 6, seal: 7 } as const;
+export type GroundKind = keyof typeof K | 'puddle';
 
-/** Dải theo đường gấp khúc (vệt chân/vệt mòn). */
+/** Dải theo đường gấp khúc (vệt chân, bánh xe, rêu dọc chân tường). */
 export interface TrailDef {
+  kind: 'foot' | 'moss';
   pts: [number, number][];
   /** Nửa bề rộng (m). */
   hw: number;
 }
-/** Mảnh vuông/tròn quay `yaw`, nửa cạnh (hx, hz). */
+/** Mảnh vuông quay `yaw`, nửa cạnh (hx, hz). */
 export interface PatchDef {
-  kind: Exclude<DecalKind, 'foot' | 'wash'>;
+  kind: Exclude<GroundKind, 'foot' | 'moss'>;
   x: number;
   z: number;
   hx: number;
@@ -48,159 +50,168 @@ export interface PatchDef {
   /** Mặt sân lát (cao hơn đất một chút) thay vì đất. */
   plaza?: boolean;
 }
-export interface GroundLayout {
+/** Một tiểu cảnh kể chuyện: vị trí người đứng để chụp/kiểm, lời kể, và các decal. */
+export interface Vignette {
+  id: string;
+  at: [number, number];
+  story: string;
   trails: TrailDef[];
   patches: PatchDef[];
 }
 
-/** Dốc lớn nhất (rad tan) cho vũng nước: vũng chỉ nằm chỗ gần phẳng. */
 const PUDDLE_MAX_TAN = 0.09;
-/** Lớp wash: ô 3 m bị bỏ khi chênh cao bốn đỉnh vượt ngưỡng này (m) hoặc tâm ô lệch mặt phẳng quá `WASH_MAX_SAG`. */
-export const WASH_MAX_RANGE = 0.7;
-export const WASH_MAX_SAG = 0.2;
 const gy = (x: number, z: number): number => heightAt(SECT.x + x, SECT.z + z);
 const slopeAt = (x: number, z: number): number => Math.hypot(gy(x + 1.5, z) - gy(x - 1.5, z), gy(x, z + 1.5) - gy(x, z - 1.5)) / 3;
 
-/** Đặt vũng nước quanh một điểm: thử vài góc, bỏ chỗ dốc. */
-function puddles(cx: number, cz: number, r: number, n: number, seed: number, size = 1): PatchDef[] {
-  const out: PatchDef[] = [];
-  for (let i = 0; i < n * 3 && out.length < n; i++) {
-    const a = hash01(seed, i, 1) * Math.PI * 2;
-    const d = Math.sqrt(hash01(seed, i, 2)) * r;
-    const x = cx + Math.cos(a) * d;
-    const z = cz + Math.sin(a) * d;
-    if (slopeAt(x, z) > PUDDLE_MAX_TAN) continue;
-    if (Math.hypot(x - TC_POND.x, z - TC_POND.z) < TC_POND.r + 3.2) continue; // không đè lên mặt ao
-    const s = (0.9 + hash01(seed, i, 3) * 1.3) * size;
-    out.push({ kind: 'puddle', x, z, hx: s * 1.35, hz: s, yaw: hash01(seed, i, 4) * Math.PI, plaza: false });
-  }
-  return out;
-}
+/** Vũng nước đặt tay: bỏ nếu chỗ dốc. */
+const puddle = (x: number, z: number, hx: number, hz: number, yaw: number): PatchDef[] =>
+  slopeAt(x, z) > PUDDLE_MAX_TAN ? [] : [{ kind: 'puddle', x, z, hx, hz, yaw }];
 
-/** Điểm kể chuyện: chỗ mặt đất được "bày" dày (lá rụng, rêu, đất trọc). [x, z, bán kính, mức]. */
-const HOT: [number, number, number, number][] = [
-  [0, 112, 20, 0.9], // hai bên cổng bài
-  [-60, 58, 22, 1], // ao sen
-  [66, 58, 22, 1], // kiếm bia
-  [96, -8, 22, 1], // thạch lâm
-  [-112, 69, 20, 1], // lối men vách
-  [-136, 64, 18, 1], // đầu cầu
-  [-52, 4, 12, 0.8],
-  [52, 4, 12, 0.8],
-];
-/** Mật độ "kể chuyện" tại (x, z) ∈ [0,1]: đậm ở điểm kể chuyện và rìa sân, sạch ở lối chính (đại lộ) và dưới chân công trình giữa sân. */
-export function groundWeight(x: number, z: number): number {
-  let w = 0; // không có sàn: chỉ dựng lưới quanh điểm kể chuyện và rìa (giảm overdraw/chi phí fragment)
-  for (const [hx, hz, r, k] of HOT) w = Math.max(w, k * Math.min(1, 1.5 * Math.max(0, 1 - Math.hypot(x - hx, z - hz) / r))); // bình nguyên ở giữa (khung camera ~±12 m), rồi nhạt dần
-  const d = Math.hypot(x, z);
-  w = Math.max(w, Math.min(1, Math.max(0, (d - 62) / 30)) * 0.85); // rìa sân
-  const avenue = Math.max(0, 1 - Math.max(0, Math.abs(x) - 5) / 9) * (z > -30 && z < 140 ? 1 : 0); // đại lộ giữa
-  return w * (1 - 0.92 * avenue);
-}
+/** Vòng xoáy (vết chân quanh cọc): bán kính giảm dần từ r0 xuống r1 qua `turns` vòng. */
+const spiral = (cx: number, cz: number, r0: number, r1: number, turns: number, n = 26): [number, number][] =>
+  Array.from({ length: n + 1 }, (_, i) => {
+    const t = i / n;
+    const a = t * turns * Math.PI * 2 + 0.6;
+    const r = r0 + (r1 - r0) * t;
+    return [cx + Math.cos(a) * r, cz + Math.sin(a) * r];
+  });
 
-/** Bố cục tất định. Chỗ đặt khớp tiểu cảnh (docs/map/lac-kiem-tieu-canh.md). */
-export function groundLayout(): GroundLayout {
-  // vòng quanh bờ ao phía camera nhìn thấy, và con đường mòn qua kiếm bia
-  const rim: [number, number][] = Array.from({ length: 7 }, (_, i) => {
+/** Vòng quanh bờ ao phía camera nhìn thấy. */
+const pondRim = (): [number, number][] =>
+  Array.from({ length: 7 }, (_, i) => {
     const t = ((-150 + i * 20) * Math.PI) / 180;
     return [TC_POND.x + Math.cos(t) * 11.8, TC_POND.z + Math.sin(t) * 11.8];
   });
-  const trails: TrailDef[] = [
-    { pts: rim, hw: 1.3 },
+
+export function vignettes(): Vignette[] {
+  return [
     {
-      pts: [
-        [56, 60],
-        [66, 57],
-        [78, 51],
+      id: 'bai_tap_kiem',
+      at: [66, 57],
+      story: 'Bãi tập kiếm bỏ hoang: kiếm gãy cắm đất, vệt chân xoáy tròn quanh bia, ấn kiếm trận cũ mờ dưới đất, vũng đọng bên đá.',
+      trails: [{ kind: 'foot', pts: spiral(66, 60.5, 5.4, 3, 1.4), hw: 0.95 }],
+      patches: [
+        { kind: 'seal', x: 66, z: 60, hx: 7.5, hz: 7.5, yaw: 0.4 },
+        { kind: 'leaves', x: 61, z: 58, hx: 2.8, hz: 2.3, yaw: 0.8 },
+        { kind: 'leaves', x: 71, z: 63, hx: 2.4, hz: 2, yaw: 2.2 },
+        ...puddle(74.5, 55, 2.4, 1.7, 1.2),
       ],
-      hw: 2,
-    },
-    // đường từ đại lộ ra kiếm bia và thạch lâm
-    {
-      pts: [
-        [22, 66],
-        [40, 63],
-        [56, 60],
-      ],
-      hw: 2,
     },
     {
-      pts: [
-        [60, 52],
-        [78, 30],
-        [92, 8],
-        [96, -4],
+      id: 'vung_sau_mua',
+      at: [8, 106],
+      story: 'Vũng nước sau mưa trước cổng bài: phản chiếu trời, lá rơi nổi, rễ cỏ bên đá.',
+      trails: [],
+      patches: [
+        ...puddle(6, 108, 3.6, 2.5, 0.3),
+        ...puddle(2.5, 102, 2.4, 1.7, 2.4),
+        ...puddle(-11, 114, 3, 2.2, 2.4),
+        ...puddle(11, 103, 3, 2.2, 1.4),
+        { kind: 'leaves', x: 9, z: 105, hx: 2.4, hz: 1.9, yaw: 0.2 },
+        { kind: 'root', x: 11, z: 110, hx: 3.4, hz: 3.4, yaw: 1.7 },
       ],
-      hw: 2,
     },
-    // từ sân tới đầu lối men vách (phần sau đã lát phiến đá)
     {
-      pts: [
-        [-36, 58],
-        [-62, 50],
-        [-92, 54],
+      id: 'goc_den_da',
+      at: [-55, 55],
+      story: 'Gốc cổ thụ bên ao: rễ trồi bao quanh đèn đá và linh thảo cúng, rêu men theo rễ, đường mòn vòng bờ ao.',
+      trails: [{ kind: 'foot', pts: pondRim(), hw: 1.3 }],
+      patches: [
+        { kind: 'root', x: -55, z: 55, hx: 5, hz: 5, yaw: 0.9 },
+        { kind: 'leaves', x: -58, z: 53, hx: 2.4, hz: 2, yaw: 1.6 },
+        { kind: 'root', x: BRIDGE_A[0] + 5, z: BRIDGE_A[1] + 9, hx: 3.6, hz: 3.6, yaw: 0.4 },
       ],
-      hw: 2,
+    },
+    {
+      id: 'loi_de_tu',
+      at: [84, 22],
+      story: 'Lối mòn đệ tử: vệt bánh xe đẩy và dấu chân dẫn ra thạch lâm, đá vụn rơi vãi dọc đường.',
+      trails: [
+        {
+          kind: 'foot',
+          pts: [
+            [22, 66],
+            [40, 63],
+            [56, 60],
+          ],
+          hw: 2,
+        },
+        {
+          kind: 'foot',
+          pts: [
+            [60, 52],
+            [78, 30],
+            [92, 8],
+            [96, -4],
+          ],
+          hw: 2,
+        },
+      ],
+      patches: [
+        { kind: 'chips', x: 84, z: 22, hx: 2.6, hz: 2.2, yaw: 0.3 },
+        { kind: 'chips', x: 80, z: 27, hx: 2.2, hz: 1.8, yaw: 1.1 },
+        { kind: 'chips', x: 93, z: 4, hx: 2.4, hz: 2, yaw: 1.4 },
+        { kind: 'chips', x: 95.5, z: -5, hx: 2.8, hz: 2.4, yaw: 2.2 },
+        ...puddle(88, 18, 2.6, 1.8, 0.5),
+      ],
+    },
+    {
+      id: 'san_luyen_cong',
+      at: [9, 46],
+      story: 'Sân luyện công: ấn trận khắc chìm dưới đá lát, gạch nứt tỏa ra từ chỗ một chưởng đánh xuống.',
+      trails: [],
+      patches: [
+        { kind: 'seal', x: 9, z: 46, hx: 7, hz: 7, yaw: 0.2, plaza: true },
+        { kind: 'burst', x: 9, z: 46, hx: 6, hz: 6, yaw: 0.5, plaza: true },
+        { kind: 'crack', x: 13, z: 34, hx: 4, hz: 3.4, yaw: 2.1, plaza: true },
+      ],
+    },
+    {
+      id: 'chan_tuong',
+      at: [30, 85],
+      story: 'Chân tường sơn môn: rêu men theo khe, lá gom thành đống ở góc.',
+      trails: [
+        {
+          kind: 'moss',
+          pts: [
+            [20, 80.2],
+            [29, 80.2],
+            [38, 80.2],
+          ],
+          hw: 1.1,
+        },
+        {
+          kind: 'moss',
+          pts: [
+            [20, 75.8],
+            [29, 75.8],
+            [38, 75.8],
+          ],
+          hw: 1,
+        },
+      ],
+      patches: [
+        { kind: 'leaves', x: 39, z: 80.5, hx: 2.6, hz: 2.2, yaw: 0.5 },
+        { kind: 'leaves', x: 21.5, z: 76, hx: 2.2, hz: 1.8, yaw: 1.9 },
+      ],
     },
   ];
-  const patches: PatchDef[] = [];
-  // vũng nước: bờ ao, trước cổng, quanh kiếm bia, thạch lâm, bờ hác
-  patches.push(
-    ...puddles(TC_POND.x, TC_POND.z, TC_POND.r + 6, 5, 11, 0.9),
-    ...puddles(0, 108, 9, 3, 12),
-    ...puddles(66, 62, 9, 3, 13),
-    ...puddles(96, -6, 8, 3, 14),
-    ...puddles(-30, 56, 9, 2, 15, 0.9),
-  );
-  // gạch vỡ + đá vụn trên sân lát (phía đông đại lộ, quanh bát quái)
-  const plaza: [number, number, number, number][] = [
-    [7, 48, 4, 0.3],
-    [9, 62, 4, 1.2],
-    [13, 34, 4.2, 2.1],
-    [22, 70, 3.6, 0.7],
-    [-6, 60, 3.4, 1.9],
-    [20, 12, 4, 2.6],
-  ];
-  for (const [x, z, r, yaw] of plaza) patches.push({ kind: 'crack', x, z, hx: r, hz: r * 0.8, yaw, plaza: true });
-  // ấn trận mờ: bên kiếm bia (kiếm trận cổ), thạch lâm, đầu cầu, thoáng dưới cổng bài
-  patches.push(
-    { kind: 'seal', x: 66, z: 60, hx: 6.4, hz: 6.4, yaw: 0.4 },
-    { kind: 'seal', x: 96, z: -8, hx: 5.2, hz: 5.2, yaw: 1.1 },
-    { kind: 'seal', x: BRIDGE_A[0] + 2, z: BRIDGE_A[1] - 4, hx: 3.6, hz: 3.6, yaw: 0.2 },
-    { kind: 'seal', x: 0, z: 112, hx: 5.6, hz: 5.6, yaw: 0.8 },
-  );
-  // rễ cây trồi: ven ao, bờ hác, chân đồi quanh thạch lâm, lối men vách
-  patches.push(
-    { kind: 'puddle', x: -48.5, z: 51, hx: 2.6, hz: 1.8, yaw: 0.5 },
-    { kind: 'puddle', x: -72, z: 50, hx: 2.2, hz: 1.5, yaw: 2.6 },
-    { kind: 'puddle', x: 74, z: 54, hx: 2.4, hz: 1.7, yaw: 1.2 },
-  );
-  const roots: [number, number, number][] = [
-    [-108, 77, 3.4],
-    [-119, 61, 3.2],
-    [58, 52, 3.4],
-    [76, 68, 3.2],
-    [TC_POND.x - 9, TC_POND.z - 5, 3.4],
-    [TC_POND.x + 4, TC_POND.z + 10.5, 3],
-    [-131, 56, 3.2],
-    [-112, 82, 3],
-    [88, -14, 3.4],
-    [104, -2, 3],
-    [TC_GATE.x - 9, TC_GATE.z - 8, 3],
-    [TC_GATE.x + 9.5, TC_GATE.z - 6, 3],
-  ];
-  roots.forEach(([x, z, r], i) => patches.push({ kind: 'root', x, z, hx: r, hz: r, yaw: hash01(i, 9, 3) * 6.28 }));
-  return { trails, patches };
 }
 
 // ---------- hình học ----------
 
+interface Acc {
+  pos: number[];
+  uv: number[];
+  p: number[];
+  k: number[];
+  idx: number[];
+}
+const empty = (): Acc => ({ pos: [], uv: [], p: [], k: [], idx: [] });
+
 /** Lưới ô vuông quay `yaw` bám địa hình; uv ∈ [0,1]. */
-function patchGeo(p: PatchDef, n: number): { pos: number[]; uv: number[]; seed: number[]; idx: number[] } {
-  const pos: number[] = [];
-  const uvs: number[] = [];
-  const seed: number[] = [];
-  const idx: number[] = [];
+function patchGeo(a: Acc, p: PatchDef, n: number, k: number): void {
+  const base = a.pos.length / 3;
   const c = Math.cos(p.yaw);
   const s = Math.sin(p.yaw);
   const lift = p.plaza ? 0.14 : p.kind === 'puddle' ? 0.05 : 0.035;
@@ -213,83 +224,63 @@ function patchGeo(p: PatchDef, n: number): { pos: number[]; uv: number[]; seed: 
       const lz = (v - 0.5) * 2 * p.hz;
       const x = p.x + c * lx - s * lz;
       const z = p.z + s * lx + c * lz;
-      pos.push(x, gy(x, z) + lift, z);
-      uvs.push(u, v);
-      seed.push(sd, 0, 0);
+      a.pos.push(x, gy(x, z) + lift, z);
+      a.uv.push(u, v);
+      a.p.push(sd, 0, 0);
+      a.k.push(k);
     }
   for (let j = 0; j < n; j++)
     for (let i = 0; i < n; i++) {
-      const a = j * (n + 1) + i;
-      idx.push(a, a + n + 1, a + 1, a + 1, a + n + 1, a + n + 2);
+      const q = base + j * (n + 1) + i;
+      a.idx.push(q, q + n + 1, q + 1, q + 1, q + n + 1, q + n + 2);
     }
-  return { pos, uv: uvs, seed, idx };
 }
 
-/** Dải theo đường gấp khúc, mỗi ~1,6 m một mặt cắt; uv = (m ngang so với tim, m dọc đường); aP = (seed, nửa rộng, tổng dài). */
-function trailGeo(t: TrailDef, seed: number): { pos: number[]; uv: number[]; seed: number[]; idx: number[] } {
-  const pos: number[] = [];
-  const uvs: number[] = [];
-  const sd: number[] = [];
-  const idx: number[] = [];
-  // lấy mẫu đều
-  const pts: [number, number][] = [];
-  let total = 0;
+/** Dải theo đường gấp khúc, mỗi ~1,6 m một mặt cắt; uv = (m ngang so với tim, m dọc đường); p = (seed, nửa rộng, tổng dài). */
+function trailGeo(a: Acc, t: TrailDef, seed: number): void {
+  const base = a.pos.length / 3;
   const cum: number[] = [0];
+  let total = 0;
   for (let i = 1; i < t.pts.length; i++) {
     total += Math.hypot(t.pts[i]![0] - t.pts[i - 1]![0], t.pts[i]![1] - t.pts[i - 1]![1]);
     cum.push(total);
   }
-  const step = 1.6;
-  const m = Math.max(2, Math.ceil(total / step));
-  for (let k = 0; k <= m; k++) {
-    const d = (k / m) * total;
+  const m = Math.max(2, Math.ceil(total / 1.6));
+  const pts: [number, number][] = [];
+  for (let q = 0; q <= m; q++) {
+    const d = (q / m) * total;
     let i = 1;
     while (i < cum.length - 1 && cum[i]! < d) i++;
     const f = (d - cum[i - 1]!) / Math.max(1e-6, cum[i]! - cum[i - 1]!);
     pts.push([t.pts[i - 1]![0] + (t.pts[i]![0] - t.pts[i - 1]![0]) * f, t.pts[i - 1]![1] + (t.pts[i]![1] - t.pts[i - 1]![1]) * f]);
   }
-  for (let k = 0; k <= m; k++) {
-    const a = pts[Math.max(0, k - 1)]!;
-    const b = pts[Math.min(m, k + 1)]!;
-    const dx = b[0] - a[0];
-    const dz = b[1] - a[1];
+  for (let q = 0; q <= m; q++) {
+    const pa = pts[Math.max(0, q - 1)]!;
+    const pb = pts[Math.min(m, q + 1)]!;
+    const dx = pb[0] - pa[0];
+    const dz = pb[1] - pa[1];
     const l = Math.hypot(dx, dz) || 1;
-    const nx = -dz / l;
-    const nz = dx / l;
     for (const side of [-1, 1]) {
-      const x = pts[k]![0] + nx * t.hw * side;
-      const z = pts[k]![1] + nz * t.hw * side;
-      pos.push(x, gy(x, z) + 0.035, z);
-      uvs.push(side * t.hw, (k / m) * total);
-      sd.push(seed, t.hw, total);
+      const x = pts[q]![0] + (-dz / l) * t.hw * side;
+      const z = pts[q]![1] + (dx / l) * t.hw * side;
+      a.pos.push(x, gy(x, z) + 0.035, z);
+      a.uv.push(side * t.hw, (q / m) * total);
+      a.p.push(seed, t.hw, total);
+      a.k.push(K[t.kind]);
     }
   }
-  for (let k = 0; k < m; k++) {
-    const a = k * 2;
-    idx.push(a, a + 1, a + 2, a + 1, a + 3, a + 2); // ngược chiều kim đồng hồ nhìn từ trên (mặt hướng lên)
+  for (let q = 0; q < m; q++) {
+    const i = base + q * 2;
+    a.idx.push(i, i + 1, i + 2, i + 1, i + 3, i + 2); // mặt hướng lên
   }
-  return { pos, uv: uvs, seed: sd, idx };
 }
 
-interface Acc {
-  pos: number[];
-  uv: number[];
-  seed: number[];
-  idx: number[];
-}
-const empty = (): Acc => ({ pos: [], uv: [], seed: [], idx: [] });
-function append(acc: Acc, g: Acc): void {
-  const base = acc.pos.length / 3;
-  acc.pos.push(...g.pos);
-  acc.uv.push(...g.uv);
-  acc.seed.push(...g.seed);
-  for (const i of g.idx) acc.idx.push(i + base);
-}
 function toGeometry(a: Acc): THREE.BufferGeometry {
   const g = new THREE.BufferGeometry();
   g.setAttribute('position', new THREE.Float32BufferAttribute(a.pos, 3));
   g.setAttribute('uv', new THREE.Float32BufferAttribute(a.uv, 2));
-  g.setAttribute('aP', new THREE.Float32BufferAttribute(a.seed, 3));
+  g.setAttribute('aP', new THREE.Float32BufferAttribute(a.p, 3));
+  g.setAttribute('aK', new THREE.Float32BufferAttribute(a.k, 1));
   g.setAttribute(
     'normal',
     new THREE.Float32BufferAttribute(
@@ -302,100 +293,42 @@ function toGeometry(a: Acc): THREE.BufferGeometry {
   return g;
 }
 
-export function buildGroundGeometry(layout = groundLayout()): Map<DecalKind, { acc: Acc; tris: number }> {
-  const out = new Map<DecalKind, { acc: Acc; tris: number }>();
-  const get = (k: DecalKind) => {
+/** Hai mesh: `ground` (mọi mẫu trừ vũng) và `puddle`. */
+export function buildGroundGeometry(list = vignettes()): Map<'ground' | 'puddle', { acc: Acc; tris: number }> {
+  const out = new Map<'ground' | 'puddle', { acc: Acc; tris: number }>();
+  const get = (k: 'ground' | 'puddle') => {
     let e = out.get(k);
     if (!e) out.set(k, (e = { acc: empty(), tris: 0 }));
     return e;
   };
-  layout.trails.forEach((t, i) => {
-    const e = get('foot');
-    const g = trailGeo(t, hash01(i, 3, 3));
-    append(e.acc, g);
-    e.tris += g.idx.length / 3;
+  list.forEach((v, vi) => {
+    v.trails.forEach((t, i) => trailGeo(get('ground').acc, t, hash01(vi, i, 3)));
+    for (const p of v.patches)
+      patchGeo(get(p.kind === 'puddle' ? 'puddle' : 'ground').acc, p, p.kind === 'puddle' ? 8 : 10, p.kind === 'puddle' ? 0 : K[p.kind]);
   });
-  const wash = get('wash');
-  wash.acc = washGeo();
-  wash.tris = wash.acc.idx.length / 3;
-  for (const p of layout.patches) {
-    const e = get(p.kind);
-    const g = patchGeo(p, p.kind === 'puddle' ? 8 : 12);
-    append(e.acc, g);
-    e.tris += g.idx.length / 3;
-  }
+  for (const e of out.values()) e.tris = e.acc.idx.length / 3;
   return out;
 }
 
-/** Lớp "wash": một lưới thưa phủ cả sân, trọng số mật độ theo đỉnh (aP.y); lá, rêu, đất trọc vẽ bằng nhiễu thế giới trong shader. */
-function washGeo(): Acc {
-  const a = empty();
-  const x0 = -150;
-  const z0 = -110;
-  const step = 3;
-  const nx = 100;
-  const nz = 90;
-  const id = new Map<number, number>();
-  const vtx = (i: number, j: number): number => {
-    const k = j * (nx + 1) + i;
-    let v = id.get(k);
-    if (v === undefined) {
-      const x = x0 + i * step;
-      const z = z0 + j * step;
-      v = a.pos.length / 3;
-      a.pos.push(x, gy(x, z) + 0.045, z);
-      a.uv.push(0, 0);
-      a.seed.push(0, groundWeight(x, z), 0);
-      id.set(k, v);
-    }
-    return v;
-  };
-  for (let j = 0; j < nz; j++)
-    for (let i = 0; i < nx; i++) {
-      const w = Math.max(groundWeight(x0 + i * step, z0 + j * step), groundWeight(x0 + (i + 1) * step, z0 + (j + 1) * step));
-      if (w < 0.18) continue;
-      // bỏ ô dốc/gồ ghề (mép hác, sườn núi): dây cung lơ lửng trên khoảng trống hoặc cắm vào vách, nhiễu bị kéo thành sọc dọc
-      const xa = x0 + i * step;
-      const za = z0 + j * step;
-      const hs = [gy(xa, za), gy(xa + step, za), gy(xa, za + step), gy(xa + step, za + step)];
-      const mid = gy(xa + step / 2, za + step / 2);
-      if (Math.max(...hs) - Math.min(...hs) > WASH_MAX_RANGE || Math.abs((hs[0]! + hs[3]!) / 2 - mid) > WASH_MAX_SAG) continue;
-      if (
-        [
-          [xa, za],
-          [xa + step, za],
-          [xa, za + step],
-          [xa + step, za + step],
-          [xa + step / 2, za + step / 2],
-        ].some(([cx, cz]) => gorgeDrop(TC_GORGE, SECT.x + cx!, SECT.z + cz!) > 0)
-      )
-        continue;
-      const p = vtx(i, j);
-      const q = vtx(i + 1, j);
-      const r = vtx(i, j + 1);
-      const t = vtx(i + 1, j + 1);
-      a.idx.push(p, r, q, q, r, t);
-    }
-  return a;
-}
-
-/** Số liệu cho test: số loại (draw call) và tam giác. */
-export function groundStats(): { kinds: number; tris: number; trails: number; patches: Record<string, number> } {
-  const l = groundLayout();
-  const b = buildGroundGeometry(l);
+export function groundStats(): { meshes: number; tris: number; vignettes: number; patches: Record<string, number> } {
+  const list = vignettes();
+  const b = buildGroundGeometry(list);
   const patches: Record<string, number> = {};
-  for (const p of l.patches) patches[p.kind] = (patches[p.kind] ?? 0) + 1;
+  for (const v of list) for (const p of v.patches) patches[p.kind] = (patches[p.kind] ?? 0) + 1;
   let tris = 0;
   for (const e of b.values()) tris += e.tris;
-  return { kinds: b.size, tris, trails: l.trails.length, patches };
+  return { meshes: b.size, tris, vignettes: list.length, patches };
 }
 
 // ---------- vật liệu ----------
 
 const aP = () => attribute('aP', 'vec3');
-/** Gốc uv tròn: (−1..1) tâm mảnh. */
+const aK = () => attribute('aK', 'float');
+/** uv tròn (−1..1) quanh tâm mảnh. */
 const cuv = () => uv().sub(0.5).mul(2);
 const wp = () => positionWorld.xz;
+/** 1 khi thuộc tính aK bằng n, 0 nếu không (aK là hằng trên cả mảnh). */
+const isK = (n: number) => smoothstep(0.6, 0.4, aK().sub(n).abs());
 
 function baseMat(): THREE.MeshStandardNodeMaterial {
   const m = new THREE.MeshStandardNodeMaterial({ transparent: true, depthWrite: false, roughness: 0.95, metalness: 0 });
@@ -405,171 +338,168 @@ function baseMat(): THREE.MeshStandardNodeMaterial {
   return m;
 }
 
-/** Vệt mòn + vết chân so le (hai bàn chân/1,15 m). */
-function footMaterial(): THREE.MeshStandardNodeMaterial {
+/** Một shader cho mọi mẫu trên đất: chỉ mẫu trùng `aK` đóng góp. Mảnh nhỏ nên chi phí điểm ảnh không đáng kể (không phủ cả bản đồ). */
+function groundMaterial(): THREE.MeshStandardNodeMaterial {
   const m = baseMat();
   const p = aP();
+  const c = cuv();
+  const r = length(c);
+  const w = wp();
+  const edgeN = vnoise(w.mul(0.8)).sub(0.5);
+
+  // --- foot: vệt mòn + vệt bánh xe + dấu chân so le ---
   const x = uv().x;
   const s = uv().y;
   const hw = p.y;
-  const total = p.z;
-  const worn = smoothstep(hw, hw.mul(0.35), x.abs()).mul(vnoise(wp().mul(0.7)).mul(0.55).add(0.45));
-  const ends = smoothstep(0, 4, s).mul(smoothstep(0, 4, total.sub(s)));
-  const cell = s.div(1.15);
-  const i = floor(cell);
-  const side = fract(i.mul(0.5)).sub(0.25).sign(); // so le trái/phải (-1 / +1)
-  const dx = x.sub(side.mul(0.2));
-  const ym = fract(cell).sub(0.5).mul(1.15);
-  // bàn chân = mũi (oval lớn) + gót (oval nhỏ) cách nhau một khe
-  const toe = dx.div(0.13).pow(2).add(ym.add(0.14).div(0.22).pow(2)).sqrt();
-  const heel = dx.div(0.09).pow(2).add(ym.sub(0.2).div(0.11).pow(2)).sqrt();
-  const print = max(smoothstep(1.0, 0.6, toe), smoothstep(1.0, 0.6, heel)).mul(smoothstep(hw.mul(0.9), hw.mul(0.5), x.abs()));
-  // chỉ một phần dấu chân còn rõ (mòn dần): dựa trên nhiễu theo ô
-  const keep = smoothstep(0.35, 0.6, vnoise(vec2(i.mul(1.7), p.x.mul(9))));
-  // hai vệt bánh xe (rãnh sâu, hai bên tim 0,6·hw), đứt quãng theo nhiễu
+  const worn = smoothstep(hw, hw.mul(0.35), x.abs()).mul(vnoise(w.mul(0.7)).mul(0.5).add(0.5));
+  const ends = smoothstep(0, 3, s).mul(smoothstep(0, 3, p.z.sub(s)));
   const rut = smoothstep(0.14, 0.04, x.abs().sub(hw.mul(0.6)).abs())
     .mul(smoothstep(0.3, 0.55, vnoise(vec2(s.mul(0.45), x.sign().mul(3.7)))))
     .mul(worn);
-  const a = clamp(worn.mul(0.85).add(print.mul(keep).mul(0.6)).add(rut.mul(0.5)), 0, 0.95).mul(ends);
-  m.colorNode = mix(mix(vec3(0.2, 0.14, 0.085), vec3(0.06, 0.042, 0.027), rut), vec3(0.03, 0.02, 0.013), print.mul(keep));
-  m.opacityNode = a;
-  return m;
-}
+  const cell = s.div(1.15);
+  const i = floor(cell);
+  const side = fract(i.mul(0.5)).sub(0.25).sign();
+  const dx = x.sub(side.mul(0.2));
+  const ym = fract(cell).sub(0.5).mul(1.15);
+  const toe = dx.div(0.13).pow(2).add(ym.add(0.14).div(0.22).pow(2)).sqrt();
+  const heel = dx.div(0.09).pow(2).add(ym.sub(0.2).div(0.11).pow(2)).sqrt();
+  const print = max(smoothstep(1.0, 0.6, toe), smoothstep(1.0, 0.6, heel))
+    .mul(smoothstep(hw.mul(0.9), hw.mul(0.5), x.abs()))
+    .mul(smoothstep(0.3, 0.55, vnoise(vec2(i.mul(1.7), p.x.mul(9)))));
+  const footA = clamp(worn.mul(0.9).add(print.mul(0.8)).add(rut.mul(0.6)), 0, 0.97).mul(ends);
+  const footC = mix(mix(vec3(0.07, 0.048, 0.028), vec3(0.025, 0.017, 0.01), rut), vec3(0.015, 0.01, 0.006), print);
 
-/** Vũng nước: bóng như gương (roughness thấp), viền loang theo nhiễu, gợn nhẹ. */
-function puddleMaterial(): THREE.MeshStandardNodeMaterial {
-  const m = baseMat();
-  m.roughness = 0.1;
-  m.metalness = 0.1;
-  const c = cuv();
-  const d = length(c).add(vnoise(wp().mul(1.1)).sub(0.5).mul(0.5));
-  const mask = smoothstep(1.0, 0.78, d);
-  const rip = sin(length(c).mul(18).sub(time.mul(1.2)))
-    .mul(0.5)
-    .add(0.5)
-    .mul(smoothstep(0.5, 0.0, length(c)));
-  m.colorNode = mix(vec3(0.012, 0.02, 0.026), vec3(0.03, 0.045, 0.052), smoothstep(0.9, 0.3, d));
-  m.emissiveNode = vec3(0.02, 0.03, 0.038).add(vec3(0.02).mul(rip));
-  m.opacityNode = mask.mul(0.72);
-  return m;
-}
+  // --- moss: rêu dọc dải (chân tường) ---
+  const mossA = smoothstep(hw, hw.mul(0.1), x.abs().add(vnoise(w.mul(1.6)).sub(0.5).mul(hw)))
+    .mul(vnoise(w.mul(0.45)).mul(0.6).add(0.55))
+    .mul(ends)
+    .clamp(0, 0.92);
 
-/** Gạch vỡ: đường nứt đen + mảnh đá vụn sáng. */
-function crackMaterial(): THREE.MeshStandardNodeMaterial {
-  const m = baseMat();
-  const c = cuv();
-  const r = length(c);
-  const edge = smoothstep(1.0, 0.45, r.add(vnoise(wp().mul(0.8)).sub(0.5).mul(0.6)));
-  const n1 = vnoise(wp().mul(0.55));
-  const n2 = vnoise(wp().mul(1.4).add(7.3));
-  const l1 = float(1).sub(smoothstep(0.0, 0.03, n1.sub(0.5).abs()));
-  const l2 = float(1)
-    .sub(smoothstep(0.0, 0.022, n2.sub(0.5).abs()))
-    .mul(0.75);
-  const cracks = max(l1, l2).mul(edge);
-  const bits = smoothstep(0.74, 0.8, vnoise(wp().mul(4.6).add(3.1)))
-    .mul(edge)
-    .mul(smoothstep(0.55, 0.9, vnoise(wp().mul(0.9))));
-  m.colorNode = mix(vec3(0.02, 0.022, 0.025), vec3(0.42, 0.44, 0.42), bits);
-  m.opacityNode = clamp(cracks.mul(0.85).add(bits.mul(0.8)), 0, 0.9);
-  return m;
-}
+  // --- crack: nứt mảnh ---
+  const fade = smoothstep(1.0, 0.45, r.add(edgeN.mul(0.6)));
+  const n1 = vnoise(w.mul(0.55));
+  const n2 = vnoise(w.mul(1.4).add(7.3));
+  const crackL = max(
+    float(1).sub(smoothstep(0.0, 0.03, n1.sub(0.5).abs())),
+    float(1)
+      .sub(smoothstep(0.0, 0.022, n2.sub(0.5).abs()))
+      .mul(0.75),
+  ).mul(fade);
+  const crackA = clamp(crackL.mul(0.85), 0, 0.9);
 
-/** Ấn trận: vòng + gạch khắc quanh + sao tám cánh mờ, phát sáng nhịp thở. Pha trộn thường (cộng sáng làm trắng bệch giữa ngày), không ghi sâu. */
-function sealMaterial(): THREE.MeshBasicNodeMaterial {
-  const m = new THREE.MeshBasicNodeMaterial({ transparent: true, depthWrite: false, toneMapped: false });
-  m.polygonOffset = true;
-  m.polygonOffsetFactor = -4;
-  m.polygonOffsetUnits = -4;
-  const c = cuv();
-  const r = length(c);
+  // --- burst: nứt tỏa tia từ điểm chưởng đánh + vòng cháy ở tâm ---
   const ang = atan(c.y, c.x)
     .div(Math.PI * 2)
     .add(0.5);
-  const ring = (r0: number, w: number) => smoothstep(w, 0, r.sub(r0).abs());
+  const wob = vnoise(vec2(r.mul(5), p.x.mul(30)))
+    .sub(0.5)
+    .mul(0.35);
+  const lane = fract(ang.mul(9).add(wob)).sub(0.5).abs();
+  const ray = smoothstep(0.09, 0.0, lane.mul(r.add(0.25)))
+    .mul(smoothstep(0.08, 0.2, r))
+    .mul(smoothstep(1.0, 0.5, r.add(edgeN.mul(0.4))));
+  const scorch = smoothstep(0.22, 0.05, r).mul(0.8);
+  const burstA = clamp(max(ray.mul(0.95), scorch), 0, 0.95);
+
+  // --- root: rễ trồi tỏa nhánh + rêu bám quanh ---
+  const wobR = vnoise(vec2(r.mul(3.2), p.x.mul(40)))
+    .sub(0.5)
+    .mul(0.28);
+  const laneR = fract(ang.mul(7).add(wobR)).sub(0.5).abs();
+  const widthR = float(0.3)
+    .mul(smoothstep(1.0, 0.1, r))
+    .add(0.03);
+  const arm = smoothstep(widthR, widthR.mul(0.35), laneR.mul(r.mul(2.2).add(0.4)));
+  const keepR = smoothstep(0.4, 0.55, vnoise(vec2(ang.mul(7).floor(), p.x.mul(13))));
+  const rootA = arm
+    .mul(keepR)
+    .mul(smoothstep(1.0, 0.7, r))
+    .mul(smoothstep(0.04, 0.14, r))
+    .mul(0.92);
+  const rootC = mix(vec3(0.06, 0.04, 0.025), vec3(0.2, 0.15, 0.09), smoothstep(0.0, widthR, laneR.mul(0.7)).oneMinus().mul(0.6));
+  const rootMoss = smoothstep(0.85, 0.2, r.add(edgeN.mul(0.5)))
+    .mul(smoothstep(0.4, 0.6, vnoise(w.mul(0.9))))
+    .mul(0.7);
+
+  // --- leaves: đống lá gom ---
+  const leafDot = max(smoothstep(0.56, 0.63, vnoise(w.mul(3).add(vec2(3, 9)))), smoothstep(0.6, 0.66, vnoise(w.mul(4.4).add(vec2(8, 2)))));
+  const leavesA = leafDot.mul(smoothstep(1.0, 0.25, r.add(edgeN.mul(0.5)))).mul(0.92);
+  const tone = vnoise(w.mul(1.3));
+  const leafC = mix(
+    mix(vec3(0.15, 0.095, 0.04), vec3(0.22, 0.17, 0.07), smoothstep(0.35, 0.6, tone)),
+    vec3(0.12, 0.18, 0.05),
+    smoothstep(0.65, 0.85, tone),
+  );
+
+  // --- chips: đá vụn sáng ---
+  const chipsA = smoothstep(0.7, 0.76, vnoise(w.mul(5.2).add(vec2(1, 5))))
+    .mul(smoothstep(1.0, 0.35, r.add(edgeN.mul(0.5))))
+    .mul(0.9);
+
+  // --- seal: ấn trận khắc mờ (phát sáng nhẹ) ---
+  const ring = (r0: number, wd: number) => smoothstep(wd, 0, r.sub(r0).abs());
   const rings = max(ring(0.93, 0.045), max(ring(0.64, 0.035), ring(0.32, 0.03)));
   const ticks = smoothstep(0.8, 0.86, fract(ang.mul(72))).mul(smoothstep(0.035, 0.0, r.sub(0.8).abs().sub(0.04)));
   const star = smoothstep(0.03, 0.0, fract(ang.mul(8)).sub(0.5).abs().mul(r))
     .mul(smoothstep(0.62, 0.34, r))
     .mul(smoothstep(0.1, 0.2, r));
-  // mòn: nhiễu khoét từng đoạn ấn cho cũ kỹ
-  const erode = smoothstep(0.3, 0.62, vnoise(c.mul(4.2).add(aP().x.mul(31))));
-  const pulse = sin(time.mul(0.9).add(aP().x.mul(20)))
+  const erode = smoothstep(0.3, 0.62, vnoise(c.mul(4.2).add(p.x.mul(31))));
+  const pulse = sin(time.mul(0.9).add(p.x.mul(20)))
     .mul(0.25)
     .add(0.75);
-  const g = max(rings, max(ticks.mul(0.55), star))
+  const sealG = max(rings, max(ticks.mul(0.55), star))
     .mul(erode)
     .mul(smoothstep(1.0, 0.9, r))
     .mul(pulse);
-  m.colorNode = mix(vec3(0.2, 0.55, 0.5), vec3(0.78, 0.5, 0.12), smoothstep(0.3, 0.95, r)).mul(0.9);
-  m.opacityNode = clamp(g.mul(0.6), 0, 0.65);
-  return m;
-}
+  const sealC = mix(vec3(0.2, 0.55, 0.5), vec3(0.78, 0.5, 0.12), smoothstep(0.3, 0.95, r));
 
-/** Rễ cây trồi: ~7 nhánh tỏa từ gốc, mảnh dần ra ngoài, uốn theo nhiễu. */
-function rootMaterial(): THREE.MeshStandardNodeMaterial {
-  const m = baseMat();
-  const c = cuv();
-  const r = length(c);
-  const ang = atan(c.y, c.x)
-    .div(Math.PI * 2)
-    .add(0.5);
-  const wob = vnoise(vec2(r.mul(3.2), aP().x.mul(40)))
-    .sub(0.5)
-    .mul(0.28);
-  const lane = fract(ang.mul(7).add(wob)).sub(0.5).abs(); // 0 tại tim nhánh
-  const width = float(0.2)
-    .mul(smoothstep(1.0, 0.1, r))
-    .add(0.015);
-  const arm = smoothstep(width, width.mul(0.35), lane.mul(r.mul(2.2).add(0.4)));
-  const keep = smoothstep(0.4, 0.55, vnoise(vec2(ang.mul(7).floor(), aP().x.mul(13)))); // bỏ vài nhánh
-  const a = arm
-    .mul(keep)
-    .mul(smoothstep(1.0, 0.7, r))
-    .mul(smoothstep(0.04, 0.14, r));
-  m.colorNode = mix(vec3(0.09, 0.06, 0.04), vec3(0.2, 0.15, 0.09), smoothstep(0.0, width, lane.mul(0.7)).oneMinus().mul(0.6));
-  m.opacityNode = a.mul(0.92);
-  return m;
-}
-
-/** Lá rụng gom đống, rêu loang, đất trọc: bốn lần lấy nhiễu thế giới, độ dày theo trọng số đỉnh (aP.y). */
-function washMaterial(): THREE.MeshStandardNodeMaterial {
-  const m = baseMat();
-  m.polygonOffsetFactor = -1;
-  m.polygonOffsetUnits = -1; // dưới các decal có chủ đích
-  const p = wp();
-  const w = aP().y;
-  const big = vnoise(p.mul(0.07).add(vec2(11, 3)));
-  const mid = vnoise(p.mul(0.21).add(vec2(2, 17)));
-  // đất trọc: vài mảng lớn, mép rách theo nhiễu mịn
-  const bare = smoothstep(0.5, 0.56, big.mul(0.7).add(mid.mul(0.3))).mul(w);
-  // rêu: mảng vừa, xanh đậm
-  const moss = smoothstep(0.46, 0.6, mid.mul(0.8).add(big.mul(0.2))).mul(w.mul(0.9));
-  // lá rụng: đống (cụm nhiễu thấp tần) × từng chiếc lá (nhiễu cao tần ngưỡng)
-  const pile = smoothstep(w.mul(-0.22).add(0.68), w.mul(-0.12).add(0.8), vnoise(p.mul(0.33).add(vec2(7, 1)))).mul(w);
-  const leafA = max(smoothstep(0.56, 0.63, vnoise(p.mul(3.4).add(vec2(3, 9)))), smoothstep(0.6, 0.66, vnoise(p.mul(5.3).add(vec2(8, 2)))));
-  const leaf = leafA.mul(pile.mul(1.6).add(w.mul(0.1))).clamp(0, 1);
-  const tone = mid;
-  const leafCol = mix(
-    mix(vec3(0.15, 0.095, 0.04), vec3(0.2, 0.16, 0.07), smoothstep(0.35, 0.6, tone)),
-    vec3(0.12, 0.18, 0.05),
-    smoothstep(0.62, 0.8, tone),
-  );
-  const col = mix(mix(vec3(0.1, 0.075, 0.045), vec3(0.04, 0.1, 0.025), moss.mul(1.2).clamp(0, 1)), leafCol, leaf);
+  const k0 = isK(K.foot);
+  const k3 = isK(K.root);
+  const k4 = isK(K.moss);
+  const k5 = isK(K.leaves);
+  const k6 = isK(K.chips);
+  const k7 = isK(K.seal);
+  const alpha = k0
+    .mul(footA)
+    .add(isK(K.crack).mul(crackA))
+    .add(isK(K.burst).mul(burstA))
+    .add(k3.mul(max(rootA, rootMoss)))
+    .add(k4.mul(mossA))
+    .add(k5.mul(leavesA))
+    .add(k6.mul(chipsA))
+    .add(k7.mul(clamp(sealG.mul(0.85), 0, 0.85)));
+  // nứt/ấn trận: nền tối; mỗi mẫu khác ghi đè màu theo `aK`
+  const col0 = mix(vec3(0.03, 0.03, 0.035), footC, k0);
+  const col1 = mix(col0, mix(vec3(0.04, 0.1, 0.025), rootC, smoothstep(0.1, 0.5, rootA)), k3);
+  const col2 = mix(col1, vec3(0.06, 0.17, 0.03), k4);
+  const col3 = mix(col2, leafC, k5);
+  const col = mix(col3, vec3(0.4, 0.41, 0.39), k6);
   m.colorNode = col;
-  m.opacityNode = clamp(max(bare.mul(0.9), max(moss.mul(0.7), leaf.mul(0.78))), 0, 0.95);
+  m.opacityNode = clamp(alpha, 0, 0.95);
+  m.emissiveNode = sealC.mul(sealG).mul(k7).mul(1.5);
   return m;
 }
 
-const MATERIALS: Record<DecalKind, () => THREE.Material> = {
-  wash: washMaterial,
-  foot: footMaterial,
-  puddle: puddleMaterial,
-  crack: crackMaterial,
-  seal: sealMaterial,
-  root: rootMaterial,
-};
-const ORDER: Record<DecalKind, number> = { wash: 0, foot: 1, crack: 2, root: 3, puddle: 4, seal: 5 };
+/** Vũng nước: gần gương (roughness thấp) phản chiếu trời, viền loang, lá rơi nổi. */
+function puddleMaterial(): THREE.MeshStandardNodeMaterial {
+  const m = baseMat();
+  m.roughness = 0.1;
+  m.metalness = 0.1;
+  const c = cuv();
+  const w = wp();
+  const d = length(c).add(vnoise(w.mul(1.1)).sub(0.5).mul(0.5));
+  const mask = smoothstep(1.0, 0.78, d);
+  const rip = sin(length(c).mul(18).sub(time.mul(1.2)))
+    .mul(0.5)
+    .add(0.5)
+    .mul(smoothstep(0.5, 0.0, length(c)));
+  const leaf = smoothstep(0.66, 0.72, vnoise(w.mul(3.6).add(vec2(5, 1)))).mul(smoothstep(0.85, 0.5, d));
+  const water = mix(vec3(0.012, 0.02, 0.026), vec3(0.03, 0.045, 0.052), smoothstep(0.9, 0.3, d));
+  m.colorNode = mix(water, vec3(0.22, 0.15, 0.06), leaf);
+  m.emissiveNode = vec3(0.02, 0.03, 0.038).add(vec3(0.02).mul(rip)).mul(float(1).sub(leaf));
+  m.opacityNode = max(mask.mul(0.72), leaf.mul(0.9));
+  return m;
+}
 
 export class LacKiemGround {
   readonly group = new THREE.Group();
@@ -585,15 +515,13 @@ export class LacKiemGround {
     let tris = 0;
     for (const [kind, e] of b) {
       const g = toGeometry(e.acc);
-      // toạ độ đỉnh đã là tương đối tâm (không cộng SECT): trừ y 0 và để group dịch x,z
       this.geos.push(g);
-      const mat = MATERIALS[kind]();
+      const mat = kind === 'puddle' ? puddleMaterial() : groundMaterial();
       this.mats.push(mat);
       const mesh = new THREE.Mesh(g, mat);
       mesh.name = `tc-ground-${kind}`;
-      mesh.renderOrder = ORDER[kind];
-      mesh.receiveShadow = false;
-      mesh.frustumCulled = false; // bao cầu lớn, dải rải cả bản đồ: một mesh/loại, rẻ
+      mesh.renderOrder = kind === 'puddle' ? 4 : 1;
+      mesh.frustumCulled = false; // vài tiểu cảnh rải khắp sân: một mesh/loại, rẻ
       this.group.add(mesh);
       tris += e.tris;
     }
