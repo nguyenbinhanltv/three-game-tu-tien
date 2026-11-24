@@ -12,7 +12,7 @@ import { fileURLToPath } from 'node:url';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const sharp = createRequire(path.join(here, 'package.json'))('sharp');
-// Tỉ lệ phủ THẬT của từng sprite = phần ô có alpha > 16%: đo từ atlas (`apps/client/public/hoa-truc/vfx_sprites.webp`, kéo bằng `pnpm assets:pull`), thứ tự ô = `FX_SPRITES`.
+// Tỉ lệ phủ THẬT của từng sprite = phần ô có alpha > 16%: đo từ atlas (`SPRITE_ATLAS_FILE` ở `render/vfx/art.ts`, kéo bằng `pnpm assets:pull`), thứ tự ô = `FX_SPRITES`.
 // Nhờ đó sprite dạng dải mảnh (zigzag, giáo) không bị tính như ô vuông đặc.
 const NAMES = [
   ...fs
@@ -22,7 +22,7 @@ const NAMES = [
 ].map((m) => m[1]);
 const FILL = {};
 {
-  const atlas = 'apps/client/public/hoa-truc/vfx_sprites.webp';
+  const atlas = `apps/client/public/${fs.readFileSync('apps/client/src/render/vfx/art.ts', 'utf8').match(/SPRITE_ATLAS_FILE = '([^']+)'/)[1]}`;
   if (fs.existsSync(atlas)) {
     const { data, info } = await sharp(atlas).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
     const cell = info.width / 4;
