@@ -59,4 +59,7 @@ Kiểm từng bộ: `pnpm shots clothcheck --out <thư mục> --set <bộ> --gen
 | Lưu Ly | 0,39 (0,44 đo lại) | đợt 2 |
 | Phục Mạch | 0,33 | đợt 2 |
 | Thần Tạng | 0,60 với `maxLagS` 0,08 → 0,36 với 0,12 | đợt 2 |
+| Liệt Mạch | 0,24 | đợt 3 |
+| Kính Quang | 0,37 | đợt 3 |
+| Địa Giáp (`dia_long`) | 0,33 | đợt 3 |
 
