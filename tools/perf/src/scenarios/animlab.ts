@@ -312,7 +312,12 @@ async function run(r: Run, poses: string[], cams: string[], sizes: string[]): Pr
         t = m;
         // Ghim mọi animation CSS (thẻ cut-in) đúng mốc `m`: chụp ảnh chậm hơn 0,3 s nên không thể dựa vào đồng hồ thật.
         await page.evaluate((ms) => document.getAnimations().forEach((a) => ((a.currentTime = ms), a.pause())), m * 1000);
-        await snap(page, r.out, `cutin-${setId === 'none' ? 'de_tu' : setId}-${tag}-${Math.round(m * 1000)}ms.jpg`, { wait: 0 });
+        await snap(
+          page,
+          r.out,
+          `cutin-${setId === 'none' ? 'de_tu' : setId}-${opt('--gender', 'm')}-${tag}-${Math.round(m * 1000)}ms.jpg`,
+          { wait: 0 },
+        );
       }
       // Thẻ cut-in tự hết hạn (0,9 s thời gian thật); ghim animation chỉ ảnh hưởng ảnh chụp: trả chạy tiếp rồi chờ.
       await page.evaluate(() => document.getAnimations().forEach((a) => a.play()));

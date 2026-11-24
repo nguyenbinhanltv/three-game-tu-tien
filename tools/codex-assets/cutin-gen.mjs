@@ -44,7 +44,11 @@ const THIEN_GIAI = {
 const GAME_REF = ['de_tu', 'lac_kiem', 'huyen_giap', 'dan_tam'];
 const SETS = {};
 for (const g of ['m', 'f']) {
-  const who = g === 'm' ? 'young male cultivator' : 'young female cultivator';
+  // Giới tính phải đọc ra ngay (tranh nữ từng ra trung tính/nam): nêu rõ đặc điểm.
+  const who =
+    g === 'm'
+      ? 'young MALE cultivator (unmistakably masculine: strong jawline, broad shoulders, masculine face and hands)'
+      : 'young FEMALE cultivator (unmistakably feminine and must read as a woman at a glance: soft oval face, delicate jaw, long lashes, soft lips, slender neck and shoulders, graceful slim hands, elegant hair with hair ornaments)';
   for (const [k, pre] of Object.entries(THIEN_GIAI))
     SETS[`${k}_${g}`] = { ref: path.join(refDir, `${pre}_${g === 'm' ? 'nam' : 'nu'}_front.png`), who, game: false };
   for (const k of GAME_REF) SETS[`${k}_${g}`] = { ref: path.join(outDir, 'ref', `${k}_${g}.png`), who, game: true };
@@ -98,6 +102,8 @@ function run(id) {
   if (fs.existsSync(out) && !force) return Promise.resolve({ id, ok: true, skipped: true });
   if (!fs.existsSync(ref)) return Promise.resolve({ id, ok: false, note: `thiếu ảnh tham chiếu ${ref}` });
   fs.mkdirSync(outDir, { recursive: true });
+  // `--force`: bỏ file cũ trước, để file cũ không bị tính là kết quả (và không chặn bước cứu ảnh từ kho Codex).
+  if (fs.existsSync(out)) fs.unlinkSync(out);
   const body = `${NOTE.replace('./OUT', `./${id}.png`)}\n\n${prompt(set.who, set.game)}\n`;
   fs.writeFileSync(path.join(outDir, `${id}.prompt.txt`), prompt(set.who, set.game) + '\n');
   const log = fs.createWriteStream(path.join(outDir, `${id}.log`));
