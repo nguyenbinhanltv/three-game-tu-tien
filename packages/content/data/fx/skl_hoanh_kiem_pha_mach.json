@@ -105,7 +105,7 @@
    "erodeFrom": 0.8,
    "ragged": 0.5,
    "tone": "body",
-   "alpha": 0.4,
+   "alpha": 0.26,
    "tier": 0,
    "seed": 1000,
    "shape": "sprite",
@@ -116,8 +116,8 @@
     1,
     2
    ],
-   "scale": 2,
-   "scaleTo": 2.88,
+   "scale": 1.55,
+   "scaleTo": 2.23,
    "align": "aim"
   },
   {
@@ -148,7 +148,7 @@
    "erodeFrom": 0.2,
    "ragged": 0.5,
    "tone": "body",
-   "alpha": 0.95,
+   "alpha": 0.62,
    "tier": 0,
    "seed": 1001,
    "shape": "sprite",
@@ -159,14 +159,14 @@
     1,
     6.2
    ],
-   "scale": 7.22,
-   "scaleTo": 8.8,
+   "scale": 5.59,
+   "scaleTo": 6.82,
    "align": "aim"
   },
   {
    "type": "mesh",
    "t": 0.02,
-   "dur": 0.18,
+   "dur": 0.1,
    "at": "ahead",
    "sweep": 0,
    "erodeFrom": 0.3,
@@ -183,8 +183,8 @@
     1.1,
     11
    ],
-   "scale": 1.76,
-   "scaleTo": 2.2
+   "scale": 0.74,
+   "scaleTo": 0.93
   },
   {
    "type": "decal",
@@ -212,7 +212,7 @@
    "erodeFrom": 0.2,
    "ragged": 0.5,
    "tone": "body",
-   "alpha": 0.75,
+   "alpha": 0.49,
    "tier": 0,
    "seed": 1003,
    "shape": "sprite",
@@ -223,8 +223,8 @@
     1.2,
     6
    ],
-   "scale": 2.56,
-   "scaleTo": 2.56,
+   "scale": 1.98,
+   "scaleTo": 1.98,
    "move": {
     "to": "ahead",
     "offset": [
@@ -265,7 +265,7 @@
     "erodeFrom": 0.3,
     "ragged": 0.5,
     "tone": "body",
-    "alpha": 0.8,
+    "alpha": 0.52,
     "tier": 0,
     "seed": 1004,
     "shape": "sprite",
@@ -276,8 +276,8 @@
      0.9,
      15
     ],
-    "scale": 4.8,
-    "scaleTo": 4.8,
+    "scale": 3.72,
+    "scaleTo": 3.72,
     "align": "aim"
    }
   ],
@@ -291,7 +291,7 @@
     "erodeFrom": 0.1,
     "ragged": 0.5,
     "tone": "body",
-    "alpha": 0.85,
+    "alpha": 0.55,
     "tier": 0,
     "seed": 1005,
     "shape": "sprite",
@@ -302,8 +302,8 @@
      0.9,
      1
     ],
-    "scale": 3.2,
-    "scaleTo": 3.2,
+    "scale": 2.48,
+    "scaleTo": 2.48,
     "align": "aim",
     "move": {
      "to": "ahead",

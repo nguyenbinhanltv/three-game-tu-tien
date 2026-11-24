@@ -24,13 +24,13 @@ const mesh = (o) => ({
 /** Hệ số cỡ theo chiêu (chỉnh sau khi đo `pnpm shots vfxlab --clean`: chiêu thường phủ ≤ 0,2, chiêu cuối ≤ 0,35). */
 let K = 1;
 const SCALE = {
-  skl_kiem_anh_bo: 1,
+  skl_kiem_anh_bo: 1.15,
   skl_phi_kiem_truy_hon: 1,
   skl_van_kiem_quy_tong: 0.75,
-  skl_hoanh_kiem_pha_mach: 0.8,
+  skl_hoanh_kiem_pha_mach: 0.62,
   skl_kiem_vu_tam_diep: 0.9,
   skl_kiem_dan_ban_menh: 1,
-  skl_nghich_kiem_chuyen_phong: 0.8,
+  skl_nghich_kiem_chuyen_phong: 0.62,
   skl_phan_anh_kiem_anh: 0.9,
   skl_thuan_di_tram: 0.9,
   skl_thien_kiem_hoa_hinh: 0.55,
@@ -41,6 +41,8 @@ const ALPHA = {
   skl_van_kiem_quy_tong: 0.85,
   skl_thien_kiem_hoa_hinh: 0.8,
   skl_phan_anh_kiem_anh: 0.8,
+  skl_hoanh_kiem_pha_mach: 0.65,
+  skl_nghich_kiem_chuyen_phong: 0.65,
 };
 /** Sprite vẽ tay (billboard). `size` mét (ô vuông), `off` offset tâm. */
 const sprite = (name, o) => {
@@ -118,8 +120,9 @@ const ground = (at, off, size, t = 0.02, o = {}) =>
 const SPEC = {
   // Kiếm Ảnh Bộ (lướt, mọi mốc ≥ 0): hàng ảnh kiếm nối đuôi dọc đường lướt, hai đầu bật chớp chữ thập.
   skl_kiem_anh_bo: () => [
-    flash('self', [0, 1.1, 0], 1.8, 0),
-    strike('kiem_afterimages', { size: 7.5, at: 'ahead', off: [0, 1.1, 3.4], dur: 0.5, align: 'aim' }),
+    flash('self', [0, 1.1, 0], 2.4, 0, { dur: 0.22 }),
+    strike('kiem_afterimages', { size: 8.5, at: 'ahead', off: [0, 1.1, 2.4], dur: 0.6, align: 'aim', erodeFrom: 0.3 }),
+    sprite('kiem_slash', { t: 0.02, dur: 0.4, at: 'ahead', off: [0, 1.2, 1.6], size: 4.2, alpha: 0.9, align: 'aim', erodeFrom: 0.3 }),
     flash('ahead', [0, 1.1, 6.4], 2.2, 0.02),
     scorch('ahead', [0, 0.02, 6.2], 2.4),
     after('ahead', [0, 1.2, 5], 2.2, 0.2, 1.1),
@@ -163,7 +166,7 @@ const SPEC = {
     ...[gather('kiem_wave', { size: 5, off: [0, 1.0, 2], rest: { at: 'ahead', align: 'aim' } })],
     pullIn('self', [0, 1.1, 0.6], -0.24),
     strike('kiem_wave', { size: 11, at: 'ahead', off: [0, 1.0, 6.2], dur: 0.5, align: 'aim', erodeFrom: 0.2 }),
-    flash('ahead', [0, 1.1, 11], 2.2, 0.02),
+    flash('ahead', [0, 1.1, 11], 1.2, 0.02, { dur: 0.1 }),
     scorch('ahead', [0, 0.02, 6.2], 2.6, 0.02),
     after('ahead', [0, 1.2, 6], 3.2, 0.2, 1.1),
     sparks('ahead', [0, 1.1, 6], 12, 0.02),
@@ -192,9 +195,9 @@ const SPEC = {
   ],
   // Nghịch Kiếm Chuyển Phong (lướt, mọi mốc ≥ 0): kiếm quang thẳng quấn xoáy gió xoắn ốc như mũi khoan, cuốn lá bụi hai bên.
   skl_nghich_kiem_chuyen_phong: () => [
-    flash('self', [0, 1.1, 0], 1.8, 0),
+    flash('self', [0, 1.1, 0], 1.2, 0, { dur: 0.1 }),
     strike('kiem_drill', { size: 8.5, at: 'ahead', off: [0, 1.2, 4], dur: 0.55, align: 'aim', erodeFrom: 0.25 }),
-    flash('ahead', [0, 1.2, 8], 2.2, 0.03),
+    flash('ahead', [0, 1.2, 8], 1.2, 0.03, { dur: 0.1 }),
     scorch('ahead', [0, 0.02, 4.4], 3.4),
     after('ahead', [0, 1.3, 5], 2.6, 0.22, 1.2),
     sparks('ahead', [0, 1.2, 5], 10, 0.05),
