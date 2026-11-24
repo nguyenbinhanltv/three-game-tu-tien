@@ -19,8 +19,8 @@ interface Flock {
 }
 /** Tương đối tâm tông môn. `w` > 0 ngược chiều kim đồng hồ. */
 export const BIRD_FLOCKS: Flock[] = [
-  { cx: 0, cz: 40, r: 24, w: 0.3, y: 11, n: 5 },
-  { cx: -58, cz: 62, r: 20, w: -0.26, y: 9, n: 4 },
+  { cx: 0, cz: 40, r: 11, w: 0.4, y: 9, n: 4 },
+  { cx: -50, cz: 52, r: 10, w: -0.38, y: 8, n: 3 },
 ];
 
 /** Thân + hai cánh dạng chữ V dẹt: mũi +z, sải cánh ±x; `wing` (thuộc tính) = 0 ở thân, 1 ở mút cánh (để vỗ). Sải ~1,1 m. */
