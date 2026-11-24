@@ -562,7 +562,7 @@ export function spriteNodes(U: FxUniforms): { color: N; opacity: N } {
   const ts = texture(spriteAtlas(), vec2(q.x.add(sCol).div(SPRITE_COLS), q.y.add(float(SPRITE_ROWS - 1).sub(sRow)).div(SPRITE_ROWS)));
   const spLum = dot(ts.rgb, vec3(0.3, 0.59, 0.11));
   // Độ sáng cảm nhận của tranh, kéo giãn tương phản: vùng tối = lõi, giữa = thân, sáng = viền/chi tiết (ngón tay, mặt, lưỡi giáo).
-  const spTier = smoothstep(0.2, 0.92, spLum.sqrt());
+  const spTier = smoothstep(0.12, 0.62, spLum.sqrt());
   const spBody = U.color;
   const spRim = U.b.xyz;
   const spCore = spBody.mul(spBody).mul(0.1);

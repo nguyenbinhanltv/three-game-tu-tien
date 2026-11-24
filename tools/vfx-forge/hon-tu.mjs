@@ -53,12 +53,12 @@ const pullIn = (at, off, t = -0.26) => sparks(at, off, 12, t, { speed: 1.7, life
  * Nhịp trúng: hình chính bật ra ở 80% cỡ rồi lớn dần, mỏng dần từ `erodeFrom`; `flash` thêm bản sáng lạnh to hơn chút sống 0,18 s (điểm nhấn khung +30 ms).
  */
 const strike = (name, o) => {
-  const { size, off, move, flash = false, t = 0, dur = 0.62, alpha = 0.92, erodeFrom = 0.1, ...rest } = o;
+  const { size, off, move, flash = false, t = 0, dur = 0.5, alpha = 0.92, erodeFrom = 0.05, ...rest } = o;
   const end = move?.offset ?? off;
   const out = [sprite(name, { t, dur, off, size: size * 0.8, sizeTo: size, alpha, erodeFrom, move, ...rest })];
   if (flash)
     out.push(
-      sprite(name, { t, dur: 0.18, off: end, size: size * 1.02, sizeTo: size * 1.12, alpha: 0.65, tone: 'rim', erodeFrom: 0.15, ...rest }),
+      sprite(name, { t, dur: 0.18, off: end, size: size * 1.02, sizeTo: size * 1.1, alpha: 0.4, tone: 'rim', erodeFrom: 0.15, ...rest }),
     );
   return out;
 };
@@ -125,7 +125,7 @@ const SPEC = {
       ...P.flatMap(([x, z]) => gather('hon_soldier', { size: 3.1, off: [x, 1.5, z], rest: { at: 'self' } })),
       pullIn('self', [0, 1.2, 0], -0.24),
       ...P.flatMap(([x, z], i) =>
-        strike('hon_soldier', { size: 3.1, at: 'self', off: [x, 1.55, z], flash: i === 0, dur: 1.1, erodeFrom: 0.3, t: i * 0.04 }),
+        strike('hon_soldier', { size: 3.1, at: 'self', off: [x, 1.55, z], flash: i === 0, dur: 0.95, erodeFrom: 0.08 }),
       ),
       ...P.map(([x, z]) => puff('self', [x, 0.3, z], 1.4, 0.02, 0.4, 0.9)),
       after('self', [0, 1.3, 0], 3.2, 0.2, 1.5),
@@ -136,7 +136,7 @@ const SPEC = {
   skl_te_phien: () => [
     ...gather('hon_banner', { size: 3.6, off: [0.8, 1.6, 0], rest: { at: 'self' } }),
     pullIn('self', [0.8, 0.6, 0]),
-    ...strike('hon_banner', { size: 3.6, at: 'self', off: [0.8, 2.0, 0], flash: true, dur: 1.2, erodeFrom: 0.35 }),
+    ...strike('hon_banner', { size: 3.6, at: 'self', off: [0.8, 2.0, 0], flash: true, dur: 0.95, erodeFrom: 0.1 }),
     puff('self', [0.8, 0.3, 0], 1.6, 0, 0.45, 1),
     after('self', [0.4, 0.9, 0.3], 2, 0.17, 1.4),
     sparks('self', [0.8, 3.4, 0], 8, 0.25),
@@ -154,7 +154,7 @@ const SPEC = {
   skl_am_phong: () => [
     ...gather('hon_tornado', { size: 4.2, off: [0, 1.6, 0] }),
     pullIn('target', [0, 1.2, 0], -0.22),
-    ...strike('hon_tornado', { size: 4.2, off: [0, 2.2, 0], flash: true, dur: 0.8, erodeFrom: 0.2 }),
+    ...strike('hon_tornado', { size: 4.2, off: [0, 2.2, 0], flash: true, dur: 0.7, erodeFrom: 0.08 }),
     sprite('hon_tornado', { t: 0.05, dur: 0.7, off: [0.3, 1.9, 0.2], size: 3.2, alpha: 0.5, erodeFrom: 0.2 }),
     puff('target', [0, 0.35, 0], 2.2, 0, 0.4),
     after('target', [0, 3.0, 0], 3, 0.17, 1.5),
@@ -175,7 +175,7 @@ const SPEC = {
   skl_hon_chuong: () => [
     ...gather('hon_ring', { size: 3.4, off: [0, 0.9, 0], rest: { at: 'self' } }),
     pullIn('self', [0, 1, 0], -0.24),
-    ...strike('hon_ring', { size: 3.4, at: 'self', off: [0, 0.95, 0], flash: true, dur: 1.3, erodeFrom: 0.4 }),
+    ...strike('hon_ring', { size: 3.4, at: 'self', off: [0, 0.95, 0], flash: true, dur: 1.0, erodeFrom: 0.1 }),
     sprite('hon_veil', { t: 0.04, dur: 1.2, at: 'self', off: [0, 1.5, -0.4], size: 3.0, alpha: 0.55, erodeFrom: 0.35 }),
     sprite('hon_face_pale', { t: 0.08, dur: 1.1, at: 'self', off: [0, 2.7, -0.2], size: 1.9, alpha: 0.85, erodeFrom: 0.4 }),
     after('self', [0, 1.4, 0], 2.4, 0.2, 1.5),
@@ -285,7 +285,7 @@ const SPEC = {
         return sprite(nm, {
           t: 0.01 * i,
           dur: 0.7,
-          off: [r2(Math.cos(a) * 0.5), 1.5, r2(Math.sin(a) * 0.5)],
+          off: [r2(Math.cos(a) * 1), 1.5, r2(Math.sin(a) * 1)],
           size: 1.7,
           sizeTo: 2,
           alpha: 0.92,

@@ -90,7 +90,7 @@
    "erodeFrom": 0.15,
    "ragged": 0.5,
    "tone": "rim",
-   "alpha": 0.65,
+   "alpha": 0.4,
    "tier": 0,
    "seed": 1002,
    "shape": "sprite",
@@ -102,7 +102,7 @@
     0
    ],
    "scale": 4.488,
-   "scaleTo": 4.928000000000001
+   "scaleTo": 4.840000000000001
   },
   {
    "type": "mesh",

@@ -170,9 +170,9 @@
    "sprite": "hon_face_scream",
    "billboard": true,
    "offset": [
-    0.48,
+    0.96,
     1.5,
-    0.15
+    0.3
    ],
    "scale": 1.7,
    "scaleTo": 2,
@@ -202,9 +202,9 @@
    "sprite": "hon_face_grin",
    "billboard": true,
    "offset": [
-    0.23,
+    0.47,
     1.5,
-    0.44
+    0.88
    ],
    "scale": 1.7,
    "scaleTo": 2,
@@ -234,9 +234,9 @@
    "sprite": "hon_face_horn",
    "billboard": true,
    "offset": [
-    -0.15,
+    -0.3,
     1.5,
-    0.48
+    0.96
    ],
    "scale": 1.7,
    "scaleTo": 2,
@@ -266,9 +266,9 @@
    "sprite": "hon_face_sad",
    "billboard": true,
    "offset": [
-    -0.44,
+    -0.88,
     1.5,
-    0.23
+    0.47
    ],
    "scale": 1.7,
    "scaleTo": 2,
@@ -298,9 +298,9 @@
    "sprite": "hon_wraith",
    "billboard": true,
    "offset": [
-    -0.48,
+    -0.96,
     1.5,
-    -0.15
+    -0.3
    ],
    "scale": 1.7,
    "scaleTo": 2,
@@ -330,9 +330,9 @@
    "sprite": "hon_face_pale",
    "billboard": true,
    "offset": [
-    -0.23,
+    -0.47,
     1.5,
-    -0.44
+    -0.88
    ],
    "scale": 1.7,
    "scaleTo": 2,
@@ -362,9 +362,9 @@
    "sprite": "hon_face_scream",
    "billboard": true,
    "offset": [
-    0.15,
+    0.3,
     1.5,
-    -0.48
+    -0.96
    ],
    "scale": 1.7,
    "scaleTo": 2,
@@ -394,9 +394,9 @@
    "sprite": "hon_face_horn",
    "billboard": true,
    "offset": [
-    0.44,
+    0.88,
     1.5,
-    -0.23
+    -0.47
    ],
    "scale": 1.7,
    "scaleTo": 2,

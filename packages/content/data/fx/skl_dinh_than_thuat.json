@@ -109,10 +109,10 @@
   {
    "type": "mesh",
    "t": 0,
-   "dur": 0.62,
+   "dur": 0.5,
    "at": "target",
    "sweep": 0,
-   "erodeFrom": 0.1,
+   "erodeFrom": 0.05,
    "ragged": 0.5,
    "tone": "body",
    "alpha": 0.92,
@@ -147,7 +147,7 @@
    "erodeFrom": 0.15,
    "ragged": 0.5,
    "tone": "rim",
-   "alpha": 0.65,
+   "alpha": 0.4,
    "tier": 0,
    "seed": 1002,
    "shape": "sprite",
@@ -159,7 +159,7 @@
     0
    ],
    "scale": 4.08,
-   "scaleTo": 4.48
+   "scaleTo": 4.4
   },
   {
    "type": "mesh",
