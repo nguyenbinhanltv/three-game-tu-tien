@@ -1,0 +1,36 @@
+{
+  "skillId": "skl_hon_chuong",
+  "idea": "Màn hồn che thân: bức màn khói hồn tím-đen dày bao quanh người như tấm vải bay, gờ sáng lạnh, mặt hồn mờ lộ trong khói.",
+  "element": "thuy",
+  "path": "hon_tu",
+  "shapeLang": [
+    "cloud",
+    "ring"
+  ],
+  "timing": {
+    "anticipationMs": 380,
+    "impactMs": 80,
+    "lingerMs": 520
+  },
+  "footprint": {
+    "lengthM": 4,
+    "widthM": 2.5,
+    "heightM": 2
+  },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": {
+    "drawCalls": 7,
+    "particles": 60,
+    "screenCover": 0.12,
+    "overdraw": 4
+  },
+  "textures": [],
+  "impactFrame": true,
+  "silhouette": "một bức màn khói cong như tấm vải khổng lồ bao quanh thân từ vai tới chân, gấp nếp, có một MẶT HỒN mờ hiện ra trong nếp vải",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles"
+  ]
+}

@@ -68,7 +68,7 @@ export interface VfxCard {
   materials?: VfxMaterial[];
 }
 
-export const VFX_MATERIALS = ['flipbook', 'smoke', 'particles', 'crack', 'distort'] as const;
+export const VFX_MATERIALS = ['flipbook', 'sprite', 'smoke', 'particles', 'crack', 'distort'] as const;
 export type VfxMaterial = (typeof VFX_MATERIALS)[number];
 
 /** Trần ngân sách theo kiểu chiêu: không thẻ nào được xin quá. */
@@ -247,11 +247,13 @@ export function checkStandard2(c: VfxCard, events: readonly TlEvent[], ult: bool
       ? events.some((x) => x.type === 'particles')
       : m === 'flipbook'
         ? events.some((x) => x.type === 'mesh' && x.shape === 'flip')
-        : m === 'smoke'
-          ? events.some((x) => x.type === 'mesh' && (x.shape === 'smoke' || (x.shape === 'flip' && /smoke|dust/.test(x.flip ?? ''))))
-          : m === 'crack'
-            ? events.some((x) => (x.type === 'decal' && x.tex === 'crack') || (x.type === 'mesh' && String(x.shape).startsWith('crack')))
-            : events.some((x) => x.type === 'distort');
+        : m === 'sprite'
+          ? events.some((x) => x.type === 'mesh' && x.shape === 'sprite')
+          : m === 'smoke'
+            ? events.some((x) => x.type === 'mesh' && (x.shape === 'smoke' || (x.shape === 'flip' && /smoke|dust/.test(x.flip ?? ''))))
+            : m === 'crack'
+              ? events.some((x) => (x.type === 'decal' && x.tex === 'crack') || (x.type === 'mesh' && String(x.shape).startsWith('crack')))
+              : events.some((x) => x.type === 'distort');
   for (const m of c.materials ?? []) if (!has(m)) e.push(`${at}: khai materials "${m}" nhưng timeline không có lớp đó`);
   const meshes = events.filter((x) => x.type === 'mesh');
   if (meshes.length && meshes.every((x) => GENERIC_SHAPES.has(String(x.shape)))) {

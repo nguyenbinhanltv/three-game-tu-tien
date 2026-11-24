@@ -1,0 +1,35 @@
+{
+  "skillId": "skl_hoang_tuyen_dan",
+  "idea": "Hoàng tuyền đạn: quả cầu khói hồn tím-đen nổ trong vùng 6 mét, nhiều mặt hồn mờ bay ra thành đuôi khói, viền sáng lạnh.",
+  "element": "thuy",
+  "path": "hon_tu",
+  "shapeLang": [
+    "burst",
+    "cloud"
+  ],
+  "timing": {
+    "anticipationMs": 500,
+    "impactMs": 80,
+    "lingerMs": 500
+  },
+  "footprint": {
+    "lengthM": 12,
+    "widthM": 12,
+    "heightM": 6
+  },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": {
+    "drawCalls": 12,
+    "particles": 140,
+    "screenCover": 0.18,
+    "overdraw": 6
+  },
+  "textures": [],
+  "silhouette": "một quả cầu khói nổ tung thành chùm MẶT HỒN mờ bay tỏa ra như đàn, mỗi mặt kéo đuôi khói về phía tâm nổ",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles"
+  ]
+}

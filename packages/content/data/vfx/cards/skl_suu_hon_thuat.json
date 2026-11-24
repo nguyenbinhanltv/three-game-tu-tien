@@ -1,0 +1,35 @@
+{
+  "skillId": "skl_suu_hon_thuat",
+  "idea": "Sưu hồn: sợi hồn xanh lam sáng bị rút ra khỏi mục tiêu bay về người ra chiêu theo đường uốn, nền khói tím-đen.",
+  "element": "thuy",
+  "path": "hon_tu",
+  "shapeLang": [
+    "spiral",
+    "line"
+  ],
+  "timing": {
+    "anticipationMs": 200,
+    "impactMs": 80,
+    "lingerMs": 800
+  },
+  "footprint": {
+    "lengthM": 14,
+    "widthM": 2.5,
+    "heightM": 2
+  },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": {
+    "drawCalls": 9,
+    "particles": 60,
+    "screenCover": 0.17,
+    "overdraw": 4
+  },
+  "textures": [],
+  "silhouette": "một sợi hồn xanh lam sáng uốn chữ S nối từ mục tiêu về người ra chiêu, dọc sợi có vài hạt cầu hồn, nền khói tím đen thấp ở hai đầu",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles"
+  ]
+}

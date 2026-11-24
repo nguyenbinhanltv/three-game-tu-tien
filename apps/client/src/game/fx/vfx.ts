@@ -158,6 +158,7 @@ export class Vfx {
       'sigilTop',
       'card',
       'art',
+      'sprite',
       'wind',
       'mapDecal',
       'mapDecalTop',
