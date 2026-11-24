@@ -72,8 +72,8 @@ Các số còn lại của bảng spec (chân bước tới 0,38 m / hai chân r
 
 ## Ảnh then chốt
 
-- [`game-lac_kiem_quyet/nam-chieu-kiem-khi-tram.webp`](game-lac_kiem_quyet/nam-chieu-kiem-khi-tram.webp)
-- [`game-lac_kiem_quyet/nu-chieu-kiem-khi-tram.webp`](game-lac_kiem_quyet/nu-chieu-kiem-khi-tram.webp)
+- `game-lac_kiem_quyet/nam-chieu-kiem-khi-tram.webp`
+- `game-lac_kiem_quyet/nu-chieu-kiem-khi-tram.webp`
 
 ## C3a: cường điệu thân người cho camera chéo 52° (Chân Cảnh)
 
@@ -90,7 +90,7 @@ Các số còn lại của bảng spec (chân bước tới 0,38 m / hai chân r
 ## C3e: hai giọng `ht` (hồn tu) và `ct` (cổ tu), clip lướt tấn công
 
 - `ht` (hậu tố `_ht`, `paths.json` → `hon_tu.voice = "ht"`): trôi nhẹ, vẫy cờ hồn theo cung rộng ngang vai (hạ hông 0,03 m, quá đà 0,13, tầm tay 0,60, bước lùi dài). `ct` (`_ct`, `co_tu.voice = "ct"`): khom thấp vồ như rắn (hạ hông 0,12 m, cột sống gập 14°→20°, tầm tay thấp 0,56, quá đà ngắn 0,08, tay trái cào). Mỗi giọng 4 pose có giọng (`phi_kiem`, `_2`, `_3`, `kiem_khi_tram`); trần kiểm ở `RANGE.ht/ct` của `k5poses.test.ts`. Cấm chế sư vẫn dùng giọng đan sư; thể tu và cổ thần dùng hộ pháp (giữ nguyên, chưa có giọng riêng).
-- Lướt tấn công: chiêu `dash` có `power > 0` (Thiết Bích Xung, Nghịch Kiếm Chuyển Phong, Dịch Sơn Xung, Cự Bộ Xung) phát clip UAL `Sword_Dash` thay `Roll` (`dashClipOf` ở `hitDir.ts`; lướt thuần/né vẫn `Roll`). Ảnh: `pnpm shots hitdir --mode dash` (lăn vs lướt đao, +100/+220 ms).
+- Lướt tấn công: chiêu `dash` có `power > 0` (Thiết Bích Xung, Nghịch Kiếm Chuyển Phong, Dịch Sơn Xung, Cự Bộ Xung) phát clip UAL `Sword_Dash` thay `Roll` (`dashClipOf` ở `hitDir.ts`; lướt thuần/né vẫn `Roll`). Ảnh: `pnpm shots hitdir --mode dash` (kịch bản đã gỡ ở tối ưu Đợt C) (lăn vs lướt đao, +100/+220 ms).
 
 ## C3f — thể tu (`tt`) và cấm chế sư (`cs`)
 

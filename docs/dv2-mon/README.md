@@ -49,7 +49,7 @@ Lệch so với thiết kế: (1) vệt lửa 3 s của Ma Ngưu chưa có (chư
 
 `pnpm --filter @dtl/server fight:check --levels 28 --mon mon_liet_hoa_ma_nguu`: TTK 7,1 / 7,7 / 12,6 s (kiếm / hộ pháp / đan sư), mất 3–5% máu mỗi con; Cốt Lộc TTK 3,4–6,9 s (đo với hpMul 1,2), mất 9–14%. Đan sư chậm hơn khoảng kiểm ở mọi quái thường cấp 28, không riêng hai con này.
 
-Xem asset: `pnpm shots asset --ids mon_liet_hoa_ma_nguu,mon_u_anh_cot_loc --clips idle,run,attack,hit_light,death --out <thư mục tuyệt đối>`. Đánh thử trong game: `pnpm shots divuc --out <thư mục tuyệt đối>` (kịch bản mới, `tools/perf/src/scenarios/divuc.ts`).
+Xem asset: `pnpm shots asset --ids mon_liet_hoa_ma_nguu,mon_u_anh_cot_loc --clips idle,run,attack,hit_light,death --out <thư mục tuyệt đối>`. Đánh thử trong game: `pnpm shots divuc --out <thư mục tuyệt đối>` (kịch bản đã gỡ ở tối ưu Đợt C) (kịch bản mới, `tools/perf/src/scenarios/divuc.ts` (kịch bản đã gỡ ở tối ưu Đợt C)).
 
 ## Bẫy
 
@@ -82,7 +82,7 @@ GLB nguồn đều có `asset.extras.license` CC-BY-4.0 (bản Maltherion không
 ## Client
 `MonsterSkin.mannequin: true` (`game/character/monsterSkins.ts`): `MonsterSkins` nạp thêm thư viện `anim_ual_native` (một lần, giữ tới `dispose`), chỉnh độ cao hông theo từng lưới (`pelvisScaledClips`, `game/character/mannequinMonster.ts`) rồi dùng `SkinnedMonster` thường với `ClipMap` trỏ tên clip UAL. Không bám địa hình bằng IK (`legs: 'none'`). Bảng clip: nền `MQ_CLIPS` (Idle_Loop, Walk_Loop, Jog_Fwd_Loop, Sword_Attack, Hit_Chest, Death01, Hit_Knockback), Tẫn chủng dáng zombie (`Zombie_Idle_Loop`, `Zombie_Walk_Fwd_Loop`, `Zombie_Scratch`), Trọng Binh thủ khiên (`Idle_Shield_Loop`). Thêm 5 clip vào `anim_ual_native` (`Zombie_*`, `Idle_Shield_Loop`, `Melee_Hook`; thư viện 2,0 → 2,2 MB, chỉ nạp khi cần). Thời điểm chạm của đòn lớn đo bằng tốc độ cổ tay đạt đỉnh (Blender): Sword_Attack 0,33 s, Sword_Regular_A 0,20 s, Zombie_Scratch 0,47 s, Melee_Hook 0,20 s (quái giáp/khiên chỉ dùng Sword_Attack/Sword_Regular_A).
 
-Xem clip: `pnpm shots asset --ids mon_tan_chung,mon_giac_kiem_trong_binh,elite_hoi_giac_cu_thu --lib ual --clips Idle_Loop,Jog_Fwd_Loop,Sword_Attack,Hit_Chest,Death01 --out <thư mục tuyệt đối>` (hoặc `?mute=1&show=<id>&lib=ual`). Đánh thử: `pnpm shots divuc --mons mon_tan_chung,mon_giac_kiem_trong_binh,elite_hoi_giac_cu_thu --out <thư mục tuyệt đối>`.
+Xem clip: `pnpm shots asset --ids mon_tan_chung,mon_giac_kiem_trong_binh,elite_hoi_giac_cu_thu --lib ual --clips Idle_Loop,Jog_Fwd_Loop,Sword_Attack,Hit_Chest,Death01 --out <thư mục tuyệt đối>` (hoặc `?mute=1&show=<id>&lib=ual`). Đánh thử: `pnpm shots divuc --mons mon_tan_chung,mon_giac_kiem_trong_binh,elite_hoi_giac_cu_thu --out <thư mục tuyệt đối>` (kịch bản đã gỡ ở tối ưu Đợt C).
 
 ## Dữ liệu
 | Quái | Hành | hp/atk/xp | Chiêu |
@@ -173,7 +173,7 @@ Sáng ở 12–24 m: texture nướng đã có tím sáng nên không đổi b�
 | Pha 30% | `sweep` nón 14 m, 45°, báo 1,3 s, tốc độ ×1,1 |
 Thưởng `loot.json`: linh thạch 800–1.300, Tử Khí Đan, Tẫn Giác ×2–4, thiết tinh, linh ngọc Thổ, trang bị Địa/Thiên. i18n `mon.boss_thu_khich_duc_chu.*` (tên, danh hiệu, lời `say`), `glossary.divucMonsters`, `credits.json` (`aetherion_nemesis`), `assets/LICENSES.md`. Quest `q5_thu_khich` (kill Thủ Khích Dực Chủ) khỏi cần khai chờ dữ liệu nữa (vẫn khóa bằng `minLevel` 31 > cấp tối đa). Hồi sinh 30 phút. **Chưa làm**: lời hắn nói khi gục chỉ hiện ở i18n, chưa nối vào cảnh.
 
-Xem: `/gm spawn boss_thu_khich_duc_chu`; `pnpm shots asset --ids boss_thu_khich_duc_chu --lib ual --clips Idle_Loop,Jog_Fwd_Loop,Sword_Attack,Hit_Chest,Death01 --out <thư mục tuyệt đối>`; `pnpm shots divuc --mons boss_thu_khich_duc_chu --dist 9 --pitch 0.12 --yaw 1.57 --quiet --rounds 26 --out <thư mục tuyệt đối>`.
+Xem: `/gm spawn boss_thu_khich_duc_chu`; `pnpm shots asset --ids boss_thu_khich_duc_chu --lib ual --clips Idle_Loop,Jog_Fwd_Loop,Sword_Attack,Hit_Chest,Death01 --out <thư mục tuyệt đối>`; `pnpm shots divuc --mons boss_thu_khich_duc_chu --dist 9 --pitch 0.12 --yaw 1.57 --quiet --rounds 26 --out <thư mục tuyệt đối>` (kịch bản đã gỡ ở tối ưu Đợt C).
 
 ## Vệt lửa Tẫn Hỏa Kiếm Cơ (hoàn thiện #231)
 DIVUC 5.2: "vệt lửa trên sàn 8 s sau mỗi đường chém". **Server quyết định**: `MonsterLine.trail`/`MonsterCharge.trail` (`MonsterTrail {dur, tick, mul, r, kind}` ở `types.ts`): khi vạch `line`/`charge` được đặt, `MonSkills.start` gọi `host.trail`, `MonZones.addTrail` đặt chuỗi vũng tròn dọc vạch (`trailSpots` ở `shared/monskill.ts`: cách nhau 1,5 r, tối đa 8 vũng) bắt đầu **đúng lúc vạch nổ** (cùng `delay`), tồn tại 8 s, mỗi 1 s ai đứng trong vũng chịu 0,3 × atk của boss (cùng đường `poisonHit` với vũng độc Kim Thiền; người ngự kiếm cao > 8 m không bị). `POOL_MAX` 24 → 32. Kiếm Cơ: cả `charge` (16 × 3 m) và `line` (pha 65%) để vệt, `r` 1,8 m, `kind: fire`. `content:check` kiểm `trail` (3–12 s, nhịp 0,5–2 s, `mul` ≤ 0,6, `r` 1–4 m, ≤ 8 vũng mỗi vệt) và `anchor`.

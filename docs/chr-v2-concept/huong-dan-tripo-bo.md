@@ -46,9 +46,9 @@ Báo tên mảnh đã lưu. Claude nhập bằng `tools/blender/outfit_build.py`
 
 ## Ảnh then chốt
 
-- [`lac-kiem-manh.webp`](lac-kiem-manh.webp)
-- [`lac-kiem-toan-than.webp`](lac-kiem-toan-than.webp)
-- [`liet-mach-manh.webp`](liet-mach-manh.webp)
-- [`liet-mach-toan-than.webp`](liet-mach-toan-than.webp)
-- [`tan-thu-manh.webp`](tan-thu-manh.webp)
-- [`tan-thu-toan-than.webp`](tan-thu-toan-than.webp)
+- `lac-kiem-manh.webp`
+- `lac-kiem-toan-than.webp`
+- `liet-mach-manh.webp`
+- `liet-mach-toan-than.webp`
+- `tan-thu-manh.webp`
+- `tan-thu-toan-than.webp`

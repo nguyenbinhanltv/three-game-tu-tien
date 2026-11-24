@@ -17,6 +17,6 @@ export {
   type MapMotif,
   type SlotShape,
 } from './ornament';
-export { isSysIcon, SealNumeral, SYS_ICON_NAMES, SysIcon, type SysIconName } from './icons';
+export { isSysIcon, SealNumeral, SysIcon, type SysIconName } from './icons';
 export { installMotion, setReduceMotion, useReduceMotion } from './motion';
 export { MethodCarousel } from './MethodCarousel';

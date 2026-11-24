@@ -63,6 +63,7 @@ export const V3_DYE_REF: Readonly<Record<string, V3DyeRef>> = {
   chr_v3_lac_kiem: chroma('#3B6584', zone('#E4DEC8', 0.12), zone('#8e8b88', 0.08)),
   chr_v3b_lac_kiem: chroma('#3B6584', zone('#E4DEC8', 0.12), zone('#8e8b88', 0.08)),
   chr_v3b2_lac_kiem: chroma('#3B6584', zone('#E4DEC8', 0.12), zone('#8e8b88', 0.08)),
+  chr_v3b3_lac_kiem: chroma('#3B6584', zone('#E4DEC8', 0.12), zone('#8e8b88', 0.08)),
   chr_v3_huyen_giap: neutral('#363435', zone('#5f4f42', 0.11), zone('#b8975f', 0.14)),
   chr_v3_kinh_quang: neutral('#b9b5b9', zone('#7f8c9f', 0.1), zone('#c2b296', 0.1)),
   chr_v3_liet_mach: chroma('#ae937b', zone('#4d4034', 0.1), zone('#d9bf86', 0.05), true),

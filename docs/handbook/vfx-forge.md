@@ -25,7 +25,7 @@
 | 5 | Ba nhịp: báo trước → trúng (+30 ms có điểm nhấn) → dư ba | `checkStandard2`: có sự kiện hình trước mốc trúng (nếu `anticipationMs` ≥ 150), quanh ±50 ms, và từ +150 ms |
 | 6 | Đúng màu hướng tu, không đỏ/cam cho chiêu người chơi | `checkStandard2` chặn tông (`body/core/rim/accent/shadow`) của bảng hướng tu mà HSL là đỏ/cam; `vfxlab` đo `redShare` ≤ 3% |
 | 7 | Ngân sách: phủ ≤ 0,2 (chiêu cuối ≤ 0,35), draw/hạt theo thẻ | `checkStandard2` + `vfxlab` (`overBudget`) |
-| 8 | Ảnh duyệt 720p + 1080p, ngày + đêm, khung báo/0/+30/+150, clip chiêu cuối | `pnpm shots vfxlab --skill ... [--mood night] [--clip 1]` + `tools/vfx-forge/table.mjs` |
+| 8 | Ảnh duyệt 720p + 1080p, ngày + đêm, khung báo/0/+30/+150, clip chiêu cuối | `pnpm shots vfxlab --skill ... [--mood night] [--clip 1]` |
 
 Bật kiểm cho một thẻ bằng cách thêm vào thẻ `"standard": 2`, `"silhouette": "<mô tả hình riêng>"`, `"materials": ["smoke", ...]` (giá trị: `flipbook|smoke|particles|crack|distort`). Thẻ cũ không có `standard` thì không bị kiểm (đợt làm lại sẽ bật dần). Phần đo trên ảnh của `vfxlab` chỉ cảnh báo (cột `overBudget`), vì ảnh có lẫn chuyển động của nhân vật/hình nộm. Mẫu tham chiếu chất lượng: concept Hàn Giao (quái).
 

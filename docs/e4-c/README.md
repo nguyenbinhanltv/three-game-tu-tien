@@ -28,11 +28,11 @@ Repo chỉ giữ 5 ảnh then chốt; bộ đầy đủ (cổng, đợt 1–6, c
 
 | Ảnh | Nội dung |
 | --- | --- |
-| ![Toàn cảnh](01b-toan-canh.jpg) | Toàn cảnh sảnh điện, đợt 1 |
-| ![Cửa phong ấn](05e-cua-2-pha-an-phu.jpg) | Mở cửa phong ấn bằng Phá Ấn Phù |
-| ![Sáu tay](07b-sau-tay-1.jpg) | Vô Diện Thần Quân, sáu vạch nón xoay + ấn ngũ hành |
-| ![Phân thân](09-phan-than-1.jpg) | Pha 2, phân thân thần niệm |
-| ![Hoàn thành](11-hoan-thanh.jpg) | Hạ boss, hoàn thành |
+| *(ảnh đã gỡ khỏi repo: Toàn cảnh)* | Toàn cảnh sảnh điện, đợt 1 |
+| *(ảnh đã gỡ khỏi repo: Cửa phong ấn)* | Mở cửa phong ấn bằng Phá Ấn Phù |
+| *(ảnh đã gỡ khỏi repo: Sáu tay)* | Vô Diện Thần Quân, sáu vạch nón xoay + ấn ngũ hành |
+| *(ảnh đã gỡ khỏi repo: Phân thân)* | Pha 2, phân thân thần niệm |
+| *(ảnh đã gỡ khỏi repo: Hoàn thành)* | Hạ boss, hoàn thành |
 
 `log.json`: phòng `dungeon-than_tang`, WebGPU, ~55 draw call, ~227k tam giác, 0 lỗi console; cả ba cờ phong ấn (`barrierMsg`, `door1`, `allOpen`) và `bossMsgs` đều true.
 

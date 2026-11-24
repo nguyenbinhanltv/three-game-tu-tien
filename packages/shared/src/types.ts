@@ -1108,7 +1108,7 @@ export interface ThienKhuyetSky {
   array: { x: number; z: number; r: number };
   /** Số mảnh đá trời lơ lửng. */
   shards: number;
-  /** Cột son dọc đại lộ: vị trí và độ cao đất thật `y` (sinh bằng `tools/perf/src/tk-pillars.ts`; GLB nướng cột nên cần `y` có sẵn). */
+  /** Cột son dọc đại lộ: vị trí và độ cao đất thật `y` (sinh một lần từ `heightAt`; GLB nướng cột nên cần `y` có sẵn). */
   pillars: { x: number; z: number; y: number; kind: 'gay' | 'dung' | 'do' }[];
 }
 

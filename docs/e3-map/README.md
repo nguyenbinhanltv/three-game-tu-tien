@@ -79,13 +79,13 @@ Một hàm `heightAt` chung (client, server, công cụ) gồm:
 
 | | |
 | --- | --- |
-| Bố cục nhìn từ trên (map:report: đảo, cầu, tinh anh vàng) | ![](layout-topdown.webp) |
+| Bố cục nhìn từ trên (map:report: đảo, cầu, tinh anh vàng) | *(ảnh đã gỡ khỏi repo)* |
 | Nền minimap | _(ảnh đã gỡ)_ |
-| Bản đồ lớn (phím M) | ![](worldmap.webp) |
-| Phù Đảo Các (điểm vào; đình dời khỏi trục điểm sinh để camera sau lưng không kẹt trong mái đình) | ![](hub.webp) |
+| Bản đồ lớn (phím M) | *(ảnh đã gỡ khỏi repo)* |
+| Phù Đảo Các (điểm vào; đình dời khỏi trục điểm sinh để camera sau lưng không kẹt trong mái đình) | *(ảnh đã gỡ khỏi repo)* |
 | Tùng Đài Đảo | _(ảnh đã gỡ)_ |
 | Thạch Quy Đảo | _(ảnh đã gỡ)_ |
-| Kính Hồ Đảo | ![](zone-kinh-ho-dao.webp) |
+| Kính Hồ Đảo | *(ảnh đã gỡ khỏi repo)* |
 | Lôi Vân Đảo | _(ảnh đã gỡ)_ |
 | Kình Ngư Đài | _(ảnh đã gỡ)_ |
 | Đình Phù Đảo | _(ảnh đã gỡ)_ |
@@ -93,7 +93,7 @@ Một hàm `heightAt` chung (client, server, công cụ) gồm:
 | Kính Hồ Đài | _(ảnh đã gỡ)_ |
 | Đỉnh Sấm | _(ảnh đã gỡ)_ |
 | Vực Kình Ngư | _(ảnh đã gỡ)_ |
-| Cầu xích, nhìn dọc cầu | ![](cau-xich.webp) |
+| Cầu xích, nhìn dọc cầu | *(ảnh đã gỡ khỏi repo)* |
 | Giữa cầu | _(ảnh đã gỡ)_ |
 | Bước ra mép cầu, đang rơi | _(ảnh đã gỡ)_ |
 | Sàn mây (chỗ trống xa mọi đảo và cầu; nhân vật và mặt sàn rõ) | _(ảnh đã gỡ)_ |

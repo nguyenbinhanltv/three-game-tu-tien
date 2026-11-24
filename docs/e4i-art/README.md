@@ -12,7 +12,7 @@ Gói E4-I (`docs/EXPANSION_DESIGN.md` 4.3, 11.3), theo mẫu E2-I/E3-I. Chỉ h�
 | Mood `night` của Vân Lam (xanh ngọc, tối) | Ba preset `tk_dawn` / `tk` / `tk_night` (đêm trăng lam, sương mỏng, đèn vàng nhạt `#F2C47E`, "ban đêm bớt tối": `blackLift #1B2D38`, exposure 1,28); mặc định `tk_night`, `?mood=dawn|day|night` đổi biến thể. **Thần Tàng Điện dùng cùng mood** | `assets/palette.json`, `render/grading.ts` (`moodVariant`), `sky.ts`, `atmosphere.ts`, `engine.ts`, `check.ts`, `thien_khuyet|than_tang.assets.json` |
 | Cả level phát nhạc `wild` | Bài **`wild_night`** tự soạn (A yu, 60 BPM, 40 ô ≈ 2:40, nhị hồ trầm dẫn, hạc gảy giọt, hợp xướng vọng, chuông sao, không trống), chọn bằng `regionTrack(…, 'thien_khuyet')` | `tools/audio/compose/wild_night.mjs`, `music.json`, `musicDirector.ts`, `music.ts`, manifest, `LICENSES.md` |
 
-Công cụ mới: `pnpm shots fly --level <id> --route a,b,c` (`tools/perf/src/scenarios/fly.ts`) quay video chạy dọc level.
+Công cụ mới: `pnpm shots fly --level <id> --route a,b,c` (kịch bản đã gỡ ở tối ưu Đợt C) (`tools/perf/src/scenarios/fly.ts` (kịch bản đã gỡ ở tối ưu Đợt C)) quay video chạy dọc level.
 
 ## Số đo (`pnpm shots points --level thien_khuyet --perf`, WebGPU, Vừa, 1280×720)
 

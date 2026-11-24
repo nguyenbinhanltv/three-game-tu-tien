@@ -48,8 +48,8 @@ Hạn chế đã biết:
 
 ## Ảnh then chốt
 
-- [`nam-dansu-hoi-xuan-quyet.webp`](nam-dansu-hoi-xuan-quyet.webp)
-- [`nam-hophap-tran-son-an.webp`](nam-hophap-tran-son-an.webp)
-- [`nam-kiem-kiem-khi-tram.webp`](nam-kiem-kiem-khi-tram.webp)
-- [`nam-linh-quang-ho-the.webp`](nam-linh-quang-ho-the.webp)
-- [`nam-vet-kiem.webp`](nam-vet-kiem.webp)
+- `nam-dansu-hoi-xuan-quyet.webp`
+- `nam-hophap-tran-son-an.webp`
+- `nam-kiem-kiem-khi-tram.webp`
+- `nam-linh-quang-ho-the.webp`
+- `nam-vet-kiem.webp`

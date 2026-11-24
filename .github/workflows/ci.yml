@@ -1,5 +1,5 @@
 # CI tối thiểu (R-0): cài theo lockfile, typecheck, test nhanh, content:check trên mỗi PR vào main.
-# Không chạy test chậm (pnpm test:slow: ffmpeg thật), bench, shots hay playtest: những thứ đó chạy ở máy dev.
+# Test chậm: CI chỉ chạy bước pace (sim.ts); ffmpeg thật (audio:test), bench, shots hay playtest chạy ở máy dev.
 name: CI
 
 on:
@@ -34,6 +34,34 @@ jobs:
       - name: Cài dependency
         run: pnpm install --frozen-lockfile
 
+      # Nhị phân asset nằm trên R2 (R2-3): tải về apps/client/public theo assets/asset-lock.json, cache theo hash sổ khóa.
+      - name: Cache asset R2
+        id: asset-cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            apps/client/public/assets
+            apps/client/public/audio
+            apps/client/public/hoa-truc
+            apps/client/public/map
+            apps/client/public/sky
+            apps/client/public/terrain*
+            apps/client/public/grass*
+            apps/client/public/thien_y
+            !apps/client/public/**/*.json
+            !apps/client/public/**/*.txt
+          key: assets-r2-${{ hashFiles('assets/asset-lock.json') }}
+          restore-keys: assets-r2-
+
+      # Cache chỉ có nhị phân, nhưng chắc chắn file git theo dõi (manifest json…) không bị bản cache cũ đè.
+      - name: Khôi phục file git theo dõi trong public
+        run: git checkout -- apps/client/public
+
+      - name: Kéo asset từ R2 (chỉ file thiếu, kiểm sha256)
+        run: pnpm assets:pull
+        env:
+          VITE_ASSET_BASE: ${{ vars.VITE_ASSET_BASE }}
+
       - name: Typecheck
         run: pnpm typecheck
 
@@ -49,8 +77,19 @@ jobs:
       - name: Test
         run: pnpm test
 
+      - name: Nhịp chương (pace.slow.test.ts, chạy sim.ts, chậm)
+        run: pnpm --filter @dtl/content test:slow
+
       - name: content:check
         run: pnpm content:check
+
+      - name: Asset khớp sổ khóa và R2 (assets:validate)
+        run: pnpm assets:validate
+        env:
+          VITE_ASSET_BASE: ${{ vars.VITE_ASSET_BASE }}
+
+      - name: Chặn nhị phân > 200 KB trong apps/client/public và docs/
+        run: pnpm docs:binaries
 
       - name: docs:check
         run: pnpm docs:check

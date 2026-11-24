@@ -190,8 +190,6 @@ export const W_BG_FULL = 0.35;
 /** Độ sáng lớp chính khi chạy hoặc đang giao chiến (30–50%) và ở chế độ Tối giản. */
 export const W_MAIN_ACTIVE = 0.4;
 export const W_MAIN_MIN = 0.6;
-/** Ngân sách draw call mỗi người (đo bằng `pnpm shots realmaura --perf`). */
-export const AURA_DRAW_BUDGET = { std: 25, full: 60 } as const;
 
 export const isAuraMode = (v: unknown): v is AuraMode => AURA_MODES.includes(v as AuraMode);
 export const isAuraOthers = (v: unknown): v is AuraOthers => AURA_OTHERS.includes(v as AuraOthers);

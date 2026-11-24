@@ -23,7 +23,7 @@ Xem thử: thêm `?chr=v2` vào URL game (`?mute=1&auto=<tên>&chr=v2`), `&hair=
 
 Nguồn: `<nguồn>/chr/chr_base_v2/tripo/raw_head_{nam,nu}_v01.glb` (~2,8k tam giác), `raw_hair_{nam,nu}_{a,b}_v01.glb` (~1,8k). Concept sinh bằng Codex (`tools/codex-assets/chr-base-gen.mjs`): nam A búi cao + đuôi dài, nam B búi nhỏ + xõa, nữ A buộc cao + mái, nữ B hai đuôi + búi + mái chéo.
 
-![concept](concept-dau-toc.webp)
+*(ảnh đã gỡ khỏi repo: concept)*
 
 Asset: `chr_v2_{nam,nu}` (tóc A) và `chr_v2_hb_{nam,nu}` (tóc B), mỗi cái **một lưới, một vật liệu, một draw call** (thân + đầu + tóc + kiếm).
 
@@ -69,19 +69,19 @@ Tóc kiểu B (nam: Liệt Mạch; nữ: Kính Quang), cận mặt, toàn thân,
 
 Liệt Mạch, nam (cận mặt, toàn thân, chạy, chém, đả tọa):
 
-![](liet-mach-nam-toanthan.webp)
-![](liet-mach-nam-chem.webp)
+*(ảnh đã gỡ khỏi repo)*
+*(ảnh đã gỡ khỏi repo)*
 
 Kính Quang, nữ:
 
-![](kinh-quang-nu-banthan.webp)
+*(ảnh đã gỡ khỏi repo)*
 
 Thân trần (kiểm cổ nối, trọng số, đồ lót):
 
 
 Tóc A so với B:
 
-![](toc-ab-liet-mach-nam-matcan.webp)
+*(ảnh đã gỡ khỏi repo)*
 
 ## 5. Số đo
 

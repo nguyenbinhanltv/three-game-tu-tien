@@ -1,5 +1,7 @@
 # Thiết kế mở rộng: Kết Đan → Nguyên Anh → Hóa Thần (E-0)
 
+> **Lưu ý (2026-11-24):** Thiết kế mở rộng bản 1 (2026-11-16); một số mục (camera, tab-target, số liệu) đã lỗi thời. Hiện trạng và quyết định mới nhất xem `CLAUDE.md` và `docs/handbook/`.
+
 Bản 1 · 2026-11-16 · đi kèm `docs/ASSET_CONCEPTS.md` (asset người dùng dựng trên Tripo) và `docs/GAME_DESIGN_CORE.md` (mục 4 thang cảnh giới, mục 5 độ kiếp, mục 6 ba lối chơi).
 
 Đây là tài liệu **thiết kế**, không đổi code game. Mọi con số là điểm khởi đầu cho `pnpm sim:progress` và `fight:check` ở E-5; mọi tên mới (đánh dấu †) phải vào `glossary.json` và qua `lore-keeper` trước khi vào i18n (danh sách ở mục 13).

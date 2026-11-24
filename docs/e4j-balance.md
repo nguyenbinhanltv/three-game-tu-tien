@@ -11,7 +11,7 @@ Trước đó sim **chưa có** mô hình chương 4 (chỉ bảng thưởng nhi
 - Cố định: nhiệm vụ chính `q4_*` và phụ `s4_*` (trừ `s4_thu_niem`, chỉ mở sau Hóa Thần, cấp 28), Thần Tàng Điện một lượt ở cấp 26 (28 phút kể cả lỡ tay lần đầu, dùng kết quả mô hình phó bản có sẵn), Thiên Khuyết Thủ Linh nhóm 4 (8 phút), tâm ma ở bình cảnh 25/27, chế Hóa Thần Lộ (5 phút) và **Ngũ Hành Thiên Nhân Kiếp** (90 s chuẩn bị + 80 s; làm lại nếu hỏng: mất 15% tu vi, chế lại lò).
 - **Monte Carlo Hóa Thần Kiếp** (4000 lần) bám `tribulations.json` (`hoa_than`): tia nhắm + tia rơi quanh theo nhịp co dần, ấn ngũ hành (mỗi 5 s; khớp `tribnhan.ts`: tia `reach` luôn trúng chủ kiếp, đứng đúng trận môn chỉ giảm `cut` 80%, nên né được vẫn ăn `pct × 0,2`, né hỏng ăn đủ), lưới tia, vạch quét/cột/liên kết của phân thân, tia khóa mệnh `final` (0,75 máu, hộ pháp chắn 25% mỗi người, tối đa 2), Hộ Thể 35%, tối đa 3 đan hồi. Giả định như E2-J/E3-J: người "thường" né đúng 80% mỗi sự kiện né được; sống tới 80 s là qua.
 - Kinh tế và nguyên liệu chương: nguồn linh thạch, hố tiêu cầu toàn, Hóa Thần Lộ (3 Thần Tàng Ngọc + 5 Tinh Quang Mặc + 2 Cổ Thành Phiến + 16 Yêu Đan), Tẫn Giác.
-- Thêm cờ LỖI: chương 4 ngoài 8 giờ ±12%; TTK quái thường 3,8–7,3 s; tinh anh 18–40 s và không mất > 60% máu (đứng yên); Hóa Thần Kiếp tay thường 55–90% / giỏi ≥ 90% / vụng ≤ 50%; hố tiêu 0,8–2,2× nguồn; nguyên liệu Hóa Thần Lộ dư ≥ 1,3×. `pace.test.ts` thêm dòng `[pace4]`.
+- Thêm cờ LỖI: chương 4 ngoài 8 giờ ±12%; TTK quái thường 3,8–7,3 s; tinh anh 18–40 s và không mất > 60% máu (đứng yên); Hóa Thần Kiếp tay thường 55–90% / giỏi ≥ 90% / vụng ≤ 50%; hố tiêu 0,8–2,2× nguồn; nguyên liệu Hóa Thần Lộ dư ≥ 1,3×. `pace.slow.test.ts` (chạy bằng `pnpm test:slow`) thêm dòng `[pace4]`.
 
 ## 2. Trước / sau
 

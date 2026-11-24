@@ -38,11 +38,11 @@ Mọi sát thương vẫn do server phán; client chỉ vẽ. Hàm thuần ở `
 
 | | |
 | --- | --- |
-| Kim Thiền vừa chết: vạch báo vũng độc | ![](e3j-balance/kim_thien-vach-bao.webp) |
-| Vũng độc (ngọc lục, 6 s) | ![](e3j-balance/kim_thien-vung-doc.webp) |
-| Kình Vương pha 30%: vòng kéo r 20 (tím) + vùng nổ r 8 | ![](e3j-balance/kinh_vuong-nuot-vach-bao.webp) |
-| Lúc kéo | ![](e3j-balance/kinh_vuong-nuot-keo.webp) |
-| Sau khi kéo, chờ nổ | ![](e3j-balance/kinh_vuong-nuot-no.webp) |
+| Kim Thiền vừa chết: vạch báo vũng độc | *(ảnh đã gỡ khỏi repo)* |
+| Vũng độc (ngọc lục, 6 s) | *(ảnh đã gỡ khỏi repo)* |
+| Kình Vương pha 30%: vòng kéo r 20 (tím) + vùng nổ r 8 | *(ảnh đã gỡ khỏi repo)* |
+| Lúc kéo | *(ảnh đã gỡ khỏi repo)* |
+| Sau khi kéo, chờ nổ | *(ảnh đã gỡ khỏi repo)* |
 
 ## 2. Mô hình nhịp chương 3 trong sim
 
@@ -102,7 +102,7 @@ Nguyên liệu: Ngưng Anh Phách ≈ 4,9 (cần 3 + làm lại ≈ 3,5); các n
 
 ## 6. CI
 
-`packages/content/src/pace.test.ts` thêm: chương 3 ba công pháp trong 6 giờ ±12% (dòng `[pace3]`). Thêm trong `sim.ts`: TTK quái thường chương 3 3,8–7,3 s, tinh anh 18–40 s, mất máu ≤ 45% mỗi lần giết, Tam Trọng Kiếp (tay thường 55–90%, giỏi ≥ 90%, vụng ≤ 50%), Ngưng Anh Phách dư 1,3×, hố tiêu 0,8–2,2× nguồn thu.
+`packages/content/src/pace.slow.test.ts` (chạy bằng `pnpm test:slow`) thêm: chương 3 ba công pháp trong 6 giờ ±12% (dòng `[pace3]`). Thêm trong `sim.ts`: TTK quái thường chương 3 3,8–7,3 s, tinh anh 18–40 s, mất máu ≤ 45% mỗi lần giết, Tam Trọng Kiếp (tay thường 55–90%, giỏi ≥ 90%, vụng ≤ 50%), Ngưng Anh Phách dư 1,3×, hố tiêu 0,8–2,2× nguồn thu.
 
 ## 7. Việc còn lại / giả định cần người thử
 

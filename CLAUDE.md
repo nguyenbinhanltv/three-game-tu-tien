@@ -28,7 +28,7 @@ apps/client        Vite + Three.js + React: src/base (cờ URL, level hiện t�
 apps/server        Colyseus: rooms/ (base, world, dungeon, tribulation), game/sim.ts (GameSim, nối các hệ), game/{gm,combat,monsters,economy,players,artifacts,death,tribulation}/ (tách từ sim.ts ở R-7, mỗi hệ một `*System` + giao diện hẹp `*Ctx`), game/entities.ts (kiểu `PlayerEnt`/`MonEnt`/`SimHost`…, không phụ thuộc ngược để không có vòng import), game/character.ts, auth.ts, db.ts; log.ts (logger có mức, nơi duy nhất gọi console)
 apps/bot-client    bot headless để test tải
 tools/blender      build_sect.py (Builder + helper), thien_cong_kit.py (bộ kiến trúc mô-đun ~76 mảnh) + thien_cong_sect.py (ghép Lạc Kiếm Tông → arch_sect.glb; `-- kit <thư mục>` xuất lưới kit) + thien_cong_preview.py (ảnh 360° kit/tông môn), import_tripo.py (chuẩn hóa GLB Tripo), anim_biped_extra.py, anim_quadruped.py, anim_serpent.py, anim_bird.py, tripo_clips.py + export_anim_lib.py (clip thủ tục, thư viện `anim_human_base`), bake_impostor.py (atlas cây xa), recolor_phi_kiem.py, build_fixture_rig.py (GLB có xương cho test), run.mjs
-tools/asset-pipeline  optimize.ts (gltf-transform, LOD, meshopt, KTX2, hash, manifest), validate.ts, ktx.ts, terrain-textures.ts (texture mặt đất), impostor
+tools/asset-pipeline  optimize.ts (gltf-transform, LOD, meshopt, KTX2, hash, manifest), `push.ts`, `pull.ts`, `gc.ts`, `r2/` (Cloudflare R2, sổ khóa `assets/asset-lock.json`), validate.ts, ktx.ts, terrain-textures.ts (texture mặt đất), impostor
 tools/perf         size.ts (pnpm size), bench.ts (bench:client), load.ts (bench:load), crowd.ts (bench:crowd), compat.ts (compat), shots.ts + scenarios/ (pnpm shots <kịch bản>), lib/ (phần chung: cổng, server dev, Chrome tắt tiếng, đăng nhập thử, GM, chụp, kiểu window.__game), Playwright
 tools/maps         gen-<level>.mjs: sinh level (levels/*.json) từ mã
 tools/poses        gen-k5.mjs, report-k5.mjs: pose chiêu K-5
@@ -36,7 +36,7 @@ tools/vfx-forge    lò rèn texture VFX (Codex → KTX2 + contact sheet + manife
 tools/vfx          gen-fx-*.py, recipes_*.py: sinh timeline VFX (data/fx/*.json)
 tools/ui           contrast.mjs: kiểm WCAG AA token chữ
 tools/docs         check.mjs (media docs), check-paths.mjs (đường dẫn trong CLAUDE.md/handbook/skill)
-tools/codex-assets script sinh concept/tranh (một lần)
+tools/codex-assets script sinh concept/tranh qua Codex (gen.mjs icons|portraits|loading|ui, cutin-gen, chr-v3*, mon-multiview-gen; đã gỡ bớt script một lần ở tối ưu Đợt C)
 tools/calli        build.mjs + groups.json: vẽ chữ thư pháp Giao Long (font ngoài repo, `CALLI_FONT`) thành PNG trong suốt ở `apps/client/public/assets/calli/` (`pnpm calli[:check]`; KHÔNG commit font)
 tools/icons        build.mjs + subjects.json: icon vật phẩm/chiêu (`pnpm icons:build|check`)
 tools/palette      gen_palette.mjs: bảng màu từ `assets/palette.json` (`pnpm palette[:check]`)
@@ -96,6 +96,7 @@ Script `node tools/docs/check-paths.mjs` (chạy ở CI) kiểm mọi đường 
 - **Mọi thay đổi vật phẩm/tiền** chạy trong một transaction, có idempotency key và ghi vào `ledger`.
 - **Logic chung** (công thức, hằng số, schema) chỉ nằm trong `packages/shared`, không copy sang client/server.
 - **Ngân sách hiệu năng** (desktop): dưới 300 draw call, 1–2 triệu tam giác, 512MB texture, tải lần đầu dưới 30MB, CPU dưới 8ms/khung. Thay đổi render phải kiểm tra lại.
+- **Không commit nhị phân.** Asset game (GLB/KTX2/WebP/PNG/âm thanh) nằm trên Cloudflare R2, `apps/client/public` chỉ giữ manifest json + font; git theo dõi sổ khóa `assets/asset-lock.json`. Sau `assets:build`: `pnpm assets:push`; máy mới/sau merge: `pnpm assets:pull`; client đọc qua `VITE_ASSET_BASE`. Nhị phân > 200 KB trong `apps/client/public` và `docs/` bị `pnpm docs:binaries` (CI, hook `pnpm hooks:install`) chặn; ảnh duyệt PR để ở artifact phiên.
 - **Chuỗi hiển thị** đi qua i18n key, không viết cứng tiếng Việt trong component.
 - **Tên cảnh giới, vật phẩm, địa danh** lấy từ bảng thuật ngữ trong `packages/content/data/glossary.json`.
 
