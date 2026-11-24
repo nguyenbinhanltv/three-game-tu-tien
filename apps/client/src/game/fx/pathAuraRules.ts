@@ -1,7 +1,7 @@
 // Hào quang riêng của ba hướng tu Đao tu, Cổ tu, Cấm chế sư (nợ bàn giao #473): hàm thuần quyết định hiện gì, bao nhiêu, khi nào ẩn.
 // Quy ước theo lỗi Cổ Thần/Lôi tu (hào quang cảnh giới quá rối trên thân đã nhiều chi tiết): mỗi hướng chỉ MỘT lớp nhẹ, đọc ra bản sắc,
 // THAY hẳn hào quang cảnh giới mặc định (không vẽ chồng hai hệ), ẩn khi hóa hình/bay/chết/độ kiếp/xuất khiếu.
-//   Đao tu    : vài vệt đao đỏ sậm treo nghiêng, xoay rất chậm quanh thân (khí thế như vết chém để lại)
+//   Đao tu    : vài vệt đao thép bạc treo nghiêng, xoay rất chậm quanh thân (khí thế như vết chém để lại)
 //   Cổ tu     : vài cổ trùng nhỏ bay lượn quanh người
 //   Cấm chế sư: văn trận mờ dưới chân, xoay chậm
 // Chỉ là lớp hình theo công pháp `mt` và `lv` server đã đồng bộ; không đọc/ghi luật chơi.
