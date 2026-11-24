@@ -22,6 +22,10 @@ interface Flags {
   batching: boolean;
   /** `?vfxlab=1` (chỉ dev) phòng thử VFX: gắn `window.__vfxlab` (tạm dừng, chậm, bước đơn, đồng hồ ngân sách) cho `pnpm shots vfxlab`. */
   vfxLab: boolean;
+  /** `?animlab=1` (chỉ dev) phòng thử animation Thân Pháp: gắn `window.__animlab`. */
+  animLab: boolean;
+  /** `?thanphap=1`: bật lớp Thân Pháp (cường điệu góc chéo, nảy bước...) trên nhân vật v3; mặc định tắt tới khi duyệt pilot. */
+  thanPhap: boolean;
   /** `?vfxwarm=0` tắt biên dịch trước VFX (chẩn đoán). */
   vfxWarm: boolean;
   /** `?aura=0` tắt hào quang cảnh giới (so số đo trước/sau, RFX-1). */
@@ -124,6 +128,8 @@ export const FLAG_DOCS: Readonly<Record<string, { scope: 'user' | 'diag' | 'test
   models: { scope: 'diag', doc: '=legacy: model khối (dự phòng)' },
   batch: { scope: 'diag', doc: '=0: tắt gộp draw call VFX' },
   vfxlab: { scope: 'test', doc: '=1 (dev): phòng thử VFX, gắn window.__vfxlab; dùng với pnpm shots vfxlab' },
+  animlab: { scope: 'test', doc: '=1 (dev): phòng thử animation Thân Pháp, gắn window.__animlab; dùng với pnpm shots animlab' },
+  thanphap: { scope: 'diag', doc: '=1: lớp Thân Pháp (cường điệu góc chéo, nảy bước, idle/chiêu mới của Kiếm tu); pilot TP-1, mặc định tắt' },
   vfxwarm: { scope: 'diag', doc: '=0: tắt biên dịch trước VFX' },
   auraground: { scope: 'diag', doc: '=0: hào quang cảnh giới kiểu cũ quanh người, không có ấn dưới chân (so ảnh C5)' },
   aura: { scope: 'diag', doc: '=0: tắt hào quang cảnh giới trên nhân vật' },
@@ -204,6 +210,8 @@ export function readFlags(search: string): Flags {
     legacyModels: q.get('models') === 'legacy',
     batching: !off(q.get('batch')),
     vfxLab: q.get('vfxlab') === '1',
+    animLab: q.get('animlab') === '1',
+    thanPhap: q.get('thanphap') === '1',
     vfxWarm: !off(q.get('vfxwarm')),
     aura: !off(q.get('aura')),
     auraGround: !off(q.get('auraground')),

@@ -1,6 +1,7 @@
 // Nhân vật v3 (N-0 → N-7): model nguyên khối có bộ xương UE5 Mannequin (`chr_v3_*`, tools/blender/chr_v3.py) phát
 // clip UAL TRỰC TIẾP (`anim_ual_native`, cùng tên xương và tư thế nghỉ), không retarget lúc chạy. Bóng dùng chính bộ xương này.
 // Từ N-7 đây là nhân vật MẶC ĐỊNH của người chơi; `?chr=v1` quay về model Tripo cũ (dự phòng một bản). NPC giữ rig cũ.
+import { ANIM_FX, bobOf, exagGain, EXAG_GAIN, leanBoost } from './animFx';
 import { DEATH_DIR_TTL, DEATH_TURN_S, dashClipOf, holdHipsInPlace, deathYawOffset, flinchAmpOf, hitClipOf, hitSideOf } from './hitDir';
 import { boneKey } from './ikpose';
 import { applyProportions, proportionBones, type BoneScale } from './hero';
@@ -690,6 +691,8 @@ export class MannequinCharacter implements CharacterView {
   private lastYaw = NaN;
   private yawRate = 0;
   private lean = 0;
+  /** Tư thế nghỉ của các xương cường điệu (Thân Pháp T1), chụp lúc dựng rig. */
+  private exagRest = new Map<string, THREE.Quaternion>();
   private turnLag = 0;
   private lookYaw = 0;
   private lookPitch = 0;
@@ -801,6 +804,7 @@ export class MannequinCharacter implements CharacterView {
       }
     }
     for (const n of [
+      'pelvis',
       'spine_01',
       'spine_02',
       'spine_03',
@@ -814,6 +818,10 @@ export class MannequinCharacter implements CharacterView {
       'clavicle_r',
     ])
       this.bones[n] = this.rig.getObjectByName(n) ?? null;
+    for (const n of Object.keys(EXAG_GAIN)) {
+      const bn = this.bones[n];
+      if (bn) this.exagRest.set(n, bn.quaternion.clone());
+    }
     {
       const th = this.rig.getObjectByName('thigh_l');
       this.rig.updateMatrixWorld(true);
@@ -1679,7 +1687,8 @@ export class MannequinCharacter implements CharacterView {
     const k = Math.min(1, dt * 8);
     const perfW = this.perf ? 0.4 : 1;
     // Nghiêng khi rẽ lúc chạy; xoay tại chỗ thì thân trên trễ so với chân.
-    const leanT = free && !this.perf && !this.shotUpper ? leanOf(this.yawRate, a.speed) : 0;
+    const leanBase = free && !this.perf && !this.shotUpper ? leanOf(this.yawRate, a.speed) : 0;
+    const leanT = ANIM_FX.bounce ? leanBoost(leanBase) : leanBase;
     this.lean += (leanT - this.lean) * k;
     const lagT = free && a.speed < 0.3 && !this.perf ? turnLagOf(this.yawRate) : 0;
     this.turnLag += (lagT - this.turnLag) * k;
@@ -1689,6 +1698,10 @@ export class MannequinCharacter implements CharacterView {
     rotateWorld(b.spine_03 ?? null, fwd, ls * 0.3);
     rotateWorld(b.spine_02 ?? null, _up, -this.turnLag * 0.5);
     rotateWorld(b.spine_03 ?? null, _up, -this.turnLag * 0.5);
+    // Thân Pháp T1 (cờ ?thanphap): khuếch đại tay/vai/hông quanh tư thế nghỉ và nảy bước, chỉ khi chạy tự do.
+    if (ANIM_FX.exaggerate && free && !this.perf && !this.shotUpper) this.exaggerate(a.speed);
+    this.inner.position.y =
+      ANIM_FX.bounce && free && !this.perf && !this.shotUpper ? bobOf(this.loco ? this.locoPhase : 0, a.speed) : 0;
     // Thở (cộng thêm, chỉ biên độ nhỏ).
     if (free) rotateWorld(b.spine_03 ?? null, rgt, breathOf(this.clock, a.speed < 0.3));
     // Giật nhẹ khi trúng đòn: thân ngửa ra sau rồi về.
@@ -1737,6 +1750,16 @@ export class MannequinCharacter implements CharacterView {
       const fit = this.armFit * perfW;
       rotateWorld(b.upperarm_l ?? null, fwd, fit * this.side * this.armDroop(b.upperarm_l, b.lowerarm_l));
       rotateWorld(b.upperarm_r ?? null, fwd, -fit * this.side * this.armDroop(b.upperarm_r, b.lowerarm_r));
+    }
+  }
+
+  /** T1: q' = nghỉ · slerp(I, nghỉ⁻¹·q, gain): độ lệch so với tư thế nghỉ nhân `gain` (xem animFx.EXAG_GAIN). */
+  private exaggerate(speed: number): void {
+    for (const [n, rest] of this.exagRest) {
+      const bn = this.bones[n];
+      if (!bn) continue;
+      _tq.copy(rest).invert().multiply(bn.quaternion);
+      bn.quaternion.copy(rest).multiply(_tq2.identity().slerp(_tq, exagGain(n, speed)));
     }
   }
 

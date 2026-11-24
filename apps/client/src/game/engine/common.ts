@@ -236,3 +236,6 @@ export const QUIET = import.meta.env.DEV && FLAGS.quiet;
 export const HIT_WAIT = 0.45;
 /** Sát thương tới sau khung `hit` trong khoảng này vẫn dùng ngữ cảnh của đòn đó (giây). */
 export const HIT_CTX_TTL = 0.6;
+
+/** Chỉ bản dev: phòng thử animation (`?animlab=1`), xem `game/debug/animLab.ts`. */
+export const ANIM_LAB = import.meta.env.DEV && FLAGS.animLab;
