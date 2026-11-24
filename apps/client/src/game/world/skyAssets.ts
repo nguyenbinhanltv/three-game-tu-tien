@@ -16,6 +16,7 @@ import {
   vec3,
 } from 'three/tsl';
 import { createWorldMaterial } from '../../render/materials/world';
+import { ASSET_BASE } from '../../base/assetBase';
 
 /**
  * Texture của cảnh trên không (MAP-1 bản B tả thực): đá vách đảo nổi (PBR, chiếu ba mặt phẳng) và atlas tán lá có alpha.
@@ -59,7 +60,7 @@ let cached: Promise<SkyTextures> | null = null;
 /** Nạp một lần cho cả phiên (dùng lại khi đổi level); null nếu thiếu file. */
 export function loadSkyTextures(): Promise<SkyTextures | null> {
   cached ??= (async () => {
-    const base = `${import.meta.env.BASE_URL}sky/`;
+    const base = `${ASSET_BASE}sky/`;
     const m = (await (await fetch(`${base}manifest.json`)).json()) as SkyManifest;
     const [rockAlbedo, rockNormal, foliage] = await Promise.all([
       loadTexture(`${base}${m.rock.albedo}`, true),

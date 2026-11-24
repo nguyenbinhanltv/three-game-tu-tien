@@ -38,6 +38,7 @@ import MIX from './audioMix.json';
 import { FLAGS } from '../../base/flags';
 import { ramp, StreamDeck, type DeckEnv } from './audioDecks';
 import { logger } from '../../base/log';
+import { ASSET_BASE } from '../../base/assetBase';
 
 const audioLog = logger('audio');
 
@@ -139,7 +140,7 @@ interface Variant {
 }
 
 const DEV = (import.meta as unknown as { env: { DEV: boolean } }).env.DEV;
-const MANIFEST_DIR = (import.meta as unknown as { env: { BASE_URL: string } }).env.BASE_URL + 'audio/';
+const MANIFEST_DIR = ASSET_BASE + 'audio/';
 /**
  * Mức trộn nội bộ của từng bus khi thanh trượt ở 100% (audioMix.json, cũng là nguồn của tools/audio/levels.mjs):
  * nhạc khoảng 1/3 SFX để không lấn tiếng đòn đánh, âm môi trường thấp hơn nhạc. Bảng đo ở docs/audio/levels.md.

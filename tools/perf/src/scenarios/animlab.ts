@@ -2,7 +2,7 @@
 // 720p + 1080p, dừng thời gian bằng `window.__animlab` để khung đúng từng mili giây; đo CPU xương (mục `anim` của FrameBudget) lúc đứng yên và lúc chạy;
 // tùy chọn đặt ảnh tham chiếu cạnh khung đỉnh đòn, và quay clip thời gian thật (đứng, chạy, từng chiêu) để so trước/sau (`--thanphap 0|1`).
 // Dùng: pnpm shots animlab --out <thư mục tuyệt đối> [--pose kiem_khi_tram,phi_kiem,thien_kiem_vu] [--cams iso,close] [--sizes 720p,1080p] [--thanphap 1]
-//        [--ref <ảnh>] [--clip 1] [--cpu 1] [--gender m|f] [--times 0.1,0.2,...] [--clip-size 720p|1080p] [--cutin <id chiêu> [--cutin-at 0.12,0.3,...]]
+//        [--ref <ảnh>] [--clip 1] [--cpu 1] [--gender m|f] [--times 0.1,0.2,...] [--clip-size 720p|1080p] [--fx impulse=0,loco=0,...] [--stills tp1b|tp2|tp2mon|b3] [--cutin <id chiêu> [--cutin-at 0.12,0.3,...]]
 import path from 'node:path';
 import sharp from 'sharp';
 import { list, opt } from '../lib/env';
@@ -49,11 +49,223 @@ async function run(r: Run, poses: string[], cams: string[], sizes: string[]): Pr
   page.on('pageerror', (e) => console.log('[pageerror]', String(e).slice(0, 400)));
   await page.waitForFunction(() => !!window.__game && !!window.__animlab, undefined, { timeout: 120_000 });
   await sleep(2500);
+  // `--fx impulse=0,smear=0`: tắt/bật riêng từng lớp Thân Pháp để so sánh A/B từng PR.
+  const fxSet = Object.fromEntries(list('--fx', '').map((kv) => [kv.split('=')[0], kv.split('=')[1] !== '0']));
+  if (Object.keys(fxSet).length) await page.evaluate((f) => window.__animlab!.fx(f), fxSet);
   await gm(page, 'level 32', 1500);
   await gm(page, 'tp 2048 2095', 1800);
   await gm(page, 'spawn clear', 1400);
   await gm(page, 'cd', 1300);
   const out: Record<string, unknown> = { thanphap: opt('--thanphap', '0') === '1', poses: {} };
+  const stillsMode = opt('--stills', '');
+  if (stillsMode) {
+    // Ảnh tĩnh PNG (không quay video: video Playwright của game WebGPU ra khung trắng). Cắt quanh nhân vật ở tâm khung, phóng ×2.
+    await page.setViewportSize({ width: 1280, height: 720 });
+    await sleep(800);
+    const shot = async (name: string, wide = false) => {
+      const clip = wide ? { x: 240, y: 60, width: 800, height: 600 } : { x: 520, y: 250, width: 240, height: 220 };
+      const buf = await page.screenshot({ clip, type: 'png' });
+      const f = path.join(r.out, `${stillsMode}-${name}.png`);
+      await sharp(buf)
+        .resize(wide ? 400 : 480, wide ? 300 : 440)
+        .png()
+        .toFile(f);
+      console.log('  ảnh', path.basename(f));
+    };
+    const tap = async (k: string, ms: number) => {
+      await page.keyboard.down(k);
+      await sleep(ms);
+      await page.keyboard.up(k);
+    };
+    if (stillsMode === 'b3') {
+      // So model Lạc Kiếm b2 / b3 (tua + dải đai lò xo): (1) cận trước/sườn đứng yên; (2) tạm dừng rồi xoay thẳng xương `dtl_o_tassel_*` để thấy vùng lưới bám theo;
+      // (3) đo biên độ xương tassel/hair khi chạy rồi dừng (lò xo có thật sự đung đưa).
+      // Mặc bộ Lạc Kiếm (mặc định mới tạo là Đồ Đệ Tử `chr_v3_de_tu_*`, không dùng model Lạc Kiếm).
+      await gm(page, `outfit set_lac_kiem ${opt('--gender', 'm')}`, 3500);
+      const cam = async (k: string, wait = 700) => {
+        await page.evaluate((x) => window.__animlab!.cam(x as never), k);
+        await sleep(wait);
+      };
+      const snapC = async (name: string) => {
+        const buf = await page.screenshot({ clip: { x: 340, y: 40, width: 600, height: 640 }, type: 'png' });
+        await sharp(buf)
+          .resize(420, 448)
+          .png()
+          .toFile(path.join(r.out, `${stillsMode}-${name}.png`));
+        console.log('  ảnh', `${stillsMode}-${name}.png`);
+      };
+      await cam('front');
+      await snapC('1-truoc-dung');
+      await cam('side');
+      await snapC('2-suon-dung');
+      const probe = () =>
+        page.evaluate(() => {
+          const g = window.__game as any;
+          const rig = g.ents.players.get(g.sid).model.rig as any;
+          const w = window as any;
+          w.__rest ??= {};
+          const out: Record<string, number | null> = {};
+          for (const n of ['dtl_o_tassel_0_0', 'dtl_o_tassel_0_1', 'dtl_o_tassel_0_2', 'dtl_o_hair_0_0', 'dtl_o_skirt_0_0']) {
+            const b = rig.getObjectByName(n);
+            if (!b) {
+              out[n] = null;
+              continue;
+            }
+            w.__rest[n] ??= b.quaternion.clone();
+            out[n] = Number(b.quaternion.angleTo(w.__rest[n]).toFixed(3));
+          }
+          return out;
+        });
+      await cam('iso');
+      console.log(
+        '  model:',
+        await page.evaluate(() => {
+          const g = window.__game as any;
+          const m = g.ents.players.get(g.sid).model;
+          return m.tpl?.handle?.id ?? '?';
+        }),
+        'url:',
+        page.url().slice(-60),
+      );
+      const rest = await probe();
+      await page.keyboard.down('w');
+      await sleep(1500);
+      await page.keyboard.up('w');
+      const series: Record<string, number | null>[] = [];
+      for (let k = 0; k < 8; k++) {
+        series.push(await probe());
+        await sleep(100);
+      }
+      const peak: Record<string, number> = {};
+      for (const row of series) for (const [n, v] of Object.entries(row)) if (v !== null) peak[n] = Math.max(peak[n] ?? 0, v);
+      console.log('  biên độ xương (rad), đỉnh sau dừng:', JSON.stringify(peak), 'nghỉ:', JSON.stringify(rest));
+      // (2) xoay thẳng xương tassel khi tạm dừng, camera cận trước + sườn.
+      await sleep(1200);
+      for (const k of ['front', 'side'] as const) {
+        await cam(k);
+        await page.evaluate(() => window.__animlab!.pause(true));
+        await sleep(300);
+        await page.evaluate(() => {
+          const g = window.__game as any;
+          const rig = g.ents.players.get(g.sid).model.rig as any;
+          for (const n of ['dtl_o_tassel_0_0', 'dtl_o_tassel_0_1']) {
+            const b = rig.getObjectByName(n);
+            if (b) {
+              b.quaternion.premultiply(new b.quaternion.constructor().setFromEuler(new (b.rotation.constructor as any)(0.7, 0, 0.5)));
+              b.updateMatrixWorld(true);
+            }
+          }
+        });
+        await frame(page);
+        await snapC(k === 'front' ? '3-xoay-truoc' : '4-xoay-suon');
+        await page.evaluate(() => window.__animlab!.pause(false));
+      }
+      await ctx.close();
+      return { ...out, stills: stillsMode, peak, rest };
+    }
+    if (stillsMode === 'tp2mon') {
+      // Quái hình người Mannequin (Bắc Hoang): chụp quanh quái, cùng bốn phía + ngã + chết như người chơi.
+      await gm(page, 'tp bh_tram', 6000);
+      await gm(page, 'spawn clear', 1000);
+      await gm(page, 'spawn mon_tan_chung 1', 6000);
+      await page.evaluate(() => window.__animlab!.pause(false));
+      await sleep(2500);
+      const monShot = async (name: string, p: { x: number; y: number } | null) => {
+        const c = p ?? { x: 640, y: 360 };
+        const clip = { x: Math.max(0, Math.round(c.x - 120)), y: Math.max(0, Math.round(c.y - 140)), width: 240, height: 220 };
+        const buf = await page.screenshot({ clip, type: 'png' });
+        await sharp(buf)
+          .resize(480, 440)
+          .png()
+          .toFile(path.join(r.out, `${stillsMode}-${name}.png`));
+        console.log('  ảnh', `${stillsMode}-${name}.png`);
+      };
+      const mcases: [string, 'front' | 'back' | 'left' | 'right', number, boolean][] = [
+        ['1-truoc', 'front', 2, false],
+        ['2-sau', 'back', 2, false],
+        ['3-trai', 'left', 2, false],
+        ['4-phai', 'right', 2, false],
+        ['5-nga', 'front', 3, true],
+      ];
+      for (const [name, from, tier, knock] of mcases) {
+        await page.evaluate(() => window.__animlab!.pause(false));
+        await sleep(1800);
+        await page.evaluate(() => window.__animlab!.pause(true));
+        await frame(page);
+        const p = await page.evaluate((a) => window.__animlab!.hitMon(a[0] as never, a[1] as number, a[2] as boolean), [
+          from,
+          tier,
+          knock,
+        ] as const);
+        await advance(page, knock ? 450 : 140);
+        for (let k = 0; k < SETTLE_FRAMES; k++) await frame(page);
+        await monShot(name, p);
+      }
+      await page.evaluate(() => window.__animlab!.pause(false));
+      await gm(page, 'killall', 700);
+      await monShot('6-chet', await page.evaluate(() => window.__animlab!.hitMon('front', 0, false)));
+      await ctx.close();
+      return { ...out, stills: stillsMode };
+    }
+    if (stillsMode === 'tp1b') {
+      await page.evaluate(() => window.__animlab!.cam('iso'));
+      await sleep(1200);
+      await page.keyboard.down('w'); // bắt đầu chạy
+      await sleep(160);
+      await shot('1-batdau');
+      await sleep(1600);
+      await page.keyboard.up('w'); // dừng
+      await sleep(110);
+      await shot('2-dung');
+      await sleep(1400);
+      await tap('a', 70); // xoay tại chỗ (chạm nhẹ, đổi hướng nhìn)
+      await sleep(140);
+      await shot('3-xoay');
+      await sleep(1200);
+      await page.keyboard.down('w'); // pivot: đổi hướng gấp khi đang chạy
+      await sleep(1400);
+      await page.keyboard.up('w');
+      await page.keyboard.down('a');
+      await sleep(130);
+      await shot('4-pivot');
+      await page.keyboard.up('a');
+    } else {
+      const cases: [string, 'front' | 'back' | 'left' | 'right', number, boolean][] = [
+        ['1-truoc', 'front', 2, false],
+        ['2-sau', 'back', 2, false],
+        ['3-trai', 'left', 2, false],
+        ['4-phai', 'right', 2, false],
+        ['5-nga', 'front', 3, true],
+      ];
+      for (const [name, from, tier, knock] of cases) {
+        await page.evaluate(() => window.__animlab!.pause(false));
+        await sleep(2000);
+        await page.evaluate(() => window.__animlab!.pause(true));
+        await frame(page);
+        await page.evaluate((a) => window.__animlab!.hitSelf(a[0] as never, a[1] as number, a[2] as boolean), [from, tier, knock] as const);
+        await advance(page, knock ? 450 : 140);
+        for (let k = 0; k < SETTLE_FRAMES; k++) await frame(page);
+        await shot(name);
+      }
+      // Cận (camera cận) cho một đòn từ bên trái, rồi chết (lệnh GM, thời gian thật).
+      await page.evaluate(() => window.__animlab!.pause(false));
+      await sleep(2000);
+      await page.evaluate(() => window.__animlab!.cam('close'));
+      await page.evaluate(() => window.__animlab!.pause(true));
+      await frame(page);
+      await page.evaluate(() => window.__animlab!.hitSelf('left', 2, false));
+      await advance(page, 140);
+      for (let k = 0; k < SETTLE_FRAMES; k++) await frame(page);
+      await shot('7-can', true);
+      await page.evaluate(() => window.__animlab!.cam('iso'));
+      await page.evaluate(() => window.__animlab!.pause(false));
+      await sleep(1500);
+      await gm(page, 'die', 900);
+      await shot('6-chet');
+    }
+    await ctx.close();
+    return { ...out, stills: stillsMode };
+  }
   const cut = opt('--cutin', '');
   if (cut) {
     // Cut-in chiêu cuối (T7): thời gian thật (có khựng), chụp ở các mốc sau khi phát.
@@ -91,6 +303,25 @@ async function run(r: Run, poses: string[], cams: string[], sizes: string[]): Pr
       await sleep(2500);
       await page.keyboard.up('w');
       await sleep(1200);
+      // Pivot: đổi hướng gấp khi đang chạy (w → a không nhả), rồi dừng.
+      await page.keyboard.down('w');
+      await sleep(1300);
+      await page.keyboard.up('w');
+      await page.keyboard.down('a');
+      await sleep(1000);
+      await page.keyboard.up('a');
+      await sleep(900);
+      // T5: trúng đòn nhẹ/nặng từ bốn phía rồi ngã (đòn nặng + knockdown).
+      for (const [from, tier, knock] of [
+        ['front', 0, false],
+        ['left', 1, false],
+        ['back', 2, false],
+        ['right', 2, false],
+        ['front', 3, true],
+      ] as const) {
+        await page.evaluate((a) => window.__animlab!.hitSelf(a[0], a[1], a[2]), [from, tier, knock] as const);
+        await sleep(from === 'front' && knock ? 2200 : 1300);
+      }
       for (const p of poses) {
         for (let i = 0; i < 2; i++) {
           await page.evaluate((x) => window.__animlab!.perform(x), p);
@@ -196,7 +427,7 @@ export default {
   name: 'animlab',
   desc: 'TP-0 phòng thử animation: 4 khung khóa (dồn lực/đỉnh/+30ms/thu) ở camera chéo + cận, 720p + 1080p, CPU xương, clip trước/sau',
   usage:
-    '--out <dir> [--pose kiem_khi_tram,phi_kiem,thien_kiem_vu] [--cams iso,close] [--sizes 720p,1080p] [--thanphap 1] [--ref <ảnh>] [--clip 1] [--cpu 1] [--gender m|f] [--times 0.1,0.2,...] [--clip-size 720p|1080p] [--cutin <id chiêu> [--cutin-at 0.12,0.3,...]]',
+    '--out <dir> [--pose kiem_khi_tram,phi_kiem,thien_kiem_vu] [--cams iso,close] [--sizes 720p,1080p] [--thanphap 1] [--ref <ảnh>] [--clip 1] [--cpu 1] [--gender m|f] [--times 0.1,0.2,...] [--clip-size 720p|1080p] [--fx impulse=0,loco=0,...] [--cutin <id chiêu> [--cutin-at 0.12,0.3,...]]',
   async run(r) {
     const poses = list('--pose', 'kiem_khi_tram,phi_kiem,thien_kiem_vu');
     const cams = list('--cams', 'iso,close');

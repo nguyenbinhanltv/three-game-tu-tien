@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
+import { ASSET_BASE } from '../base/assetBase';
 
 /** Ảnh lớn nạp lười (chân dung, màn tải, chất liệu UI): chỉ tải khi chỗ dùng xuất hiện, không nằm trong tải đầu. */
 type ArtManifest = { files: Record<string, Record<string, { file: string }>> };
-const base = `${import.meta.env.BASE_URL}assets/art/`;
+const base = `${ASSET_BASE}assets/art/`;
 let manifest: Promise<ArtManifest | null> | undefined;
 let resolved: ArtManifest | null | undefined;
 

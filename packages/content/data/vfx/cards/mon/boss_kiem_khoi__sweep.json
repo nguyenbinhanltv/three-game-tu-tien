@@ -1,0 +1,34 @@
+{
+  "monId": "boss_kiem_khoi",
+  "move": "sweep",
+  "idea": "Kiếm Khôi vung kiếm chém thẳng một đường: dải chữ nhật cảnh báo ĐỎ dài 16 m rộng 3 m từ boss về phía người chơi, vạch viền hai bên sắc nét, đỏ tô dần từ gốc ra đầu theo nhịp nạp 1,3 s; nổ ra một vệt kiếm khí thép bạc quét dọc đường chém, để lại rãnh nứt sáng và tia lửa.",
+  "element": "kim",
+  "palette": {
+    "core": "141b2b",
+    "body": "7f98bd",
+    "rim": "f4f9ff",
+    "accent": "ff1f3d"
+  },
+  "shapeLang": [
+    "line",
+    "arc"
+  ],
+  "zone": {
+    "shape": "rect",
+    "r": 16,
+    "w": 3,
+    "at": "forward"
+  },
+  "timing": {
+    "anticipationMs": 1300,
+    "impactMs": 120,
+    "lingerMs": 700
+  },
+  "readability": "Hai cạnh dải đỏ đậm, tô lan từ gốc ra đầu để thấy tiến độ; không được vẽ rộng hơn 3 m; thân boss không che quá nửa dải.",
+  "budget": {
+    "drawCalls": 8,
+    "particles": 300,
+    "screenCover": 0.3,
+    "overdraw": 5
+  }
+}

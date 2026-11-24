@@ -79,6 +79,7 @@ import { TouchControls } from './u2/touch/TouchControls';
 import './u2/touch/touch.css';
 import { blurAfterPointer, useNow } from './u2/hud/common';
 import { hudVars, useHudMode } from './u2/hud/hudVars';
+import { ASSET_BASE } from '../base/assetBase';
 
 function TargetFrame({ below }: { below: boolean }) {
   const target = useUI((s) => s.target);
@@ -151,7 +152,7 @@ function UltCardView() {
       {card.cutin && (
         <div className="cutin" aria-hidden="true">
           <div className="cutin-ink" />
-          <img className="cutin-art" src={`${import.meta.env.BASE_URL}assets/cutin/${card.cutin}.webp`} alt="" draggable={false} />
+          <img className="cutin-art" src={`${ASSET_BASE}assets/cutin/${card.cutin}.webp`} alt="" draggable={false} />
           <div className="cutin-name">
             <Calli k={`skill.${card.skill}.name`} em={1.5} />
           </div>

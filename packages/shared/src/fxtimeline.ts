@@ -150,10 +150,16 @@ export type FxSprite = (typeof FX_SPRITES)[number];
  * chỉ là LỚP CHẤT LIỆU, mỗi chiêu/boss vẫn phải có silhouette riêng. `FORGE_DECALS` = decal nhìn thẳng từ trên (tex của `decal`),
  * `FORGE_FLIPS` = flipbook 4×4 (trường `flip` của hình `flip`). Thêm texture mới: thêm id ở đây + `render/vfx/forgeTex.ts`.
  */
-export const FORGE_DECALS = ['warn_crack', 'ice_crack'] as const;
-export const FORGE_FLIPS = ['ice_flip'] as const;
+export const FORGE_DECALS = ['warn_crack', 'ice_crack', 'steel_crack', 'ember_crack', 'bolt_scorch', 'jade_crack', 'root_mat'] as const;
+export const FORGE_FLIPS = ['ice_flip', 'steel_flip', 'fire_flip', 'bolt_flip', 'earth_flip', 'root_flip'] as const;
 export type ForgeDecal = (typeof FORGE_DECALS)[number];
 export type ForgeFlip = (typeof FORGE_FLIPS)[number];
+/** Hai atlas KTX2 chứa các texture trên (`apps/client/public/assets/vfx/<id>.ktx2`): decal xếp ô vuông 4×2 theo thứ tự `FORGE_DECALS`; flipbook xếp 3×2 tấm (mỗi tấm 4×4 khung) theo thứ tự `FORGE_FLIPS`. */
+export const FORGE_ATLAS_IDS = ['decal_atlas', 'flip_atlas'] as const;
+export const FORGE_DECAL_COLS = 4;
+export const FORGE_DECAL_ROWS = 2;
+export const FORGE_FLIP_SHEET_COLS = 3;
+export const FORGE_FLIP_SHEET_ROWS = 2;
 
 /**
  * Luật thứ bậc thị giác (V-P0): 1 chiêu của mình, 2 chiêu/cảnh báo của địch (kể cả đối thủ đấu pháp), 3 chiêu đồng đội, 4 hào quang/môi trường.
@@ -316,10 +322,14 @@ export interface FxDecalEvent extends FxBase {
   yaw?: number;
   /** Hiệu ứng của quái (V5): `dur` lấy bằng thời gian báo trước `delay` của vạch. */
   untilDelay?: boolean;
+  /** Lớp tô tiến độ của vạch báo: `grow` lấy bằng `delay` thật của vạch (chiêu cùng khóa nhưng khác `delay` giữa các pha, vd. chant pha cuối), thay vì hằng số trong timeline. */
+  growUntilDelay?: boolean;
   /** Vẽ ĐÈ lên mọi vật (không thử độ sâu): vạch báo của boss phải đọc được khi thân boss dài nằm đè lên vùng (V-P9). Chỉ dùng cho cảnh báo của địch. */
   top?: boolean;
   /** Mặt quạt (chỉ tex `FORGE_DECALS`): nửa góc (độ, 1–180) quanh hướng nhìn/hướng vùng; `yaw` là độ lệch thêm so với hướng đó (quét từng tia). `r` là bán kính cung quạt. */
   sector?: number;
+  /** Dải chữ nhật (vùng `rect`; chỉ tex `FORGE_DECALS`): `[dài, rộng]` mét, từ tâm vùng về hướng nhìn/hướng vùng; không nhân cỡ quái. Ô texture lặp dọc dải. */
+  strip?: [number, number];
   /** Với `sector`: tia xoay từ `swing[0]` sang `swing[1]` độ (so với hướng vùng) trong `swingDur` giây (mặc định 0,3). Một decal quét thay vì nhiều decal (trần 6 decal sống/runner). */
   swing?: [number, number];
   swingDur?: number;
@@ -559,6 +569,12 @@ export function validateFxTimeline(tl: FxTimeline, skillExists: (id: string) => 
       if (e.type === 'mesh' && e.shape === 'sprite' && !(e.sprite && (FX_SPRITES as readonly string[]).includes(e.sprite)))
         errs.push(`${p}: mesh sprite thiếu/sai ô (${e.sprite}), hợp lệ: ${FX_SPRITES.join('|')}`);
       if (e.type === 'mesh' && e.shape !== 'sprite' && e.sprite) errs.push(`${p}: chỉ hình sprite mới có trường sprite`);
+      if (e.type === 'decal' && e.strip !== undefined) {
+        if (!(e.strip[0] > 0 && e.strip[0] <= 40 && e.strip[1] > 0 && e.strip[1] <= 12))
+          errs.push(`${p}: decal strip=${e.strip} ngoài (0, 40] × (0, 12] m`);
+        if (e.sector !== undefined) errs.push(`${p}: decal không dùng cả sector lẫn strip`);
+        if (!(FORGE_DECALS as readonly string[]).includes(e.tex)) errs.push(`${p}: decal strip chỉ dùng cho tex ${FORGE_DECALS.join('|')}`);
+      }
       if (e.type === 'decal' && e.sector !== undefined) {
         if (!(e.sector >= 1 && e.sector <= 180)) errs.push(`${p}: decal sector=${e.sector} ngoài 1–180°`);
         if (!(FORGE_DECALS as readonly string[]).includes(e.tex))

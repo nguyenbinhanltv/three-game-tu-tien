@@ -1,0 +1,21 @@
+{
+ "skill": "mon_cast__boss_thu_mo_tuong",
+ "palette": "mon_boss_loi",
+ "events": [
+  {
+   "type": "decal",
+   "tex": "rune",
+   "t": 0,
+   "r": 10,
+   "dur": 3.6,
+   "at": "self",
+   "grow": 0.35,
+   "tone": "accent",
+   "alpha": 0.75,
+   "tier": 0,
+   "from": "start",
+   "top": true,
+   "ink": true
+  }
+ ]
+}

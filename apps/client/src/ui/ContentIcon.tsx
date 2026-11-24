@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { isSysIcon, SysIcon } from './u2/shell/icons';
 import { SysGlyph, isSysGlyph } from './u2/SysGlyph';
 import { SetMark, emblemOf } from './u2/SetMark';
+import { ASSET_BASE, ASSET_CROSS_ORIGIN } from '../base/assetBase';
 
 /** `set` (id bộ trang bị, có ở `ItemDef`) thêm dấu ấn bộ ở góc dưới trái. */
 type IconDef = { icon: string; iconFallback?: string; set?: string };
@@ -10,7 +11,7 @@ type Atlas = {
   sheets: Record<string, Sheet>;
   icons: Record<string, { s: string; x: number; y: number }>;
 };
-const base = `${import.meta.env.BASE_URL}assets/ui/`;
+const base = `${ASSET_BASE}assets/ui/`;
 let atlas: Promise<Atlas | null> | undefined;
 // undefined = đang tải; null = lỗi; Atlas = đã có manifest.
 let resolved: Atlas | null | undefined;
@@ -27,6 +28,7 @@ function loadSheet(data: Atlas, name: string): Promise<void> {
     p = new Promise<void>((resolve) => {
       if (!sheet || !/^icons-[a-z]+\.[a-f0-9]{10}\.webp$/.test(sheet.file)) return resolve();
       const image = new Image();
+      image.crossOrigin = ASSET_CROSS_ORIGIN ?? null;
       image.onload = () => {
         ready.add(name);
         resolve();

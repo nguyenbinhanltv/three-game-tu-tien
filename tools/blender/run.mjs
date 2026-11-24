@@ -115,6 +115,22 @@ const procedural = [
       'repo:tools/blender/skins/v3_lac_kiem_springs2.json',
     ],
   })),
+  // Lạc Kiếm Môn Phục v3b3: v3b2 + chuỗi lò xo `tassel` (dải đai dài + ngọc bội bên hông), Thân Pháp T6; asset MỚI, v3b2 giữ nguyên. Chọn bằng `?v3model=c`.
+  ...['nam', 'nu'].map((g) => ({
+    id: `chr_v3b3_lac_kiem_${g}`,
+    script: 'tools/blender/chr_v3.py',
+    source: `3d/nhan-vat/set_lac_kiem/tripo/raw_v3b_${g}.glb`,
+    template: 'anim/ual/ual1/Universal Animation Library[Standard]/Unreal-Godot/UAL1_Standard.glb',
+    extra: [
+      '--id',
+      `chr_v3b3_lac_kiem_${g}`,
+      '--auto',
+      '--height',
+      g === 'nam' ? '1.84' : '1.70',
+      '--springs',
+      'repo:tools/blender/skins/v3_lac_kiem_springs3.json',
+    ],
+  })),
   {
     id: 'chr_v3_varkessa_nu',
     script: 'tools/blender/chr_v3.py',

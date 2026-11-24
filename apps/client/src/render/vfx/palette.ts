@@ -76,6 +76,8 @@ for (const e of ['kim', 'moc', 'thuy', 'hoa', 'tho', 'neutral']) {
   const b = FX_PALETTE['mon_' + e]!;
   FX_PALETTE['mon_boss_' + e] = { core: b.core, body: b.body, rim: 0xffe9b0, accent: 0xff1f3d, shadow: 0x0a0204 };
 }
+// Boss lôi (Thú Mộ Tướng): tím điện, viền vàng nhạt; chọn qua `palette` của timeline riêng.
+FX_PALETTE.mon_boss_loi = { core: 0x14103a, body: 0x7f8cff, rim: 0xfff4b0, accent: 0xff1f3d, shadow: 0x0a0818 };
 // Cảnh lớn (VFX-V4 phần 2): đột phá theo cảnh giới và độ kiếp.
 FX_PALETTE.dotpha_tc = { core: 0x5a3a08, body: 0xe8b13c, rim: 0xfff2c4, accent: 0x3fb8d8, shadow: 0x2a1c05 };
 FX_PALETTE.dotpha_kd = { core: 0x5a1e08, body: 0xf08a3a, rim: 0xffe2b8, accent: 0xffc95a, shadow: 0x2a0f05 };

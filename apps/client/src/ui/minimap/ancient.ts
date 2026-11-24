@@ -1,4 +1,5 @@
 import { logger } from '../../base/log';
+import { ASSET_BASE, ASSET_CROSS_ORIGIN } from '../../base/assetBase';
 
 const minimapLog = logger('minimap');
 // Nền bản đồ cổ dựng sẵn lúc build (`pnpm minimap:build` → public/map/van_lam.webp). Nạp lười, có mip để thu nhỏ không rỗ nét.
@@ -51,7 +52,7 @@ export function ancientMap(name = 'van_lam'): AncientMap | null {
 }
 
 async function load(name: string, still: () => boolean): Promise<void> {
-  const base = import.meta.env.BASE_URL;
+  const base = ASSET_BASE;
   const [meta, img] = await Promise.all([
     fetch(`${base}map/${name}.json`).then((r) => {
       if (!r.ok) throw new Error(`${name}.json ${r.status}`);
@@ -59,6 +60,7 @@ async function load(name: string, still: () => boolean): Promise<void> {
     }),
     new Promise<HTMLImageElement>((res, rej) => {
       const im = new Image();
+      im.crossOrigin = ASSET_CROSS_ORIGIN ?? null;
       im.onload = () => res(im);
       im.onerror = () => rej(new Error('minimap image'));
       im.src = `${base}map/${name}.webp`;
