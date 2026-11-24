@@ -143,7 +143,8 @@ import { CharPreview } from './camera/charPreview';
 import { IsoRig } from './camera/isoRig';
 import { currentSearch, FLAGS } from '../base/flags';
 import { installVfxLab } from './debug/vfxLab';
-import { VFX_LAB } from './engine/common';
+import { ANIM_LAB, VFX_LAB } from './engine/common';
+import { installAnimLab } from './debug/animLab';
 import { LoginOptions, QUALITY, isWebGPU, isWorldRoom, levelOfInit, levelOfRoom, serverUrl } from './engine/common';
 import { describeGpu, fireSkill, pickRenderer, runFrame, watchGpuDevice } from './engine/frameLoop';
 import { handleFx, monFlagFx, monsterInk, onSwingEvent, resetSound, volumeAt } from './engine/fxMsgs';
@@ -227,6 +228,7 @@ export class Game {
           // Để tiện gỡ lỗi từ console của trình duyệt.
           (window as unknown as { __game?: Game }).__game = g;
           if (VFX_LAB) installVfxLab(g, onHazard);
+          if (ANIM_LAB) installAnimLab(g);
           g.start().catch((err) => {
             engineLog.error(err);
             set({ phase: 'error', error: t('ui.err.webgl') + ' ' + String(err?.message ?? err) });

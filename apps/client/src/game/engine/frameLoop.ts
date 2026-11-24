@@ -64,8 +64,9 @@ import { BASE_ZONE, easeZoneCam, zoneCamera } from '../camera/camZones';
 import { pickGround } from '../camera/pickGround';
 import { isHeld } from '../../input/bindings';
 import { ULT_FOV, ultFovAt } from '../combat/hitjuice';
+import { animLabDt } from '../debug/animLab';
 import { labDt } from '../debug/vfxLab';
-import { SLOWMO, VFX_LAB, _camFocus, _shakeLook, _shakePos, _v, _v2, isWebGPU } from './common';
+import { ANIM_LAB, SLOWMO, VFX_LAB, _camFocus, _shakeLook, _shakePos, _v, _v2, isWebGPU } from './common';
 import { runCine } from './cine';
 import { heroParams } from '../../render/materials/world';
 import { heroRimOn } from '../fx/fxSettings';
@@ -155,7 +156,7 @@ export function runFrame(eng: Game): void {
   const now = performance.now();
   eng.budget.begin();
   const rawDt = Math.min(0.1, (now - eng.lastT) / 1000) * SLOWMO;
-  const dt = VFX_LAB ? labDt(rawDt) : rawDt;
+  const dt = VFX_LAB ? labDt(rawDt) : ANIM_LAB ? animLabDt(rawDt) : rawDt;
   eng.lastT = now;
   eng.frames++;
   // Sát thương chờ khung `hit` mà quá hạn (hoạt ảnh bị hủy, model khối cũ): phát luôn, theo đồng hồ game.
@@ -474,7 +475,7 @@ function updateCamera(eng: Game, dt: number): void {
     cy = Math.max(ty + (cy - ty) * k, groundAt(cx, cz) + 0.7 - (4 - i) * 0.5);
   }
   eng.shake.update(dt, _shakePos, _shakeLook);
-  const fc = FLAGS.debug ? eng.freeCam : null;
+  const fc = FLAGS.debug || ANIM_LAB ? eng.freeCam : null;
   if (fc) {
     eng.camera.position.set(fc.x, fc.y, fc.z);
     eng.camera.lookAt(fc.tx, fc.ty, fc.tz);

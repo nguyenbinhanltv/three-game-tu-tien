@@ -103,3 +103,22 @@ describe('MannequinCharacter: sự kiện chiêu và hủy chiêu (K-4)', () => 
     expect(b.ev.at(-1)?.kind).toBe('end');
   });
 });
+
+describe('MannequinCharacter: idle nền (Thân Pháp T3, ambient)', () => {
+  it('idle ambient không vào thế đấu, không rút kiếm, không tính đòn', () => {
+    const { m } = fake();
+    const priv = m as unknown as { combatT: number; drawn: boolean };
+    expect(m.perform('p', { skill: 'idle', ambient: true })).toBe(true);
+    run(m, anim(), 0.3);
+    expect(m.performing('p')).toBe(true);
+    expect(priv.combatT).toBe(0);
+    expect(priv.drawn).toBe(false);
+    expect(m.attacks).toBe(0);
+  });
+  it('đòn thường vẫn vào thế đấu và tính đòn', () => {
+    const { m } = fake();
+    m.perform('p', opts());
+    expect((m as unknown as { combatT: number }).combatT).toBeGreaterThan(0);
+    expect(m.attacks).toBe(1);
+  });
+});
