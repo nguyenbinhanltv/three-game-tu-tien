@@ -65,19 +65,20 @@ export function mapDecalNodes(U: FxUniforms): { color: N; opacity: N } {
   const fan = step(0.0001, half);
   const inFan = float(1).sub(smoothstep(half.sub(0.02), half, ang));
   const mask = mix(float(1), inFan.mul(step(r, 1.0)), fan);
-  const edge = max(smoothstep(half.sub(0.07), half.sub(0.015), ang), smoothstep(0.93, 0.985, r))
+  const edge = max(smoothstep(half.sub(0.1), half.sub(0.02), ang), smoothstep(0.9, 0.975, r))
     .mul(mask)
     .mul(fan);
   const base = s.rgb.mul(tint).mul(heat.mul(0.55).add(0.7));
-  const lit = mix(base, U.b.xyz.mul(1.3), edge.mul(0.85));
-  const alpha = max(s.a, edge.mul(0.9));
+  const lit = mix(base, U.b.xyz.mul(1.3), edge.mul(1.0));
+  const alpha = max(s.a, edge.mul(1.0));
   return { color: min(lit, U.maxHdr), opacity: U.opacity.mul(alpha).mul(mask).mul(reveal).mul(float(1).sub(U.a.y)) };
 }
 
 /** `mapFlip`: flipbook 4×4 của ảnh Codex (`ice_flip`): khung = ⌊k × 16⌋, trộn mềm với khung kế; quay mặt về camera. */
 export function mapFlipNodes(U: FxUniforms): { color: N; opacity: N } {
   const q = uv();
-  const kk = clamp(U.k, 0, 0.9999).mul(15);
+  // Bắt đầu từ khung 3 (gai đã trồi): vụ nổ ra mạnh ngay ở khung đầu, không phải chờ khói bốc.
+  const kk = clamp(U.k, 0, 0.9999).mul(12).add(3);
   const f0 = floor(kk);
   const f1 = min(f0.add(1), 15);
   const blend = fract(kk);

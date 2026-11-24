@@ -76,7 +76,8 @@ async function run(r: Run, mon: string, moves: string[], sizes: string[], at: nu
       const rows: Record<string, unknown>[] = [];
       let clock = 0;
       for (const ms of at) {
-        const want = hitMs + ms;
+        // Mốc nổ được xử lý ở tick đầu sau khi tới hạn: khung "+0" lấy sau đúng một tick (16 ms) để thấy khung nổ đầu tiên.
+        const want = hitMs + ms + (ms >= 0 ? 16 : 0);
         if (want > clock) {
           await advance(page, want - clock);
           clock = want;
