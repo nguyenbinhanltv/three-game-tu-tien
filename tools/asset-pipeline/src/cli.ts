@@ -13,7 +13,7 @@ import { gc } from './gc.js';
 import { pull } from './pull.js';
 import { push } from './push.js';
 import { assetBase } from './r2/env.js';
-import { readLock, scanLock, writeLock } from './r2/lock.js';
+import { readLock, scanLock, unhashedBinaries, writeLock } from './r2/lock.js';
 import { verifyLock, verifyRemote } from './r2/verify.js';
 import { validate } from './validate.js';
 
@@ -80,6 +80,8 @@ else if (cmd === 'lock') {
   const lock = await scanLock(readLock());
   const changed = writeLock(lock);
   console.log(`[lock] ${Object.keys(lock.files).length} file, ${changed ? 'đã cập nhật assets/asset-lock.json' : 'không đổi'}`);
+  for (const k of unhashedBinaries(lock))
+    console.warn(`[lock] CẢNH BÁO ${k}: nhị phân mới không có hash trong tên (cần <tên>.<hash10>.<đuôi>); assets:validate sẽ báo lỗi`);
 } else if (cmd === 'push') {
   try {
     const r = await push({ dry: args.includes('--dry'), only: flag('--only'), noLock: args.includes('--no-lock') });
@@ -87,7 +89,8 @@ else if (cmd === 'lock') {
       `[push] ${r.total} file trong sổ, ${r.present} đã có trên R2, ${args.includes('--dry') ? 'sẽ đẩy' : 'đã đẩy'} ${r.uploaded.length} (${mb(r.uploadedBytes)}), ${r.failed.length} lỗi${r.lockChanged ? ', sổ khóa đã cập nhật' : ''}`,
     );
     for (const f of r.failed) console.error(`[push] LỖI ${f.key}: ${f.error}`);
-    ok = r.failed.length === 0;
+    for (const c of r.conflicts) console.error(`[push] XUNG ĐỘT ${c.key}: ${c.reason}`);
+    ok = r.failed.length === 0 && r.conflicts.length === 0;
   } catch (e) {
     console.error(`[push] LỖI: ${e instanceof Error ? e.message : String(e)}`);
     ok = false;

@@ -1,7 +1,7 @@
 // Kiểm sổ khóa khớp đĩa và khớp R2 (HEAD qua URL công khai, không cần khóa).
 
 import { urlOf } from '../pull.js';
-import { type Lock, pool, readLock, scanLock } from './lock.js';
+import { type Lock, pool, readGrace, readLock, scanLock, unhashedBinaries } from './lock.js';
 
 export interface VerifyReport {
   checked: number;
@@ -19,6 +19,10 @@ export async function verifyLock(): Promise<string[]> {
     if (!l) errs.push(`${k}: có trên đĩa nhưng chưa vào sổ khóa`);
     else if (l.sha256 !== e.sha256 || l.bytes !== e.bytes) errs.push(`${k}: nội dung đổi nhưng sổ khóa chưa cập nhật`);
   }
+  for (const k of unhashedBinaries(lock, readGrace()))
+    errs.push(
+      `${k}: nhị phân mới KHÔNG có hash trong tên (cần \`<tên>.<hash10>.<đuôi>\`, hash10 = sha256sum <file> | cut -c1-10); R2 bất biến, không ghi đè khóa đã có`,
+    );
   return errs;
 }
 
