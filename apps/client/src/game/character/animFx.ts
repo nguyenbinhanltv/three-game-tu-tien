@@ -108,16 +108,18 @@ export function idleDue(still: number, after = 7): boolean {
   return still >= after;
 }
 
-/** T7: chiêu cuối có tranh cut-in trong pilot (khóa theo id chiêu; mở rộng khi cuốn chiếu TP-3). Giá trị = tiền tố tên tranh `<tiền tố>_<m|f>.webp`. */
-export const CUTIN_ART: Readonly<Record<string, string>> = { skl_van_kiem_quy_tong: 'kiem_tu' };
+/**
+ * T7/TP-3: các bộ trang phục (khóa v3, xem `v3SetKeyOf` ở mannequin.ts) đã có tranh cut-in `assets/cutin/<bộ>_<m|f>.webp` (Codex vẽ theo từng bộ, đưa lên R2 bằng `pnpm assets:push`).
+ * Chiêu cuối của người mặc bộ có trong danh sách này hiện cut-in; bộ chưa có thì giữ thẻ ngắn cũ. Thêm bộ: vẽ tranh nam + nữ (`tools/codex-assets/cutin-gen.mjs`), nén, push, thêm khóa vào đây.
+ */
+export const CUTIN_SETS: ReadonlySet<string> = new Set(['de_tu', 'lac_kiem', 'tinh_khuyet']);
 
 /** Thời gian khựng của cut-in (ms): trong khoảng 0,4–0,6 s của kế hoạch. */
 export const CUTIN_FREEZE_MS = 500;
 
-/** Tên file tranh cut-in của chiêu `skill` cho người chơi giới `g` ('m'|'f'), hoặc null nếu chiêu chưa có tranh. */
-export function cutinArt(skill: string, g: string): string | null {
-  const k = CUTIN_ART[skill];
-  return k ? `${k}_${g === 'f' ? 'f' : 'm'}` : null;
+/** Tên tranh cut-in (không đuôi) của bộ `setKey` cho giới `g` ('m'|'f'), hoặc null nếu bộ chưa có tranh. */
+export function cutinArt(setKey: string, g: string): string | null {
+  return CUTIN_SETS.has(setKey) ? `${setKey}_${g === 'f' ? 'f' : 'm'}` : null;
 }
 
 /** T2: sự kiện di chuyển nhận ra từ tốc độ và tốc độ xoay. */

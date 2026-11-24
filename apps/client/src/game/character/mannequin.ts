@@ -203,6 +203,10 @@ const V3_BRANCH_FALLBACK: Readonly<Record<string, string>> = {
   set_dong_dinh: 'huyen_giap',
   set_gioi_tri_dan: 'dan_tam',
 };
+/** Khóa bộ v3 của bộ trang bị `set` (không mặc bộ nào → `de_tu`; bộ nhánh Lạc Kiếm → `lac_kiem`): cùng quy tắc với `v3AssetOf`, dùng chọn tranh cut-in theo bộ đang mặc. */
+export function v3SetKeyOf(set?: string): string {
+  return set ? (V3_OWN_SETS[set] ?? V3_BRANCH_FALLBACK[set] ?? 'de_tu') : 'de_tu';
+}
 /** Asset v3 của một nhân vật (giới `g`, skin đang mặc nếu có, bộ trang bị `set`). Skin sai giới (server không cho mặc) bị bỏ qua. */
 export function v3AssetOf(g: string, skin?: string, set?: string): string {
   const f = g === 'f';

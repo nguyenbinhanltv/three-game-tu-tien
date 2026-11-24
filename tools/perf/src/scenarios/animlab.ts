@@ -2,7 +2,7 @@
 // 720p + 1080p, dừng thời gian bằng `window.__animlab` để khung đúng từng mili giây; đo CPU xương (mục `anim` của FrameBudget) lúc đứng yên và lúc chạy;
 // tùy chọn đặt ảnh tham chiếu cạnh khung đỉnh đòn, và quay clip thời gian thật (đứng, chạy, từng chiêu) để so trước/sau (`--thanphap 0|1`).
 // Dùng: pnpm shots animlab --out <thư mục tuyệt đối> [--pose kiem_khi_tram,phi_kiem,thien_kiem_vu] [--cams iso,close] [--sizes 720p,1080p] [--thanphap 1]
-//        [--ref <ảnh>] [--clip 1] [--cpu 1] [--gender m|f] [--times 0.1,0.2,...] [--clip-size 720p|1080p] [--fx impulse=0,loco=0,...] [--stills tp1b|tp2|tp2mon|b3] [--stills-size 720p|1080p] [--cutin <id chiêu> [--cutin-at 0.12,0.3,...]]
+//        [--ref <ảnh>] [--clip 1] [--cpu 1] [--gender m|f] [--times 0.1,0.2,...] [--clip-size 720p|1080p] [--fx impulse=0,loco=0,...] [--stills tp1b|tp2|tp2mon|b3|ref] [--set <bộ>] [--stills-size 720p|1080p] [--cutin <id chiêu> [--cutin-at 0.12,0.3,...]]
 import path from 'node:path';
 import sharp from 'sharp';
 import { list, opt } from '../lib/env';
@@ -79,6 +79,21 @@ async function run(r: Run, poses: string[], cams: string[], sizes: string[]): Pr
       await sleep(ms);
       await page.keyboard.up(k);
     };
+    if (stillsMode === 'ref') {
+      // Ảnh tham chiếu cho Codex (tranh cut-in theo bộ): nhân vật thật, cận chính diện, 1080p, nền cảnh. `--set <khóa gm outfit|none>` `--gender m|f`.
+      const set = opt('--set', 'none');
+      if (set !== 'none') await gm(page, `outfit ${set} ${opt('--gender', 'm')}`, 3500);
+      await page.evaluate(() => window.__animlab!.cam('front'));
+      await sleep(900);
+      const buf = await page.screenshot({ clip: { x: 320 * sk, y: 20 * sk, width: 640 * sk, height: 690 * sk }, type: 'png' });
+      await sharp(buf)
+        .resize(880, 960)
+        .png()
+        .toFile(path.join(r.out, `ref-${opt('--set', 'none')}-${opt('--gender', 'm')}.png`));
+      console.log('  ảnh ref');
+      await ctx.close();
+      return { ...out, stills: stillsMode };
+    }
     if (stillsMode === 'b3') {
       // So model Lạc Kiếm b2 / b3 (tua + dải đai lò xo): (1) cận trước/sườn đứng yên; (2) tạm dừng rồi xoay thẳng xương `dtl_o_tassel_*` để thấy vùng lưới bám theo;
       // (3) đo biên độ xương tassel/hair khi chạy rồi dừng (lò xo có thật sự đung đưa).
@@ -279,19 +294,29 @@ async function run(r: Run, poses: string[], cams: string[], sizes: string[]): Pr
   }
   const cut = opt('--cutin', '');
   if (cut) {
-    // Cut-in chiêu cuối (T7): thời gian thật (có khựng), chụp ở các mốc sau khi phát.
-    const marks = list('--cutin-at', '0.1,0.25,0.45,0.7').map(Number);
+    // Cut-in chiêu cuối theo bộ đang mặc (T7/TP-3): thời gian thật (có khựng), ghim animation CSS ở các mốc; `--set <khóa gm outfit>` mặc bộ trước,
+    // `--sizes 720p,1080p` chụp lần lượt từng cỡ màn hình cùng một góc. Ảnh: cutin-<bộ>-<cỡ>-<ms>.jpg.
+    const marks = list('--cutin-at', '0.3,0.5').map(Number);
+    const setId = opt('--set', 'none');
+    if (setId !== 'none') await gm(page, `outfit ${setId} ${opt('--gender', 'm')}`, 3500);
     await page.evaluate(() => window.__animlab!.cam('iso'));
-    await sleep(500);
-    const ok = await page.evaluate((s) => window.__animlab!.cutin(s), cut);
-    if (!ok) throw new Error(`chiêu ${cut} chưa có tranh cut-in`);
-    let t = 0;
-    for (const m of marks) {
-      await sleep(Math.max(0, (m - t) * 1000));
-      t = m;
-      // Ghim mọi animation CSS (thẻ cut-in) đúng mốc `m`: chụp ảnh chậm hơn 0,3 s nên không thể dựa vào đồng hồ thật.
-      await page.evaluate((ms) => document.getAnimations().forEach((a) => ((a.currentTime = ms), a.pause())), m * 1000);
-      await snap(page, r.out, `cutin-${cut}-${Math.round(m * 1000)}ms.jpg`, { wait: 0 });
+    for (const tag of list('--sizes', '720p,1080p')) {
+      const [w, h] = UI_SIZES[tag] ?? UI_SIZES['1080p']!;
+      await page.setViewportSize({ width: w, height: h });
+      await sleep(1200);
+      const ok = await page.evaluate((s) => window.__animlab!.cutin(s), cut);
+      if (!ok) throw new Error(`bộ ${setId} chưa có tranh cut-in (thiếu trong CUTIN_SETS?)`);
+      let t = 0;
+      for (const m of marks) {
+        await sleep(Math.max(0, (m - t) * 1000));
+        t = m;
+        // Ghim mọi animation CSS (thẻ cut-in) đúng mốc `m`: chụp ảnh chậm hơn 0,3 s nên không thể dựa vào đồng hồ thật.
+        await page.evaluate((ms) => document.getAnimations().forEach((a) => ((a.currentTime = ms), a.pause())), m * 1000);
+        await snap(page, r.out, `cutin-${setId === 'none' ? 'de_tu' : setId}-${tag}-${Math.round(m * 1000)}ms.jpg`, { wait: 0 });
+      }
+      // Thẻ cut-in tự hết hạn (0,9 s thời gian thật); ghim animation chỉ ảnh hưởng ảnh chụp: trả chạy tiếp rồi chờ.
+      await page.evaluate(() => document.getAnimations().forEach((a) => a.play()));
+      await sleep(2500);
     }
     await ctx.close();
     return { ...out, cutin: cut };

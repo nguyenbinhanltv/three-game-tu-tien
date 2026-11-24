@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import * as THREE from 'three/webgpu';
-import { baseClipOf, CHR_V3, JOG_SPEED, lod0Slots, V3_MODELS, v3AssetOf } from './mannequin';
+import { baseClipOf, CHR_V3, JOG_SPEED, lod0Slots, V3_MODELS, v3AssetOf, v3SetKeyOf } from './mannequin';
 import { lodOf, mergeLodMeshes } from './mannequinLod';
 import type { AnimState } from './view';
 
@@ -217,5 +217,22 @@ describe('Lạc Kiếm mặc định = v3b3 (tua/dải đai lò xo)', () => {
     const { v3DyeRefOf } = await import('@dtl/shared');
     expect(v3DyeRefOf('chr_v3b3_lac_kiem_nu')).toEqual(v3DyeRefOf('chr_v3b2_lac_kiem_nu'));
     expect(v3DyeRefOf('chr_v3b3_lac_kiem_nu')).not.toBeNull();
+  });
+});
+
+describe('cut-in theo bộ đang mặc (TP-3)', () => {
+  it('v3SetKeyOf: không mặc bộ → de_tu, bộ nhánh Lạc Kiếm → lac_kiem, bộ riêng → khóa của nó', () => {
+    expect(v3SetKeyOf()).toBe('de_tu');
+    expect(v3SetKeyOf('set_han_giao')).toBe('lac_kiem');
+    expect(v3SetKeyOf('set_tinh_khuyet')).toBe('tinh_khuyet');
+    expect(v3SetKeyOf('set_dia_giap')).toBe('dia_long');
+    expect(v3SetKeyOf('set_khong_co')).toBe('de_tu');
+  });
+  it('cùng khóa với v3AssetOf (tranh và model luôn cùng bộ)', () => {
+    for (const set of [undefined, 'set_lac_kiem', 'set_tinh_khuyet', 'set_dia_giap', 'set_van_kinh']) {
+      const key = v3SetKeyOf(set);
+      const asset = v3AssetOf('f', undefined, set);
+      expect(key === 'lac_kiem' ? asset.startsWith('chr_v3b3_lac_kiem') : asset === `chr_v3_${key}_nu`).toBe(true);
+    }
   });
 });

@@ -1,8 +1,13 @@
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { POSE } from '@dtl/content';
 import {
   accelLean,
   bobOf,
+  CUTIN_SETS,
+  cutinArt,
   EXAG_GAIN,
   exagBlend,
   exagGain,
@@ -161,5 +166,20 @@ describe('Thân Pháp T2: xung bắt đầu/dừng/pivot', () => {
     li.update(1 / 60, 0, 0);
     li.reset();
     expect([li.pitch, li.roll, li.dip]).toEqual([0, 0, 0]);
+  });
+});
+
+describe('cut-in theo bộ (TP-3)', () => {
+  it('chỉ bộ có tranh mới có tên tranh, giới m/f', () => {
+    expect(cutinArt('tinh_khuyet', 'f')).toBe('tinh_khuyet_f');
+    expect(cutinArt('tinh_khuyet', 'm')).toBe('tinh_khuyet_m');
+    expect(cutinArt('bo_chua_ve', 'f')).toBeNull();
+  });
+  it('mọi bộ trong CUTIN_SETS có đủ tranh nam + nữ trong sổ khóa asset', () => {
+    const lock = JSON.parse(
+      readFileSync(path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../../../assets/asset-lock.json'), 'utf8'),
+    ) as { files?: Record<string, unknown> } | Record<string, unknown>;
+    const files = ((lock as { files?: Record<string, unknown> }).files ?? lock) as Record<string, unknown>;
+    for (const k of CUTIN_SETS) for (const g of ['m', 'f']) expect(Object.keys(files)).toContain(`assets/cutin/${k}_${g}.webp`);
   });
 });
