@@ -2,7 +2,7 @@ import * as THREE from 'three/webgpu';
 
 /**
  * Họa Cảnh P2: texture nét cọ liền mạch, sinh bằng CPU một lần (không cần asset, không nhị phân).
- *   R = chấm tròn và nét mảnh theo phương x (0,5 = không đổi, > 0,5 sáng hơn nền, < 0,5 tối hơn); shader xoay hệ tọa độ để nét chạy theo dốc.
+ *   R = mảng lớn, nét và chấm (0,5 = không đổi, > 0,5 sáng hơn nền, < 0,5 tối hơn), cùng cách dựng với strokes.js của nguồn.
  *   G = mảng mềm lớn (0,5 trung tính), phá độ phẳng của mảng xanh khi nhìn gần.
  * Ý tưởng dựa trên painted-valley/src/valley/strokes.js (MIT, © 2026 Patch; xem assets/LICENSES.md), viết lại: số lượng, kích thước,
  * hạt giống và công thức đều là của dự án.
@@ -66,7 +66,31 @@ export function makeBrushData(size = BRUSH_SIZE, seed = 4242): Uint8Array {
   }
   const rnd = mulberry(seed);
   const k = size / 512;
-  // G: mảng mềm lớn
+  // R: như nguồn: mảng lớn rồi nét rồi chấm. Mảng lớn là thứ cho cỏ các mảng sáng/tối rộng nhiều mét.
+  for (let i = 0; i < 70; i++) {
+    mark(
+      data,
+      size,
+      0,
+      rnd() * size,
+      rnd() * size,
+      (26 + rnd() * 44) * k,
+      (12 + rnd() * 20) * k,
+      rnd() * Math.PI,
+      rnd() < 0.5 ? 86 / 255 : 172 / 255,
+      0.5,
+      0.2,
+    );
+  }
+  for (let i = 0; i < 420; i++) {
+    const tone = rnd() < 0.52 ? (40 + rnd() * 60) / 255 : (160 + rnd() * 80) / 255;
+    mark(data, size, 0, rnd() * size, rnd() * size, (7 + rnd() * 16) * k, (2 + rnd() * 4) * k, rnd() * Math.PI, tone, 0.85, 0.15);
+  }
+  for (let i = 0; i < 900; i++) {
+    const tone = rnd() < 0.5 ? (30 + rnd() * 60) / 255 : (170 + rnd() * 85) / 255;
+    mark(data, size, 0, rnd() * size, rnd() * size, (2 + rnd() * 4) * k, (1 + rnd() * 2) * k, rnd() * Math.PI, tone, 1, 0.3);
+  }
+  // G: mảng mềm lớn thêm (dùng cho đất xa)
   for (let i = 0; i < 46; i++) {
     mark(
       data,
@@ -81,17 +105,6 @@ export function makeBrushData(size = BRUSH_SIZE, seed = 4242): Uint8Array {
       0.45,
       0.9,
     );
-  }
-  // R: nét mảnh dài theo x (xoay nhẹ ±0,3 rad, thêm chút tròn), rồi chấm tròn nhỏ
-  for (let i = 0; i < 380; i++) {
-    const long = 10 + rnd() * 26;
-    const tone = rnd() < 0.5 ? 0.12 + rnd() * 0.25 : 0.62 + rnd() * 0.3;
-    mark(data, size, 0, rnd() * size, rnd() * size, long * k, (1.6 + rnd() * 3.2) * k, (rnd() - 0.5) * 0.6, tone, 0.85, 0.15);
-  }
-  for (let i = 0; i < 160; i++) {
-    const r = (3 + rnd() * 6) * k;
-    const tone = rnd() < 0.5 ? 0.2 + rnd() * 0.2 : 0.65 + rnd() * 0.25;
-    mark(data, size, 0, rnd() * size, rnd() * size, r, r * (0.75 + rnd() * 0.4), rnd() * Math.PI, tone, 0.8, 0.2);
   }
   return data;
 }

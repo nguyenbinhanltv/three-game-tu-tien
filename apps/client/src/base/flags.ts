@@ -116,6 +116,8 @@ interface Flags {
   isoFxCompress: boolean;
   /** `?style=painted` phong cách "Họa Cảnh" (nền hoạt hình vẽ tay, thử ở Vân Lam); mặc định không đổi gì. Giá trị lạ = tắt. */
   style: 'painted' | null;
+  /** `?paint=0..3` mức lớp Kuwahara của Họa Cảnh (0 tắt, mặc định 1 khi `?style=painted`). */
+  paint: number | null;
   /** `?touch=1|0` ép bật/tắt chế độ cảm ứng (U2-6; kiểm thử, ghi đè cài đặt). */
   touch: boolean | null;
 }
@@ -126,6 +128,7 @@ export const FLAG_DOCS: Readonly<Record<string, { scope: 'user' | 'diag' | 'test
     scope: 'diag',
     doc: '=painted: phong cách Họa Cảnh (nền hoạt hình vẽ tay, pilot Vân Lam); mặc định tắt, xem docs/handbook/painted.md',
   },
+  paint: { scope: 'diag', doc: '0..3: mức Kuwahara của ?style=painted (0 tắt, mặc định 1)' },
   isoyaw: { scope: 'diag', doc: 'độ: ghi đè hướng nhìn cố định của camera chéo (chọn hướng đẹp nhất cho từng bản đồ)' },
   isofx: { scope: 'diag', doc: '=0 tắt nén hình VFX đứng cao ở camera chéo (debug, so ảnh trước/sau)' },
   touch: { scope: 'user', doc: '=1 ép chế độ cảm ứng, =0 ép tắt (mặc định theo thiết bị + Cài đặt)' },
@@ -214,6 +217,7 @@ export function readFlags(search: string): Flags {
   return {
     mute: q.get('mute') === '1',
     style: q.get('style') === 'painted' ? 'painted' : null,
+    paint: /^[0-3]$/.test(q.get('paint') ?? '') ? Number(q.get('paint')) : null,
     isoFxCompress: q.get('isofx') !== '0',
     isoYaw: q.get('isoyaw') === null || Number.isNaN(Number(q.get('isoyaw'))) ? null : (Number(q.get('isoyaw')) * Math.PI) / 180,
     touch: q.get('touch') === '1' ? true : q.get('touch') === '0' ? false : null,

@@ -29,9 +29,15 @@ Phong cách nền hoạt hình vẽ tay, thử ở Vân Lam khởi đầu. **M�
 
 Mỗi PR từ P2 ghi số trước/sau cùng điểm `?at=` (draw call, CPU, GPU, texture) cho `?style=painted` và mặc định, trên cả `?renderer=webgpu` lẫn `webgl2`; luôn `?mute=1`.
 
-## Mặt đất + cỏ (P2)
+## Mặt đất + cỏ (P2, làm lại theo đối chiếu trực tiếp)
 
-- `render/painted/brush.ts`: texture nét cọ 512 liền mạch sinh bằng CPU (R = nét mảnh dài theo x + chấm tròn, G = mảng mềm lớn); không có asset.
-- `render/painted/ground.ts`: `paintedGroundColor` (gọi cuối `applyGroundShader` khi `FLAGS.style === 'painted'`) và `paintedGrassColor` (`game/world/grass.ts`). Đất cỏ và đường mòn thành hai tông (sáng/tối) từ bảng `PAINTED`, mảng xanh chậm lấy từ mặt nạ vĩ mô, nét cọ xoay theo hướng xuống dốc (đất bằng: chéo cố định), mờ hết ở ~38–120 m để không lấp lánh. Đá/vách/tuyết/lát đá/mộ giữ nguyên; pháp tuyến texture bị bỏ ở phần được tô. Tông tối của nét là nét cọ (pha nửa với tông sáng), bóng thật vẫn do bản đồ bóng của cảnh.
-- Chỉnh nhìn: `paintedGroundParams.gain` (sáng) và `.strokes` (tương phản nét).
-- Chụp so sánh: `pnpm shots painted --out <thư mục tuyệt đối> [--styles off,painted] [--moods day,night] [--views 720p,1080p] [--points thunglung,giua,suoi]` (Thung Lũng Thanh Phong); ghi `perf.json` (draw call, tam giác, texture, ms/khung).
+Lần đầu (bụi cỏ hai tông + nét cọ xoay theo dốc) bị người dùng loại: "không giống painted-valley". Làm lại bằng cách chạy chính painted-valley, đặt camera của nó đúng góc game (chéo 52°, 20 m, FOV 32°, `__tg.view`) để có ảnh tham chiếu cùng góc, rồi port SÁT công thức nguồn:
+
+- `render/painted/meadow.ts`: `meadowGreen` (ba xanh đúng giá trị nguồn), `meadowTint`, `tallAt`, `slopeRel`, `paintGround`, `hash42` (nguồn `src/lib/glsl.js`).
+- `game/world/paintedGrass.ts`: `PaintedGrass` thay `Grass` ở level dùng bụi lá thủ tục khi `?style=painted` (port `blades.js` + `flowers.js`): hai vòng lá mảnh `mid`/`wide` mờ qua nhau theo khoảng cách tới camera, mọi thứ suy ra từ số ô thế giới; hoa trắng/vàng/hồng/be thành đám. Độ cao và mật độ đọc từ texture lưới 1 m cuộn quanh người chơi (dựng bằng CPU, luật mọc chung với cỏ thường qua `grassDensityAt`).
+- `render/painted/ground.ts`: màu đất = `meadowGreen` + `meadowTint` + `paintGround`; đường mòn/đất khô be nhạt.
+- `render/painted/brush.ts`: texture nét cọ dựng như `strokes.js` (mảng lớn, nét, chấm); mảng lớn là thứ cho cỏ các mảng sáng/tối nhiều mét.
+- `render/painted/kuwahara.ts` + `post.ts` (P5 rút gọn): Kuwahara bốn phần tư, `?paint=0..3` (mặc định 1), bỏ qua trời (độ sâu) và điểm sáng HDR (VFX). Chưa có mặt nạ alpha cho nhân vật (làm ở P7).
+- Chỉnh nhìn: `paintedGroundParams.gain/.tint`, `paintedGrassParams.gain`.
+- Khác nguồn: bỏ lửa/cắt/giẫm; nhiễu `tNoiseHi` thay bằng nhiễu của ta; ánh sáng qua đèn PBR của cảnh (có bóng, theo mood) thay cho `meadowLight`.
+- Chụp so sánh: `pnpm shots painted --out <thư mục tuyệt đối> [--styles off,painted] [--moods day,night] [--views 720p,1080p] [--points thunglung,giua,suoi]` (Thung Lũng Thanh Phong); ghi `perf.json`. Ảnh tham chiếu painted-valley chỉ để ở artifact phiên, KHÔNG commit.

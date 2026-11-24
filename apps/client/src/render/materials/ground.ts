@@ -644,11 +644,7 @@ export function applyGroundShader(mat: THREE.MeshStandardNodeMaterial, tex: Grou
     // Họa Cảnh (P2): đất cỏ và đường mòn thành mảng màu hai tông + nét cọ theo dốc; đá, vách, tuyết, lát đá, mộ giữ nguyên.
     const keep = max(max(max(rockW, cliffW), snowW), max(pav, bio.z));
     col = paintedGroundColor(col, {
-      p,
-      dist,
       nGeo,
-      patchA: noise2,
-      patchB: texture(tex.mask, p.mul(0.0098).add(0.19)).a,
       forest: bio.x,
       dry: bio.y,
       path: pathW,
