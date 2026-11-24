@@ -112,7 +112,19 @@ export function idleDue(still: number, after = 7): boolean {
  * T7/TP-3: các bộ trang phục (khóa v3, xem `v3SetKeyOf` ở mannequin.ts) đã có tranh cut-in `assets/cutin/<bộ>_<m|f>.webp` (Codex vẽ theo từng bộ, đưa lên R2 bằng `pnpm assets:push`).
  * Chiêu cuối của người mặc bộ có trong danh sách này hiện cut-in; bộ chưa có thì giữ thẻ ngắn cũ. Thêm bộ: vẽ tranh nam + nữ (`tools/codex-assets/cutin-gen.mjs`), nén, push, thêm khóa vào đây.
  */
-export const CUTIN_SETS: ReadonlySet<string> = new Set(['de_tu', 'lac_kiem', 'tinh_khuyet']);
+export const CUTIN_SETS: ReadonlySet<string> = new Set([
+  'de_tu',
+  'lac_kiem',
+  'tinh_khuyet',
+  'co_thanh',
+  'dia_long',
+  'kinh_quang',
+  'liet_mach',
+  'luu_ly',
+  'phuc_mach',
+  'than_tang',
+  'van_kinh',
+]);
 
 /** Thời gian khựng của cut-in (ms): trong khoảng 0,4–0,6 s của kế hoạch. */
 export const CUTIN_FREEZE_MS = 500;
