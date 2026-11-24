@@ -89,7 +89,7 @@ export function flatTextures(): GroundTextures {
 
 export function createGround(F: RefField, textures: GroundTextures, { extentMin, texel }: { extentMin: [number, number]; texel: number }) {
   const uGroundOrigin = uniform(new THREE.Vector2());
-  const material = new THREE.MeshBasicNodeMaterial({ side: THREE.FrontSide });
+  const material = new THREE.MeshBasicNodeMaterial({ side: THREE.DoubleSide });
   material.fog = false;
   material.name = 'ref-ground';
 

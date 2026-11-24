@@ -48,8 +48,7 @@ function flowerGeometry(subs = 2): THREE.InstancedBufferGeometry {
     // the petals: foot, two shoulders, two further out, the tip
     for (let k = 0; k < PETALS; k++) {
       first = positions.length / 3;
-      let part: N = z + 1 + k;
-      part = part.toVar();
+      const part = z + 1 + k;
       positions.push(0, 0, part, -1, 0.4, part, 1, 0.4, part, -1, 0.75, part, 1, 0.75, part, 0, 1, part);
       indices.push(
         first,

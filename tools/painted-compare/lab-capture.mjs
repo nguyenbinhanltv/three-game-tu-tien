@@ -18,6 +18,7 @@ const port = Number(arg('--port', '5190'));
 const paint = arg('--paint', '3');
 const win = arg('--win', '-20,-90');
 const renderer = arg('--renderer', 'webgpu');
+const parts = arg('--parts', 'ground,blades,flowers');
 fs.mkdirSync(out, { recursive: true });
 const dump = JSON.parse(fs.readFileSync(path.join(refDir, 'ref.json'), 'utf8'));
 const T0 = Date.now();
@@ -66,7 +67,9 @@ try {
   });
   page.on('pageerror', (e) => logs.push(`pageerror: ${e.message}`.slice(0, 300)));
   console.log('vite lên, mở trang');
-  await page.goto(`http://127.0.0.1:${port}/?paintedlab=1&mute=1&paint=${paint}&win=${win}&renderer=${renderer}`, { waitUntil: 'load' });
+  await page.goto(`http://127.0.0.1:${port}/?paintedlab=1&mute=1&paint=${paint}&win=${win}&renderer=${renderer}&parts=${parts}`, {
+    waitUntil: 'load',
+  });
   await page
     .waitForFunction(() => window.__paintedLab, null, { timeout: 60000 })
     .catch((e) => {
