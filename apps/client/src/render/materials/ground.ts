@@ -33,6 +33,7 @@ import { SUOI, WORLD_SIZE } from '@dtl/shared';
 import { GROUND_LAYER as L, type GroundTextures } from '../../base/groundTextures';
 import { FLAGS } from '../../base/flags';
 import { isoTerrainDetail } from './isoDetail';
+import { paintedColor } from '../painted/palette';
 import { getPaintedRefField } from '../painted/fieldShared';
 import { flatTextures, groundColor } from '../painted/lab/ground';
 
@@ -648,8 +649,10 @@ export function applyGroundShader(mat: THREE.MeshStandardNodeMaterial, tex: Grou
   if (FLAGS.style === 'painted') {
     // Họa Cảnh: đất cỏ và đường mòn dùng đúng màu đất của painted-valley (bản dịch TSL đã đo khớp ở render/painted/lab), phát sáng không qua
     // đèn (không ACES/mood); đá, vách, tuyết, lát đá, mộ giữ shader cũ có đèn. Độ phủ cỏ ở đây là mặt nạ của chính địa hình (đường mòn = đất trần).
-    const keep = max(max(max(rockW, cliffW), snowW), max(pav, bio.z));
-    const grassW = float(1).sub(keep);
+    const keep = max(max(max(rockW, cliffW), snowW), bio.z);
+    // đá lát: bỏ vân ảnh chụp, chỉ giữ khe gạch (độ chói thấp) thành hai tông xám ngọc sáng/lam tối
+    const pavW = pav.mul(float(1).sub(keep));
+    const grassW = float(1).sub(keep).mul(float(1).sub(pav));
     const F = getPaintedRefField();
     const painted = groundColor(F, flatTextures(), positionWorld, nGeo, {
       m: vec4(0.25, float(1).sub(pathW), 0, 0.55),
@@ -661,8 +664,15 @@ export function applyGroundShader(mat: THREE.MeshStandardNodeMaterial, tex: Grou
         float(1).sub(smoothstep(SUOI.flatR, SUOI.outerR * 0.75, distance(positionWorld.xz, vec2(SUOI.x, SUOI.z)))),
       ),
     });
+    const pavLit = paintedColor('paving', 0);
+    const pavShade = paintedColor('paving', 1);
+    const pavTone = mix(
+      vec3(pavShade.r, pavShade.g, pavShade.b),
+      vec3(pavLit.r, pavLit.g, pavLit.b),
+      smoothstep(0.14, 0.26, dot(col.rgb, vec3(0.299, 0.587, 0.114))),
+    );
     mat.colorNode = col.mul(keep);
-    mat.emissiveNode = painted.mul(grassW);
+    mat.emissiveNode = painted.mul(grassW).add(pavTone.mul(pavW));
   }
 
   // ----- pháp tuyến + độ nhám -----
