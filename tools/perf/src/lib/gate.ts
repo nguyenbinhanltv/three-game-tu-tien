@@ -43,6 +43,9 @@ export interface BaselinePoint {
   dc: number;
   tris: number;
   texMB: number;
+  /** Tách `texMB`: tài sản (không phụ thuộc viewport) và đích vẽ (phình theo viewport). Thiếu ở baseline cũ. */
+  texAssetMB?: number;
+  texRtMB?: number;
   heapMB: number | null;
   cpu95: number;
 }
@@ -81,6 +84,7 @@ export function toBaseline(run: IsoRun, note?: string): Baseline {
       dc: p.drawCalls.max,
       tris: p.triangles.max,
       texMB: p.textureMB,
+      ...(p.textureAssetMB === undefined ? {} : { texAssetMB: p.textureAssetMB, texRtMB: p.textureRtMB ?? 0 }),
       heapMB: p.jsHeapMB,
       cpu95: p.cpuMs.p95,
     })),

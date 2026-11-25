@@ -194,6 +194,15 @@ describe('baseline khác backend', () => {
   });
 });
 
+describe('tách texture tài sản và đích vẽ', () => {
+  it('toBaseline chép phần tài sản/đích vẽ khi có; kết quả cũ không có thì bỏ qua', () => {
+    const p = { ...pt('a/x', 'map', { tex: 300 }), textureAssetMB: 120, textureRtMB: 180 };
+    const b = toBaseline(run([p, pt('a/y', 'map')]));
+    expect(b.points[0]).toMatchObject({ texMB: 300, texAssetMB: 120, texRtMB: 180 });
+    expect(b.points[1]).not.toHaveProperty('texAssetMB');
+  });
+});
+
 describe('toBaseline', () => {
   it('giữ đủ trường gọn', () => {
     const b = toBaseline(run([pt('a/x', 'map', { dc: 90, tris: 123_000, tex: 150, cpu: 5, heap: 220 })]), 'ghi chú');
