@@ -5,25 +5,6 @@
  ],
  "events": [
   {
-   "type": "particles",
-   "kind": "spark",
-   "t": -0.35,
-   "n": 18,
-   "speed": 1.2,
-   "spread": 1,
-   "life": 0.3,
-   "size": 0.06,
-   "at": "self",
-   "offset": [
-    0,
-    0.4,
-    0
-   ],
-   "inward": true,
-   "tone": "rim",
-   "tier": 1
-  },
-  {
    "type": "soundAt",
    "t": -0.35,
    "id": "cast",
@@ -32,148 +13,188 @@
    "jitter": 0.05
   },
   {
-   "type": "decal",
-   "tex": "rune",
-   "t": -0.2,
-   "r": 3.2,
-   "dur": 5.2,
-   "at": "self",
-   "offset": [
-    0,
-    -1.12,
-    0
-   ],
-   "grow": 0.25,
-   "tone": "body",
-   "alpha": 0.9,
-   "tier": 0
-  },
-  {
-   "type": "mesh",
-   "shape": "rune_ring2",
-   "t": -0.2,
-   "dur": 4.0,
-   "at": "self",
-   "offset": [
-    0,
-    -1.02,
-    0
-   ],
-   "scale": 0.4,
-   "scaleTo": 0.62,
-   "sweep": 0.2,
-   "erodeFrom": 0.8,
-   "alpha": 0.9,
-   "shadow": false,
-   "tone": "rim",
-   "follow": true,
-   "tier": 0,
-   "seed": 4
-  },
-  {
-   "type": "mesh",
-   "shape": "sword_halo",
-   "t": 0.0,
-   "dur": 4.0,
-   "at": "self",
-   "offset": [
-    0,
-    -0.22000000000000008,
-    0
-   ],
-   "scale": 1.6,
-   "spin": 90,
-   "sweep": 0.15,
-   "erodeFrom": 0.85,
-   "alpha": 0.8,
-   "shadow": false,
-   "tone": "rim",
-   "follow": true,
-   "camFade": true,
-   "tier": 0,
-   "seed": 6
-  },
-  {
-   "type": "mesh",
-   "shape": "flip",
-   "t": 0.0,
-   "dur": 0.34,
-   "flip": "spark_burst",
-   "scale": 2.6,
-   "billboard": true,
-   "at": "self",
-   "offset": [
-    0,
-    0.2,
-    0
-   ],
-   "alpha": 0.7,
-   "tone": "body",
-   "tier": 0
-  },
-  {
-   "type": "mesh",
-   "shape": "slash_cross",
-   "t": 0.0,
-   "dur": 0.28,
-   "at": "self",
-   "offset": [
-    0,
-    0.1,
-    0
-   ],
-   "scale": 2.4,
-   "scaleTo": 3.2,
-   "sweep": 0.3,
-   "erodeFrom": 0.45,
-   "shadow": false,
-   "tone": "rim",
-   "alpha": 0.85,
-   "camFade": true,
-   "tier": 1,
-   "seed": 7
-  },
-  {
    "type": "soundAt",
-   "t": 0.0,
+   "t": 0,
    "id": "block",
    "gain": 0.6,
    "rate": 0.8,
    "jitter": 0.05
   },
   {
-   "type": "particles",
-   "kind": "spark",
-   "t": 0.0,
-   "n": 40,
-   "speed": 5,
-   "spread": 1,
-   "life": 0.5,
-   "size": 0.08,
-   "at": "self",
-   "offset": [
-    0,
-    0.2,
-    0
-   ],
-   "tone": "rim",
-   "tier": 1
-  },
-  {
    "type": "hitstop",
-   "t": 0.0,
+   "t": 0,
    "ms": 55
   },
   {
    "type": "shake",
-   "t": 0.0,
+   "t": 0,
    "level": 0.2
   },
   {
    "type": "flash",
-   "t": 0.0,
+   "t": 0,
    "amount": 0.08,
    "tier": 0
+  },
+  {
+   "type": "mesh",
+   "t": -0.28,
+   "dur": 0.28,
+   "at": "self",
+   "sweep": 0,
+   "erodeFrom": 0.8,
+   "ragged": 0.5,
+   "tone": "body",
+   "alpha": 0.4,
+   "tier": 0,
+   "seed": 1000,
+   "shape": "sprite",
+   "sprite": "dao_planted",
+   "billboard": true,
+   "offset": [
+    0,
+    1.4,
+    0.8
+   ],
+   "scale": 1.2,
+   "scaleTo": 1.73
+  },
+  {
+   "type": "particles",
+   "kind": "spark",
+   "t": -0.24,
+   "n": 12,
+   "speed": 1.7,
+   "spread": 1,
+   "life": 0.26,
+   "size": 0.07,
+   "at": "self",
+   "offset": [
+    0,
+    1.2,
+    0.8
+   ],
+   "tone": "rim",
+   "tier": 1,
+   "inward": true
+  },
+  {
+   "type": "mesh",
+   "t": 0,
+   "dur": 0.9,
+   "at": "self",
+   "sweep": 0,
+   "erodeFrom": 0.4,
+   "ragged": 0.5,
+   "tone": "body",
+   "alpha": 0.7,
+   "tier": 0,
+   "seed": 1001,
+   "shape": "sprite",
+   "sprite": "dao_shadow",
+   "billboard": true,
+   "offset": [
+    0,
+    0.25,
+    0.8
+   ],
+   "scale": 3.4,
+   "scaleTo": 3.4
+  },
+  {
+   "type": "mesh",
+   "t": 0,
+   "dur": 1.6,
+   "at": "self",
+   "sweep": 0,
+   "erodeFrom": 0.55,
+   "ragged": 0.5,
+   "tone": "body",
+   "alpha": 0.95,
+   "tier": 0,
+   "seed": 1002,
+   "shape": "sprite",
+   "sprite": "dao_planted",
+   "billboard": true,
+   "offset": [
+    0,
+    1.8,
+    0.9
+   ],
+   "scale": 3.44,
+   "scaleTo": 4.2
+  },
+  {
+   "type": "mesh",
+   "t": 0.03,
+   "dur": 0.12,
+   "at": "self",
+   "sweep": 0,
+   "erodeFrom": 0.3,
+   "ragged": 0.5,
+   "tone": "body",
+   "alpha": 0.9,
+   "tier": 0,
+   "seed": 1003,
+   "shape": "sprite",
+   "sprite": "dao_flash",
+   "billboard": true,
+   "offset": [
+    0,
+    1.4,
+    0.8
+   ],
+   "scale": 1.6,
+   "scaleTo": 2
+  },
+  {
+   "type": "decal",
+   "tex": "scorch",
+   "t": -0.05,
+   "r": 2.6,
+   "dur": 2.4,
+   "at": "self",
+   "offset": [
+    0,
+    -1.05,
+    0.8
+   ],
+   "grow": 0.1,
+   "tone": "shadow",
+   "alpha": 0.78,
+   "tier": 0
+  },
+  {
+   "type": "mesh",
+   "t": 0.25,
+   "dur": 0.6,
+   "at": "self",
+   "sweep": 0,
+   "erodeFrom": 0.2,
+   "ragged": 0.5,
+   "tone": "body",
+   "alpha": 0.75,
+   "tier": 0,
+   "seed": 1004,
+   "shape": "sprite",
+   "sprite": "dao_dust",
+   "billboard": true,
+   "offset": [
+    0,
+    1.2,
+    0.8
+   ],
+   "scale": 2.6,
+   "scaleTo": 2.6,
+   "move": {
+    "to": "self",
+    "offset": [
+     0,
+     2.2,
+     0.8
+    ],
+    "ease": "out"
+   }
   }
  ]
 }

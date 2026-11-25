@@ -35,5 +35,10 @@
       "kind": "flipbook"
     }
   ],
-  "silhouette": "vạch cắt ngang mảnh sáng, bóng đao mờ và vệt tốc độ ngang"
+  "silhouette": "vạch cắt ngang mảnh sáng, bóng đao mờ và vệt tốc độ ngang",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles"
+  ]
 }

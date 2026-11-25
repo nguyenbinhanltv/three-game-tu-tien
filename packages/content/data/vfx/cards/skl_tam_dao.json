@@ -35,5 +35,10 @@
       "kind": "flipbook"
     }
   ],
-  "silhouette": "đại đao cắm đứng, sau lưng một bức tường ánh thép dựng đứng"
+  "silhouette": "đại đao cắm đứng, sau lưng một bức tường ánh thép dựng đứng",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles"
+  ]
 }

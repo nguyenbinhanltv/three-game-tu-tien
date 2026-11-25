@@ -35,5 +35,10 @@
       "kind": "flipbook"
     }
   ],
-  "silhouette": "lưỡi đao thép khổng lồ bổ từ trời, khe nứt dài thẳng, đá tách đôi"
+  "silhouette": "lưỡi đao thép khổng lồ bổ từ trời, khe nứt dài thẳng, đá tách đôi",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles"
+  ]
 }

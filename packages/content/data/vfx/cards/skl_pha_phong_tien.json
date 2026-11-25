@@ -8,7 +8,7 @@
     "spike"
   ],
   "timing": {
-    "anticipationMs": 300,
+    "anticipationMs": 0,
     "impactMs": 80,
     "lingerMs": 600
   },
@@ -35,5 +35,10 @@
       "kind": "flipbook"
     }
   ],
-  "silhouette": "sóng gió xẻ hình chữ V mũi nhọn, vệt đao dày ở giữa"
+  "silhouette": "sóng gió xẻ hình chữ V mũi nhọn, vệt đao dày ở giữa",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles"
+  ]
 }

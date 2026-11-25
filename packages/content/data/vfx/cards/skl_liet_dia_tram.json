@@ -35,5 +35,10 @@
       "kind": "flipbook"
     }
   ],
-  "silhouette": "hai khe nứt bắt chéo chữ X, đá văng bốn góc"
+  "silhouette": "hai khe nứt bắt chéo chữ X, đá văng bốn góc",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles"
+  ]
 }

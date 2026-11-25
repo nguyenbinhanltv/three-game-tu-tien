@@ -35,5 +35,10 @@
       "kind": "flipbook"
     }
   ],
-  "silhouette": "vết chém thẳng đứng mảnh tách đôi hai dải lụa khí"
+  "silhouette": "vết chém thẳng đứng mảnh tách đôi hai dải lụa khí",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles"
+  ]
 }

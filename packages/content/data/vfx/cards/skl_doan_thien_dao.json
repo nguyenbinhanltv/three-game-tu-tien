@@ -35,5 +35,10 @@
       "kind": "flipbook"
     }
   ],
-  "silhouette": "vệt đao thép rạch trời mở khe tối, cột ánh đao rơi thẳng"
+  "silhouette": "vệt đao thép rạch trời mở khe tối, cột ánh đao rơi thẳng",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles"
+  ]
 }

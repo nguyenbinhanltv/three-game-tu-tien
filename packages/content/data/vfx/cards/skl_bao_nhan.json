@@ -35,5 +35,10 @@
       "kind": "flipbook"
     }
   ],
-  "silhouette": "bảy lưỡi đao cong xòe như quạt từ một điểm"
+  "silhouette": "bảy lưỡi đao cong xòe như quạt từ một điểm",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles"
+  ]
 }

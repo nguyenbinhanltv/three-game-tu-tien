@@ -35,5 +35,10 @@
       "kind": "flipbook"
     }
   ],
-  "silhouette": "vệt đao bản rộng lưng răng cưa quét ngang"
+  "silhouette": "vệt đao bản rộng lưng răng cưa quét ngang",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles"
+  ]
 }

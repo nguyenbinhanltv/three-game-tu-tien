@@ -35,5 +35,10 @@
       "kind": "flipbook"
     }
   ],
-  "silhouette": "hai đại đao bắt chéo chữ X lơ lửng sau lưng, cờ chiến rách tung"
+  "silhouette": "hai đại đao bắt chéo chữ X lơ lửng sau lưng, cờ chiến rách tung",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles"
+  ]
 }
