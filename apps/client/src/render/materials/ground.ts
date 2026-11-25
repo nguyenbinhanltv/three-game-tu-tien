@@ -684,7 +684,7 @@ export function applyGroundShader(mat: THREE.MeshStandardNodeMaterial, tex: Grou
     const mixedL: Node = dot(mixed, vec3(0.299, 0.587, 0.114));
     const grassy: Node = mix(vec3(mixedL), mixed, mix(float(1), themeU.groundSat, themeU.on));
     // mảng đất trần (theme.dryMix): vùng màu đỉnh đỏ hơn xanh; tô đất painted nâu nhạt ấm (hai tông, giữ nét cọ), viền mềm, không nhiễu
-    const dryW: Node = smoothstep(DRY_LO, DRY_HI, vc.r.sub(vc.g)).mul(themeU.dryMix).mul(float(1).sub(pathW));
+    const dryW: Node = smoothstep(DRY_LO, DRY_HI, col.r.sub(col.g)).mul(themeU.dryMix).mul(float(1).sub(pathW));
     const earthLit = paintedColor('earth', 0);
     const earthShade = paintedColor('earth', 1);
     const earthTone: Node = mix(
@@ -700,10 +700,15 @@ export function applyGroundShader(mat: THREE.MeshStandardNodeMaterial, tex: Grou
     // + sương thấp sát đáy thung lũng (render/painted/lowMist.ts), chỉ trên phần đất tô phẳng
     const groundBase = paintedT.mul(grassW).add(pavTone.mul(pavW));
     mat.emissiveNode = withLowMist(F, groundBase, positionWorld.xz, positionWorld.y, grassW.add(pavW).min(1));
+    if (FLAGS.paintDbg === 'vc') {
+      // gỡ lỗi: màu đỉnh thô (tuyến tính) ×2
+      mat.colorNode = vec3(0);
+      mat.emissiveNode = vc.mul(2);
+    }
     if (FLAGS.paintDbg === 'dry') {
       // gỡ lỗi: R = (r−g)×10 của màu đỉnh, G = dryW (mặt nạ dùng để tô), B = dryMix của level
       mat.colorNode = vec3(0);
-      mat.emissiveNode = vec3(clamp(vc.r.sub(vc.g).mul(10), 0, 1), dryW, themeU.dryMix);
+      mat.emissiveNode = vec3(clamp(col.r.sub(col.g).mul(10).add(0.5), 0, 1), dryW, themeU.dryMix);
     }
     // vũng sáng đèn đêm: ghi vào đích MRT `lamp`, pass cuối cộng SAU bước nhuộm trăng (giữ tông hổ phách)
     (mat as unknown as { mrtNode: unknown }).mrtNode = mrt({ lamp: vec4(lampPoolAt(positionWorld.xz), 1) });

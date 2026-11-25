@@ -31,8 +31,8 @@ export interface PaintedTheme {
   /** 0..1.5: bão hòa của đất sau khi đổi tông (mặc định 1). */
   groundSat?: number;
   /**
-   * 0..1: mảng đất trần giữa cỏ. Nguồn mảng là màu đỉnh của địa hình (`terrainColor`: vùng đỏ hơn xanh, như cuuKieuArt.ts DRY/EARTH), cùng một hàm `dryAt` cho
-   * đất (tô đất painted nâu nhạt ấm, viền mềm) và cho lưới cỏ (thưa lá trên mảng đất). 0 = không (mặc định, như Vân Lam).
+   * 0..1: mảng đất trần giữa cỏ. Nguồn mảng: màu albedo của đất (texture Codex `terrain-ck` có sẵn mảng đất nâu; màu đỉnh KHÔNG có, đã đo): chỗ đỏ hơn xanh (r − g > ngưỡng) tô đất painted nâu
+   * nhạt ấm, viền mềm. Chưa thưa lá cỏ trên mảng đất (cần mặt nạ trên CPU). 0 = không (mặc định, như Vân Lam).
    */
   dryMix?: number;
   /** Sương thấp: dải cao độ (m) mà sương nằm dưới, từ đỉnh dải trở xuống; và cường độ 0..1. */
@@ -125,5 +125,5 @@ export function paintedFarOn(levelId: string): boolean {
 }
 
 /** Ngưỡng độ đỏ-hơn-xanh (r − g của màu đỉnh tuyến tính) cho mảng đất trần: dưới `DRY_LO` là cỏ, trên `DRY_HI` là đất hẳn. Dùng chung shader đất và lưới cỏ. */
-export const DRY_LO = 0.008;
-export const DRY_HI = 0.03;
+export const DRY_LO = 0.0;
+export const DRY_HI = 0.05;
