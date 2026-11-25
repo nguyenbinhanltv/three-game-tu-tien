@@ -1,4 +1,5 @@
 import * as THREE from 'three/webgpu';
+import { setPaintedTheme } from '../../render/painted/theme';
 import { texture, positionWorld, vertexColor, mix as tmix } from 'three/tsl';
 import { getCloudNoise } from '../../render/noiseTex';
 import { createWorldMaterial } from '../../render/materials/world';
@@ -754,6 +755,7 @@ export class Terrain {
 
   /** Bật shader mặt đất PBR khi bộ texture đã nạp; gọi lại khi đổi preset. */
   setGround(tex: GroundTextures | null, level: GroundLevel): void {
+    setPaintedTheme(T.id);
     setGroundTileBreak(XICH || ASH);
     setGroundStrata(isVanLam());
     setGroundNoSnow(KT || PM || T.id === 'van_dinh');

@@ -42,6 +42,8 @@ export interface FarBackdropOptions {
   width?: number;
   /** Cạnh bản đồ độ cao (texel). */
   ground?: number;
+  /** [sáng, tối] (sRGB hex): đổi tông dải núi theo level (độ chói của bản vẽ gốc ánh xạ vào hai màu); bỏ trống = màu painted-valley. */
+  tone?: readonly [number, number];
 }
 
 export class FarBackdrop {
@@ -62,7 +64,7 @@ export class FarBackdrop {
     private readonly renderer: THREE.WebGPURenderer,
     opts: FarBackdropOptions,
   ) {
-    this.o = { width: 2048, ground: 1024, ...opts };
+    this.o = { width: 2048, ground: 1024, ...opts } as Required<FarBackdropOptions>;
     this.material = new THREE.MeshBasicNodeMaterial({
       side: THREE.BackSide,
       fog: false,
@@ -154,6 +156,12 @@ export class FarBackdrop {
     const skyColor = vec3(...(L.skyColor as [number, number, number]));
     const fogColor = vec3(...(L.fogColor as [number, number, number]));
     const fogSun = vec3(...(L.fogSunColor as [number, number, number]));
+    const tone = this.o.tone
+      ? {
+          lit: new THREE.Color().setHex(this.o.tone[0], THREE.SRGBColorSpace).toArray() as [number, number, number],
+          shade: new THREE.Color().setHex(this.o.tone[1], THREE.SRGBColorSpace).toArray() as [number, number, number],
+        }
+      : null;
     const bankLit = vec3(1.26, 1.2, 1.08);
     const bankShade = vec3(0.4575, 0.5905, 0.756);
     return Fn(() => {
@@ -180,6 +188,11 @@ export class FarBackdrop {
         clamp(b1.a.mul(w), 0, 1),
       ).toVar();
       const air: N = mix(fogColor, fogSun, pow(sd, 6).mul(0.45));
+      if (tone) {
+        // đổi tông theo level: giữ khối núi (độ chói), thay bảng màu bằng hai màu của level
+        const ink: N = dot(land, vec3(0.299, 0.587, 0.114));
+        land = mix(vec3(...tone.shade), vec3(...tone.lit), smoothstep(0.02, 0.32, ink)).toVar();
+      }
       land = mix(land, air, float(1).sub(pow(float(1).sub(clamp(b2.r.mul(w), 0, 0.996)), L.fogDensity / 0.00015))).toVar();
       land = mix(land, vec3(0.86, 0.92, 1).mul(skyColor.mul(0.5).add(sunColor.mul(0.26))), clamp(b2.g.mul(w), 0, 1)).toVar();
       const cloud: N = mix(
