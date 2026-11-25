@@ -11,20 +11,24 @@
 // Không có --url thì dùng SERVER_URL hoặc PORT (xem target.ts).
 
 import { Client, type Room } from 'colyseus.js';
-import { C, hashName, IN_FLY, type InitMsg, MS_DEAD, PF_DEAD, PORTAL_POS, ROOM_WORLD, S, STEP, type TransferMsg } from '@dtl/shared';
+import { at, C, hashName, IN_FLY, type InitMsg, MS_DEAD, PF_DEAD, PORTAL_POS, ROOM_WORLD, S, STEP, type TransferMsg } from '@dtl/shared';
 import { APPEARANCE } from '@dtl/content';
 import { defaultServerWs } from './target';
 
 function arg(name: string, def: string): string {
   const i = process.argv.indexOf('--' + name);
-  return i >= 0 && process.argv[i + 1] ? process.argv[i + 1] : def;
+  const v = i >= 0 ? process.argv[i + 1] : undefined;
+  return v ? v : def;
 }
 
 function point(name: string, defR: number): { x: number; z: number; r: number } | null {
   const v = arg(name, '');
   if (!v) return null;
-  const [x, z, r = defR] = v.split(',').map(Number);
-  return Number.isFinite(x) && Number.isFinite(z) ? { x, z, r } : null;
+  const nums = v.split(',').map(Number);
+  const x = nums[0];
+  const z = nums[1];
+  const r = nums[2] ?? defR;
+  return x !== undefined && z !== undefined && Number.isFinite(x) && Number.isFinite(z) ? { x, z, r } : null;
 }
 
 // --set <id bộ>[,<id bộ>…] (hoặc BOT_SET): lúc vào game /gm set <bộ> để đo client với đám đông mặc bộ trang bị (áo mặc thật).
@@ -114,7 +118,7 @@ class Bot {
   private async join(roomName: string): Promise<void> {
     const client = new Client(URL);
     // Màu áo khác nhau theo tên (chỉ có tác dụng lúc tạo nhân vật) để cảnh test tải giống người thật.
-    const dye = APPEARANCE.dyes[hashName(this.name) % APPEARANCE.dyes.length].id;
+    const dye = at(APPEARANCE.dyes, hashName(this.name) % APPEARANCE.dyes.length, 'dyes').id;
     const room = await client.joinOrCreate(roomName, { dev: this.name, ap: { g: GENDERS[this.index % GENDERS.length] ?? 'm', dye } });
     this.room = room;
     this.sid = '';
