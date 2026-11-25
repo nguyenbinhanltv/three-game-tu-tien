@@ -50,6 +50,9 @@ export interface Baseline {
   version: 1;
   date: string;
   note?: string;
+  /** Backend/viewport lúc đo: số đếm khác nhau thật giữa WebGPU và WebGL2 (đèn điểm chỉ WebGPU, trần pixel WebGL2…), nên không so chéo. */
+  backend?: string;
+  viewport?: string;
   /** Lỗi console đã có sẵn lúc lập baseline (nợ đã biết): không chặn, chỉ cảnh báo; lỗi MỚI vẫn chặn. */
   errors?: string[];
   points: BaselinePoint[];
@@ -60,6 +63,8 @@ export function toBaseline(run: IsoRun, note?: string): Baseline {
     version: 1,
     date: run.date,
     ...(note ? { note } : {}),
+    backend: run.backend,
+    viewport: run.viewport,
     errors: [...new Set(run.errors)].slice(0, 50),
     points: run.points.map((p) => ({
       id: p.id,
@@ -82,7 +87,7 @@ export interface Finding {
   value: number;
   /** Giới hạn đã áp (ngân sách hoặc baseline×(1+tol)). */
   limit: number;
-  why: 'vượt ngân sách' | 'tệ hơn baseline' | 'cảnh báo ms' | 'lỗi console' | 'thiếu điểm';
+  why: 'vượt ngân sách' | 'tệ hơn baseline' | 'cảnh báo ms' | 'lỗi console' | 'thiếu điểm' | 'baseline khác backend';
 }
 
 export interface GateOptions {
@@ -90,6 +95,8 @@ export interface GateOptions {
   tol?: number;
   /** Chỉ xét các preset này (mặc định `high`: ngân sách ghi cho mức Cao). */
   presets?: string[];
+  /** Baseline đo ở backend/viewport khác: mặc định CHẶN (không so chéo); bật cờ này thì bỏ qua baseline, chỉ xét ngân sách vùng (+ cảnh báo). */
+  ignoreBaselineMismatch?: boolean;
 }
 
 interface Metric {
@@ -116,11 +123,27 @@ function metricsOf(p: IsoPoint, b: BaselinePoint | undefined, z: ZoneBudget): Me
 }
 
 /** Áp luật cổng lên một lần chạy. Trả mọi phát hiện; `failed(findings)` cho biết có chặn không. */
-export function gate(run: IsoRun, base: Baseline | null, opts: GateOptions = {}): Finding[] {
+export function gate(run: IsoRun, baseIn: Baseline | null, opts: GateOptions = {}): Finding[] {
+  let base = baseIn;
+  const early: Finding[] = [];
+  if (base && ((base.backend && base.backend !== run.backend) || (base.viewport && base.viewport !== run.viewport))) {
+    const f: Finding = {
+      severity: opts.ignoreBaselineMismatch ? 'warn' : 'fail',
+      id: '(baseline)',
+      preset: '-',
+      metric: `baseline ${base.backend ?? '?'} ${base.viewport ?? '?'} ≠ lần chạy ${run.backend} ${run.viewport}`,
+      value: 0,
+      limit: 0,
+      why: 'baseline khác backend',
+    };
+    if (!opts.ignoreBaselineMismatch) return [f];
+    early.push(f);
+    base = null;
+  }
   const tol = opts.tol ?? 0.1;
   const presets = new Set(opts.presets ?? ['high']);
   const bmap = new Map((base?.points ?? []).map((b) => [`${b.preset}|${b.id}`, b]));
-  const out: Finding[] = [];
+  const out: Finding[] = [...early];
   const seen = new Set<string>();
   for (const p of run.points) {
     if (!presets.has(p.preset)) continue;

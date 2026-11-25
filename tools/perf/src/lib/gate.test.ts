@@ -125,10 +125,46 @@ describe('gate', () => {
   });
 });
 
+describe('baseline khác backend', () => {
+  const webgl = (points: IsoPoint[]): IsoRun => ({ ...run(points), backend: 'WebGL2' });
+
+  it('chặn khi baseline đo ở backend khác, không so số chéo', () => {
+    const base = toBaseline(run([pt('a/x', 'map', { dc: 80 })]));
+    const f = gate(webgl([pt('a/x', 'map', { dc: 80 })]), base);
+    expect(failed(f)).toBe(true);
+    expect(f).toHaveLength(1);
+    expect(f[0]).toMatchObject({ why: 'baseline khác backend', severity: 'fail' });
+    expect(f[0]!.metric).toContain('WebGPU');
+    expect(f[0]!.metric).toContain('WebGL2');
+  });
+
+  it('chặn khi khác viewport', () => {
+    const base = toBaseline(run([pt('a/x', 'map')]));
+    const r = { ...run([pt('a/x', 'map')]), viewport: '1920x1080' };
+    expect(gate(r, base)[0]).toMatchObject({ why: 'baseline khác backend', severity: 'fail' });
+  });
+
+  it('--ignore-baseline-mismatch: cảnh báo, bỏ baseline, vẫn áp ngân sách vùng', () => {
+    const base = toBaseline(run([pt('phuc_mach/giua', 'dungeon', { dc: 500 })]));
+    const ok = gate(webgl([pt('phuc_mach/giua', 'dungeon', { dc: 100 })]), base, { ignoreBaselineMismatch: true });
+    expect(failed(ok)).toBe(false);
+    expect(ok.some((x) => x.why === 'baseline khác backend' && x.severity === 'warn')).toBe(true);
+    const bad = gate(webgl([pt('phuc_mach/giua', 'dungeon', { dc: 300 })]), base, { ignoreBaselineMismatch: true });
+    expect(failed(bad)).toBe(true);
+  });
+
+  it('baseline cũ không ghi backend thì không so khớp', () => {
+    const base = toBaseline(run([pt('a/x', 'map')]));
+    delete base.backend;
+    delete base.viewport;
+    expect(failed(gate(webgl([pt('a/x', 'map')]), base))).toBe(false);
+  });
+});
+
 describe('toBaseline', () => {
   it('giữ đủ trường gọn', () => {
     const b = toBaseline(run([pt('a/x', 'map', { dc: 90, tris: 123_000, tex: 150, cpu: 5, heap: 220 })]), 'ghi chú');
-    expect(b).toMatchObject({ version: 1, note: 'ghi chú' });
+    expect(b).toMatchObject({ version: 1, note: 'ghi chú', backend: 'WebGPU', viewport: '1280x720' });
     expect(b.points[0]).toEqual({ id: 'a/x', preset: 'high', dc: 90, tris: 123_000, texMB: 150, heapMB: 220, cpu95: 5 });
   });
 });

@@ -1,6 +1,7 @@
 // pnpm perf:gate: cổng đo bản đồ (B2). Đọc kết quả `pnpm perf:iso`, áp ngân sách vùng + so baseline (xem lib/gate.ts).
 //
 //   pnpm perf:gate <iso-*.json> [--baseline tools/perf/baselines/iso-high.json] [--tol 0.1] [--presets high] [--md <file>]
+//   Baseline đo ở backend/viewport khác lần chạy bị CHẶN; `--ignore-baseline-mismatch` bỏ qua baseline (chỉ xét ngân sách vùng).
 //   pnpm perf:gate --make-baseline <iso-*.json> --out tools/perf/baselines/iso-high.json [--note "main <sha>"]
 //   pnpm perf:gate --run [--only van_lam,kiem_trung] ...   chạy `perf:iso` (cần trình duyệt, xin lượt) rồi áp cổng
 //
@@ -80,7 +81,11 @@ const baseFile = opt('--baseline');
 const base: Baseline | null =
   baseFile && fs.existsSync(resolveArg(baseFile)) ? (JSON.parse(fs.readFileSync(resolveArg(baseFile), 'utf8')) as Baseline) : null;
 if (baseFile && !base) console.warn(`[perf-gate] không thấy baseline ${baseFile}: chỉ xét ngân sách vùng`);
-const findings = gate(run, base, { tol: Number(opt('--tol', '0.1')), presets: opt('--presets', 'high').split(',') });
+const findings = gate(run, base, {
+  tol: Number(opt('--tol', '0.1')),
+  presets: opt('--presets', 'high').split(','),
+  ignoreBaselineMismatch: has('--ignore-baseline-mismatch'),
+});
 const md = findingsToMarkdown(findings, run, base);
 console.log(md);
 if (opt('--md')) fs.writeFileSync(resolveArg(opt('--md')), md);

@@ -58,7 +58,14 @@ jobs:
       - name: perf:iso (Chromium phần mềm, WebGL2)
         run: pnpm perf:iso --quick --presets high --renderer webgl2 --channel chromium ${{ inputs.only != '' && format('--only {0}', inputs.only) || '' }} --out bench/results
       - name: perf:gate
-        run: pnpm perf:gate "$(ls bench/results/iso-*.json | sort | tail -1)" --baseline tools/perf/baselines/iso-high.json --md bench/results/gate.md
+        # Baseline theo backend: `iso-high.json` đo ở WebGPU 1280×720 (máy có GPU), KHÔNG so được với lần chạy WebGL2/phần mềm (cổng chặn
+        # khi khác backend). Baseline cho runner này là `iso-high-webgl2.json`; chưa có thì chỉ xét ngân sách vùng.
+        run: |
+          RUN="$(ls bench/results/iso-*.json | sort | tail -1)"
+          pnpm perf:gate "$RUN" --baseline tools/perf/baselines/iso-high-webgl2.json --md bench/results/gate.md
+      - name: Sinh baseline WebGL2 (artifact, để commit khi muốn lập baseline cho runner)
+        if: always()
+        run: pnpm perf:gate --make-baseline "$(ls bench/results/iso-*.json | sort | tail -1)" --out bench/results/iso-high-webgl2.json --note "runner CI, Chromium phần mềm, WebGL2" || true
       - name: Đăng kết quả
         if: always()
         run: |
