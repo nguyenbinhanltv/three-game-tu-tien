@@ -98,12 +98,17 @@ describe('gate', () => {
     const base = toBaseline(run([pt('a/x', 'map'), pt('b/y', 'map')]));
     const f = gate(run([pt('a/x', 'map'), pt('c/z', 'map', { preset: 'ultra', dc: 999 })]), base);
     expect(failed(f)).toBe(false);
-    expect(f.filter((x) => x.why === 'thiếu điểm').map((x) => x.id)).toEqual(['b/y']);
+    // `b/y` thuộc mục tiêu `b` mà lần chạy không đo: không báo thiếu.
+    expect(f.filter((x) => x.why === 'thiếu điểm')).toEqual([]);
+    const g = gate(run([pt('a/x', 'map')]), toBaseline(run([pt('a/x', 'map'), pt('a/y', 'map')])));
+    expect(g.filter((x) => x.why === 'thiếu điểm').map((x) => x.id)).toEqual(['a/y']);
   });
 
-  it('lỗi console luôn chặn; heap vượt chặn', () => {
+  it('lỗi console luôn chặn; heap vượt chỉ cảnh báo (dao động theo GC)', () => {
     expect(failed(gate(run([pt('a/x', 'map')], ['TypeError: x']), null))).toBe(true);
-    expect(failed(gate(run([pt('a/x', 'map', { heap: 450 })]), null))).toBe(true);
+    const f = gate(run([pt('a/x', 'map', { heap: 450 })]), null);
+    expect(failed(f)).toBe(false);
+    expect(f.some((x) => x.severity === 'warn' && x.metric === 'heap JS MB')).toBe(true);
     expect(failed(gate(run([pt('a/x', 'map', { heap: null })]), null))).toBe(false);
   });
 
