@@ -15,7 +15,8 @@
 //   không chờ thì điểm đầu của level đo khi ô địa hình/prop/texture còn đang nạp (baseline cũ ghi Vân Lam 354k tam giác/94 MB so với 821k/460–500 MB thật).
 // `--recycle N`: mở trang mới sau mỗi N mục tiêu (mặc định 3) để WebGPU không mất thiết bị khi đổi nhiều level liền.
 // `--resume <iso-checkpoint.json>`: làm tiếp từ checkpoint (ghi sau MỖI mục tiêu vào `<out>/iso-checkpoint.json`); bỏ qua mục tiêu đã xong. Chỉ ghép
-//   khi cùng viewport/cách đo/backend. Dừng giữa chừng (Ctrl+C, hết giờ) không mất số đã đo; chạy theo nhóm bằng `--only a,b` rồi `--resume`.
+//   khi cùng viewport/cách đo/backend và tùy chọn đo (--seconds, --cpu-throttle, --igpu, --noshadow, --query, --quick, --bots). Checkpoint được GIỮ khi dùng
+//   --only/--quick/--bots (xóa chỉ khi chạy đủ danh sách). Dừng giữa chừng (Ctrl+C, hết giờ) không mất số đã đo; chạy theo nhóm bằng `--only a,b` rồi `--resume`.
 // Trước khi chạy kiểm ĐỦ asset so sổ khóa (worktree thiếu asset đo ra số thấp một cách im lặng): thiếu thì thoát; `--allow-missing-assets` bỏ qua.
 // `--igpu`: ép GPU tiết kiệm điện (`--force_low_power_gpu`) để đo iGPU Intel/AMD nếu máy có.
 // `--cpu-throttle N`: làm chậm CPU N lần qua CDP (`Emulation.setCPUThrottlingRate`) để MÔ PHỎNG máy yếu (ví dụ 4 ≈ laptop tầm trung, 6 ≈ iGPU yếu).
@@ -37,7 +38,7 @@ import { enterLevel, gm, skipCutscene, tp, waitInGame, waitLevel } from './lib/g
 import { levelPoints } from './lib/levelpoints';
 import { checkAssets, readLockFiles } from './lib/assetcheck';
 import { BASELINE_METHOD } from './lib/gate';
-import { type Checkpoint, emptyCheckpoint, incompatibility, isDone, markDone } from './lib/isocheckpoint';
+import { type Checkpoint, type RunOpts, emptyCheckpoint, incompatibility, isDone, markDone } from './lib/isocheckpoint';
 import { bucketGroups, compareRuns, stat, toMarkdown, type IsoPoint, type IsoRun, round } from './lib/isoreport';
 
 const QUICK = flag('--quick');
@@ -712,11 +713,26 @@ async function main(): Promise<void> {
   const ckDir = outDir('bench/results');
   fs.mkdirSync(ckDir, { recursive: true });
   const ckFile = path.join(ckDir, 'iso-checkpoint.json');
-  let ck = emptyCheckpoint(`${VW}x${VH}`, method);
+  /** Tùy chọn quyết định cách đo: lưu vào checkpoint, khác thì không `--resume` (số đo không so được). */
+  const runOpts: RunOpts = {
+    seconds: SECONDS,
+    cpuThrottle: CPU_THROTTLE,
+    igpu: flag('--igpu'),
+    noshadow: NOSHADOW,
+    query: EXTRA,
+    quick: QUICK,
+    bots: BOTS,
+  };
+  let ck = emptyCheckpoint(`${VW}x${VH}`, method, runOpts);
   const resume = opt('--resume', '');
   if (resume) {
     const loaded = JSON.parse(fs.readFileSync(path.resolve(resume), 'utf8')) as Checkpoint;
-    const why = incompatibility(loaded, { viewport: `${VW}x${VH}`, method, backend: RENDERER === 'webgpu' ? 'WebGPU' : 'WebGL2' });
+    const why = incompatibility(loaded, {
+      viewport: `${VW}x${VH}`,
+      method,
+      backend: RENDERER === 'webgpu' ? 'WebGPU' : 'WebGL2',
+      opts: runOpts,
+    });
     if (why) throw new Error(`không làm tiếp được từ ${resume}: ${why}`);
     ck = loaded;
     errors.push(...ck.errors);
@@ -773,7 +789,9 @@ async function main(): Promise<void> {
   console.log(toMarkdown(run, deltas));
   reportErrors('perf-iso', errors);
   console.log(`[perf-iso] ghi ${path.join(dir, `iso-${date}.json`)} (.md cạnh bên)`);
-  fs.rmSync(ckFile, { force: true }); // chạy xong trọn: bỏ checkpoint để không làm tiếp nhầm lần sau
+  // Chỉ xóa checkpoint khi đã chạy ĐỦ danh sách (không `--only`/`--quick`/`--bots`): chạy theo nhóm cần checkpoint để `--resume` nhóm kế.
+  if (ONLY.length === 0 && !QUICK && BOTS === 0) fs.rmSync(ckFile, { force: true });
+  else console.log(`[perf-iso] giữ checkpoint ${ckFile}: làm tiếp nhóm khác bằng --resume ${ckFile}`);
 }
 
 main().catch((e) => {

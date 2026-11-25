@@ -25,6 +25,38 @@ const pt = (target: string, name: string, preset = 'high'): IsoPoint => ({
   topGroups: [],
 });
 
+describe('checkpoint: tùy chọn đo', () => {
+  const opts = { seconds: 4, cpuThrottle: 1, igpu: false, noshadow: false, query: '', quick: false };
+  it('cùng tùy chọn thì ghép được', () => {
+    const cp = emptyCheckpoint('1280x720', 'settled-v1', opts);
+    expect(incompatibility(cp, { viewport: '1280x720', method: 'settled-v1', opts: { ...opts } })).toBeNull();
+  });
+  it('khác --cpu-throttle / --seconds / --query thì từ chối, nêu rõ khóa', () => {
+    const cp = emptyCheckpoint('1280x720', 'settled-v1', { ...opts, cpuThrottle: 4 });
+    const why = incompatibility(cp, { viewport: '1280x720', method: 'settled-v1', opts });
+    expect(why).toContain('cpuThrottle');
+    expect(why).toContain('checkpoint 4');
+    expect(
+      incompatibility(emptyCheckpoint('1280x720', 'settled-v1', opts), {
+        viewport: '1280x720',
+        method: 'settled-v1',
+        opts: { ...opts, seconds: 2 },
+      }),
+    ).toContain('seconds');
+    expect(
+      incompatibility(emptyCheckpoint('1280x720', 'settled-v1', opts), {
+        viewport: '1280x720',
+        method: 'settled-v1',
+        opts: { ...opts, query: 'a=b' },
+      }),
+    ).toContain('query');
+  });
+  it('checkpoint cũ không có opts bị từ chối khi lần chạy có opts', () => {
+    const cp = emptyCheckpoint('1280x720', 'settled-v1');
+    expect(incompatibility(cp, { viewport: '1280x720', method: 'settled-v1', opts: { ...opts, cpuThrottle: 4 } })).toContain('cpuThrottle');
+  });
+});
+
 describe('checkpoint', () => {
   it('markDone ghi điểm, đánh dấu xong và thay điểm cũ khi chạy lại', () => {
     const cp = emptyCheckpoint('1280x720', 'settled-v1');
