@@ -80,6 +80,7 @@ function initScript(preset: string): void {
   localStorage.setItem('dtl.qualityLock', '1');
   const w = window as any;
   const tex = new Map<object, number>();
+  const rtTex = new WeakSet<object>();
   const B = {
     rec: false,
     passes: {} as Record<string, number>,
@@ -99,6 +100,12 @@ function initScript(preset: string): void {
   w.__isoTexBytes = () => {
     let s = 0;
     for (const v of tex.values()) s += v;
+    return s;
+  };
+  /** Phần của `__isoTexBytes` thuộc đích vẽ (render target: MSAA/MRT ×số mẫu, phình theo viewport), tách khỏi texture tài sản. */
+  w.__isoRtBytes = () => {
+    let s = 0;
+    for (const [t, v] of tex) if (rtTex.has(t)) s += v;
     return s;
   };
   const COMPS: Record<number, number> = { 1021: 1, 1022: 4, 1023: 4, 1026: 1, 1027: 1, 1028: 1, 1029: 1, 1030: 2, 1031: 2, 1033: 4 };
@@ -159,6 +166,7 @@ function initScript(preset: string): void {
         be.createTexture = (t: object, o: unknown) => {
           create(t, o);
           tex.set(t, bytesOf(t, o));
+          if ((t as any).isRenderTargetTexture) rtTex.add(t);
         };
         be.destroyTexture = (t: object) => {
           tex.delete(t);
@@ -323,6 +331,7 @@ async function measure(page: Page, id: string, target: Target, preset: string, d
       geometries: g.renderer.info.memory.geometries as number,
       materials: mats.size,
       texBytes: w.__isoTexBytes() as number,
+      rtBytes: w.__isoRtBytes() as number,
       geoBytes,
       monsters: g.ents.monsters.size as number,
       heap: mem ? (mem.usedJSHeapSize as number) : null,
@@ -395,6 +404,8 @@ async function measure(page: Page, id: string, target: Target, preset: string, d
     triangles: { p50: Math.round(tri[Math.floor(tri.length / 2)] ?? 0), max: Math.round(tri[tri.length - 1] ?? 0) },
     textures: raw.textures,
     textureMB: mb(raw.texBytes),
+    textureAssetMB: mb(raw.texBytes - raw.rtBytes),
+    textureRtMB: mb(raw.rtBytes),
     geometries: raw.geometries,
     materials: raw.materials,
     gpuMemMB: mb(raw.texBytes + raw.geoBytes),

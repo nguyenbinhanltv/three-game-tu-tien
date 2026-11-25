@@ -89,7 +89,12 @@ export interface IsoPoint {
   drawCalls: { p50: number; max: number };
   triangles: { p50: number; max: number };
   textures: number;
+  /** Tổng byte texture GPU đã tạo (MB) = tài sản + đích vẽ. */
   textureMB: number;
+  /** Texture tài sản (GLB/ảnh): không phụ thuộc viewport. Thiếu ở kết quả cũ. */
+  textureAssetMB?: number;
+  /** Đích vẽ (render target, MSAA/MRT ×số mẫu): phình theo viewport/preset. Thiếu ở kết quả cũ. */
+  textureRtMB?: number;
   geometries: number;
   materials: number;
   /** Ước tính bộ nhớ GPU: texture + buffer hình học (byte → MB). */
@@ -189,12 +194,12 @@ export function toMarkdown(run: IsoRun, deltas: Delta[] = []): string {
     L.push(
       `## Preset ${preset}`,
       '',
-      '| điểm | DC p50 | tam giác | CPU p50/p95 ms | GPU p95 ms | tex MB | mat | geo | GPU mem MB | render ms | ents ms | vfx ms |',
+      '| điểm | DC p50 | tam giác | CPU p50/p95 ms | GPU p95 ms | tex MB (tài sản+đích vẽ) | mat | geo | GPU mem MB | render ms | ents ms | vfx ms |',
     );
     L.push('|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|');
     for (const p of run.points.filter((q) => q.preset === preset)) {
       L.push(
-        `| ${p.id} | ${p.drawCalls.p50} | ${fmt(p.triangles.p50)} | ${p.cpuMs.p50}/${p.cpuMs.p95} | ${p.gpuMs ? p.gpuMs.p95 : '–'} | ${p.textureMB} | ${p.materials} | ${p.geometries} | ${p.gpuMemMB} | ${p.parts.render ?? '–'} | ${p.parts.ents ?? '–'} | ${p.parts.vfx ?? '–'} |`,
+        `| ${p.id} | ${p.drawCalls.p50} | ${fmt(p.triangles.p50)} | ${p.cpuMs.p50}/${p.cpuMs.p95} | ${p.gpuMs ? p.gpuMs.p95 : '–'} | ${p.textureMB}${p.textureAssetMB === undefined ? '' : ` (${p.textureAssetMB}+${p.textureRtMB ?? 0})`} | ${p.materials} | ${p.geometries} | ${p.gpuMemMB} | ${p.parts.render ?? '–'} | ${p.parts.ents ?? '–'} | ${p.parts.vfx ?? '–'} |`,
       );
     }
     L.push('');
