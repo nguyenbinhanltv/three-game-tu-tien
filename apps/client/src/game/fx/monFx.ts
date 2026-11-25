@@ -6,7 +6,7 @@
 import { MON_FX, MONSTER } from '@dtl/content';
 import type { FxTimeline, HazardMsg } from '@dtl/shared';
 import { forgeTexLoaded } from '../../render/vfx/forgeTex';
-import { FX_PALETTE, monPaletteKey } from '../../render/vfx/palette';
+import { monPaletteKey } from '../../render/vfx/palette';
 import { groundAt } from '../../base/levelCtx';
 import type { FxCaster, FxRunner, FxTarget } from './fxTimeline';
 import { OTHERS_FX_LIVE_MAX } from './fxBudget';
@@ -27,14 +27,6 @@ export function monScale(height: number): number {
 }
 
 /** Hệ số cỡ của vùng nổ theo bán kính: tính cho `mon_boom_circle`/`mon_warn` (cỡ gốc 4 m) và đường/nón (cỡ gốc 8 m). */
-/** Số decal một timeline cần (mỗi decal giữ một chỗ trong trần `DECAL_MAX` của `FxRunner`). */
-export function decalNeed(tl: FxTimeline): number {
-  return tl.events.filter((e) => e.type === 'decal').length;
-}
-
-/** Bỏ pháp trận quạt/dải cũ CHỈ khi chiêu báo theo màu hệ VÀ vạch riêng đã thật sự phát (đủ chỗ decal, atlas đã nạp...); ngược lại giữ vạch cũ (có `tint` màu hệ làm đường lùi). */
-export const dropLegacyTelegraph = (tint: number | undefined, warned: boolean): boolean => tint !== undefined && warned;
-
 export function hazardMul(r: number, base: number): number {
   return Math.min(4, Math.max(0.5, r / base));
 }
@@ -106,28 +98,6 @@ export class MonFx {
     const key = !h.sh ? 'mon_warn' : h.sh === 'rect' ? 'mon_warn_line' : 'mon_warn_cone';
     const mv = moveOfHazard(MONSTER.get(src.s.t), h);
     return !!((mv ? this.tl(`${key}__${src.s.t}__${mv}`) : undefined) ?? this.tl(`${key}__${src.s.t}`));
-  }
-
-  /**
-   * Màu vạch báo theo hệ (A4): nếu chiêu có timeline vạch báo RIÊNG mà bảng màu của nó có `accent` KHÔNG đỏ/cam (hue 36°–345°, vd. tím-hồng, hổ phách)
-   * thì trả màu đó; khi đó `room.ts` BỎ hẳn pháp trận quạt/dải cũ (vạch riêng của chiêu đã đủ rõ). Không có thì undefined (giữ vạch cũ đỏ như mọi quái khác).
-   */
-  warnTint(h: Pick<HazardMsg, 'x' | 'z' | 'r' | 'delay' | 'sh'>, src: MonLike | undefined): number | undefined {
-    // Chỉ khi vạch riêng THẬT SỰ phát được (gần, atlas decal đã nạp): nếu không giữ vạch cũ đỏ để người chơi vẫn thấy hitbox.
-    if (!src || !this.near(h.x, h.z) || !forgeTexLoaded('decal_atlas')) return undefined;
-    const key = !h.sh ? 'mon_warn' : h.sh === 'rect' ? 'mon_warn_line' : 'mon_warn_cone';
-    const mv = moveOfHazard(MONSTER.get(src.s.t), h);
-    const tl = (mv ? this.tl(`${key}__${src.s.t}__${mv}`) : undefined) ?? this.tl(`${key}__${src.s.t}`);
-    const acc = tl?.palette ? FX_PALETTE[tl.palette]?.accent : undefined;
-    if (acc === undefined) return undefined;
-    const r = ((acc >> 16) & 255) / 255;
-    const g = ((acc >> 8) & 255) / 255;
-    const b = (acc & 255) / 255;
-    const mx = Math.max(r, g, b);
-    const d = mx - Math.min(r, g, b);
-    if (d < 0.05) return undefined;
-    const hue = ((mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4) * 60 + 360) % 360;
-    return hue > 36 && hue < 345 ? acc : undefined;
   }
 
   private note(key: string, id: string): void {
@@ -253,9 +223,6 @@ export class MonFx {
       tl = (mv ? this.tl(`${key}__${src.s.t}__${mv}`) : undefined) ?? this.tl(`${key}__${src.s.t}`);
     }
     if (!tl || !key) return false;
-    // Runner đã đầy decal (`DECAL_MAX` dùng chung): decal sẽ bị bỏ lặng lẽ → không phát nửa vời, trả false để `room.ts` giữ vạch cũ.
-    // Chỉ áp cho chiêu báo theo màu hệ (A4, nơi pháp trận cũ bị bỏ khi vạch riêng phát); boss/quái đỏ giữ hành vi cũ (phát một phần, pháp trận cũ luôn vẽ).
-    if (this.warnTint(h, src) !== undefined && this.runner.decalSlots() < decalNeed(tl)) return false;
     const y = groundAt(h.x, h.z);
     this.runner.startAt(tl, {
       actor: { x: h.x, y, z: h.z, yaw: h.yaw ?? 0, model: {} },
