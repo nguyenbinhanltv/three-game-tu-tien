@@ -38,6 +38,8 @@ export const VISTA = {
  * khung ngẩng 20° − pitch. Mặc định (không cờ) giữ `VISTA`.
  */
 export const VISTA_FAR = { pitch: (5 * Math.PI) / 180, liftY: 9 } as const;
+/** Ngự kiếm với vùng xa: mức trung gian (pitch ~9,5°, nâng 6 m) để vẫn nhìn được phía trước khi điều hướng; `?vistafly=<độ>` ghi đè pitch để so mức. */
+export const VISTA_FAR_FLY = { pitch: (9.5 * Math.PI) / 180, liftY: 6 } as const;
 
 /** Điểm ngắm cảnh chứa (x, z) ở level này, hoặc null. */
 export function spotAt(level: string, x: number, z: number, spots: readonly VistaSpot[] = VISTA_SPOTS): VistaSpot | null {
@@ -101,14 +103,18 @@ export interface VistaView {
 }
 
 /** Nội suy các thông số camera theo `amount` (0..1). `amount = 0` trả đúng giá trị camera chéo gốc. */
-export function vistaView(amount: number): VistaView {
+export function vistaView(amount: number, mode: 'spot' | 'fly' = 'spot'): VistaView {
   const a = Math.max(0, Math.min(1, amount));
   const far = FLAGS.style === 'painted' && FLAGS.far;
+  const tune =
+    mode === 'fly'
+      ? { ...VISTA_FAR_FLY, pitch: FLAGS.vistaFlyPitch !== null ? (FLAGS.vistaFlyPitch * Math.PI) / 180 : VISTA_FAR_FLY.pitch }
+      : VISTA_FAR;
   return {
-    pitch: ISO_PITCH + (far ? VISTA_FAR.pitch - ISO_PITCH : VISTA.pitch - ISO_PITCH) * a,
+    pitch: ISO_PITCH + (far ? tune.pitch - ISO_PITCH : VISTA.pitch - ISO_PITCH) * a,
     distMul: 1 + (VISTA.distMul - 1) * a,
     fov: ISO_FOV + VISTA.fovAdd * a,
     far: ISO_FAR + (VISTA.far - ISO_FAR) * a,
-    lift: (far ? VISTA_FAR.liftY : VISTA.liftY) * a,
+    lift: (far ? tune.liftY : VISTA.liftY) * a,
   };
 }

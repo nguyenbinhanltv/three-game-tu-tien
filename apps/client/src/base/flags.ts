@@ -124,6 +124,8 @@ interface Flags {
   paint: number | null;
   /** `?far=1` (cùng `?style=painted`): bật vùng xa nướng một lần (FarBackdrop). Mặc định tắt: chân trời Vân Lam bị địa hình che nên chưa có gì để hiện. */
   far: boolean;
+  /** `?vistafly=<độ>`: ghi đè pitch camera vista khi ngự kiếm (chỉ với ?far=1; để so mức). */
+  vistaFlyPitch: number | null;
   /** `?touch=1|0` ép bật/tắt chế độ cảm ứng (U2-6; kiểm thử, ghi đè cài đặt). */
   touch: boolean | null;
 }
@@ -234,6 +236,7 @@ export function readFlags(search: string): Flags {
     mute: q.get('mute') === '1',
     style: q.get('style') === 'painted' ? 'painted' : null,
     far: q.get('far') === '1',
+    vistaFlyPitch: Number.isFinite(Number(q.get('vistafly') ?? NaN)) && q.has('vistafly') ? Number(q.get('vistafly')) : null,
     paint: /^[0-3]$/.test(q.get('paint') ?? '') ? Number(q.get('paint')) : null,
     isoFxCompress: q.get('isofx') !== '0',
     vista: q.get('vista') !== '0',

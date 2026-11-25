@@ -64,7 +64,9 @@ try {
   await page.waitForFunction((k) => window[k], waitFlag, { timeout: 120000 }).catch(() => logs.push('lab không lên'));
   await new Promise((r) => setTimeout(r, 1500));
   const stats =
-    waitFlag === '__farLab' ? await page.evaluate(() => window.__farLab?.stats()).catch((e) => ({ error: String(e) })) : { ok: true };
+    waitFlag === '__farLab'
+      ? await page.evaluate(() => window.__farLab?.stats()).catch((e) => ({ error: String(e) }))
+      : ((await page.evaluate(() => window.__domeBake)) ?? { ok: true });
   await page.screenshot({ path: path.join(out, 'far.png') });
   fs.writeFileSync(path.join(out, 'far.json'), JSON.stringify({ stats, logs: logs.slice(0, 20) }, null, 2));
   console.log(JSON.stringify({ stats, logs: logs.slice(0, 6) }));

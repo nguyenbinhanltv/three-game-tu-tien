@@ -17,7 +17,7 @@ const VIEWS: Record<string, [number, number]> = { '720p': [1280, 720], '1080p': 
 export default {
   name: 'paintedvista',
   desc: 'Họa Cảnh P3: vùng xa (núi nướng một lần) ở điểm ngắm cảnh Vân Lam, mặc định | painted, 720p/1080p + số đo',
-  usage: '[--styles off,painted] [--views 720p,1080p] [--spots cong,thach_vien,ho]',
+  usage: '[--styles off,painted] [--views 720p,1080p] [--spots cong,thach_vien,ho|none] [--fly 9.5,5] [--no-fly]',
   async run(r) {
     const only = list('--spots', 'all');
     const spots = SPOTS.filter((s) => only.includes('all') || only.includes(s.id));
@@ -61,6 +61,28 @@ export default {
           await snap(page, r.out, `${style}-${view}-ngukiem-novom.png`);
           perf[`${style}-${view}-ngukiem-novom`] = await perfSample(page);
         }
+        await ctx.close();
+      }
+    }
+    // Ngự kiếm ở nhiều mức pitch camera vista (?vistafly=độ, chỉ có tác dụng với ?far=1): để chọn mức trung gian
+    if (list('--styles', 'off,painted').includes('painted') && !process.argv.includes('--no-fly')) {
+      for (const pitch of list('--fly', '9.5,5')) {
+        const { ctx, page } = await r.open({
+          name: `PVf${pitch}`,
+          quality: opt('--preset', 'high'),
+          viewport: VIEWS['1080p']!,
+          query: { mood: 'day', quiet: 1, style: 'painted', far: 1, vistafly: pitch },
+          seenIntro: true,
+          warnings: true,
+        });
+        await gm(page, 'level 15', 2500);
+        await gm(page, 'god on', 2500);
+        await tp(page, 2048, 2100);
+        await gm(page, 'killall', 1200);
+        await page.evaluate(() => window.__game!.toggleFly());
+        await sleep(6000);
+        await snap(page, r.out, `painted-1080p-ngukiem-p${pitch}.png`);
+        perf[`painted-1080p-ngukiem-p${pitch}`] = await perfSample(page);
         await ctx.close();
       }
     }

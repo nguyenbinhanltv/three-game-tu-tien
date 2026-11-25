@@ -13,6 +13,7 @@ import { createSky } from '../../sky';
 declare global {
   interface Window {
     __domeReady?: boolean;
+    __domeBake?: { cpuMs: number; totalMs: number; bytes: number; width: number };
     __farLab?: {
       stats(): Promise<{ min: number; max: number; mean: number }>;
       readback(n: number): Promise<{ n: number; b64: string }>;
@@ -58,6 +59,7 @@ export async function startFarLab(host: HTMLElement): Promise<void> {
     renderer.render(scene, camera);
     await new Promise((r) => requestAnimationFrame(r));
     renderer.render(scene, camera);
+    window.__domeBake = { cpuMs: far.bakeMs.cpu, totalMs: far.bakeMs.total, bytes: far.bytes, width: Number(q.get('width') ?? 2048) };
     window.__domeReady = true;
     return;
   }

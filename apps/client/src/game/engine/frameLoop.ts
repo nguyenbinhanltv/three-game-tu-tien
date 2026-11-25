@@ -450,7 +450,7 @@ function updateCamera(eng: Game, dt: number): void {
           break;
         }
     const spot = combat ? null : spotAt(levelId(), rp.x, rp.z);
-    const vv = vistaView(eng.vista.update(dt, flying, spot, FLAGS.vista && !eng.cine.active, combat));
+    const vv = vistaView(eng.vista.update(dt, flying, spot, FLAGS.vista && !eng.cine.active, combat), flying ? 'fly' : 'spot');
     if (eng.vista.hint(spot) && FLAGS.vista) pushToast(t('ui.vista_hint'));
     const wantD = isoDistFor(levelId()) * (flying ? 1.35 : 1) * vv.distMul * (1 + pull);
     iso.distCur += (wantD - iso.distCur) * Math.min(1, dt * 6);

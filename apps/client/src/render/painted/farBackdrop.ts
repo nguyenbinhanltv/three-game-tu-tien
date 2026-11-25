@@ -49,6 +49,12 @@ export class FarBackdrop {
   private readonly material: THREE.MeshBasicNodeMaterial;
   private readonly targets: THREE.RenderTarget[] = [];
   private baked = false;
+  /** Thời gian nướng (ms): độ cao CPU, rồi toàn bộ (kể cả chờ khung). Để đo/chẩn đoán. */
+  bakeMs = { cpu: 0, total: 0 };
+  /** Bộ nhớ ba dải RGB + ba dải alpha (byte). */
+  get bytes(): number {
+    return this.targets.reduce((a, t) => a + t.width * t.height * 4, 0);
+  }
   private disposed = false;
   private readonly o: Required<FarBackdropOptions>;
 
@@ -82,9 +88,11 @@ export class FarBackdrop {
 
   /** Nướng độ cao (worker CPU) rồi dải bức tranh (GPU, chia dải đứng qua nhiều khung để không giữ GPU lâu). */
   async bake(): Promise<void> {
+    const t0 = performance.now();
     const { width: W, ground: G, hero, side } = this.o;
     const H = Math.round((W * (EL[1] - EL[0])) / TAU);
     const data = await bakeFarHeight(G, FAR_SPAN, hero, 9);
+    this.bakeMs.cpu = performance.now() - t0;
     if (this.disposed) return;
     const half = new Uint16Array(G * G * 4);
     for (let i = 0; i < G * G; i++) half[i * 4] = THREE.DataUtils.toHalfFloat(data[i]!);
@@ -132,6 +140,7 @@ export class FarBackdrop {
     tHeight.dispose();
     this.material.colorNode = this.domeColor();
     this.material.needsUpdate = true;
+    this.bakeMs.total = performance.now() - t0;
     this.baked = true;
     this.mesh.visible = true;
   }
