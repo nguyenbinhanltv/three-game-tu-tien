@@ -1,4 +1,5 @@
 import * as THREE from 'three/webgpu';
+import { FX_SPRITES } from '@dtl/shared';
 import { ASSET_BASE, ASSET_CROSS_ORIGIN } from '../../base/assetBase';
 
 /**
@@ -14,40 +15,142 @@ const CELL_H = 683;
 let atlas: THREE.Texture | null = null;
 
 /**
- * Atlas sprite vẽ tay của VFX (Họa Pháp Lô 2): `public/hoa-truc/vfx_sprites.webp`, lưới `SPRITE_COLS × SPRITE_ROWS` ô vuông nền trong suốt, thứ tự theo `FX_SPRITES`
- * (hàng trên trước). Dựng bằng `tools/vfx-forge/sprite-pack.mjs` từ bảng Codex nền xanh chroma. Nạp bất đồng bộ; chưa nạp thì trong suốt. Không có `document` (test) thì texture rỗng.
+ * Atlas sprite vẽ tay của VFX (Họa Pháp Lô 2) TÁCH THEO HƯỚNG TU: mỗi nhóm (tiền tố tên sprite: `hon_`, `loi_`, `kiem_`, `hp_`) một file `public/hoa-truc/vfx_sprites_<nhóm>.<hash10>.webp`
+ * lưới `cols × rows` ô vuông 512 px nền trong suốt, thứ tự ô trong nhóm = thứ tự các tên cùng tiền tố trong `FX_SPRITES`. Dựng bằng `tools/vfx-forge/sprite-pack.mjs --base <atlas nhóm>` từ bảng Codex nền xanh chroma.
+ * R2 BẤT BIẾN: đổi nội dung nhóm thì đóng ra TÊN MỚI theo hash, `assets:push` khóa mới rồi sửa hằng này (khóa cũ giữ nguyên). Cạnh mỗi atlas ≤ 8192 px (giới hạn WebGPU).
+ * Chỉ NẠP nhóm đang dùng (`useSpriteGroup`): hướng của người chơi nạp sẵn, hướng khác nạp khi có chiêu của họ hiện trong tầm nhìn; nhóm không dùng quá `SPRITE_IDLE_MS` bị giải phóng khi đang giữ quá `SPRITE_MAX_RESIDENT` nhóm.
+ * Nạp bất đồng bộ; chưa nạp thì trong suốt. Không có `document` (test) thì texture rỗng.
  */
-/**
- * Tên file atlas trên R2, THEO HASH NỘI DUNG (`vfx_sprites.<10 ký tự sha256>.webp`). R2 là bất biến: không bao giờ ghi đè một khóa đã có;
- * đổi nội dung atlas thì đóng ra tên mới, `assets:push` khóa mới và sửa hằng này (khóa cũ giữ nguyên cho nhánh/bản dựng cũ).
- */
-export const SPRITE_ATLAS_FILE = 'hoa-truc/vfx_sprites.88197f9422.webp';
-export const SPRITE_COLS = 8;
-export const SPRITE_ROWS = 9;
-let spriteTex: THREE.Texture | null = null;
+export const SPRITE_GROUPS = {
+  hon: { file: 'hoa-truc/vfx_sprites_hon.ec4ebc360d.webp', cols: 4, rows: 6 },
+  loi: { file: 'hoa-truc/vfx_sprites_loi.147ce2e73d.webp', cols: 4, rows: 4 },
+  kiem: { file: 'hoa-truc/vfx_sprites_kiem.22301e4193.webp', cols: 4, rows: 4 },
+  hp: { file: 'hoa-truc/vfx_sprites_hp.dc9596e2f9.webp', cols: 4, rows: 4 },
+} as const;
+export type SpriteGroup = keyof typeof SPRITE_GROUPS;
+/** Hướng tu (`PATHS[].id`) → nhóm atlas của nó. Thêm một dòng khi thêm hướng mới. */
+export const PATH_SPRITE_GROUP: Record<string, SpriteGroup> = { hon_tu: 'hon', loi_tu: 'loi', kiem_tu: 'kiem', the_tu: 'hp' };
+/** Số nhóm tối đa giữ trong GPU cùng lúc (không tính nhóm của người chơi) và thời gian rỗi (ms) trước khi một nhóm bị giải phóng. */
+export const SPRITE_MAX_RESIDENT = 3;
+export const SPRITE_IDLE_MS = 90_000;
 
-export function spriteAtlas(): THREE.Texture {
-  if (spriteTex) return spriteTex;
-  if (typeof document === 'undefined') {
-    spriteTex = new THREE.DataTexture(new Uint8Array(16), 2, 2);
-    spriteTex.needsUpdate = true;
-    return spriteTex;
+export const spriteGroupOf = (name: string): SpriteGroup => name.split('_')[0] as SpriteGroup;
+const CELL = new Map<string, { group: SpriteGroup; idx: number }>();
+{
+  const count: Record<string, number> = {};
+  for (const n of FX_SPRITES) {
+    const g = spriteGroupOf(n);
+    CELL.set(n, { group: g, idx: (count[g] = (count[g] ?? -1) + 1) });
   }
-  // Ảnh nạp bất đồng bộ qua `ASSET_BASE` (R2 hoặc cùng origin); gán vào texture khi tải xong.
+}
+/** Nhóm atlas và chỉ số ô TRONG nhóm của một sprite. */
+export const spriteCell = (name: string): { group: SpriteGroup; idx: number } => CELL.get(name) ?? { group: 'hon', idx: 0 };
+
+interface GroupState {
+  tex: THREE.Texture;
+  /** 0 = chưa nạp, 1 = đang nạp, 2 = đã nạp. */
+  state: 0 | 1 | 2;
+  last: number;
+  token: number;
+}
+const groupState = new Map<SpriteGroup, GroupState>();
+const makeTex = (): THREE.Texture => {
+  if (typeof document === 'undefined') {
+    const t = new THREE.DataTexture(new Uint8Array(16), 2, 2);
+    t.needsUpdate = true;
+    return t;
+  }
   const t = new THREE.Texture();
   t.colorSpace = THREE.SRGBColorSpace;
   t.anisotropy = 4;
   t.generateMipmaps = true;
+  return t;
+};
+const stateOf = (g: SpriteGroup): GroupState => {
+  let st = groupState.get(g);
+  if (!st) groupState.set(g, (st = { tex: makeTex(), state: 0, last: 0, token: 0 }));
+  return st;
+};
+
+/** Texture của nhóm (đối tượng ổn định để gắn vào material; KHÔNG tự nạp ảnh: gọi `useSpriteGroup` khi cần). */
+export function spriteAtlas(g: SpriteGroup): THREE.Texture {
+  return stateOf(g).tex;
+}
+
+/** Đánh dấu nhóm đang dùng và nạp ảnh nếu chưa (bất đồng bộ qua `ASSET_BASE`). */
+export function useSpriteGroup(g: SpriteGroup, now = performance.now()): void {
+  const st = stateOf(g);
+  st.last = now;
+  if (st.state !== 0 || typeof document === 'undefined') return;
+  st.state = 1;
+  const token = ++st.token;
   const img = new Image();
   img.crossOrigin = ASSET_CROSS_ORIGIN ?? null;
   img.onload = () => {
-    t.image = img;
-    t.needsUpdate = true;
+    if (st.token !== token) return; // đã bị giải phóng trong lúc nạp
+    // Đổi từ canvas 1×1 sang ảnh thật: `dispose` trước để WebGPU bỏ texture GPU kích thước cũ rồi dựng lại đúng cỡ (nếu không: copy vượt biên 1×1).
+    st.tex.dispose();
+    st.tex.image = img;
+    st.tex.needsUpdate = true;
+    st.state = 2;
   };
-  img.src = `${ASSET_BASE}${SPRITE_ATLAS_FILE}`;
-  spriteTex = t;
-  return t;
+  img.src = `${ASSET_BASE}${SPRITE_GROUPS[g].file}`;
 }
+
+/** Nạp sẵn nhóm của hướng tu (hướng của người chơi). */
+export function preloadSpritesForPath(pathId: string | undefined): void {
+  const g = pathId ? PATH_SPRITE_GROUP[pathId] : undefined;
+  if (g) {
+    useSpriteGroup(g);
+    keepGroup = g;
+  }
+}
+let keepGroup: SpriteGroup | null = null;
+
+let tinyCanvas: HTMLCanvasElement | null = null;
+/**
+ * Giải phóng nhóm: huỷ lần nạp dở, `dispose` texture GPU và thay ảnh bằng canvas 1×1 (KHÔNG để `image = null`: texture đã từng nạp mà không có ảnh làm `Textures.updateTexture`
+ * của WebGPU ném lỗi → mất khung hình/màn đen; đã gặp ở phòng thử `--reload`). Lần dùng kế `useSpriteGroup` nạp lại ảnh thật.
+ */
+function releaseGroup(st: GroupState): void {
+  st.token++;
+  st.tex.dispose();
+  if (typeof document !== 'undefined') {
+    if (!tinyCanvas) {
+      tinyCanvas = Object.assign(document.createElement('canvas'), { width: 1, height: 1 });
+      tinyCanvas.getContext('2d'); // WebGPU `copyExternalImageToTexture` không nhận canvas chưa có ngữ cảnh vẽ
+    }
+    st.tex.image = tinyCanvas;
+    st.tex.needsUpdate = true;
+  }
+  st.state = 0;
+}
+
+/** Giải phóng nhóm rỗi quá `SPRITE_IDLE_MS` khi đang giữ quá `SPRITE_MAX_RESIDENT` nhóm (trừ nhóm của người chơi). Gọi định kỳ. */
+export function sweepSpriteGroups(now = performance.now()): void {
+  const loaded = [...groupState.entries()].filter(([, st]) => st.state !== 0);
+  if (loaded.length <= SPRITE_MAX_RESIDENT) return;
+  const idle = loaded.filter(([g, st]) => g !== keepGroup && now - st.last > SPRITE_IDLE_MS).sort((a, b) => a[1].last - b[1].last);
+  for (const [, st] of idle.slice(0, loaded.length - SPRITE_MAX_RESIDENT)) {
+    releaseGroup(st);
+  }
+}
+
+/** Phòng thử (`?vfxlab=1`): giải phóng NGAY mọi nhóm đang giữ (kể cả của người chơi) để kiểm vòng nạp lại; trả tên các nhóm đã giải phóng. */
+export function evictSpriteGroups(): SpriteGroup[] {
+  const out: SpriteGroup[] = [];
+  for (const [g, st] of groupState) {
+    if (st.state === 0) continue;
+    releaseGroup(st);
+    out.push(g);
+  }
+  return out;
+}
+
+/** Bộ nhớ GPU ước tính (byte, RGBA8 + chuỗi mipmap) của một nhóm / của mọi nhóm đang giữ: dùng cho số đo và test. */
+export const spriteGroupBytes = (g: SpriteGroup): number =>
+  Math.round(SPRITE_GROUPS[g].cols * 512 * SPRITE_GROUPS[g].rows * 512 * 4 * (4 / 3));
+export const residentSpriteGroups = (): SpriteGroup[] => [...groupState.entries()].filter(([, st]) => st.state !== 0).map(([g]) => g);
 
 export function artAtlas(): THREE.Texture {
   if (atlas) return atlas;

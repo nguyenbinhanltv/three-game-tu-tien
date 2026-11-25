@@ -52,6 +52,8 @@ export interface VfxLabDebug {
     screenCover: number;
     overdraw: number;
   };
+  evictSprites(): string[];
+  residentSprites(): string[];
   skills(): string[];
 }
 
