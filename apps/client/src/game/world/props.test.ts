@@ -1,7 +1,7 @@
 import * as THREE from 'three/webgpu';
 import { describe, expect, it } from 'vitest';
 import { allProps } from './propScatter';
-import { bakeGeometry, PropLayer } from './props';
+import { bakeGeometry, PropLayer, treeInView } from './props';
 
 describe('prop layer (P2-A4)', () => {
   it('bakeGeometry: vị trí int16 chuẩn hóa + ma trận nút ra đúng kích thước, không bị kẹp về [-1, 1]', () => {
@@ -51,5 +51,26 @@ describe('prop layer (P2-A4)', () => {
     layer.dispose();
     expect(disposed).toBe(1);
     expect(released).toBe(1);
+  });
+
+  it('treeInView: camera chéo chỉ giữ cây trong/sát khung nhìn, bỏ cây ngoài màn hình (giảm tam giác pool)', () => {
+    // Camera giống game: FOV 32°, nghiêng 52° (nhìn xuống), cách 20 m, nhìn về (100, 0, 100).
+    const cam = new THREE.PerspectiveCamera(32, 16 / 9, 0.5, 600);
+    const pitch = (52 * Math.PI) / 180;
+    cam.position.set(100, Math.sin(pitch) * 20, 100 + Math.cos(pitch) * 20);
+    cam.lookAt(100, 0, 100);
+    cam.updateMatrixWorld();
+    const fr = new THREE.Frustum().setFromProjectionMatrix(
+      new THREE.Matrix4().multiplyMatrices(cam.projectionMatrix, cam.matrixWorldInverse),
+      cam.coordinateSystem,
+    );
+    const sp = new THREE.Sphere();
+    expect(treeInView(fr, sp, 100, 0, 100, 1, 10)).toBe(true); // ngay giữa khung
+    expect(treeInView(fr, sp, 100, 0, 220, 1, 10)).toBe(false); // sau lưng camera
+    expect(treeInView(fr, sp, 100, 0, -150, 1, 10)).toBe(false); // quá xa phía trước
+    expect(treeInView(fr, sp, 300, 0, 100, 1, 10)).toBe(false); // lệch ngang 200 m
+    // lề lớn hơn (có bóng) giữ thêm cây sát khung
+    const near = treeInView(fr, sp, 100 + 45, 0, 100, 1, 10);
+    expect(treeInView(fr, sp, 100 + 45, 0, 100, 1, 32) || !near).toBe(true);
   });
 });

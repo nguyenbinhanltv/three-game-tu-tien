@@ -570,7 +570,7 @@ function updateGrass(eng: Game, dt: number, rp: THREE.Vector3): void {
   eng.pushSelf.z = rp.z;
   pickPushers(eng.pushSelf, pool, eng.pushers, 40, n);
   eng.grass.update(dt, rp, eng.pushers, eng.started ? 1 : 6);
-  eng.props?.update(dt, eng.camera.position.x, eng.camera.position.z); // LOD và tầm vẽ theo CAMERA (không theo người chơi): camera cao/xa không còn vẽ prop LOD gần
+  eng.props?.update(dt, eng.camera.position.x, eng.camera.position.z, eng.camera); // LOD và tầm vẽ theo CAMERA (không theo người chơi): camera cao/xa không còn vẽ prop LOD gần
   eng.lacKiemSky?.update(eng.camera, rp.x, rp.z);
   eng.thienKhuyetSky?.update(performance.now() / 1000);
   eng.vanHaiWow?.update(dt);
