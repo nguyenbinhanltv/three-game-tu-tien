@@ -46,8 +46,15 @@ export interface BaselinePoint {
   heapMB: number | null;
   cpu95: number;
 }
+/**
+ * Phương pháp đo của `perf:iso` đã ghi baseline. `settled-v1`: chờ cảnh nạp xong trước mỗi điểm (`--settle-max`, #675).
+ * Baseline không có trường này đo non (cảnh còn nạp: Vân Lam 354k tam giác/94 MB thay vì ~821k/460–500 MB) nên KHÔNG dùng được.
+ */
+export const BASELINE_METHOD = 'settled-v1';
+
 export interface Baseline {
   version: 1;
+  method?: string;
   date: string;
   note?: string;
   /** Backend/viewport lúc đo: số đếm khác nhau thật giữa WebGPU và WebGL2 (đèn điểm chỉ WebGPU, trần pixel WebGL2…), nên không so chéo. */
@@ -61,6 +68,8 @@ export interface Baseline {
 export function toBaseline(run: IsoRun, note?: string): Baseline {
   return {
     version: 1,
+    // Nhãn chép từ chính lần chạy (không phải từ mã ghi baseline): chạy cũ/`--settle-max 0` không có nhãn thì baseline cũng không có.
+    ...(run.method ? { method: run.method } : {}),
     date: run.date,
     ...(note ? { note } : {}),
     backend: run.backend,
@@ -87,7 +96,14 @@ export interface Finding {
   value: number;
   /** Giới hạn đã áp (ngân sách hoặc baseline×(1+tol)). */
   limit: number;
-  why: 'vượt ngân sách' | 'tệ hơn baseline' | 'cảnh báo không chặn' | 'lỗi console' | 'thiếu điểm' | 'baseline khác backend';
+  why:
+    | 'vượt ngân sách'
+    | 'tệ hơn baseline'
+    | 'cảnh báo không chặn'
+    | 'lỗi console'
+    | 'thiếu điểm'
+    | 'baseline khác backend'
+    | 'baseline lỗi thời';
 }
 
 export interface GateOptions {
@@ -126,6 +142,20 @@ function metricsOf(p: IsoPoint, b: BaselinePoint | undefined, z: ZoneBudget): Me
 export function gate(run: IsoRun, baseIn: Baseline | null, opts: GateOptions = {}): Finding[] {
   let base = baseIn;
   const early: Finding[] = [];
+  if (base && base.method !== BASELINE_METHOD) {
+    // Baseline đo bằng phương pháp cũ (chưa chờ nạp xong): so với nó sẽ báo gần như mọi điểm là 'tệ hơn' (+100% tam giác, +400% texture).
+    return [
+      {
+        severity: 'fail',
+        id: '(baseline)',
+        preset: '-',
+        metric: `baseline đo bằng phương pháp cũ (method=${base.method ?? 'không có'}, cần ${BASELINE_METHOD}): sinh lại bằng perf:iso mới (--make-baseline)`,
+        value: 0,
+        limit: 0,
+        why: 'baseline lỗi thời',
+      },
+    ];
+  }
   if (base && ((base.backend && base.backend !== run.backend) || (base.viewport && base.viewport !== run.viewport))) {
     const f: Finding = {
       severity: opts.ignoreBaselineMismatch ? 'warn' : 'fail',
