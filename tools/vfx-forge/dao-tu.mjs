@@ -32,7 +32,7 @@ const SCALE = {
   skl_liet_dia_tram: 0.95,
   skl_thuan_dao_tram: 1,
   skl_huyet_chien_the: 1,
-  skl_doan_thien_dao: 0.3,
+  skl_doan_thien_dao: 0.45,
 };
 /** Hệ số alpha thân theo chiêu (không áp cho chớp `dao_flash`). */
 let A = 1;
@@ -108,7 +108,7 @@ const scorch = (at, off, r, t = 0, dur = 1.6) => ({
   tier: 0,
 });
 /** Mép vùng tác dụng THẬT (server `radius`): decal nứt đất mờ trải tới bán kính `r` m để người chơi đọc đúng tầm; alpha 0,31 làm dấu để chạy lại không nhân đôi. */
-const zoneEdge = (at, r, t = 0.05) => ({
+const zoneEdge = (at, r, t = 0.05, alpha = 0.31) => ({
   type: 'decal',
   tex: 'crack',
   t,
@@ -118,7 +118,7 @@ const zoneEdge = (at, r, t = 0.05) => ({
   offset: [0, 0, 0],
   grow: 0.25,
   tone: 'core',
-  alpha: 0.31,
+  alpha,
   tier: 1,
 });
 const ground = (at, off, size, t = 0.02, o = {}) =>
@@ -243,7 +243,7 @@ const SPEC = {
   skl_doan_thien_dao: () => [
     ...[gather('dao_skyslash', { size: 4, off: [0, 6, 0] })],
     pullIn('target', [0, 4.5, 0], -0.3),
-    zoneEdge('target', 12, 0.06),
+    zoneEdge('target', 12, 0.06, 0.13),
     shade('target', [0, 0.3, 0], 7, 0.04, { dur: 1.2 }),
     strike('dao_skyslash', { size: 8.4, off: [0, 5.4, 0], dur: 0.8, erodeFrom: 0.4 }),
     strike('dao_cleft', { size: 9, off: [0, 0.4, 0], t: 0.08, dur: 1.1, erodeFrom: 0.45 }),
@@ -275,9 +275,19 @@ for (const id of ids) {
       e.type !== 'mesh' &&
       !(e.type === 'decal' && e.tex === 'rune') &&
       !(e.type === 'decal' && e.tex === 'scorch' && e.alpha === 0.78) &&
-      !(e.type === 'decal' && e.tex === 'crack' && e.alpha === 0.31) &&
+      !(e.type === 'decal' && e.tex === 'crack' && (e.alpha === 0.31 || e.alpha === 0.13)) &&
       !(e.type === 'particles' && e.tier === 1 && e.tone === 'rim' && e.kind === 'spark'),
   );
+  // Đoạn Thiên Đao: decal cũ giữ từ timeline gốc (vết nứt r 11 alpha 1, vết cháy r 8) phủ cả vùng 24 m → làm nhạt/thu nhỏ để phủ ≤ 0,2 (mép vùng thật đã có decal mép mờ của bản này)
+  if (id === 'skl_doan_thien_dao')
+    for (const e of t.events) {
+      if (e.type !== 'decal') continue;
+      if (e.tex === 'crack' && e.r >= 10 && e.alpha > 0.5) e.alpha = 0.3;
+      if (e.tex === 'scorch' && e.r >= 7) {
+        e.r = 4.5;
+        e.alpha = 0.6;
+      }
+    }
   const evs = SPEC[id]().flat();
   if (t.trigger === 'fx') for (const e of evs) e.t = Math.max(0, e.t);
   t.events.push(...evs);
