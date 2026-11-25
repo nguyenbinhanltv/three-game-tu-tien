@@ -1,8 +1,5 @@
 import {
   abs,
-  cameraProjectionMatrixInverse,
-  cameraWorldMatrix,
-  getViewPosition,
   clamp,
   dot,
   exp,
@@ -36,8 +33,8 @@ export const paintedNight = uniform(0);
 export const vfxMaskOn = uniform(1);
 
 export interface PaintedOutputOpts {
-  /** Ánh sáng cộng thêm tại điểm xz của thế giới (vũng đèn đêm), cộng SAU bước nhuộm trăng; dựng lại vị trí thế giới từ độ sâu. */
-  lampGlow?: (xz: N) => N;
+  /** Ánh sáng cộng thêm tại điểm xz của thế giới (vũng đèn đêm), cộng SAU bước nhuộm trăng (đọc từ đích MRT `lamp` mà shader đất ghi). */
+  lampGlow?: (uv: N) => N;
   /** Cân bằng màu nhân vào ảnh (chỉ game; cảnh thử đo khớp để trống). Kéo màu cỏ trong game về painted-valley (đo ΔE). */
   tint?: readonly [number, number, number];
   /** `?paint=` của nguồn: 0 tắt, 3 là mặc định của bản demo (bán kính hiệu dụng 2, còn 1 ở rất gần/rất xa). */
@@ -156,11 +153,7 @@ export function paintedOutput(scenePass: N, o: PaintedOutputOpts): N {
   const floorLift: N = vec3(0.02, 0.03, 0.055).mul(float(1).sub(smoothstep(0.0, 0.2, ln)));
   const hot: N = smoothstep(0.7, 1.5, ln);
   c = mix(c, moon.add(floorLift), paintedNight.mul(float(1).sub(hot)));
-  if (o.lampGlow) {
-    const vp: N = getViewPosition(uv, tDepth.sample(uv).r, cameraProjectionMatrixInverse);
-    const wp: N = cameraWorldMatrix.mul(vec4(vp, 1)).xyz;
-    c = c.add(o.lampGlow(wp.xz).mul(paintedNight));
-  }
+  if (o.lampGlow) c = c.add(o.lampGlow(uv).mul(paintedNight));
   // a painter's curve: what is below white stays as it was mixed, and only the brightest lights are eased in
   const hi: N = c.sub(0.62).max(0);
   c = c.min(0.62).add(float(0.38).mul(float(1).sub(exp(hi.negate().div(0.38)))));

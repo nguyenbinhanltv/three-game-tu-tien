@@ -30,7 +30,6 @@ import type { Node } from 'three/webgpu';
 import { getCloudNoise } from './noiseTex';
 import { FLAGS } from '../base/flags';
 import { paintedOutput, vfxMaskOn } from './painted/frame';
-import { lampPoolAt } from './painted/lampPools';
 import { BLOOM, GRAIN, VIGNETTE, type GradingPreset } from './grading';
 
 /**
@@ -260,8 +259,11 @@ export class PostPipeline {
       // Họa Cảnh: pass cuối của painted-valley (Kuwahara, vignette, đường cong họa sĩ, sRGB); không ACES, chỉnh màu, hạt phim, bloom, AO, FXAA
       // P5: VFX/linh quang đánh dấu bằng markBloom ghi vào đích MRT `bloom` (không có bloom thật): đó là mặt nạ để Kuwahara không nhòe chúng
       setBloomActive(true);
-      scenePass.setMRT(mrt({ output, bloom: vec4(0, 0, 0, output.a) }));
+      // + đích `lamp`: vũng sáng đèn do shader đất ghi (render/painted/lampPools.ts), cộng sau bước nhuộm trăng ở pass cuối
+      scenePass.setMRT(mrt({ output, bloom: vec4(0, 0, 0, output.a), lamp: vec4(0, 0, 0, 0) }));
       scenePass.getTexture('bloom').type = THREE.UnsignedByteType;
+      scenePass.getTexture('lamp').type = THREE.UnsignedByteType;
+      const lampTex = scenePass.getTextureNode('lamp');
       const vfxTex = scenePass.getTextureNode('bloom');
       (window as unknown as { __vfxMask?: (on: boolean) => void }).__vfxMask = (on) => {
         vfxMaskOn.value = on ? 1 : 0;
@@ -272,7 +274,7 @@ export class PostPipeline {
         exposure: 1,
         vignette: 0.14,
         tint: [0.92, 0.975, 0.97],
-        lampGlow: lampPoolAt,
+        lampGlow: (uv) => lampTex.sample(uv).rgb,
         // phản hồi chiến đấu giữ nguyên (hit/flash/impact/punch/pulse/mực chết); quang sai màu khi trúng đòn lấy mẫu lệch R/B của ảnh gốc
         mask: (uv) => max(max(vfxTex.sample(uv).r, vfxTex.sample(uv).g), vfxTex.sample(uv).b),
         aberration: postParams.hit.mul(0.012),
