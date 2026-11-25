@@ -20,6 +20,7 @@ import {
 } from '../lib/game';
 import type { Scenario } from '../lib/scenario';
 import { snap, writeJson } from '../lib/shot';
+import { at } from '@dtl/shared';
 
 /** Thứ tự màu cột gương trong tin hệ thống của đố ba gương (E3-M) ↔ chỉ số điểm trong `puzzle.points`. */
 const COLORS = ['Lam', 'Đỏ', 'Vàng', 'Tím'];
@@ -36,7 +37,7 @@ export default {
     if (!dg || !portal)
       throw new Error(
         `level ${id} không phải phó bản có cổng (có: ${Object.keys(LEVELS)
-          .filter((k) => LEVELS[k].dungeon?.waves.length)
+          .filter((k) => at(LEVELS, k, 'LEVELS').dungeon?.waves.length)
           .join(', ')})`,
       );
     const { page } = await r.open({
@@ -78,7 +79,7 @@ export default {
         const order = /thứ tự:\s*([^.\n]+?)\.\s*Chạm/.exec(text)?.[1] ?? COLORS.join(' → ');
         log[tag] = { order };
         for (const name of order.split('→')) {
-          const p = wave.puzzle.points[Math.max(0, COLORS.indexOf(name.trim()))];
+          const p = at(wave.puzzle.points, Math.max(0, COLORS.indexOf(name.trim())), 'wave.puzzle.points');
           await gm(page, `tp ${p.x} ${p.z}`, 1600);
         }
         await gm(page, `tp ${c.x} ${c.z - 10}`, 1500);
@@ -87,7 +88,8 @@ export default {
       }
       if (wave.seals) {
         // Đợt phong ấn (E4-C): thân xác bị chặn ở hốc; cửa 1 mở bằng nguyên anh xuất khiếu (X) chạm trận môn, các cửa còn lại bằng Phá Ấn Phù.
-        const [first, ...rest] = wave.seals.doors;
+        const first = at(wave.seals.doors, 0, 'wave.seals.doors');
+        const rest = wave.seals.doors.slice(1);
         await gm(page, `tp ${c.x} ${c.z}`, 900);
         await cam(page, { pitch: 0.7, dist: 46, yaw: 0 });
         await shot(`${tag}-phong-an`, 2500);
@@ -135,7 +137,7 @@ export default {
         log[`${tag}-bia`] = { done };
         await shot(`${tag}-bia-xong`, 800);
       }
-      const lead = wave.mons[wave.mons.length - 1].id;
+      const lead = at(wave.mons, wave.mons.length - 1, 'wave.mons').id;
       const boss = lead.startsWith('boss_');
       if (!(await waitMonster(page, lead, 45_000))) {
         console.log(
@@ -164,7 +166,7 @@ export default {
         // Khe mạch (DV-3D): đứng giữa khe để boss đi theo; chú của boss thả trên khe thì bị phản (mất thế, mất tầng cháy).
         await gm(page, 'hurt 30', 900);
         await gm(page, 'heal', 600);
-        const v = rift.veins[0];
+        const v = at(rift.veins, 0, 'rift.veins');
         await gm(page, `tp ${v.x} ${v.z}`, 900);
         await cam(page, { pitch: 0.5, dist: 24, yaw: 0 });
         let hit = false;
@@ -180,7 +182,7 @@ export default {
         // Kim dạ (DV-3E): boss ở pha 3, đứng trong vòng bia sáng, chờ boss dập bia, rồi bước ra ngoài vòng cho thấy giới áp.
         await gm(page, 'hurt 30', 900);
         await gm(page, 'heal', 600);
-        const s0 = night.steles[0];
+        const s0 = at(night.steles, 0, 'night.steles');
         await gm(page, `tp ${s0.x} ${s0.z}`, 900);
         await cam(page, { pitch: 0.55, dist: 30, yaw: 0 });
         for (let i = 0; i < 6; i++) await shot(`${tag}-kim-da-${i}`, 2500);

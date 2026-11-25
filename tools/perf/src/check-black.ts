@@ -36,7 +36,7 @@ const lum = await page.evaluate(async (b64) => {
   x.drawImage(img, 0, 0);
   const d = x.getImageData(img.width * 0.2, img.height * 0.2, img.width * 0.6, img.height * 0.6).data;
   let sum = 0;
-  for (let i = 0; i < d.length; i += 4) sum += 0.2126 * d[i] + 0.7152 * d[i + 1] + 0.0722 * d[i + 2];
+  for (let i = 0; i < d.length; i += 4) sum += 0.2126 * (d[i] ?? 0) + 0.7152 * (d[i + 1] ?? 0) + 0.0722 * (d[i + 2] ?? 0);
   return sum / (d.length / 4);
 }, buf.toString('base64'));
 console.log('luminance', lum.toFixed(1));

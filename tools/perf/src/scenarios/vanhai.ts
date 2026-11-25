@@ -70,12 +70,12 @@ export default {
             (a) => {
               window.__game!.vanHaiWow?.freeze(a.v.wow ?? null);
               window.__game!.freeCam = {
-                x: a.s[0] + a.v.eye[0],
+                x: (a.s[0] ?? 0) + a.v.eye[0],
                 y: a.v.eye[1],
-                z: a.s[2] + a.v.eye[2],
-                tx: a.s[0] + a.v.at[0],
+                z: (a.s[2] ?? 0) + a.v.eye[2],
+                tx: (a.s[0] ?? 0) + a.v.at[0],
                 ty: a.v.at[1],
-                tz: a.s[2] + a.v.at[2],
+                tz: (a.s[2] ?? 0) + a.v.at[2],
                 fov: a.v.fov,
               };
             },

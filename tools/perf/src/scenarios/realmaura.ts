@@ -9,6 +9,7 @@ import { sleep } from '../lib/devserver';
 import { cam, gm, info, perfSample } from '../lib/game';
 import type { Scenario } from '../lib/scenario';
 import { snap } from '../lib/shot';
+import { at } from '@dtl/shared';
 
 const DAO: Record<string, { method: string; ult: string; cap: string; label: string }> = {
   kiem: { method: 'lac_kiem_quyet', ult: 'skl_van_kiem_quy_tong', cap: 'skl_thien_kiem_hoa_hinh', label: 'kiemtu' },
@@ -82,9 +83,9 @@ async function cast(page: Page, id: string, ult: boolean): Promise<boolean> {
 async function setup(page: Page, dao: string, lv: number): Promise<void> {
   // Trạng thái công pháp tới client chậm/đôi khi trượt: gửi lại tới khi thanh kỹ năng có chiêu tối thượng của đạo.
   for (let k = 0; k < 4; k++) {
-    await gm(page, `method ${DAO[dao].method} 15`, 800);
+    await gm(page, `method ${at(DAO, dao, 'DAO').method} 15`, 800);
     const ok = await page
-      .waitForFunction((i) => window.__game!.bar().some((s) => s.id === i), DAO[dao].ult, { timeout: 4000, polling: 250 })
+      .waitForFunction((i) => window.__game!.bar().some((s) => s.id === i), at(DAO, dao, 'DAO').ult, { timeout: 4000, polling: 250 })
       .then(() => true)
       .catch(() => false);
     if (ok) break;
@@ -161,12 +162,12 @@ export default {
     }
 
     for (const dao of daos) {
-      const d = DAO[dao];
+      const d = at(DAO, dao, 'DAO');
       const { ctx, page } = await r.open({ name: `Au${dao}`, viewport: [vw, vh], dpr: 1, quality, query, hide: 'hud', warnings: /models/ });
       await gm(page, 'god on', 800);
       await page.evaluate(`window.__game.setAuraMode(${JSON.stringify(mode)})`);
       for (const rk of realms) {
-        const re = REALMS[rk];
+        const re = at(REALMS, rk, 'REALMS');
         await setup(page, dao, re.lv);
         if (only !== 'phantom') {
           for (const [vn, yaw, pitch] of ISO ? ISO_VIEWS : VIEWS) {
@@ -237,7 +238,7 @@ async function videos(r: Parameters<Scenario['run']>[0], daos: string[], quality
   const dir = path.join(r.out, '_video');
   fs.mkdirSync(dir, { recursive: true });
   for (const dao of daos) {
-    const d = DAO[dao];
+    const d = at(DAO, dao, 'DAO');
     const { ctx, page } = await r.open({
       name: `Av${dao}`,
       viewport: [1280, 720],
@@ -275,7 +276,7 @@ async function videos(r: Parameters<Scenario['run']>[0], daos: string[], quality
 async function party5(r: Parameters<Scenario['run']>[0], realms: string[], quality: string, fxq: string, mode: string): Promise<void> {
   const keys = Object.keys(DAO);
   for (const rk of realms) {
-    const re = REALMS[rk];
+    const re = at(REALMS, rk, 'REALMS');
     const { ctx, page } = await r.open({
       name: 'Ap5',
       viewport: [1920, 1080],
@@ -320,13 +321,13 @@ async function perf(
     hide: 'hud',
     warnings: /models/,
   });
-  await setup(page, daos[0], 32);
+  await setup(page, at(daos, 0, 'daos'), 32);
   const extra: { close(): Promise<void> }[] = [];
   const keys = Object.keys(DAO);
   for (let i = 0; i < others; i++) {
-    const dao = keys[i % keys.length];
+    const dao = at(keys, i % keys.length, 'keys');
     const o = await r.open({ name: `Ao${i}`, viewport: [640, 360], dpr: 1, quality: 'low', hide: 'hud', warnings: /models/ });
-    await setup(o.page, dao, [20, 24, 28, 32][i % 4]);
+    await setup(o.page, dao, [20, 24, 28, 32][i % 4] ?? 20);
     await gm(o.page, `tp ${2046 + (i % 3) * 2.2} ${2092 + Math.floor(i / 3) * 2.4}`, 800);
     extra.push(o.ctx);
   }
@@ -363,7 +364,7 @@ async function budget(r: Parameters<Scenario['run']>[0], daos: string[], quality
       warnings: /models/,
     });
     for (const rk of Object.keys(REALMS)) {
-      await setup(page, dao, REALMS[rk].lv);
+      await setup(page, dao, at(REALMS, rk, 'REALMS').lv);
       await cam(page, { yaw: Math.PI + 0.5, pitch: 0.2, dist: 6 });
       const m: Record<string, number> = {};
       for (const mode of ['off', 'std', 'full']) {
@@ -371,7 +372,15 @@ async function budget(r: Parameters<Scenario['run']>[0], daos: string[], quality
         await sleep(5200);
         m[mode] = (await perfSample(page)).drawCalls;
       }
-      const row = { dao, realm: REALMS[rk].label, off: m.off, std: m.std, full: m.full, dStd: m.std - m.off, dFull: m.full - m.off };
+      const row = {
+        dao,
+        realm: at(REALMS, rk, 'REALMS').label,
+        off: at(m, 'off', 'm'),
+        std: at(m, 'std', 'm'),
+        full: at(m, 'full', 'm'),
+        dStd: at(m, 'std', 'm') - at(m, 'off', 'm'),
+        dFull: at(m, 'full', 'm') - at(m, 'off', 'm'),
+      };
       console.log('[shots:realmaura] budget', JSON.stringify(row));
       rows.push(row);
     }
@@ -404,7 +413,7 @@ async function cmp(r: Parameters<Scenario['run']>[0], quality: string, fxq: stri
   await setMode(page, mode);
   const FRONT = { yaw: 0.5, pitch: 0.16, dist: 4.4 };
   for (const rk of list('--realms', 'na,hn,ab')) {
-    const re = REALMS[rk];
+    const re = at(REALMS, rk, 'REALMS');
     await setup(page, 'kiem', re.lv);
     await setMode(page, mode);
     await gm(page, 'killall', 400);
@@ -439,7 +448,7 @@ async function cmp(r: Parameters<Scenario['run']>[0], quality: string, fxq: stri
       await sleep(4800);
       await snap(page, r.out, 'phap-tuong-0-yen.jpg');
       await page.evaluate(
-        `window.__game.emitSkillEvent(window.__game.sid, { kind: 'windup', skill: ${JSON.stringify(DAO.kiem.ult)}, index: 0, combo: -1, t: 0, kb: false })`,
+        `window.__game.emitSkillEvent(window.__game.sid, { kind: 'windup', skill: ${JSON.stringify(at(DAO, 'kiem', 'DAO').ult)}, index: 0, combo: -1, t: 0, kb: false })`,
       );
       let t0 = 0;
       for (const ms of [150, 450, 800, 1200, 1500]) {
@@ -455,7 +464,7 @@ async function cmp(r: Parameters<Scenario['run']>[0], quality: string, fxq: stri
       await gm(page, 'spawn mon_soi_xam 1', 1500);
       await cam(page, { yaw: Math.PI + 0.7, pitch: 0.12, dist: 11 });
       await sleep(900);
-      await cast(page, DAO.kiem.ult, true);
+      await cast(page, at(DAO, 'kiem', 'DAO').ult, true);
       for (let k = 0; k < 10; k++) {
         await snap(page, r.out, `hoathan-4-phap-tuong-f${k}.jpg`, { wait: 0 });
         await sleep(100);

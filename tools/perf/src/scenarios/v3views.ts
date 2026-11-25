@@ -10,6 +10,7 @@ import { sleep } from '../lib/devserver';
 import { cam, gm } from '../lib/game';
 import { sheet, type SheetRow } from '../lib/shot';
 import type { Scenario } from '../lib/scenario';
+import { at } from '@dtl/shared';
 
 /** key (tên file multiview + tên asset `chr_v3_<key>_*`) → id bộ trong sets.json + nhãn. Tên ảnh multiview khác key ở Địa Long (`dia_giap`). */
 const SETS: Record<string, { gm: string; label: string; ref: string }> = {
@@ -34,7 +35,11 @@ export default {
   async run(r) {
     const genders = list('--genders', 'm,f');
     const sets = list('--sets', 'kinh_quang,liet_mach,tinh_khuyet');
-    const [yBack, yFront, yA, yB] = list('--yaws', DEFAULT_YAWS).map(Number);
+    const yaws = list('--yaws', DEFAULT_YAWS).map(Number);
+    const yBack = at(yaws, 0, 'yaws');
+    const yFront = at(yaws, 1, 'yaws');
+    const yA = at(yaws, 2, 'yaws');
+    const yB = at(yaws, 3, 'yaws');
     const refDir = env('V3_REF_DIR', REF_DIR);
     for (const g of genders) {
       const gname = g === 'm' ? 'nam' : 'nu';

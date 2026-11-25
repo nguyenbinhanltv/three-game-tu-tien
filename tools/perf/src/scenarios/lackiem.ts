@@ -63,12 +63,12 @@ export default {
           await page.evaluate(
             (a) => {
               window.__game!.freeCam = {
-                x: a.s[0] + a.v.eye[0],
-                y: a.s[1] + a.v.eye[1],
-                z: a.s[2] + a.v.eye[2],
-                tx: a.s[0] + a.v.at[0],
-                ty: a.s[1] + a.v.at[1],
-                tz: a.s[2] + a.v.at[2],
+                x: (a.s[0] ?? 0) + a.v.eye[0],
+                y: (a.s[1] ?? 0) + a.v.eye[1],
+                z: (a.s[2] ?? 0) + a.v.eye[2],
+                tx: (a.s[0] ?? 0) + a.v.at[0],
+                ty: (a.s[1] ?? 0) + a.v.at[1],
+                tz: (a.s[2] ?? 0) + a.v.at[2],
                 fov: a.v.fov,
               };
             },

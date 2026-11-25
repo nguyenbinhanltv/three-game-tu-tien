@@ -26,6 +26,7 @@ import { createDevServer, listeningPids, ROOT, sleep } from './lib/devserver';
 import { buildClient, serveDist } from './lib/dist';
 import { args, env, opt, ports } from './lib/env';
 import { launchChrome } from './lib/browser';
+import { at } from '@dtl/shared';
 
 const OUT_DIR = path.join(ROOT, 'bench/results');
 
@@ -232,9 +233,9 @@ async function runLogin(browser: Browser): Promise<LoginRun> {
       fcp: t.fcp,
       html: t.html,
       js: t.js,
-      jsRun: t.L.marks.jsRun,
-      loginForm: t.L.marks.loginForm,
-      backdropLit: t.L.marks.backdropLit,
+      jsRun: t.L.marks.jsRun ?? Number.NaN,
+      loginForm: t.L.marks.loginForm ?? Number.NaN,
+      backdropLit: t.L.marks.backdropLit ?? Number.NaN,
       longFrames: t.L.long.length,
     };
   } finally {
@@ -288,18 +289,18 @@ async function runGame(browser: Browser, i: number): Promise<GameRun> {
     const t = await readTiming(page);
     const m = t.L.marks;
     const glb = t.res.filter((r) => r.name.endsWith('.glb')).sort((a, b) => a.end - b.end);
-    const before = t.L.long.filter(([s]) => s < m.titleGone);
-    const after = t.L.long.filter(([s]) => s >= m.titleGone);
+    const before = t.L.long.filter(([s]) => s < (m.titleGone ?? Number.NaN));
+    const after = t.L.long.filter(([s]) => s >= (m.titleGone ?? Number.NaN));
     const lastLong = t.L.long[t.L.long.length - 1];
     return {
       fcp: t.fcp,
       js: t.js,
-      jsRun: m.jsRun,
-      gameFirstFrame: m.gameFirstFrame,
-      firstFrameAfterJs: m.gameFirstFrame - t.js,
-      worldReady: m.worldReady,
-      titleGone: m.titleGone,
-      glbDone: glb.length ? glb[glb.length - 1].end : -1,
+      jsRun: m.jsRun ?? Number.NaN,
+      gameFirstFrame: m.gameFirstFrame ?? Number.NaN,
+      firstFrameAfterJs: (m.gameFirstFrame ?? Number.NaN) - t.js,
+      worldReady: m.worldReady ?? Number.NaN,
+      titleGone: m.titleGone ?? Number.NaN,
+      glbDone: glb.length ? at(glb, glb.length - 1, 'glb').end : -1,
       glb,
       loadingStalls: { count: before.length, maxMs: Math.max(0, ...before.map((l) => l[1])), list: before },
       loadStats,
@@ -310,7 +311,7 @@ async function runGame(browser: Browser, i: number): Promise<GameRun> {
         list: after,
       },
       stallFreeAt: lastLong ? lastLong[0] + lastLong[1] : 0,
-      playFrameFn: t.L.longFrameFn.filter(([s]) => s >= m.titleGone),
+      playFrameFn: t.L.longFrameFn.filter(([s]) => s >= (m.titleGone ?? Number.NaN)),
       frameFn: t.L.longFrameFn,
       backend,
       errors,
@@ -324,7 +325,7 @@ async function runGame(browser: Browser, i: number): Promise<GameRun> {
 
 const median = (xs: number[]) => {
   const s = xs.filter((x) => Number.isFinite(x)).sort((a, b) => a - b);
-  return s.length ? s[Math.floor((s.length - 1) / 2)] : NaN;
+  return s.length ? (s[Math.floor((s.length - 1) / 2)] ?? NaN) : NaN;
 };
 const sec = (ms: number) => (Number.isFinite(ms) && ms >= 0 ? (ms / 1000).toFixed(2) + ' s' : '—');
 
@@ -336,7 +337,7 @@ function previous(): { login?: LoginRun[]; game?: GameRun[]; file: string } | nu
     .sort();
   for (let i = files.length - 1; i >= 0; i--) {
     try {
-      const j = JSON.parse(fs.readFileSync(path.join(OUT_DIR, files[i]), 'utf8'));
+      const j = JSON.parse(fs.readFileSync(path.join(OUT_DIR, at(files, i, 'files')), 'utf8'));
       if (j.mbps === MBPS && j.renderer === RENDERER) return { ...j, file: files[i] };
     } catch {
       /* file kết quả cũ hỏng: bỏ qua, xét file kế */
@@ -415,9 +416,9 @@ async function main(): Promise<void> {
   }
   if (game.length) {
     console.log('  thứ tự GLB về (lượt cuối):');
-    for (const g of game[game.length - 1].glb)
+    for (const g of at(game, game.length - 1, 'game').glb)
       console.log(`    ${g.name.padEnd(44)} ${String(g.kb).padStart(6)} KB  ${sec(g.start)} → ${sec(g.end)}`);
-    const pf = game[game.length - 1].playFrameFn;
+    const pf = at(game, game.length - 1, 'game').playFrameFn;
     if (pf.length)
       console.log(
         '  Game.frame() > 50 ms sau khi vào (lượt cuối):',

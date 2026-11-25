@@ -10,6 +10,7 @@ import { list, size } from '../lib/env';
 import { cam, gm } from '../lib/game';
 import { centerClip, snap } from '../lib/shot';
 import type { Scenario } from '../lib/scenario';
+import { at as checkedAt } from '@dtl/shared';
 
 /** `v3`/`v3b` = Lạc Kiếm v3b (mặc định của ?chr=v3), `v3a` = bản v3 cũ (`?v3model=a`). `v3raw` = v3 không bảng màu (`?v3pal=0`), để so trước/sau chỉnh màu. */
 const QUERY: Record<string, Record<string, string>> = {
@@ -464,11 +465,11 @@ export default {
             );
             const inputs = tgs.flatMap((t) => ['-i', path.join(r.out, `_raw-${t}.webm`)]);
             const parts: string[] = [];
-            const n = meta[0].spec.length;
+            const n = checkedAt(meta, 0, 'meta').spec.length;
             for (let k = 0; k < n; k++) {
-              const len = meta[0].spec[k].ms / 1000;
+              const len = checkedAt(checkedAt(meta, 0, 'meta').spec, k, 'bảng').ms / 1000;
               const lbl = tgs.map((_, vi) => {
-                const a = meta[vi].at[k].sec;
+                const a = checkedAt(checkedAt(meta, vi, 'meta').at, k, 'bảng').sec;
                 return `[${vi}:v]trim=start=${a.toFixed(3)}:end=${(a + len).toFixed(3)},setpts=PTS-STARTPTS,fps=25[c${k}_${vi}]`;
               });
               parts.push(...lbl, `${tgs.map((_, vi) => `[c${k}_${vi}]`).join('')}hstack=inputs=${tgs.length}[s${k}]`);

@@ -4,6 +4,7 @@ import path from 'node:path';
 import type { BrowserContext, Page } from 'playwright';
 import { env } from './env';
 import { sleep } from './devserver';
+import { at } from '@dtl/shared';
 
 export interface Clip {
   x: number;
@@ -89,10 +90,10 @@ export const UI_SIZES: Record<string, [number, number]> = {
 /** Chụp cùng một cảnh ở nhiều cỡ màn hình rồi trả viewport về cỡ đầu. */
 export async function snapSizes(page: Page, dir: string, stem: string, sizes: string[], wait = 1000): Promise<void> {
   for (const tag of sizes) {
-    const [width, height] = UI_SIZES[tag] ?? UI_SIZES['1080p'];
+    const [width, height] = UI_SIZES[tag] ?? at(UI_SIZES, '1080p', 'UI_SIZES');
     await page.setViewportSize({ width, height });
     await snap(page, dir, `${stem}-${tag}.jpg`, { wait });
   }
-  const [width, height] = UI_SIZES[sizes[0]] ?? UI_SIZES['1080p'];
+  const [width, height] = UI_SIZES[at(sizes, 0, 'sizes')] ?? at(UI_SIZES, '1080p', 'UI_SIZES');
   await page.setViewportSize({ width, height });
 }
