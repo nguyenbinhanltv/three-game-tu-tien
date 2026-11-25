@@ -1,11 +1,11 @@
 {
   "monId": "elite_huyet_nha_lang",
   "move": "caster",
-  "idea": "Huyết Nha Lang há miệng phun hơi lửa độc về phía người chơi: quạt ĐỎ dài 9 m nửa góc 35° tô dần theo nhịp 1,2 s; nổ ra luồng lửa đen than viền vàng trắng cuộn theo quạt, tàn than và tro bay, không đỏ cam đặc.",
+  "idea": "Huyết Nha Lang há miệng phun hơi lửa ma về phía người chơi: quạt ĐỎ dài 9 m nửa góc 35° tô dần theo nhịp 1,2 s; nổ ra luồng lửa ám tím sẫm lõi đen, viền vàng kim trắng cuộn theo quạt, tàn than tím và tro bay; KHÔNG dùng đỏ/cam cho vùng nổ.",
   "element": "hoa",
   "palette": {
-    "core": "1a0f0a",
-    "body": "8a3d1c",
+    "core": "140a1e",
+    "body": "6a3fa0",
     "rim": "ffe9a8",
     "accent": "ff1f3d"
   },
@@ -24,7 +24,7 @@
     "impactMs": 140,
     "lingerMs": 800
   },
-  "readability": "Quạt đỏ đặc đúng 9 m nửa góc 35°; luồng lửa lõi đen than, viền vàng trắng sáng nên không lẫn với vạch đỏ; tàn than mỏng không che người chơi.",
+  "readability": "Quạt đỏ đặc đúng 9 m nửa góc 35°; luồng lửa ám tím lõi đen, viền vàng kim sáng nên không lẫn với vạch đỏ; tàn than mỏng không che người chơi.",
   "budget": {
     "drawCalls": 9,
     "particles": 300,
