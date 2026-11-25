@@ -1,0 +1,70 @@
+# Cổng đo bản đồ (B2): chạy `pnpm perf:iso` + `pnpm perf:gate` bằng Chromium phần mềm (không GPU) và chỉ CHẶN trên số đếm
+# (draw call, tam giác, texture MB, heap, lỗi console); ms chỉ ghi lại. THỬ NGHIỆM: chạy tay (workflow_dispatch) cho tới khi
+# đã kiểm chứng trên runner thật và có baseline `tools/perf/baselines/iso-high.json`; đừng biến thành bước bắt buộc trước đó.
+name: perf-gate
+
+on:
+  workflow_dispatch:
+    inputs:
+      only:
+        description: 'Danh sách mục tiêu `perf:iso --only` (vd van_lam,kiem_trung); để trống = bộ --quick'
+        required: false
+        default: ''
+
+permissions:
+  contents: read
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - name: Cài dependency
+        run: pnpm install --frozen-lockfile
+      - name: Cache asset R2
+        uses: actions/cache@v4
+        with:
+          path: |
+            apps/client/public/assets
+            apps/client/public/audio
+            apps/client/public/hoa-truc
+            apps/client/public/map
+            apps/client/public/sky
+            apps/client/public/terrain*
+            apps/client/public/grass*
+            apps/client/public/thien_y
+            !apps/client/public/**/*.json
+            !apps/client/public/**/*.txt
+          key: assets-r2-${{ hashFiles('assets/asset-lock.json') }}
+          restore-keys: assets-r2-
+      - name: Khôi phục file git theo dõi trong public
+        run: git checkout -- apps/client/public
+      - name: Dọn nhị phân cache ngoài sổ khóa
+        run: pnpm assets:prune --apply
+      - name: Kéo asset từ R2
+        run: pnpm assets:pull
+        env:
+          VITE_ASSET_BASE: ${{ vars.VITE_ASSET_BASE }}
+      - name: Cài Chromium cho Playwright
+        run: pnpm --filter @dtl/perf exec playwright install --with-deps chromium
+      - name: perf:iso (Chromium phần mềm, WebGL2)
+        run: pnpm perf:iso --quick --presets high --renderer webgl2 --channel chromium ${{ inputs.only != '' && format('--only {0}', inputs.only) || '' }} --out bench/results
+      - name: perf:gate
+        run: pnpm perf:gate "$(ls bench/results/iso-*.json | sort | tail -1)" --baseline tools/perf/baselines/iso-high.json --md bench/results/gate.md
+      - name: Đăng kết quả
+        if: always()
+        run: |
+          if [ -f bench/results/gate.md ]; then cat bench/results/gate.md >> "$GITHUB_STEP_SUMMARY"; fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: perf-gate
+          path: bench/results
