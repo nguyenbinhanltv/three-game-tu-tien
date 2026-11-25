@@ -105,6 +105,8 @@ async function run(r: Run, skills: string[], sizes: string[], at: number[]): Pro
     const e = [...g.view.monsters.entries()].find(([, v]) => v.t === m && v.st !== 3);
     if (e) g.setTarget?.(e[0], 'mon');
   }, mon);
+  // `--clean`: bỏ vạch báo/FX do server gửi (tinh anh hình nộm vẫn đánh: vòng báo ĐỎ của kẻ địch có thể rơi vào khung chụp chiêu người chơi và làm sai số/ảnh).
+  if (process.argv.includes('--clean')) await page.evaluate(() => window.__vfxlab!.monLab(true));
   await sleep(600);
   if (opt('--clip', '')) {
     // Clip thời gian thật (không tạm dừng): mỗi chiêu ra hai lần, cách nhau 3 s; video webm nằm ở <out>/clip.
