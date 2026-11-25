@@ -1,0 +1,34 @@
+{
+  "monId": "boss_tan_hoa_kiem_co",
+  "move": "sweep",
+  "idea": "Tàn Hỏa Kiếm Cơ dùng chiêu sweep: vạch báo là quạt r9 m góc 40° ĐỎ chuẩn kẻ địch (viền sáng + tô mờ lấp dần) theo nhịp 1.2 s; nổ ra lửa ma tím lõi đen viền trắng-tím, mạch sét thưa (không đỏ/cam).",
+  "element": "hoa",
+  "palette": {
+    "core": "140a1e",
+    "body": "6a3fa0",
+    "rim": "f0d8ff",
+    "accent": "ff1f3d"
+  },
+  "shapeLang": [
+    "spike",
+    "ring"
+  ],
+  "zone": {
+    "shape": "cone",
+    "r": 9,
+    "at": "forward",
+    "w": 40
+  },
+  "timing": {
+    "anticipationMs": 1200,
+    "impactMs": 140,
+    "lingerMs": 800
+  },
+  "readability": "Vạch báo đỏ chuẩn kẻ địch đúng quạt r9 m góc 40° đọc rõ trên nền sáng; thân hiệu ứng lửa ma tím lõi đen viền trắng-tím, mạch sét thưa, không che người chơi.",
+  "budget": {
+    "drawCalls": 10,
+    "particles": 300,
+    "screenCover": 0.2,
+    "overdraw": 5
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "monId": "elite_kd_huyet_giac_ma_tuong",
+  "move": "line",
+  "idea": "Huyết Giác Ma Tướng dùng chiêu line: vạch báo là dải dài 9 m rộng 3.5 m ĐỎ chuẩn kẻ địch (viền sáng + tô mờ lấp dần) theo nhịp 1.2 s; nổ ra lửa ma tím lõi đen viền trắng-tím, mạch sét thưa (không đỏ/cam).",
+  "element": "hoa",
+  "palette": {
+    "core": "140a1e",
+    "body": "6a3fa0",
+    "rim": "f0d8ff",
+    "accent": "ff1f3d"
+  },
+  "shapeLang": [
+    "spike",
+    "beam"
+  ],
+  "zone": {
+    "shape": "rect",
+    "r": 9,
+    "at": "forward",
+    "w": 3.5
+  },
+  "timing": {
+    "anticipationMs": 1200,
+    "impactMs": 140,
+    "lingerMs": 800
+  },
+  "readability": "Vạch báo đỏ chuẩn kẻ địch đúng dải dài 9 m rộng 3.5 m đọc rõ trên nền sáng; thân hiệu ứng lửa ma tím lõi đen viền trắng-tím, mạch sét thưa, không che người chơi.",
+  "budget": {
+    "drawCalls": 10,
+    "particles": 300,
+    "screenCover": 0.2,
+    "overdraw": 5
+  }
+}
