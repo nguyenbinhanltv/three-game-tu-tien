@@ -15,6 +15,7 @@
     "typecheck": "tsc -p tsconfig.json",
     "check": "tsx src/check.ts && tsx src/gen-sources.ts --check",
     "sim": "tsx src/sim.ts",
+    "i18n:orphans": "tsx src/i18nOrphans.ts",
     "map:report": "tsx src/mapreport.ts",
     "test": "vitest run",
     "test:slow": "vitest run --config vitest.slow.config.ts",

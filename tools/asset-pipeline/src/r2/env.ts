@@ -5,6 +5,7 @@ import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import { ROOT } from '../config.js';
+import { at } from '@dtl/shared';
 
 export interface R2Env {
   accountId: string;
@@ -30,9 +31,9 @@ export function parseEnvFile(text: string): Record<string, string> {
     if (!line || line.startsWith('#')) continue;
     const m = /^(?:export\s+)?([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)$/.exec(line);
     if (!m) continue;
-    let v = m[2].trim();
+    let v = at(m, 2, 'm').trim();
     if ((v.startsWith('"') && v.endsWith('"')) || (v.startsWith("'") && v.endsWith("'"))) v = v.slice(1, -1);
-    out[m[1]] = v;
+    out[at(m, 1, 'm')] = v;
   }
   return out;
 }

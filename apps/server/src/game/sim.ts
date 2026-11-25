@@ -2,7 +2,6 @@ import { TickProf } from './tickprof';
 import type { Client } from 'colyseus';
 import {
   blockedAt,
-  standingY,
   bottleneckReady,
   collisionOf,
   type CollisionSet,
@@ -13,7 +12,6 @@ import {
   computeDamage,
   type DmgMsg,
   type MoveInput,
-  caveBoundOf,
   type DungeonReward,
   reduceDamage,
   type FxMsg,
@@ -24,9 +22,7 @@ import {
   type MonsterCaster,
   type MonsterChant,
   type MonsterDef,
-  MS_ATTACK,
   MS_DEAD,
-  MS_RETURN,
   PF_DEAD,
   PF_MEDITATING,
   PF_SHIELD,
@@ -37,40 +33,31 @@ import {
   type TribDef,
   WATER_Y,
   xpNeed,
-  planDash,
   AOI_BOSS_OUT,
   AOI_OUT,
-  zoneAt,
   type BossTimerMsg,
   HOME_LEVEL,
   terrainOf,
   type Terrain,
 } from '@dtl/shared';
 import { TribSystem, type GuardCfg } from './trib';
-import { LEVELS, MONSTER, monsterName, NPC, realmName, t } from '@dtl/content';
-
+import { LEVELS, monsterName, NPC, realmName, t } from '@dtl/content';
 import { PLACES } from '@dtl/content/places';
 import { NodeS, type WorldState } from '../state';
 import { type Character } from './character';
-
 import type { TestFlags } from '../testflags';
 import type { PlayerEnt, MonEnt, Hazard, Bolt, SimHost, SimOptions, NodeEnt } from './entities';
 import { isInvulnerable } from './entities';
-export type { Bolt, Hazard, MonEnt, NodeEnt, PlayerEnt, SimHost, SimOptions, Stomp, StrikeCtx, Summon, TransferOpts } from './entities';
-import { ArtifactSystem, type ArtifactCtx } from './artifacts';
-import { DeathSystem, type DeathCtx } from './death';
-import { TribulationSystem, type TribulationCtx } from './tribulation';
-import { PlayerSystem, type PlayerCtx, SAVE_INTERVAL } from './players';
+import { ArtifactSystem } from './artifacts';
+import { DeathSystem } from './death';
+import { TribulationSystem } from './tribulation';
+import { PlayerSystem, SAVE_INTERVAL } from './players';
 import { GmSystem } from './gm';
-import { CombatSystem, type CombatCtx } from './combat';
-import { MonsterSystem, type MonsterCtx } from './monsters';
-import { EconomySystem, type EconomyCtx } from './economy';
-import { WardrobeSystem, type WardrobeCtx } from './wardrobe';
-import { TAUNT_BOSS_MUL } from './combat/consts';
-import { resolveFor, branchModsOf, picksOf } from './method';
-
-/** Gửi trạng thái công pháp tối đa chừng này ms một lần. */
-const METHOD_SEND_MS = 250;
+import { CombatSystem } from './combat';
+import { MonsterSystem } from './monsters';
+import { EconomySystem } from './economy';
+import { WardrobeSystem } from './wardrobe';
+import { branchModsOf, picksOf } from './method';
 import { RealmSystem } from './realm';
 import { KieuSystem } from './kieu';
 import { MonSkills } from './monskill';
@@ -86,13 +73,46 @@ import { ThanTangSystem } from './thantang';
 import { SoulSystem } from './soul';
 import { CloneSystem } from './clone';
 import { DomainSystem } from './domain';
-import { parties } from './party';
 import { InventorySystem } from './inventory';
 import { UpgradeSystem } from './upgrade';
 import { artifactMsg, buffsMsg } from './artifact';
 import { log } from '../log';
-
 import { at, dodgeRefill, type HitTier, type TribId } from '@dtl/shared';
+import {
+  wireTribSys,
+  wireRealm,
+  wireMonSkills,
+  wireZones,
+  wireCamps,
+  wireDuel,
+  wireTele,
+  wireEcoSys,
+  wireWardrobe,
+  wireMonSys,
+  wireCombat,
+  wireArtSys,
+  wireDeathSys,
+  wireTribHub,
+  wirePlSys,
+  wireGmSys,
+  wireQuestObj,
+  wireSpirit,
+  wireMirror,
+  wireThan,
+  wireSoul,
+  wireClone,
+  wireDomain,
+  wireInventory,
+  wireKieu,
+  wireUpgrade,
+  type SimPrivates,
+} from './simWiring';
+
+export type { Bolt, Hazard, MonEnt, NodeEnt, PlayerEnt, SimHost, SimOptions, Stomp, StrikeCtx, Summon, TransferOpts } from './entities';
+
+/** Gửi trạng thái công pháp tối đa chừng này ms một lần. */
+const METHOD_SEND_MS = 250;
+
 const INTERACT_RANGE = 9;
 
 export class GameSim {
@@ -109,786 +129,170 @@ export class GameSim {
   /** Hình va chạm 3D của level này (`collisionOf(levelId)`). */
   readonly collision: CollisionSet;
   private nextId = 1;
+
+  /** Cầu nối tới thành viên private cho các hàm nối hệ ở `simWiring.ts` (ngoài lớp không thấy `private`). */
+  private readonly px: SimPrivates = ((g: GameSim): SimPrivates => ({
+    get tribSys() {
+      return g.tribSys;
+    },
+    get ecoSys() {
+      return g.ecoSys;
+    },
+    get monSys() {
+      return g.monSys;
+    },
+    get combat() {
+      return g.combat;
+    },
+    get artSys() {
+      return g.artSys;
+    },
+    get deathSys() {
+      return g.deathSys;
+    },
+    get tribHub() {
+      return g.tribHub;
+    },
+    get plSys() {
+      return g.plSys;
+    },
+    get nextId() {
+      return g.nextId;
+    },
+    set nextId(v: number) {
+      g.nextId = v;
+    },
+    randomPoint: (cx, cz, radius, allowWater) => g.randomPoint(cx, cz, radius, allowWater),
+    warn: (p, k, params) => g.warn(p, k, params),
+    posOf: (id) => g.posOf(id),
+    emit: (type, payload) => g.emit(type, payload),
+    setFlag: (p, flag, on) => g.setFlag(p, flag, on),
+    isDead: (p) => g.isDead(p),
+    nearNpc: (p, npcId) => g.nearNpc(p, npcId),
+    tickPlayer: (p, dt) => g.tickPlayer(p, dt),
+    sendCd: (p) => g.sendCd(p),
+    abortStrike: (p, refund, notify) => g.abortStrike(p, refund, notify),
+    aggroMonster: (mon, p, assist) => g.aggroMonster(mon, p, assist),
+    airborne: (p) => g.airborne(p),
+    canAssist: (p, o) => g.canAssist(p, o),
+    cancelCast: (p) => g.cancelCast(p),
+    finishCast: (p) => g.finishCast(p),
+    gainCharge: (p, n) => g.gainCharge(p, n),
+    monstersNear: (x, z, r, except) => g.monstersNear(x, z, r, except),
+    resolvePending: (p) => g.resolvePending(p),
+    tickMethods: () => g.tickMethods(),
+    applyPillBuff: (p, def, potency) => g.applyPillBuff(p, def, potency),
+    feedArtifact: (p, mon) => g.feedArtifact(p, mon),
+    duelStrike: (p, o, powers, elemMul) => g.duelStrike(p, o, powers, elemMul),
+    addPosture: (m, n) => g.addPosture(m, n),
+    hitMonster: (p, mon, basePower, mul, elem, tier) => g.hitMonster(p, mon, basePower, mul, elem, tier),
+    homeDist: (m) => g.homeDist(m),
+    killMonster: (mon) => g.killMonster(mon),
+    removeMonster: (m) => g.removeMonster(m),
+    resetAi: (m) => g.resetAi(m),
+    respawnMonster: (m, at) => g.respawnMonster(m, at),
+    setMonFlags: (m, mf, ce) => g.setMonFlags(m, mf, ce),
+    setMonState: (m, st) => g.setMonState(m, st),
+    spawnFromDef: (sp) => g.spawnFromDef(sp),
+    tickBolts: () => g.tickBolts(),
+    tickHazards: () => g.tickHazards(),
+    tickMonster: (m, dt) => g.tickMonster(m, dt),
+    tryInterrupt: (p, mon, extraStun) => g.tryInterrupt(p, mon, extraStun),
+    cloneHit: (p, mon, power, skill) => g.cloneHit(p, mon, power, skill),
+    endTribulation: (p, success, silent) => g.endTribulation(p, success, silent),
+    healPlayer: (p, n) => g.healPlayer(p, n),
+    lockCut: (h, p) => g.lockCut(h, p),
+    pickGuards: (h) => g.pickGuards(h),
+    shareToGuards: (owner, n, h) => g.shareToGuards(owner, n, h),
+    tickTribulation: (p) => g.tickTribulation(p),
+    setMeditating: (p, on) => g.setMeditating(p, on),
+    idem: (p, r) => g.idem(p, r),
+    invMsg: (p) => g.invMsg(p),
+    heal: (p) => g.heal(p),
+  }))(this);
   tickMs = 0;
   /** Profiler theo hệ (TICK_PROF=1), xem game/tickprof.ts. */
   readonly prof = new TickProf();
   tickSamples: number[] = [];
   /** Lõi nhịp độ kiếp theo dữ liệu (E1-F, game/trib.ts). */
-  private readonly tribSys = new TribSystem({
-    now: () => this.now,
-    addHazard: (g, delay, dmg, pct, kind, src, atk, lock, grp, guard, cut, hot, extra) =>
-      this.addHazard(g, delay, dmg, pct, kind, src, atk, lock, grp, guard, cut, extra?.mv, hot, extra?.dur ?? 0, extra?.seal, extra?.reach),
-    damage: (p, n, ke) => this.damagePlayer(p, n, p.sid, true, ke),
-    fx: (m) => this.fx(m),
-    isDead: (p) => this.isDead(p),
-    nextGrp: () => this.nextHazardGrp(),
-    sys: (p, k, params, type) => this.sys(p, k, params, type),
-    spawnShadow: (p, st, o) => this.spawnShadow(p, st, o),
-    aliveShadows: (p) => this.monsters.filter((m) => m.owner === p.sid && m.state !== MS_DEAD).length,
-    shadowOf: (p) => this.monsters.find((m) => m.owner === p.sid && m.state !== MS_DEAD) ?? null,
-    end: (p, ok) => this.endTribulation(p, ok, false),
-    spawnBoss: (p, id, dist) => this.tribHub.spawnTribBoss(p, id, dist),
-    removeMonster: (m) => this.removeMonster(m),
-    stunMonster: (m, sec) => this.monSys.stun(m, sec),
-    heal: (p, n) => this.healPlayer(p, n),
-    drainMp: (p, n) => {
-      p.char.mp = Math.max(0, p.char.mp - Math.max(0, n));
-    },
-    // Nguồn sát thương là chính chủ kiếp (không phải id quái): `damagePlayer` không tìm thấy quái nào để phản đòn hay tính "bị bóng đánh trúng".
-    sap: (p, n) => {
-      if (n > 0) this.damagePlayer(p, n, p.sid, false);
-    },
-    refill: (p) => {
-      p.char.hp = p.char.mhp;
-      p.char.mp = p.char.mmp;
-    },
-    suyCleared: (p, idx) => this.tribHub.suyCleared(p, idx),
-  });
+  private readonly tribSys = new TribSystem(wireTribSys(this, this.px));
   /** Bình cảnh, tâm ma, linh căn (P3-7). */
-  readonly realm = new RealmSystem({
-    now: () => this.now,
-    inWorld: () => !this.level.dungeon,
-    isDead: (p) => this.isDead(p),
-    nearNpc: (p, id) => this.nearNpc(p, id),
-    idem: (p, r) => this.idem(p, r),
-    warn: (p, k, params) => this.warn(p, k, params),
-    sys: (p, k, params, type) => this.sys(p, k, params, type),
-    fx: (m) => this.fx(m),
-    spawnShadow: (p, st) => this.spawnShadow(p, st),
-    dismissShadow: (id) => {
-      const m = this.monById.get(id);
-      if (m) this.removeMonster(m);
-    },
-    stopMeditate: (p) => this.setMeditating(p, false),
-    savePlayer: (p) => this.savePlayer(p),
-    questEvent: (p, type, target, n) => this.questEvent(p, type, target, n),
-    inCombat: (p) => this.now - p.lastCombatAt < COMBAT_REGEN_DELAY * 1000,
-    inDuel: (p) => this.duel.inDuel(p),
-    player: (sid) => this.players.get(sid),
-  });
+  readonly realm = new RealmSystem(wireRealm(this, this.px));
 
   /** Nguyên tắc quái mở rộng (E1-E): đường thẳng, lao tới, nhảy đập, chui đất, phản đòn, gọi đệ tử, lộ yếu điểm. */
-  readonly monSkills: MonSkills = new MonSkills({
-    now: () => this.now,
-    mon: (id) => this.monById.get(id),
-    isDead: (m) => m.state === MS_DEAD,
-    groundAt: (x, z) => this.terrain.groundAt(x, z),
-    canStand: (x, z) =>
-      this.terrain.heightAt(x, z) > WATER_Y + 0.3 &&
-      this.terrain.playDist(x, z) < this.terrain.playWall - 4 &&
-      !this.terrain.colliders.some((c) => (c.x - x) ** 2 + (c.z - z) ** 2 < c.r * c.r) &&
-      !blockedAt(this.collision, x, z, this.terrain.groundAt(x, z), 0.8),
-    hazard: (g, delay, mul, kind, m, mv) => this.addHazard(g, delay, mul, false, kind, m.id, m.atk, false, 0, undefined, undefined, mv),
-    trail: (m, x, z, yaw, len, cfg, delay) => this.zones.addTrail(m as MonEnt, x, z, yaw, len, cfg, delay),
-    damagePlayer: (p, n, src) => this.damagePlayer(p as PlayerEnt, n, src, true),
-    setFlags: (m, low, ce) => this.setMonFlags(m as MonEnt, low, ce),
-    setAttack: (m) => this.setMonState(m as MonEnt, MS_ATTACK),
-    spawnMinion: (def, level, x, z, owner) => {
-      const e = this.spawnMonster(def, level, x, z, null);
-      e.minionOf = owner.id;
-      return e;
-    },
-    removeMinion: (m) => this.removeMonster(m as MonEnt),
-    addPosture: (m, n) => this.addPosture(m as MonEnt, n),
-    minionsAlive: () => this.monsters.reduce((n, o) => n + (o.minionOf && o.state !== MS_DEAD ? 1 : 0), 0),
-    monsterDef: (id) => MONSTER.get(id),
-    fx: (m) => this.emit(S.FX, m),
-    notifyNear: (m, range, key) => {
-      for (const p of this.players.values())
-        if (Math.hypot(p.move.x - m.s.x, p.move.z - m.s.z) <= range)
-          this.sys(p, key, undefined, key === 'sys.face_duong' ? 'good' : 'info');
-    },
-  });
+  readonly monSkills: MonSkills = new MonSkills(wireMonSkills(this, this.px));
 
   /** Nuốt kéo người và vũng độc khi chết (E3-G). */
-  readonly zones: MonZones = new MonZones({
-    now: () => this.now,
-    players: () => this.players.values(),
-    isDead: (p) => this.isDead(p as PlayerEnt),
-    resists: (p) => {
-      const e = p as PlayerEnt;
-      return this.airborne(e) || !!e.trib || this.soul.isScouting(e) || !!this.soul.ghostOf(e);
-    },
-    active: (m) => {
-      const e = m as MonEnt;
-      return e.state !== MS_DEAD && e.state !== MS_RETURN && this.monById.has(e.id) && e.stunUntil <= this.now;
-    },
-    drag: (p, dx, dz, dist) => {
-      const e = p as PlayerEnt;
-      const plan = planDash(e.move, { x: dx, z: dz }, dist, undefined, {
-        terrain: this.terrain,
-        bound: caveBoundOf(this.level),
-        collision: this.collision,
-      });
-      if (plan.dist <= 0) return 0;
-      if (e.meditating) this.setMeditating(e, false);
-      if (e.casting) this.cancelCast(e);
-      e.move.x = plan.x;
-      e.move.z = plan.z;
-      // Mặt đứng hiệu dụng (gồm bậc/phiến đá đi được), không chỉ heightmap: khỏi đặt người vào trong hộp rồi giật khi `push` đẩy ra.
-      e.move.y = standingY(this.terrain, this.collision, plan.x, plan.z, plan.y);
-      e.move.vy = 0;
-      e.move.grounded = true;
-      e.inputs.length = 0;
-      return plan.dist;
-    },
-    tooHigh: (p) => p.move.y - this.terrain.groundAt(p.move.x, p.move.z) > 8,
-    telegraph: (x, z, r, delay, kind, src, mv, dur) =>
-      this.addHazard({ x, z, r }, delay, 0, false, kind as HazardMsg['kind'], src, 0, false, 0, undefined, undefined, mv, false, dur),
-    poisonHit: (p, atk, mul, src) =>
-      this.damagePlayer(p as PlayerEnt, computeDamage(atk, mul, (p as PlayerEnt).char.def, Math.random(), 1).dmg, src, true),
-    notify: (p, key) => this.sys(p as PlayerEnt, key, undefined, key === 'sys.pull_resist' ? 'good' : 'bad'),
-  });
+  readonly zones: MonZones = new MonZones(wireZones(this, this.px));
 
   /** Bãi quái theo cụm (M-2): đội hình, tái sinh cả cụm, hồi sinh theo số người trong vùng. */
-  readonly camps = new CampSystem({
-    now: () => this.now,
-    spawn: (monId, level, x, z, sp) => {
-      const def = MONSTER.get(monId);
-      return def ? this.spawnMonster(def, level, x, z, sp) : null;
-    },
-    revive: (m, x, z) => this.respawnMonster(m, { x, z }),
-    remove: (m) => this.removeMonster(m),
-    snap: (x, z) => this.randomPoint(x, z, 1.5, false),
-    playersIn: (zone) => {
-      let n = 0;
-      // Chỉ người đang kết nối và còn hoạt động (có input hoặc giao chiến trong 30 s): người "ma" hay treo máy không kéo số con/tốc độ hồi sinh.
-      for (const p of this.players.values()) {
-        if (!p.connected || this.isDead(p) || (this.now - p.lastInputAt > 30_000 && this.now - p.lastCombatAt > 30_000)) continue;
-        if (zoneAt(this.level.zones, p.move.x, p.move.z)?.id === zone) n++;
-      }
-      return n;
-    },
-  });
+  readonly camps = new CampSystem(wireCamps(this, this.px));
 
   /** Tỉ thí 1v1 ở võ đài (P3-9). */
-  readonly duel = new DuelSystem({
-    now: () => this.now,
-    // Võ đài chỉ có ở Vân Lam (toạ độ đài là hằng số của bản đồ đó).
-    inWorld: () => this.opts.levelId === HOME_LEVEL && !this.level.dungeon,
-    players: () => this.players.values(),
-    sys: (p, k, params, type) => this.sys(p, k, params, type),
-    warn: (p, k, params) => this.warn(p, k, params),
-    setFlag: (p, f, on) => this.setFlag(p, f, on),
-    cancelCast: (p) => this.cancelCast(p),
-    stopMeditate: (p) => this.setMeditating(p, false),
-    questEvent: (p, type, target, n) => this.questEvent(p, type, target, n),
-  });
+  readonly duel = new DuelSystem(wireDuel(this, this.px));
 
   /** Truyền Tống Trận (M-4): mở khóa, niệm, dịch chuyển. */
-  readonly tele = new TeleportSystem({
-    now: () => this.now,
-    inWorld: () => !this.level.dungeon,
-    level: () => this.level.id,
-    transfer: (p, level, x, z) => this.host.transferLevel?.(p, level, { x, z }, { combat: true, party: true }) ?? false,
-    players: () => this.players.values(),
-    inCombat: (p) => this.now - p.lastCombatAt < COMBAT_REGEN_DELAY * 1000,
-    inDuel: (p) => this.duel.inDuel(p),
-    sys: (p, k, params, type) => this.sys(p, k, params, type),
-    warn: (p, k, params) => this.warn(p, k, params),
-    teleportTo: (p, x, z) => this.teleportTo(p, x, z),
-    stopMeditate: (p) => this.setMeditating(p, false),
-  });
+  readonly tele = new TeleportSystem(wireTele(this, this.px));
 
   /** Kinh tế và nhiệm vụ (R-7): xem `game/economy/`. */
-  private readonly ecoSys = new EconomySystem(
-    ((s: GameSim): EconomyCtx => ({
-      applyPillBuff: (p, def, potency) => s.applyPillBuff(p, def, potency),
-      canAssist: (p, o) => s.canAssist(p, o),
-      get duel() {
-        return s.duel;
-      },
-      emit: (type, payload) => s.emit(type, payload),
-      fx: (m) => s.fx(m),
-      giveXp: (p, n, announce) => s.giveXp(p, n, announce),
-      isDead: (p) => s.isDead(p),
-      nearNpc: (p, npcId) => s.nearNpc(p, npcId),
-      get nodes() {
-        return s.nodes;
-      },
-      get now() {
-        return s.now;
-      },
-      get players() {
-        return s.players;
-      },
-      questEvent: (p, type, target, n) => s.questEvent(p, type, target, n),
-      savePlayer: (p) => s.savePlayer(p),
-      get sealHook() {
-        return s.sealHook;
-      },
-      sendCd: (p) => s.sendCd(p),
-      sys: (p, k, params, type, drop) => s.sys(p, k, params, type, drop),
-      get tele() {
-        return s.tele;
-      },
-      get upgrade() {
-        return s.upgrade;
-      },
-      warn: (p, k, params) => s.warn(p, k, params),
-    }))(this),
-  );
+  private readonly ecoSys = new EconomySystem(wireEcoSys(this, this.px));
 
   /** Tủ ngoại trang (P4): xem `game/wardrobe/`. */
-  readonly wardrobe = new WardrobeSystem(
-    ((s: GameSim): WardrobeCtx => ({
-      get duel() {
-        return s.duel;
-      },
-      idem: (p, r) => s.ecoSys.idem(p, r),
-      isDead: (p) => s.isDead(p),
-      get now() {
-        return s.now;
-      },
-      warn: (p, k, params) => s.warn(p, k, params),
-    }))(this),
-  );
+  readonly wardrobe = new WardrobeSystem(wireWardrobe(this, this.px));
 
   /** Quái (R-7): xem `game/monsters/`. */
-  private readonly monSys = new MonsterSystem(
-    ((s: GameSim): MonsterCtx => ({
-      get bolts() {
-        return s.bolts;
-      },
-      get camps() {
-        return s.camps;
-      },
-      damagePlayer: (p, dmg, src, hv, ke) => s.damagePlayer(p, dmg, src, hv, ke),
-      pushMonster: (mon, fx, fz, dist) => s.combat.pushMonster(mon, fx, fz, dist),
-      get domain() {
-        return s.domain;
-      },
-      emit: (type, payload) => s.emit(type, payload),
-      feedArtifact: (p, mon) => s.feedArtifact(p, mon),
-      fx: (m) => s.fx(m),
-      gainCharge: (p, n) => s.gainCharge(p, n),
-      giveXp: (p, n, announce) => s.giveXp(p, n, announce),
-      get gmSys() {
-        return s.gmSys;
-      },
-      get hazards() {
-        return s.hazards;
-      },
-      get host() {
-        return s.host;
-      },
-      isDead: (p) => s.isDead(p),
-      jointFinish: (p) => s.combat.jointFinish(p),
-      resDot: (p) => s.combat.resDot(p),
-      healPlayer: (o, n) => s.combat.healPlayer(o, n),
-      resFull: (p) => s.combat.resFull(p),
-      lockCut: (h, p) => s.lockCut(h, p),
-      get mirror() {
-        return s.mirror;
-      },
-      get monById() {
-        return s.monById;
-      },
-      get monSkills() {
-        return s.monSkills;
-      },
-      get monsters() {
-        return s.monsters;
-      },
-      get nextId() {
-        return s.nextId;
-      },
-      set nextId(v) {
-        s.nextId = v;
-      },
-      get now() {
-        return s.now;
-      },
-      pickGuards: (h) => s.pickGuards(h),
-      get players() {
-        return s.players;
-      },
-      questEvent: (p, type, target, n) => s.questEvent(p, type, target, n),
-      randomPoint: (cx, cz, radius, allowWater) => s.randomPoint(cx, cz, radius, allowWater),
-      get realm() {
-        return s.realm;
-      },
-      shareToGuards: (owner, n, h) => s.shareToGuards(owner, n, h),
-      get soul() {
-        return s.soul;
-      },
-      get state() {
-        return s.state;
-      },
-      sys: (p, k, params, type, drop) => s.sys(p, k, params, type, drop),
-      sysAll: (k, params, type) => s.sysAll(k, params, type),
-      get collision() {
-        return s.collision;
-      },
-      get terrain() {
-        return s.terrain;
-      },
-      get than() {
-        return s.than;
-      },
-      get tribSys() {
-        return s.tribSys;
-      },
-      warn: (p, k, params) => s.warn(p, k, params),
-      get zones() {
-        return s.zones;
-      },
-    }))(this),
-  );
+  private readonly monSys = new MonsterSystem(wireMonSys(this, this.px));
 
   /** Chiêu và công pháp (R-7): xem `game/combat/`. */
-  private readonly combat = new CombatSystem(
-    ((s: GameSim): CombatCtx => ({
-      get room() {
-        return s.host;
-      },
-      addPosture: (m, n) => s.addPosture(m, n),
-      get clone() {
-        return s.clone;
-      },
-      get duel() {
-        return s.duel;
-      },
-      duelStrike: (p, o, powers, elemMul) => s.duelStrike(p, o, powers, elemMul),
-      emit: (type, payload) => s.emit(type, payload),
-      fx: (m) => s.fx(m),
-      hitMonster: (p, mon, basePower, mul, elem, tier) => s.hitMonster(p, mon, basePower, mul, elem, tier),
-      homeDist: (m) => s.homeDist(m),
-      isDead: (p) => s.isDead(p),
-      get level() {
-        return s.level;
-      },
-      get mirror() {
-        return s.mirror;
-      },
-      get monById() {
-        return s.monById;
-      },
-      get monsters() {
-        return s.monsters;
-      },
-      get now() {
-        return s.now;
-      },
-      get players() {
-        return s.players;
-      },
-      resetAi: (m) => s.resetAi(m),
-      tribSkill: (p) => s.tribSys.noteSkill(p),
-      sendCd: (p) => s.sendCd(p),
-      setFlag: (p, flag, on) => s.setFlag(p, flag, on),
-      setMeditating: (p, on) => s.setMeditating(p, on),
-      setMonFlags: (m, mf, ce) => s.setMonFlags(m, mf, ce),
-      sys: (p, k, params, type, drop) => s.sys(p, k, params, type, drop),
-      get terrain() {
-        return s.terrain;
-      },
-      tryInterrupt: (p, mon, extraStun) => s.tryInterrupt(p, mon, extraStun),
-      warn: (p, k, params) => s.warn(p, k, params),
-    }))(this),
-  );
+  private readonly combat = new CombatSystem(wireCombat(this, this.px));
 
   /** Pháp bảo phụ và đan tăng sức (P3-8) (R-7): xem `game/artifacts/`. */
-  private readonly artSys = new ArtifactSystem(
-    ((s: GameSim): ArtifactCtx => ({
-      addPosture: (m, n) => s.addPosture(m, n),
-      markMon: (p, mon, id, n) => s.combat.markMon(p, mon, id, n),
-      addRes: (p, n) => s.combat.addRes(p, n),
-      airborne: (p) => s.airborne(p),
-      canAssist: (p, o) => s.canAssist(p, o),
-      get duel() {
-        return s.duel;
-      },
-      emit: (type, payload) => s.emit(type, payload),
-      fx: (m) => s.fx(m),
-      get host() {
-        return s.host;
-      },
-      isDead: (p) => s.isDead(p),
-      monstersNear: (x, z, r, except) => s.monstersNear(x, z, r, except),
-      get now() {
-        return s.now;
-      },
-      sendCd: (p) => s.sendCd(p),
-      setFlag: (p, flag, on) => s.setFlag(p, flag, on),
-      setMonFlags: (m, mf, ce) => s.setMonFlags(m, mf, ce),
-      sys: (p, k, params, type, drop) => s.sys(p, k, params, type, drop),
-      tryInterrupt: (p, mon, extraStun) => s.tryInterrupt(p, mon, extraStun),
-      warn: (p, k, params) => s.warn(p, k, params),
-    }))(this),
-  );
+  private readonly artSys = new ArtifactSystem(wireArtSys(this, this.px));
 
   /** Chết và hồi sinh của người chơi (R-7) (R-7): xem `game/death/`. */
-  private readonly deathSys = new DeathSystem(
-    ((s: GameSim): DeathCtx => ({
-      hitReact: (p, tier, fx, fz) => s.plSys.hitReact(p, tier, fx, fz),
-      abortStrike: (p, refund, notify) => s.abortStrike(p, refund, notify),
-      resTaken: (p, n) => s.combat.resTaken(p, n),
-      get bossDmgMul() {
-        return s.bossDmgMul;
-      },
-      get clone() {
-        return s.clone;
-      },
-      damageMonster: (mon, dmg, p, crit, hv, heavy, ke, dot) => s.damageMonster(mon, dmg, p, crit, hv, heavy, ke, dot),
-      get domain() {
-        return s.domain;
-      },
-      get duel() {
-        return s.duel;
-      },
-      emit: (type, payload) => s.emit(type, payload),
-      endTribulation: (p, success, silent) => s.endTribulation(p, success, silent),
-      fx: (m) => s.fx(m),
-      gainCharge: (p, n) => s.gainCharge(p, n),
-      giveXp: (p, n, announce) => s.giveXp(p, n, announce),
-      isDead: (p) => s.isDead(p),
-      get mirror() {
-        return s.mirror;
-      },
-      get monById() {
-        return s.monById;
-      },
-      get now() {
-        return s.now;
-      },
-      get opts() {
-        return s.opts;
-      },
-      get realm() {
-        return s.realm;
-      },
-      setFlag: (p, flag, on) => s.setFlag(p, flag, on),
-      setMeditating: (p, on) => s.setMeditating(p, on),
-      get soul() {
-        return s.soul;
-      },
-      sys: (p, k, params, type, drop) => s.sys(p, k, params, type, drop),
-      get terrain() {
-        return s.terrain;
-      },
-      get tribSys() {
-        return s.tribSys;
-      },
-      warn: (p, k, params) => s.warn(p, k, params),
-    }))(this),
-  );
+  private readonly deathSys = new DeathSystem(wireDeathSys(this, this.px));
 
   /** Độ kiếp phía sim (R-7) (R-7): xem `game/tribulation/`. */
-  private readonly tribHub = new TribulationSystem(
-    ((s: GameSim): TribulationCtx => ({
-      get clone() {
-        return s.clone;
-      },
-      damageMonster: (mon, dmg, p, crit, hv, heavy, ke, dot) => s.damageMonster(mon, dmg, p, crit, hv, heavy, ke, dot),
-      damagePlayer: (p, dmg, src, hv, ke) => s.damagePlayer(p, dmg, src, hv, ke),
-      get domain() {
-        return s.domain;
-      },
-      get duel() {
-        return s.duel;
-      },
-      emit: (type, payload) => s.emit(type, payload),
-      fx: (m) => s.fx(m),
-      get host() {
-        return s.host;
-      },
-      isDead: (p) => s.isDead(p),
-      get level() {
-        return s.level;
-      },
-      get now() {
-        return s.now;
-      },
-      get players() {
-        return s.players;
-      },
-      questEvent: (p, type, target, n) => s.questEvent(p, type, target, n),
-      get realm() {
-        return s.realm;
-      },
-      savePlayer: (p) => s.savePlayer(p),
-      setFlag: (p, flag, on) => s.setFlag(p, flag, on),
-      setMeditating: (p, on) => s.setMeditating(p, on),
-      setMonState: (m, st) => s.setMonState(m, st),
-      spawnMonster: (def, level, x, z, spawn) => s.spawnMonster(def, level, x, z, spawn),
-      sys: (p, k, params, type, drop) => s.sys(p, k, params, type, drop),
-      sysAll: (k, params, type) => s.sysAll(k, params, type),
-      get tribSys() {
-        return s.tribSys;
-      },
-      warn: (p, k, params) => s.warn(p, k, params),
-    }))(this),
-  );
+  private readonly tribHub = new TribulationSystem(wireTribHub(this, this.px));
 
   /** Vòng đời và tick người chơi (R-7) (R-7): xem `game/players/`. */
-  private readonly plSys = new PlayerSystem(
-    ((s: GameSim): PlayerCtx => ({
-      cancelCast: (p) => s.cancelCast(p),
-      get combat() {
-        return s.combat;
-      },
-      get duel() {
-        return s.duel;
-      },
-      endTribulation: (p, success, silent) => s.endTribulation(p, success, silent),
-      finishCast: (p) => s.finishCast(p),
-      giveXp: (p, n, announce) => s.giveXp(p, n, announce),
-      isDead: (p) => s.isDead(p),
-      get level() {
-        return s.level;
-      },
-      get monSys() {
-        return s.monSys;
-      },
-      get now() {
-        return s.now;
-      },
-      get opts() {
-        return s.opts;
-      },
-      get players() {
-        return s.players;
-      },
-      questEvent: (p, type, target, n) => s.questEvent(p, type, target, n),
-      get questObj() {
-        return s.questObj;
-      },
-      get realm() {
-        return s.realm;
-      },
-      resolvePending: (p) => s.resolvePending(p),
-      sendCd: (p) => s.sendCd(p),
-      setFlag: (p, flag, on) => s.setFlag(p, flag, on),
-      setMeditating: (p, on) => s.setMeditating(p, on),
-      get soul() {
-        return s.soul;
-      },
-      get state() {
-        return s.state;
-      },
-      sys: (p, k, params, type, drop) => s.sys(p, k, params, type, drop),
-      get terrain() {
-        return s.terrain;
-      },
-      tickTribulation: (p) => s.tickTribulation(p),
-      get tribSys() {
-        return s.tribSys;
-      },
-      warn: (p, k, params) => s.warn(p, k, params),
-    }))(this),
-  );
+  private readonly plSys = new PlayerSystem(wirePlSys(this, this.px));
 
   /** Lệnh GM (R-7): xem `game/gm/`. */
-  readonly gmSys = new GmSystem({
-    level: () => this.level,
-    monsters: () => this.monsters,
-    playerCount: () => this.players.size,
-    tickP95: () => this.tickP95(),
-    inDuel: (p) => this.duel.inDuel(p),
-    isDead: (p) => this.isDead(p),
-    transferLevel: (p, level, spawn, o) => this.host.transferLevel?.(p, level, spawn, o) ?? false,
-    teleportTo: (p, x, z, level) => this.teleportTo(p, x, z, level),
-    teleGm: (p, arg) => this.tele.gm(p, arg),
-    placeIds: () => this.placeIds(),
-    questEvent: (p, type, target, n) => this.questEvent(p, type, target, n),
-    damageMonster: (m, dmg, p) => this.damageMonster(m, dmg, p),
-    spawnMonster: (def, lv, x, z, spawn) => this.spawnMonster(def, lv, x, z, spawn),
-    removeMonster: (m) => this.removeMonster(m),
-    damagePlayer: (p, dmg, src) => this.damagePlayer(p, dmg, src),
-    heal: (p) => this.heal(p),
-    giveXp: (p, n) => this.giveXp(p, n),
-    sendCd: (p) => this.sendCd(p),
-    resetCooldowns: (p) => {
-      this.spirit.resetCooldown(p);
-      this.soul.resetCooldown(p);
-      this.clone.resetCooldown(p);
-    },
-    onBreakthrough: (p, force, id) => this.onBreakthrough(p, force, id),
-    sys: (p, k, params, type) => this.sys(p, k, params, type),
-  });
+  readonly gmSys = new GmSystem(wireGmSys(this, this.px));
 
   /** Mục tiêu nhiệm vụ `touch`/`scan`/`escort` (E2-H). */
-  readonly questObj = new QuestObjSystem({
-    now: () => this.now,
-    level: () => this.level,
-    players: () => this.players.values(),
-    sys: (p, k, params, type) => this.sys(p, k, params, type),
-    warn: (p, k, params) => this.warn(p, k, params),
-    questEvent: (p, type, target, n) => this.questEvent(p, type, target, n),
-  });
+  readonly questObj = new QuestObjSystem(wireQuestObj(this, this.px));
 
   /** Thần thức (E2-E, phím V): quét vùng quanh người, server quyết định kết quả. */
-  readonly spirit = new SpiritSystem({
-    now: () => this.now,
-    players: () => this.players.values(),
-    monsters: () => this.monsters,
-    nodes: () => this.nodes.values(),
-    pois: () => this.level.pois ?? [],
-    isMate: (a, b) => parties.matesInRoom(a.char.id, this.host).includes(b),
-    inDuel: (p) => this.duel.inDuel(p),
-    warn: (p, k, params) => this.warn(p, k, params),
-    sys: (p, k, params, type) => this.sys(p, k, params, type),
-    stopMeditate: (p) => this.setMeditating(p, false),
-    onScanned: (p, hits) => {
-      this.questObj.onSpiritScan(p, hits);
-      this.mirror.onScan(p, hits);
-    },
-  });
+  readonly spirit = new SpiritSystem(wireSpirit(this, this.px));
 
   /** Cung gương (E3-M): bóng giả, lặp lại, đĩa gương, nguyệt phản của Kính Nguyệt Chân Quân. Chỉ chạy khi room có boss `mirror`. */
-  readonly mirror = new MirrorSystem({
-    now: () => this.now,
-    players: () => this.players.values(),
-    monsters: () => this.monsters,
-    isDead: (p) => this.isDead(p),
-    monsterDef: (id) => MONSTER.get(id),
-    spawnMinion: (def, level, x, z, owner) => {
-      const e = this.spawnMonster(def, level, x, z, null);
-      e.minionOf = owner.id;
-      return e;
-    },
-    addHazard: (g, delay, mul, kind, src, atk) => this.addHazard(g, delay, mul, false, kind, src, atk),
-    damagePlayer: (p, n, src) => this.damagePlayer(p, n, src, true),
-    fx: (m) => this.fx(m),
-    sys: (p, k, params, type) => this.sys(p, k, params, type),
-    sysAll: (k, params, type) => this.sysAll(k, params, type),
-    spawnShadow: (p, st, o) => this.spawnShadow(p, st, o),
-    sense: (m, until) => this.monSkills.sense(m, until),
-    markReal: (m) => this.monSkills.markReal(m),
-    groundAt: (x, z) => this.terrain.groundAt(x, z),
-  });
+  readonly mirror = new MirrorSystem(wireMirror(this, this.px));
 
   /** Thần Tàng Điện (E4-C): sáu tay, ngũ hành, phân thân, vòng đá của Vô Diện Thần Quân. Chỉ chạy khi room có boss `than`. */
-  readonly than = new ThanTangSystem({
-    now: () => this.now,
-    players: () => this.players.values(),
-    monsters: () => this.monsters,
-    isDead: (p) => this.isDead(p),
-    monsterDef: (id) => MONSTER.get(id),
-    spawnMinion: (def, level, x, z, owner) => {
-      const e = this.spawnMonster(def, level, x, z, null);
-      e.minionOf = owner.id;
-      return e;
-    },
-    telegraph: (g, delay, kind, src) => this.addHazard(g, delay, 0, false, kind, src, 0),
-    marker: (x, z, r, dur, kind) =>
-      this.addHazard({ x, z, r }, 0.2, 0, false, kind, '', 0, false, 0, undefined, undefined, 'pool', false, dur),
-    damagePlayer: (p, n, src, hv, ke) => this.damagePlayer(p, n, src, hv, ke),
-    stagger: (m, sec) => this.stagger(m, sec),
-    heal: (m, n) => {
-      m.s.hp = Math.min(m.s.mhp, m.s.hp + n);
-    },
-    kill: (m) => {
-      if (m.state === MS_DEAD) return;
-      m.minionOf = undefined;
-      m.s.hp = 0;
-      m.state = MS_DEAD;
-      m.s.st = MS_DEAD;
-      m.removeAt = this.now + 800;
-    },
-    fx: (m) => this.fx(m),
-    sysAll: (k, params, type) => this.sysAll(k, params, type),
-    groundAt: (x, z) => this.terrain.groundAt(x, z),
-    isGhost: (p) => this.soul.isScouting(p),
-    elemName: (e) => t('elem.' + e),
-  });
+  readonly than = new ThanTangSystem(wireThan(this, this.px));
 
   /** Phá Ấn Phù (E4-C): do room phó bản nối vào; trả true nếu mở được một cửa phong ấn. */
   sealHook: { peek(p: PlayerEnt): number; open(i: number): void } | null = null;
 
   /** Nguyên anh xuất khiếu (E3-K, phím X; cứu mạng khi chết ở Nguyên Anh trở lên). */
-  readonly soul = new SoulSystem({
-    now: () => this.now,
-    players: () => this.players.values(),
-    warn: (p, k, params) => this.warn(p, k, params),
-    sys: (p, k, params, type) => this.sys(p, k, params, type),
-    fx: (m) => this.fx(m),
-    groundAt: (x, z) => this.terrain.groundAt(x, z),
-    standY: (x, z, y) => standingY(this.terrain, this.collision, x, z, y),
-    inDuel: (p) => this.duel.inDuel(p),
-    stopMeditate: (p) => this.setMeditating(p, false),
-    respawnPoint: () => this.opts.respawn,
-    allowDeathEscape: () => this.level.dungeon?.maxRevives === undefined,
-    respawn: (p) => this.onRespawn(p),
-  });
+  readonly soul = new SoulSystem(wireSoul(this, this.px));
 
   /** Phân thân thần niệm (E4-K, phím G, Hóa Thần). */
-  readonly clone: CloneSystem = new CloneSystem({
-    now: () => this.now,
-    players: () => this.players.values(),
-    warn: (p, k, params) => this.warn(p, k, params),
-    sys: (p, k, params, type) => this.sys(p, k, params, type),
-    fx: (m) => this.fx(m),
-    groundAt: (x, z) => this.terrain.groundAt(x, z),
-    isDead: (p) => this.isDead(p),
-    inDuel: (p) => this.duel.inDuel(p),
-    idle: (p) => !p.connected || this.airborne(p) || p.move.flying || this.soul.isScouting(p) || !!this.soul.ghostOf(p),
-    stopMeditate: (p) => this.setMeditating(p, false),
-    monsterById: (id) => this.monById.get(id),
-    monstersNear: (x, z, r) => this.monstersNear(x, z, r),
-    powers: (p, skill) => {
-      const rs = resolveFor(p.char.meta, skill);
-      return { hits: rs.hits, radius: rs.radius ?? 0 };
-    },
-    hit: (owner, mon, power, skill) => this.cloneHit(owner, mon, power, skill),
-    taunt: (owner, mon, sec) => {
-      mon.taunt = { sid: owner.sid, until: this.now + sec * 1000 * (mon.def.boss ? TAUNT_BOSS_MUL : 1) };
-      this.aggroMonster(mon, owner);
-    },
-    heal: (p, n) => this.healPlayer(p, n),
-    canAssist: (owner, o) => this.canAssist(owner, o),
-    onCreated: (p) => this.questEvent(p, 'clone', undefined, 1),
-    spendMp: (p, n) => {
-      if (p.char.mp < n) return false;
-      p.char.mp -= n;
-      return true;
-    },
-  });
+  readonly clone: CloneSystem = new CloneSystem(wireClone(this, this.px));
 
   /** Lĩnh vực (E4-K): bạo kích kiếm tu, giảm sát thương hộ pháp, hồi đan sư. */
-  readonly domain: DomainSystem = new DomainSystem({
-    now: () => this.now,
-    players: () => this.players.values(),
-    canAssist: (owner, o) => this.canAssist(owner, o),
-    heal: (p, n) => this.healPlayer(p, n),
-    isDead: (p) => this.isDead(p),
-    inDuel: (p) => this.duel.inDuel(p),
-  });
+  readonly domain: DomainSystem = new DomainSystem(wireDomain(this, this.px));
 
   /** Sắp xếp, khóa ô, tách chồng (TD-A). */
-  readonly inventory = new InventorySystem({
-    now: () => this.now,
-    isDead: (p) => this.isDead(p),
-    idem: (p, r) => this.idem(p, r),
-    warn: (p, k, params) => this.warn(p, k, params),
-  });
+  readonly inventory = new InventorySystem(wireInventory(this, this.px));
 
   /** Đạp Thiên Cửu Kiều (TN-7): vé vào cầu và ghi tiến độ `meta.kieu`. */
-  readonly kieu = new KieuSystem({
-    get now() {
-      return Date.now();
-    },
-    warn: (p, k, params) => this.warn(p, k, params),
-    sys: (p, k, params, type) => this.sys(p, k, params, type),
-    nearNpc: (p, id) => this.nearNpc(p, id),
-    leaveBlocker: (p) => this.leaveBlocker(p),
-    isDead: (p) => this.isDead(p),
-    giveXp: (p, n, announce) => this.giveXp(p, n, announce),
-    savePlayer: (p) => this.savePlayer(p),
-  });
+  readonly kieu = new KieuSystem(wireKieu(this, this.px));
 
   /** Cường hóa, khảm ngọc, tẩy luyện, phân giải (P3-3). */
-  readonly upgrade = new UpgradeSystem({
-    now: () => this.now,
-    isDead: (p) => this.isDead(p),
-    nearNpc: (p, id) => this.nearNpc(p, id),
-    idem: (p, r) => this.idem(p, r),
-    warn: (p, k, params) => this.warn(p, k, params),
-    sys: (p, k, params, type) => this.sys(p, k, params, type),
-    fx: (m) => this.fx(m),
-    questEvent: (p, type, target, n) => this.questEvent(p, type, target, n),
-  });
+  readonly upgrade = new UpgradeSystem(wireUpgrade(this, this.px));
 
   constructor(
     public state: WorldState,

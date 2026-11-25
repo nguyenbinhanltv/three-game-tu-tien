@@ -80,6 +80,7 @@ export type FxKind =
   | 'sprite_loi'
   | 'sprite_kiem'
   | 'sprite_hp'
+  | 'sprite_dao'
   | 'sprite_hai'
   | 'sprite_tinh'
   | 'sprite_lam'
@@ -119,6 +120,7 @@ const SPEC: Record<FxKind, { blending: THREE.Blending; boost: number; bloom: num
   sprite_loi: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.2, fog: false },
   sprite_kiem: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.2, fog: false },
   sprite_hp: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.2, fog: false },
+  sprite_dao: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.2, fog: false },
   sprite_hai: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.2, fog: false },
   sprite_tinh: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.2, fog: false },
   sprite_lam: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.2, fog: false },
@@ -151,6 +153,7 @@ const BUILDERS: Partial<Record<FxKind, (u: FxUniforms) => { color: unknown; opac
   sprite_loi: spriteNodesFor('loi'),
   sprite_kiem: spriteNodesFor('kiem'),
   sprite_hp: spriteNodesFor('hp'),
+  sprite_dao: spriteNodesFor('dao'),
   sprite_hai: spriteNodesFor('hai'),
   sprite_tinh: spriteNodesFor('tinh'),
   sprite_lam: spriteNodesFor('lam'),

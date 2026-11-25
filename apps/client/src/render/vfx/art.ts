@@ -26,6 +26,7 @@ export const SPRITE_GROUPS = {
   loi: { file: 'hoa-truc/vfx_sprites_loi.147ce2e73d.webp', cols: 4, rows: 4 },
   kiem: { file: 'hoa-truc/vfx_sprites_kiem.22301e4193.webp', cols: 4, rows: 4 },
   hp: { file: 'hoa-truc/vfx_sprites_hp.dc9596e2f9.webp', cols: 4, rows: 4 },
+  dao: { file: 'hoa-truc/vfx_sprites_dao.5a78c4fab5.webp', cols: 4, rows: 4 },
   // Vân Hải (A2): nước `thuy_*` + trăng `nguyet_*`; tinh anh chương 2–3 (A3): xương `cot_*`, đá `tho_*`, đất-độc `doc_*`, sét tím `tim_*`. Gom theo kiểu quái, không theo hướng tu.
   hai: { file: 'hoa-truc/vfx_sprites_hai.c8709e04fc.webp', cols: 4, rows: 4 },
   tinh: { file: 'hoa-truc/vfx_sprites_tinh.2c4a99f7e9.webp', cols: 4, rows: 6 },
@@ -41,6 +42,7 @@ export const PATH_SPRITE_GROUP: Record<string, SpriteGroup> = {
   loi_tu: 'loi',
   kiem_tu: 'kiem',
   the_tu: 'hp',
+  dao_tu: 'dao',
   dan_su: 'dan',
 };
 /** Số nhóm tối đa giữ trong GPU cùng lúc (không tính nhóm của người chơi) và thời gian rỗi (ms) trước khi một nhóm bị giải phóng. */
