@@ -18,6 +18,7 @@ const src = path.resolve(arg('--src', '../painted-valley/src/valley/backdrop.js'
 const out = path.resolve(arg('--out', 'far-compare'));
 const n = Number(arg('--n', '512'));
 const port = Number(arg('--port', '5192'));
+const renderer = arg('--renderer', 'webgpu');
 fs.mkdirSync(out, { recursive: true });
 
 // trích đoạn GLSL gốc (NOISE + heightFragment) bằng cách chạy phần đầu tệp nguồn
@@ -26,8 +27,8 @@ const a = text.indexOf('const SPAN');
 const b = text.indexOf('const paintFragment');
 const body = text.slice(a, b).replace(/export /g, '');
 const { heightFragment, vertex, SPAN } = new Function(`${body}; return { heightFragment, vertex, SPAN };`)();
-const frag = heightFragment.replace('precision highp float;', '#version 300 es\nprecision highp float;');
-const vert = '#version 300 es\n' + vertex;
+const frag = '#version 300 es\n' + heightFragment.trim();
+const vert = '#version 300 es\nin vec3 position;\n' + vertex.trim();
 
 const root = path.resolve(new URL('../..', import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1'));
 const vite = spawn('pnpm', ['--filter', '@dtl/client', 'exec', 'vite', '--port', String(port), '--host', '127.0.0.1', '--strictPort'], {
@@ -173,7 +174,7 @@ try {
   const our = await ctx.newPage();
   const logs = [];
   our.on('console', (m) => ['error', 'warning'].includes(m.type()) && logs.push(m.text().slice(0, 300)));
-  await our.goto(`http://127.0.0.1:${port}/?paintedlab=far&mute=1&size=256`, { waitUntil: 'load' });
+  await our.goto(`http://127.0.0.1:${port}/?paintedlab=far&mute=1&size=256&renderer=${renderer}`, { waitUntil: 'load' });
   await our.waitForFunction(() => window.__farLab, null, { timeout: 60000 });
   const O0 = decode((await our.evaluate((nn) => window.__farLab.readback(nn), n)).b64);
 
@@ -195,6 +196,7 @@ try {
   const metrics = {
     n,
     span: SPAN,
+    renderer,
     flippedOurs: useFlip,
     ref: stat(R),
     ours: stat(O),
