@@ -646,11 +646,22 @@ function spriteNodesImpl(U: FxUniforms, group: SpriteGroup): { color: N; opacity
   const keepGreen = smoothstep(0.0, 0.1, ts.g.sub(ts.r.mul(0.92)));
   const earthHybrid = mix(earthRamp, ts.rgb.mul(1.1), keepGreen);
   const rawRamp = ts.rgb.mul(1.12);
-  // Chọn kiểu tô theo `fxA.x`: 1 lôi, 2 kiếm, 3 hộ pháp, 4 thủy, 5 nguyệt, 6 xương, 7 đất/độc, 8 sét tím, 9 đao (0 = âm hồn).
+  // Kiểu "đan" (`fxA.x` = 10, Đan sư): viền mực lục thẫm gần đen, thân XANH LÁ CÂY ngả lục vàng (hue ~135–150°, ÍT lam: tách khỏi ngọc lam của Kiếm tu), viền lục vàng nhạt, lõi vàng chanh nhạt (không cam).
+  // Phần ấm của tranh (đốm vàng, cánh hoa hồng nhạt: r > 0,9·g) giữ màu Codex vẽ để điểm vàng/cánh hoa không bị nhuộm lục.
+  const nCore = vec3(0.004, 0.03, 0.008);
+  const nBody = vec3(0.04, 0.42, 0.06);
+  const nRim = vec3(0.34, 0.76, 0.2);
+  const nWhite = vec3(0.86, 0.98, 0.5);
+  const nT = pow(smoothstep(0.2, 1.0, spLum.sqrt()), float(1.35));
+  const nRamp = mix(mix(mix(nCore, nBody, smoothstep(0.04, 0.4, nT)), nRim, smoothstep(0.4, 0.8, nT)), nWhite, smoothstep(0.9, 1.0, nT));
+  const nWarm = smoothstep(0.0, 0.08, ts.r.sub(ts.g.mul(0.9)));
+  const nHybrid = mix(nRamp, min(ts.rgb.mul(1.12), vec3(1.0, 0.95, 0.6)), nWarm);
+  // Chọn kiểu tô theo `fxA.x`: 1 lôi, 2 kiếm, 3 hộ pháp, 4 thủy, 5 nguyệt, 6 xương, 7 đất/độc, 8 sét tím, 10 đan (0 = âm hồn).
   const is = (n: number) => step(n - 0.5, U.a.x).mul(float(1).sub(step(n + 0.5, U.a.x)));
   const spStyled0 = mix(mix(mix(spLift, lRamp, is(1)), kRamp, is(2)), hRamp, is(3));
   const spStyled1 = mix(mix(mix(spStyled0, wRamp, is(4)), mRamp, is(5)), boneRamp, is(6));
   const spStyled2 = mix(mix(mix(spStyled1, earthHybrid, is(7)), rawRamp, is(8)), dRamp, is(9));
+  const spStyled3 = mix(spStyled2, nHybrid, is(10));
   // Tan như khói mỏng dần: nhiễu thấp tần + mép mỏng (tranh sáng/trong) tan trước, ngưỡng rộng nên không ra đường cắt răng cưa.
   const spE = vnoise(q.mul(vec2(5, 7)).add(U.a.z.mul(7)))
     .mul(0.55)
@@ -663,7 +674,7 @@ function spriteNodesImpl(U: FxUniforms, group: SpriteGroup): { color: N; opacity
     .mul(mix(float(0.3), float(1.0), spTier))
     .mul(vec3(1.05, 0.82, 1.1));
   const spCol = min(
-    mix(spStyled2, spPaint, float(0.2).mul(float(1).sub(step(0.5, U.a.x)))).add(
+    mix(spStyled3, spPaint, float(0.2).mul(float(1).sub(step(0.5, U.a.x)))).add(
       spRimC.mul(spEdge.mul(0.5)).mul(float(1).sub(step(4.5, U.a.x))),
     ),
     U.maxHdr,

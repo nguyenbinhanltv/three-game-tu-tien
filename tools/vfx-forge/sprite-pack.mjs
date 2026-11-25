@@ -34,9 +34,12 @@ const sheets = argv
     // Hậu tố `:warm` (sprite ấm: hổ phách, vàng, nâu, đỏ): giữ kênh lục thật thay vì ép g < min(r,b) (ép làm hổ phách thành đỏ). Mặc định (không `:warm`) vẫn ép cho sprite tím/lam.
     const warm = parts[parts.length - 1] === 'warm';
     if (warm) parts.pop();
+    // Hậu tố `:blue`: nền chroma XANH DƯƠNG #0000FF (sprite xanh lục như Đan sư không dùng được nền lục): alpha = 1 − (b − max(r,g))/255, khử viền lam, giữ kênh lục thật.
+    const blue = parts[parts.length - 1] === 'blue';
+    if (blue) parts.pop();
     const r = Number(parts.pop());
     const c = Number(parts.pop());
-    return { file: parts.join(':'), cols: c, rows: r, warm };
+    return { file: parts.join(':'), cols: c, rows: r, warm, blue };
   });
 // `--patch <ô>=<bảng.png>:<cột>:<hàng>:<số cột>:<số hàng>`: THAY một ô của atlas gốc (xóa ô cũ) bằng sprite ở (cột, hàng) của bảng mới; cần `--base`.
 const patches = argv
@@ -84,6 +87,20 @@ async function packSheet(sh) {
     const r = data[i * 4];
     const g = data[i * 4 + 1];
     const b = data[i * 4 + 2];
+    if (sh.blue) {
+      const ab = Math.min(1, Math.max(0, 1 - (b - Math.max(r, g)) / 255));
+      const kb = 1 - ab;
+      const unb = (v, key) => (ab > 0.02 ? Math.min(255, Math.max(0, (v - kb * key) / ab)) : 0);
+      const rb = unb(r, 0);
+      const gb = unb(g, 0);
+      // ép b dưới max(r,g) để hết viền lam/teal
+      const bbb = Math.min(unb(b, 255), Math.max(rb, gb) * 0.55);
+      rgba[i * 4] = rb;
+      rgba[i * 4 + 1] = gb;
+      rgba[i * 4 + 2] = bbb;
+      rgba[i * 4 + 3] = Math.round(Math.min(1, Math.max(0, (ab - 0.06) / 0.88)) * 255);
+      continue;
+    }
     const a = Math.min(1, Math.max(0, 1 - (g - Math.max(r, b)) / 255));
     // trừ phần nền xanh còn lẫn trong điểm bán trong suốt
     const k = 1 - a;
