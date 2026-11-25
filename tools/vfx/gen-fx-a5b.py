@@ -14,7 +14,7 @@ from mon_helpers import *  # noqa: E402,F401,F403
 LIFT = 0.35
 
 # Sprite xương trắng (`cot_*`) và nước (`thuy_*`) sáng/đặc hơn đá và lửa tím: giảm độ đậm sprite theo bảng màu để không phủ dày (độ phủ ≤ ~0,2).
-GAIN = {'mon_kim': 0.5, 'mon_thuy': 0.5}
+GAIN = {'mon_kim': 0.35, 'mon_thuy': 0.32}
 # Tinh anh trần độ phủ 0,2 (boss lớn 0,35): thu sprite của hai tinh anh thổ có dải dài.
 GAIN_MON = {'elite_hoi_giac_cu_thu': 0.6, 'elite_thach_tuong_dai_tuong': 0.6}
 _write = write
@@ -97,7 +97,7 @@ def slam_boom(B, move, r, theme, seed, ground=False):
     pal, sp_, dec = THEMES[theme]
     mul = clip(r / 4)
     # Vùng lớn (r ≥ 8): sprite phẳng/nền co lại để độ phủ không vượt trần (chant r16 từng phủ ~0,46): đường kính sprite tối đa ~20 m, nền mờ hơn.
-    cap = min(1.0, 10.0 / r)
+    cap = min(1.0, 10.0 / r) * (0.7 if theme in ('kim', 'thuy') else 1.0)  # kim/thủy: sprite phẳng nhỏ lại (đĩa đặc che cả vùng)
     fade = min(1.0, 11.0 / r)
     wide = r >= 8  # vùng rộng: bỏ màn bụi phẳng, bụi hạt ít và thấp (màn bụi làm mờ cả nhân vật)
     thin = theme == 'hoa' and r >= 10  # lửa ma vùng lớn: chỉ mạch/sét mảnh, không mảng đặc
