@@ -40,7 +40,7 @@ def circle_boom(B, mv, P, r, base, flats, ups, seed, elite=False, topbase=False,
     if topbase:
         ev += [
             decal(base, 0, 4, 2.4, 'core', 0.6, 0.02, top=True, untilDelay=False),  # lõi sẫm phủ đúng zone, vẽ ĐÈ lên thân boss
-            decal('steel_crack', 0, 4, 1.8, 'rim', 0.35, 0.02, top=True, untilDelay=False),  # viền sáng
+            decal(base, 0, 4, 1.8, 'rim', 0.35, 0.02, top=True, untilDelay=False),  # viền sáng
         ]
     else:
         ev.append(decal(base, 0, 4, 2.4, 'core', 0.9 * a, 0.02, top=False, untilDelay=False, lift=LIFT))
@@ -58,14 +58,13 @@ def circle_boom(B, mv, P, r, base, flats, ups, seed, elite=False, topbase=False,
 
 
 def cone_boom(B, mv, P, r, half, base, sweeps, ups, seed, elite=False, topbase=False):
-    base = 'bolt_scorch' if base == 'scorch' else base  # decal `sector` không nhận `scorch`
     k = clamp(r / 8.0, 0.5, 4.0)
     a = 0.8 if elite else 1.0
     ev = []
     if topbase:
         ev += [
             decal(base, 0, 8, 2.2, 'core', 0.6, 0.04, top=True, untilDelay=False, sector=half),
-            decal('steel_crack', 0, 8, 1.8, 'rim', 0.3, 0.04, top=True, untilDelay=False, sector=half),
+            decal(base, 0, 8, 1.8, 'rim', 0.3, 0.04, top=True, untilDelay=False, sector=half),
         ]
     else:
         ev.append(decal(base, 0, 8, 2.2, 'core', 0.85 * a, 0.04, top=False, untilDelay=False, sector=half, lift=LIFT))
@@ -82,14 +81,13 @@ def cone_boom(B, mv, P, r, half, base, sweeps, ups, seed, elite=False, topbase=F
 
 
 def line_boom(B, mv, P, r, w, base, beams, ups, seed, elite=False, topbase=False):
-    base = 'bolt_scorch' if base == 'scorch' else base  # decal `strip` không nhận `scorch`
     k = clamp(r / 8.0, 0.5, 4.0)
     a = 0.8 if elite else 1.0
     ev = []
     if topbase:
         ev += [
             decal(base, 0, 1, 2.6, 'core', 0.6, 0.1, top=True, untilDelay=False, strip=[r, w]),
-            decal('steel_crack', 0, 1, 1.9, 'rim', 0.3, 0.1, top=True, untilDelay=False, strip=[r, w]),
+            decal(base, 0, 1, 1.9, 'rim', 0.3, 0.1, top=True, untilDelay=False, strip=[r, w]),
         ]
     else:
         ev.append(decal(base, 0, 1, 2.6, 'core', 0.8 * a, 0.1, top=False, untilDelay=False, strip=[r, w], lift=LIFT))
@@ -130,17 +128,17 @@ line_boom(B, 'line', P, 10, 4, 'steel_crack', [('guong_ray', 7.0, 0.9), ('guong_
 # ================= Ảnh Hạc Vương (tinh anh, thủy; bóng hạc) =================
 B, P = 'elite_anh_hac_vuong', PG
 write(f'mon_warn_line__{B}__charge', warn_strip(1.0, 14, 3, spark=14), P)
-line_boom(B, 'charge', P, 14, 3, 'scorch', [('guong_crane', 9.0, 0.9), ('guong_crane', 8.0, 0.7)], [('guong_feather', 2.6, 3)], 6500, elite=True)
+line_boom(B, 'charge', P, 14, 3, 'steel_crack', [('guong_crane', 9.0, 0.9), ('guong_crane', 8.0, 0.7)], [('guong_feather', 2.6, 3)], 6500, elite=True)
 
 # ================= Đỉnh Linh (kim; đồng đỉnh) =================
 B, P = 'boss_dinh_linh', PD
 write(f'mon_warn__{B}__slam', warn_circle(1.3, 35, -50), P)
-circle_boom(B, 'slam', P, 5, 'scorch', [('dong_glyph', 1.0, 0.9), ('dong_bell', 1.1, 0.7)],
+circle_boom(B, 'slam', P, 5, 'ember_crack', [('dong_glyph', 1.0, 0.9), ('dong_bell', 1.1, 0.7)],
             [('dong_pillar', 4.4, 1, 0, 2.0), ('dong_drops', 3.4, 3, 0.5, 1.3)], 6600)
 write(f'mon_warn_cone__{B}__sweep', warn_fan(1.3, 45), P)
-cone_boom(B, 'sweep', P, 14, 45, 'scorch', [('dong_heat', 9.0, 0.8), ('dong_stream', 8.5, 0.85)], [('dong_plate', 4.0, 3), ('dong_scale', 3.2, 2)], 6700)
+cone_boom(B, 'sweep', P, 14, 45, 'ember_crack', [('dong_heat', 9.0, 0.8), ('dong_stream', 8.5, 0.85)], [('dong_plate', 4.0, 3), ('dong_scale', 3.2, 2)], 6700)
 write(f'mon_warn_line__{B}__line', warn_strip(1.3, 22, 4, spark=28), P)
-line_boom(B, 'line', P, 22, 4, 'scorch', [('dong_stream', 13.0, 0.95), ('dong_stream', 12.0, 0.8)], [('dong_drops', 3.2, 4), ('dong_scale', 2.6, 3)], 6800)
+line_boom(B, 'line', P, 22, 4, 'ember_crack', [('dong_stream', 13.0, 0.95), ('dong_stream', 12.0, 0.8)], [('dong_drops', 3.2, 4), ('dong_scale', 2.6, 3)], 6800)
 
 # ================= Phủ Chủ (thổ; cửa hai mặt) =================
 B, P = 'boss_phu_chu', PP
@@ -167,12 +165,12 @@ circle_boom(B, 'chant', P, 12, 'bolt_scorch', [('tuq_vortex', 1.0, 0.9), ('tuq_v
 # ================= Kiều Thủ (kim; cầu đá ngà) =================
 B, P = 'boss_kieu_thu', PK
 write(f'mon_warn__{B}__slam', warn_circle(1.3, 35, -50), P)
-circle_boom(B, 'slam', P, 5, 'steel_crack', [('kieu_crack', 1.0, 0.9), ('kieu_bell', 1.0, 0.6)],
+circle_boom(B, 'slam', P, 5, 'jade_crack', [('kieu_crack', 1.0, 0.9), ('kieu_bell', 1.0, 0.6)],
             [('kieu_chunks', 3.6, 3, 0.45, 1.4), ('kieu_blade', 5.0, 1, 0, 2.4)], 7600)
 write(f'mon_warn_cone__{B}__sweep', warn_fan(1.3, 45), P)
-cone_boom(B, 'sweep', P, 14, 45, 'steel_crack', [('kieu_wind', 9.0, 0.9), ('kieu_wind', 8.0, 0.7)], [('kieu_dust', 4.0, 3), ('kieu_chunks', 3.0, 2)], 7700)
+cone_boom(B, 'sweep', P, 14, 45, 'jade_crack', [('kieu_wind', 9.0, 0.9), ('kieu_wind', 8.0, 0.7)], [('kieu_dust', 4.0, 3), ('kieu_chunks', 3.0, 2)], 7700)
 write(f'mon_warn_line__{B}__line', warn_strip(1.3, 22, 4, spark=28), P)
-line_boom(B, 'line', P, 22, 4, 'steel_crack', [('kieu_vein', 13.0, 0.9), ('kieu_ridge', 11.0, 0.9)], [('kieu_chunks', 3.4, 4)], 7800)
+line_boom(B, 'line', P, 22, 4, 'jade_crack', [('kieu_vein', 13.0, 0.9), ('kieu_ridge', 11.0, 0.9)], [('kieu_chunks', 3.4, 4)], 7800)
 
 # ================= Vệ Kiều (thổ; tia đá hai mặt, lục ngọc) =================
 B, P = 'boss_ve_kieu', PV
@@ -190,20 +188,20 @@ line_boom(B, 'line', P, 22, 4, 'jade_crack', [('kieu_ridge', 12.0, 0.95), ('kieu
 # ================= Đạo Linh (thủy; nét cọ bạc) — thân lớn: lớp nổ chính là decal đất top =================
 B, P = 'boss_dao_linh', PA
 write(f'mon_warn__{B}__slam', warn_circle(1.3, 35, -50), P)
-circle_boom(B, 'slam', P, 5, 'scorch', [('mac_arcs', 1.0, 0.9), ('mac_blot', 1.0, 0.6)], [('mac_drops', 3.4, 4, 0.5, 1.4), ('mac_stroke', 4.0, 3, 0.4, 1.6)], 8200, topbase=True)
+circle_boom(B, 'slam', P, 5, 'steel_crack', [('mac_arcs', 1.0, 0.9), ('mac_blot', 1.0, 0.6)], [('mac_drops', 3.4, 4, 0.5, 1.4), ('mac_stroke', 4.0, 3, 0.4, 1.6)], 8200, topbase=True)
 write(f'mon_warn_cone__{B}__sweep', warn_fan(1.3, 45), P)
-cone_boom(B, 'sweep', P, 14, 45, 'scorch', [('mac_stroke', 9.5, 0.95), ('mac_stroke', 8.5, 0.8)], [('mac_drops', 3.4, 3), ('mac_blot', 3.6, 2)], 8300, topbase=True)
+cone_boom(B, 'sweep', P, 14, 45, 'steel_crack', [('mac_stroke', 9.5, 0.95), ('mac_stroke', 8.5, 0.8)], [('mac_drops', 3.4, 3), ('mac_blot', 3.6, 2)], 8300, topbase=True)
 write(f'mon_warn_line__{B}__line', warn_strip(1.3, 22, 4, spark=28), P)
-line_boom(B, 'line', P, 22, 4, 'scorch', [('mac_stroke', 12.0, 0.95), ('mac_stroke', 11.0, 0.85), ('mac_blot', 6.0, 0.7)], [('mac_drops', 3.2, 4)], 8400, topbase=True)
+line_boom(B, 'line', P, 22, 4, 'steel_crack', [('mac_stroke', 12.0, 0.95), ('mac_stroke', 11.0, 0.85), ('mac_blot', 6.0, 0.7)], [('mac_drops', 3.2, 4)], 8400, topbase=True)
 
 # ================= Lộ Linh (kim; cầu ánh sáng) — thân scale 3,8 che vùng: lớp nổ chính là decal đất top =================
 B, P = 'boss_lo_linh', PL
 write(f'mon_warn__{B}__slam', warn_circle(1.3, 35, -50), P)
-circle_boom(B, 'slam', P, 5, 'steel_crack', [('kieu_flip', 1.0, 0.9), ('kieu_slab', 1.0, 0.6)], [('kieu_chunks', 3.4, 3, 0.5, 1.4)], 8500, topbase=True)
+circle_boom(B, 'slam', P, 5, 'ember_crack', [('kieu_flip', 1.0, 0.9), ('kieu_slab', 1.0, 0.6)], [('kieu_chunks', 3.4, 3, 0.5, 1.4)], 8500, topbase=True)
 write(f'mon_warn_cone__{B}__sweep', warn_fan(1.3, 45), P)
-cone_boom(B, 'sweep', P, 14, 45, 'steel_crack', [('kieu_sweep', 9.0, 0.95), ('kieu_sweep', 8.0, 0.8)], [('kieu_chunks', 3.4, 3)], 8600, topbase=True)
+cone_boom(B, 'sweep', P, 14, 45, 'ember_crack', [('kieu_sweep', 9.0, 0.95), ('kieu_sweep', 8.0, 0.8)], [('kieu_chunks', 3.4, 3)], 8600, topbase=True)
 write(f'mon_warn_line__{B}__line', warn_strip(1.3, 22, 4, spark=28), P)
-line_boom(B, 'line', P, 22, 4, 'steel_crack', [('kieu_slab', 13.0, 0.95), ('kieu_slab', 12.0, 0.8)], [('kieu_chunks', 3.2, 3)], 8700, topbase=True)
+line_boom(B, 'line', P, 22, 4, 'ember_crack', [('kieu_slab', 13.0, 0.95), ('kieu_slab', 12.0, 0.8)], [('kieu_chunks', 3.2, 3)], 8700, topbase=True)
 
 # ================= Lộ Thạch Tướng (tinh anh, thổ; chuông trầm) =================
 B, P = 'elite_lo_thach_tuong', PS
@@ -215,14 +213,14 @@ line_boom(B, 'line', P, 11, 4, 'jade_crack', [('kieu_ridge', 8.0, 0.95), ('kieu_
 # ================= Sa Tướng (tinh anh, thổ; cát vàng, giữ hue 46–50) =================
 B, P = 'elite_sa_tuong', PX
 write(f'mon_warn__{B}__leap', warn_circle(1.5, 35, -50, spark=12), P)
-circle_boom(B, 'leap', P, 5.5, 'scorch', [('sa_swirl', 1.0, 0.85), ('sa_dust', 1.0, 0.5)], [('sa_blade', 3.4, 3, 0.55, 1.2), ('sa_grain', 3.0, 1, 0, 1.0)], 9000, elite=True, shard=26, spark=16)
+circle_boom(B, 'leap', P, 5.5, 'ember_crack', [('sa_swirl', 1.0, 0.85), ('sa_dust', 1.0, 0.5)], [('sa_blade', 3.4, 3, 0.55, 1.2), ('sa_grain', 3.0, 1, 0, 1.0)], 9000, elite=True, shard=26, spark=16)
 write(f'mon_warn_line__{B}__line', warn_strip(1.4, 11, 4, spark=14), P)
-line_boom(B, 'line', P, 11, 4, 'scorch', [('sa_dune', 8.0, 0.95), ('sa_storm', 6.0, 0.7)], [('sa_grain', 2.6, 3)], 9100, elite=True)
+line_boom(B, 'line', P, 11, 4, 'ember_crack', [('sa_dune', 8.0, 0.95), ('sa_storm', 6.0, 0.7)], [('sa_grain', 2.6, 3)], 9100, elite=True)
 
 # ================= Mây Lang Vương (tinh anh, thủy; mây trắng viền lục ngọc) =================
 B, P = 'elite_may_lang_vuong', PM
 write(f'mon_warn_line__{B}__charge', warn_strip(1.0, 13, 2.6, spark=14), P)
-line_boom(B, 'charge', P, 13, 2.6, 'scorch', [('may_streak', 9.0, 0.95), ('may_tail', 8.0, 0.8)], [('may_tuft', 2.6, 3)], 9200, elite=True)
+line_boom(B, 'charge', P, 13, 2.6, 'steel_crack', [('may_streak', 9.0, 0.95), ('may_tail', 8.0, 0.8)], [('may_tuft', 2.6, 3)], 9200, elite=True)
 write(f'mon_warn__{B}__leap', warn_circle(1.4, 35, -50, spark=12), P)
-circle_boom(B, 'leap', P, 5, 'scorch', [('may_ring', 1.0, 0.85)], [('may_ball', 3.4, 3, 0.5, 1.2), ('may_burst', 3.6, 1, 0, 1.4)], 9300, elite=True, shard=22, spark=14)
+circle_boom(B, 'leap', P, 5, 'steel_crack', [('may_ring', 1.0, 0.85)], [('may_ball', 3.4, 3, 0.5, 1.2), ('may_burst', 3.6, 1, 0, 1.4)], 9300, elite=True, shard=22, spark=14)
 print('ok')

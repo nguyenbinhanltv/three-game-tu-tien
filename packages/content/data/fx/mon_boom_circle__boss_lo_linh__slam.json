@@ -4,7 +4,7 @@
  "events": [
   {
    "type": "decal",
-   "tex": "steel_crack",
+   "tex": "ember_crack",
    "t": 0,
    "r": 4,
    "dur": 2.4,
@@ -18,7 +18,7 @@
   },
   {
    "type": "decal",
-   "tex": "steel_crack",
+   "tex": "ember_crack",
    "t": 0,
    "r": 4,
    "dur": 1.8,

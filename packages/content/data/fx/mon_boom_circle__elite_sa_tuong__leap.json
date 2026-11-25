@@ -4,7 +4,7 @@
  "events": [
   {
    "type": "decal",
-   "tex": "scorch",
+   "tex": "ember_crack",
    "t": 0,
    "r": 4,
    "dur": 2.4,

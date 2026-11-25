@@ -92,4 +92,12 @@ describe('A6: VFX quái chương 6–7', () => {
     expect(used.size).toBeGreaterThan(30);
     for (const n of used) expect(['guong', 'dong', 'kieu'], n).toContain(spriteGroupOf(n));
   });
+
+  it('nền decal quạt/dải không dùng bolt_scorch (texture xanh-tím kiểu sét) trừ Tử Quang tím: tránh nền vùng nổ lệch màu hệ', () => {
+    for (const c of cards.filter((x) => x.monId !== 'boss_tu_quang_duc_chu')) {
+      for (const e of tl(keyOf(c, 'boom'))!.events) {
+        if (e.type === 'decal') expect((e as { tex?: string }).tex, tl(keyOf(c, 'boom'))!.skill).not.toBe('bolt_scorch');
+      }
+    }
+  });
 });

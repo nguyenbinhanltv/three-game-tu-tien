@@ -4,7 +4,7 @@
  "events": [
   {
    "type": "decal",
-   "tex": "steel_crack",
+   "tex": "jade_crack",
    "t": 0,
    "r": 1,
    "dur": 2.6,
