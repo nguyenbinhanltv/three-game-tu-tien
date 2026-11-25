@@ -679,7 +679,6 @@
     "terrain/gravel.n.25abf4ee61.webp": {"sha256":"d7f3788b756503669aea4f5222efcec56f23e402312ab619e5fd06cb849f23b1","bytes":372936},
     "terrain/manifest.json": {"sha256":"fcf248d8bbbb63258890bd2796bbb125b95034489053ccdfc9fe231a2022ab0f","bytes":1218},
     "terrain/mask.10dcdc24a9.png": {"sha256":"00cefdbf5dd19d802f26fc7cb3dc14e888b3ad09c3c355ba7ac55c6c035506c1","bytes":1159112},
-    "terrain/mask.58ce381924.png": {"sha256":"5dd56793901d9aca8b61675fd84064447d7a3b164a2353abf0c534560666db8d","bytes":1160370},
     "terrain/paving.a.acb5066640.webp": {"sha256":"55bcacf6c6a509881fbb005e6283f42909c33a854010cf66e7f21676156e9aa8","bytes":145244},
     "terrain/paving.n.94821acab5.webp": {"sha256":"e25f6992d115be606644720f379ac3f7b0a2dfb246db880107a82a4fe1d7391f","bytes":170470},
     "terrain/rock.a.d8669afd61.webp": {"sha256":"9453d0e2b50b562c2c99d8e2bf7c2254ed027b6b7559ca7b2e77ced32da166f3","bytes":113020},

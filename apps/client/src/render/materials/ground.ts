@@ -14,6 +14,7 @@ import {
   min,
   distance,
   mix,
+  mrt,
   normalGeometry,
   normalize,
   positionView,
@@ -33,6 +34,7 @@ import { SUOI, WORLD_SIZE } from '@dtl/shared';
 import { GROUND_LAYER as L, type GroundTextures } from '../../base/groundTextures';
 import { FLAGS } from '../../base/flags';
 import { isoTerrainDetail } from './isoDetail';
+import { lampPoolAt } from '../painted/lampPools';
 import { paintedColor } from '../painted/palette';
 import { getPaintedRefField } from '../painted/fieldShared';
 import { flatTextures, groundColor } from '../painted/lab/ground';
@@ -673,6 +675,8 @@ export function applyGroundShader(mat: THREE.MeshStandardNodeMaterial, tex: Grou
     );
     mat.colorNode = col.mul(keep);
     mat.emissiveNode = painted.mul(grassW).add(pavTone.mul(pavW));
+    // vũng sáng đèn đêm: ghi vào đích MRT `lamp`, pass cuối cộng SAU bước nhuộm trăng (giữ tông hổ phách)
+    (mat as unknown as { mrtNode: unknown }).mrtNode = mrt({ lamp: vec4(lampPoolAt(positionWorld.xz), 1) });
   }
 
   // ----- pháp tuyến + độ nhám -----

@@ -140,7 +140,7 @@ export class ViewerScene {
   }
 
   /**
-   * Công cụ so ảnh texture tải dần (`pnpm shots hires`): bật/tắt bậc texture cao của asset `id` (mục `hires` trong manifest)
+   * Công cụ so ảnh texture tải dần (kịch bản `hires`, nay ở `tools/perf/archive/scenarios/`): bật/tắt bậc texture cao của asset `id` (mục `hires` trong manifest)
    * trên model đang xem. Trả số texture đã thay.
    */
   async setHires(id: string, on: boolean): Promise<number> {

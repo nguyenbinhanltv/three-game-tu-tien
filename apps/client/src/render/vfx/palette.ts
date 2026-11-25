@@ -77,9 +77,9 @@ for (const e of ['kim', 'moc', 'thuy', 'hoa', 'tho', 'neutral']) {
   FX_PALETTE['mon_boss_' + e] = { core: b.core, body: b.body, rim: 0xffe9b0, accent: 0xff1f3d, shadow: 0x0a0204 };
 }
 // Boss lôi (Thú Mộ Tướng): tím điện, viền vàng nhạt; chọn qua `palette` của timeline riêng.
-// Tinh anh A4 báo theo MÀU HỆ (không đỏ/cam): hỏa ám = tím-hồng sẫm, thổ = vàng hổ phách (`accent` là màu vạch báo, xem `MonFx.warnTint`).
-FX_PALETTE.mon_hoa_am = { core: 0x140a1e, body: 0x6a3fa0, rim: 0xf0d8ff, accent: 0xb02a8c, shadow: 0x0a0414 };
-FX_PALETTE.mon_tho_pk = { core: 0x2a1a10, body: 0x7a4a2c, rim: 0xf2d28a, accent: 0xd9a02a, shadow: 0x120a05 };
+// Tinh anh A4: THÂN hiệu ứng theo hệ (hỏa ám = tím, thổ = hổ phách) nhưng VẠCH BÁO vẫn đỏ chuẩn kẻ địch (`accent` đỏ): đỏ/cam dành riêng cho cảnh báo của địch (chuẩn HPL2).
+FX_PALETTE.mon_hoa_am = { core: 0x140a1e, body: 0x6a3fa0, rim: 0xf0d8ff, accent: 0xff1f3d, shadow: 0x0a0414 };
+FX_PALETTE.mon_tho_pk = { core: 0x2a1a10, body: 0x7a4a2c, rim: 0xf2d28a, accent: 0xff1f3d, shadow: 0x120a05 };
 FX_PALETTE.mon_boss_loi = { core: 0x14103a, body: 0x7f8cff, rim: 0xfff4b0, accent: 0xff1f3d, shadow: 0x0a0818 };
 // Cảnh lớn (VFX-V4 phần 2): đột phá theo cảnh giới và độ kiếp.
 FX_PALETTE.dotpha_tc = { core: 0x5a3a08, body: 0xe8b13c, rim: 0xfff2c4, accent: 0x3fb8d8, shadow: 0x2a1c05 };
