@@ -34,6 +34,7 @@ export default {
     await sleep(3000); // bay lên, camera mở
     // Móc: đo từng khung (rAF) và mỗi lần Terrain.update.
     await page.evaluate(() => {
+      (globalThis as unknown as { __name?: (f: unknown) => unknown }).__name ??= (f) => f; // tsx (keepNames) chèn __name vào hàm gửi sang trình duyệt
       const g = window.__game as unknown as { terrain: { update: (...a: number[]) => void }; renderPos: { x: number; z: number } };
       const w = window as unknown as Record<string, unknown>;
       const frames: number[] = [];
@@ -58,6 +59,7 @@ export default {
     await sleep(secs * 1000);
     await page.keyboard.up('KeyW');
     const res = await page.evaluate(() => {
+      (globalThis as unknown as { __name?: (f: unknown) => unknown }).__name ??= (f) => f;
       const w = window as unknown as Record<string, unknown> & { __game: { renderPos: { x: number; z: number } } };
       cancelAnimationFrame(w.__tf_raf as number);
       const tf = w.__tf as { frames: number[]; upd: number[]; p0: { x: number; z: number } };
