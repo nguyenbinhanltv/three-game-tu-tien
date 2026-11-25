@@ -10,6 +10,7 @@
     "lock": "tsx src/cli.ts lock",
     "push": "tsx src/cli.ts push",
     "pull": "tsx src/cli.ts pull",
+    "prune": "tsx src/cli.ts prune",
     "gc": "tsx src/cli.ts gc",
     "impostor": "tsx src/impostor.ts",
     "minimap": "tsx src/minimap.ts",
