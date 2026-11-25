@@ -12,12 +12,12 @@ export const FAR_SPAN = 86;
  * Hàm băm của nguồn, giữ nguyên. Lưu ý (đo bằng far-compare): tích `p.x*p.y*(p.x+p.y)` tới ~2,5e5 nên float32 chỉ còn ~2^-5 độ chính xác; trên
  * WebGL2 (ANGLE) khớp GLSL gốc (SSIM 0,999998) nhưng trên WebGPU (WGSL) trình biên dịch cho giá trị khác ở tần số cao (SSIM 0,86 trên độ cao).
  */
-const hash = Fn(([p0]: [N]) => {
+export const hash = Fn(([p0]: [N]) => {
   const p: N = vec2(p0).mul(0.3183099).add(vec2(0.71, 0.113)).fract().mul(50).toVar();
   return fract(p.x.mul(p.y).mul(p.x.add(p.y)));
 });
 
-const noise = Fn(([x]: [N]) => {
+export const noise = Fn(([x]: [N]) => {
   const p: N = floor(x).toVar();
   const f: N = fract(x).toVar();
   const u: N = f
@@ -33,7 +33,7 @@ const noise = Fn(([x]: [N]) => {
 });
 
 /** Ô Voronoi: khoảng cách tới mép ô điểm đang ở (x) và tên ô (yz). */
-const voro = Fn(([x]: [N]) => {
+export const voro = Fn(([x]: [N]) => {
   const n: N = floor(x).toVar();
   const f: N = x.sub(n).toVar();
   let d1: N = float(8).toVar();
@@ -57,12 +57,12 @@ const voro = Fn(([x]: [N]) => {
   return vec3(sqrt(d2).sub(sqrt(d1)), id);
 });
 
-const farmAt = Fn(([q]: [N]) => smoothstep(0.42, 0.52, noise(q.mul(0.42).add(11))));
+export const farmAt = Fn(([q]: [N]) => smoothstep(0.42, 0.52, noise(q.mul(0.42).add(11))));
 
-const fieldOf = Fn(([q]: [N]) => voro(q.mul(1.9).add(vec2(noise(q.mul(0.7)), noise(q.mul(0.7).add(5))).mul(0.6))));
+export const fieldOf = Fn(([q]: [N]) => voro(q.mul(1.9).add(vec2(noise(q.mul(0.7)), noise(q.mul(0.7).add(5))).mul(0.6))));
 
 /** Cây trên đồi xa như nét vẽ. x: 1 nơi có cây. y: tán cao bao nhiêu (0..1). */
-const treesAt = Fn(([q]: [N]) => {
+export const treesAt = Fn(([q]: [N]) => {
   const m: N = noise(q.mul(1.3).add(3))
     .mul(0.6)
     .add(noise(q.mul(4.3).add(9)).mul(0.4))

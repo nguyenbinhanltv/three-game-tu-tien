@@ -3,6 +3,7 @@
 //   node tools/painted-compare/far-compare.mjs --src <đường dẫn painted-valley/src/valley/backdrop.js> --out <thư mục ra> [--n 512] [--port 5192]
 // Một Chromium (tắt tiếng) + vite của client; tắt cả hai khi xong. Không commit ảnh/số: ghi ở --out.
 import fs from 'node:fs';
+import vm from 'node:vm';
 import path from 'node:path';
 import { spawn, execFileSync } from 'node:child_process';
 import { createRequire } from 'node:module';
@@ -27,7 +28,7 @@ const text = fs.readFileSync(src, 'utf8');
 const a = text.indexOf('const SPAN');
 const b = text.indexOf('const paintFragment');
 const body = text.slice(a, b).replace(/export /g, '');
-const { heightFragment, vertex, SPAN } = new Function(`${body}; return { heightFragment, vertex, SPAN };`)();
+const { heightFragment, vertex, SPAN } = vm.runInNewContext(`${body}; ({ heightFragment, vertex, SPAN })`, {}, { timeout: 5000 });
 const frag = '#version 300 es\n' + heightFragment.trim();
 const vert = '#version 300 es\nin vec3 position;\n' + vertex.trim();
 

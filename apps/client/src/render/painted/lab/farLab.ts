@@ -1,6 +1,7 @@
 import * as THREE from 'three/webgpu';
-import { float, mix, uv, vec3, vec4 } from 'three/tsl';
+import { float, mix, uniform, uv, vec2, vec3, vec4 } from 'three/tsl';
 import { FAR_SPAN, farHeightAt } from './farHeight';
+import { farPaint } from './farPaint';
 
 /**
  * Cảnh thử bản đồ độ cao vùng xa (P3a, `?paintedlab=far`): vẽ độ cao (km) của `farHeightAt` ra màn hình để so mắt với bản gốc và đọc số
@@ -8,7 +9,11 @@ import { FAR_SPAN, farHeightAt } from './farHeight';
  */
 declare global {
   interface Window {
-    __farLab?: { stats(): Promise<{ min: number; max: number; mean: number }>; readback(n: number): Promise<{ n: number; b64: string }> };
+    __farLab?: {
+      stats(): Promise<{ min: number; max: number; mean: number }>;
+      readback(n: number): Promise<{ n: number; b64: string }>;
+      paint?(): Promise<{ w: number; h: number; light: string; shade: string; air: string }>;
+    };
   }
 }
 
@@ -43,7 +48,60 @@ export async function startFarLab(host: HTMLElement): Promise<void> {
     renderer.setRenderTarget(null);
     return (await renderer.readRenderTargetPixelsAsync(rt, 0, 0, n, n)) as Float32Array;
   };
+  // P3b: bản đồ độ cao -> ba đầu ra của pass bức tranh (`?stage=paint&w=2048&ground=1024`)
+  const paintStage = async () => {
+    const W = Number(q.get('w') ?? 2048);
+    const G = Number(q.get('ground') ?? 1024);
+    const el: [number, number] = [(-2.6 * Math.PI) / 180, (21.4 * Math.PI) / 180];
+    const H = Math.round((W * (el[1] - el[0])) / (Math.PI * 2));
+    const heights = new THREE.RenderTarget(G, G, { type: THREE.HalfFloatType, format: THREE.RGBAFormat, depthBuffer: false });
+    heights.texture.minFilter = heights.texture.magFilter = THREE.LinearFilter;
+    heights.texture.wrapS = heights.texture.wrapT = THREE.ClampToEdgeWrapping;
+    const mh = new THREE.MeshBasicNodeMaterial();
+    mh.colorNode = vec4(h, 0, 0, 1);
+    const qh = new THREE.QuadMesh(mh);
+    renderer.setRenderTarget(heights);
+    qh.render(renderer);
+    renderer.setRenderTarget(null);
+    const sun = new THREE.Vector2(0.7168, -0.1073).normalize();
+    const uOut = uniform(0);
+    const pm = new THREE.MeshBasicNodeMaterial();
+    pm.colorNode = farPaint(uv().x, uv().y, {
+      tHeight: heights.texture,
+      uTexel: float(FAR_SPAN / G),
+      uSide: vec2(sun.x, sun.y),
+      uHero: vec2(hero[0], hero[1]),
+      uEl: vec2(el[0], el[1]),
+      uEye: float(0.06),
+      uOut,
+    });
+    const qp = new THREE.QuadMesh(pm);
+    const planes: Uint8Array[] = [];
+    for (let k = 0; k < 6; k++) {
+      uOut.value = k;
+      const rt = new THREE.RenderTarget(W, H, { type: THREE.UnsignedByteType, format: THREE.RGBAFormat, depthBuffer: false });
+      renderer.setRenderTarget(rt);
+      qp.render(renderer);
+      renderer.setRenderTarget(null);
+      planes.push((await renderer.readRenderTargetPixelsAsync(rt, 0, 0, W, H)) as Uint8Array);
+    }
+    const outs: string[] = [];
+    for (let k = 0; k < 3; k++) {
+      const m = new Uint8Array(W * H * 4);
+      for (let i = 0; i < W * H; i++) {
+        m[i * 4] = planes[k]![i * 4]!;
+        m[i * 4 + 1] = planes[k]![i * 4 + 1]!;
+        m[i * 4 + 2] = planes[k]![i * 4 + 2]!;
+        m[i * 4 + 3] = planes[k + 3]![i * 4]!;
+      }
+      let bin = '';
+      for (let i = 0; i < m.length; i += 0x8000) bin += String.fromCharCode(...m.subarray(i, i + 0x8000));
+      outs.push(btoa(bin));
+    }
+    return { w: W, h: H, light: outs[0]!, shade: outs[1]!, air: outs[2]! };
+  };
   window.__farLab = {
+    paint: paintStage,
     async readback(n: number) {
       const data = await readN(n);
       const out = new Float32Array(n * n);
