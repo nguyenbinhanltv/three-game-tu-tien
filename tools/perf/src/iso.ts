@@ -45,6 +45,8 @@ const NOSHADOW = flag('--noshadow');
 const SETTLE_MAX = Number(opt('--settle-max', '40')) * 1000;
 /** Số mục tiêu (bản đồ/phó bản) đo trên một trang trước khi mở trang mới: WebGPU dễ mất thiết bị khi đổi nhiều level liền. 0 = không mở lại. */
 const RECYCLE = Number(opt('--recycle', '3'));
+/** `--trace N`: chỉ ghi chuỗi thời gian N giây ở điểm đầu Vân Lam (chẩn đoán nạp muộn). */
+const TRACE = Number(opt('--trace', '0'));
 const CPU_THROTTLE = Math.max(1, Number(opt('--cpu-throttle', '1')) || 1);
 const EXTRA = opt('--query', '');
 const RENDERER = opt('--renderer', 'webgpu');
@@ -560,6 +562,38 @@ async function runPreset(
   };
   let { ctx, page } = await boot();
   const out: IsoPoint[] = [];
+  if (TRACE > 0) {
+    // `--trace N`: chỉ ghi chuỗi thời gian N giây của điểm đầu Vân Lam (tam giác, byte texture, đích vẽ, geometry, số texture) mỗi 3 s,
+    // không đo gì khác: xem số có còn tăng sau khi "ổn định" (texture tải dần, LOD/cây xa nạp muộn) không.
+    await gm(page, 'level 45');
+    await gm(page, 'god on');
+    await enterLevel(page, 'van_lam');
+    const p0 = pointsOf({ id: 'van_lam', kind: 'map' })[0]!;
+    await tp(page, p0.x, p0.z);
+    await gm(page, 'killall', 1000);
+    const t0 = Date.now();
+    console.log('  giây | tam giác | texture MB (tổng) | tài sản | đích vẽ | geometry | texture');
+    while ((Date.now() - t0) / 1000 < TRACE) {
+      const s = await page.evaluate(() => {
+        const w = window as any;
+        const r = w.__game.renderer;
+        return {
+          tris: r.info.render.triangles,
+          tex: w.__isoTexBytes(),
+          rt: w.__isoRtBytes?.() ?? 0,
+          geo: r.info.memory.geometries,
+          ntex: r.info.memory.textures,
+        };
+      });
+      const mbf = (n: number) => Math.round((n / 1048576) * 10) / 10;
+      console.log(
+        `  ${String(Math.round((Date.now() - t0) / 1000)).padStart(4)} | ${String(s.tris).padStart(8)} | ${mbf(s.tex)} | ${mbf(s.tex - s.rt)} | ${mbf(s.rt)} | ${s.geo} | ${s.ntex}`,
+      );
+      await sleep(3000);
+    }
+    await ctx.close().catch(() => undefined);
+    return out;
+  }
   if (BOTS > 0) {
     // Cảnh đông người: không `killall` (bot cần quái), client tới giữa rừng, chờ bot kéo tới rồi đo.
     const t: Target = { id: 'van_lam', kind: 'fight' };
