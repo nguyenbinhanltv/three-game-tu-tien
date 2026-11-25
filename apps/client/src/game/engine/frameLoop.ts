@@ -1,4 +1,5 @@
 // R-8: tách từ game/engine.ts (hàm nhận `g: Game`, trước là phương thức private của lớp Game).
+import { updateLampPools } from '../../render/painted/lampPools';
 import { FLAGS } from '../../base/flags';
 import { spotAt, vistaView } from '../camera/vista';
 import { downgradeOf, getGpuHint, setGpuHint, suggestQuality } from '../../base/quality';
@@ -271,6 +272,7 @@ export function runFrame(eng: Game): void {
   eng.aurora?.update(eng.camera.position);
   updateEclipse(eng, dt);
   eng.lanterns?.update(_v.set(rp.x, rp.y, rp.z));
+  if (FLAGS.style === 'painted' && eng.lanterns) updateLampPools(eng.lanterns.lights);
   if (me) eng.ambient.update(dt, eng.camera.position, rp);
   if (me) eng.butterflies?.update(dt, rp);
   eng.lacKiemBirds?.update(rp.x, rp.y, rp.z, eng.camera.position);

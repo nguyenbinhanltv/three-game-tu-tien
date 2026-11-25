@@ -33,6 +33,7 @@ import { SUOI, WORLD_SIZE } from '@dtl/shared';
 import { GROUND_LAYER as L, type GroundTextures } from '../../base/groundTextures';
 import { FLAGS } from '../../base/flags';
 import { isoTerrainDetail } from './isoDetail';
+import { lampPoolAt } from '../painted/lampPools';
 import { paintedColor } from '../painted/palette';
 import { getPaintedRefField } from '../painted/fieldShared';
 import { flatTextures, groundColor } from '../painted/lab/ground';
@@ -672,7 +673,8 @@ export function applyGroundShader(mat: THREE.MeshStandardNodeMaterial, tex: Grou
       smoothstep(0.14, 0.26, dot(col.rgb, vec3(0.299, 0.587, 0.114))),
     );
     mat.colorNode = col.mul(keep);
-    mat.emissiveNode = painted.mul(grassW).add(pavTone.mul(pavW));
+    // + vũng sáng ấm quanh đèn lồng/đèn đá khi đêm (render/painted/lampPools.ts)
+    mat.emissiveNode = painted.mul(grassW).add(pavTone.mul(pavW)).add(lampPoolAt(positionWorld.xz));
   }
 
   // ----- pháp tuyến + độ nhám -----
