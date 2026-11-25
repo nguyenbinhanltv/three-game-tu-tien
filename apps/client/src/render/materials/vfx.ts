@@ -1,6 +1,6 @@
 import * as THREE from 'three/webgpu';
 import { abs, attribute, dot, float, min, normalize, normalView, positionView, pow, sin, uniform, uv, vec3 } from 'three/tsl';
-import { markBloom } from '../post';
+import { markBloom, markVfxMask } from '../post';
 import type { FxUniforms } from '../vfx/common';
 import { inkNodes } from '../vfx/ink';
 import { boltNodes, vortexNodes, windNodes } from '../vfx/lightning';
@@ -217,6 +217,7 @@ export function fxMaterial(kind: FxKind): THREE.MeshBasicNodeMaterial {
   }
   m.name = `fx-${kind}`;
   if (s.bloom > 0) markBloom(m, s.bloom);
+  else markVfxMask(m);
   materials.set(kind, m);
   return m;
 }
@@ -287,6 +288,7 @@ export function fxBatchMaterial(kind: FxKind): THREE.MeshBasicNodeMaterial {
   }
   m.name = `fx-${kind}-i`;
   if (s.bloom > 0) markBloom(m, s.bloom);
+  else markVfxMask(m);
   batchMaterials.set(kind, m);
   return m;
 }
