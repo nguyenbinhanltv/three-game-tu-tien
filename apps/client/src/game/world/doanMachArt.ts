@@ -549,7 +549,9 @@ function bridgeGeometry(b: BridgeDef, part: 'fill' | 'all' = 'all'): THREE.Buffe
   void damGeometry;
   for (const p of parts) p.g.dispose();
   if (!deckGeo) return dam;
-  const merged = mergeGeometries([deckGeo, dam], false) ?? deckGeo;
+  // `dam` hiện là lưới rỗng (không dựng đập đá): gộp lưới rỗng với lưới có thuộc tính làm `mergeGeometries` báo lỗi console
+  // ('khác số thuộc tính') rồi trả null và rơi về `deckGeo`. Bỏ qua gộp khi không có đỉnh: kết quả giống hệt, không còn lỗi.
+  const merged = dam.attributes.position ? (mergeGeometries([deckGeo, dam], false) ?? deckGeo) : deckGeo;
   deckGeo.dispose();
   dam.dispose();
   return merged;
