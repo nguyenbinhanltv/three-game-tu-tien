@@ -14,6 +14,9 @@
 // `--settle-max N`: trước mỗi điểm đo chờ cảnh NẠP XONG (tam giác, byte texture, số geometry ổn định 3 giây liền; tối đa N giây, mặc định 40);
 //   không chờ thì điểm đầu của level đo khi ô địa hình/prop/texture còn đang nạp (baseline cũ ghi Vân Lam 354k tam giác/94 MB so với 821k/460–500 MB thật).
 // `--recycle N`: mở trang mới sau mỗi N mục tiêu (mặc định 3) để WebGPU không mất thiết bị khi đổi nhiều level liền.
+// `--resume <iso-checkpoint.json>`: làm tiếp từ checkpoint (ghi sau MỖI mục tiêu vào `<out>/iso-checkpoint.json`); bỏ qua mục tiêu đã xong. Chỉ ghép
+//   khi cùng viewport/cách đo/backend. Dừng giữa chừng (Ctrl+C, hết giờ) không mất số đã đo; chạy theo nhóm bằng `--only a,b` rồi `--resume`.
+// Trước khi chạy kiểm ĐỦ asset so sổ khóa (worktree thiếu asset đo ra số thấp một cách im lặng): thiếu thì thoát; `--allow-missing-assets` bỏ qua.
 // `--igpu`: ép GPU tiết kiệm điện (`--force_low_power_gpu`) để đo iGPU Intel/AMD nếu máy có.
 // `--cpu-throttle N`: làm chậm CPU N lần qua CDP (`Emulation.setCPUThrottlingRate`) để MÔ PHỎNG máy yếu (ví dụ 4 ≈ laptop tầm trung, 6 ≈ iGPU yếu).
 //   Đây là ƯỚC LƯỢNG chỉ về CPU: không mô phỏng băng thông/độ trễ GPU, nên không thay cho số đo máy thật; kết quả ghi `emulation` để khỏi nhầm.
@@ -21,6 +24,7 @@
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import type { Page } from 'playwright';
 import { LEVELS } from '@dtl/content';
 import { FOREST, LAKE, SPAWN_POINT } from '@dtl/shared';
@@ -31,7 +35,9 @@ import { gameUrl, launchChrome, reportErrors, watchErrors } from './lib/browser'
 import { drawSources } from './lib/drawsrc';
 import { enterLevel, gm, skipCutscene, tp, waitInGame, waitLevel } from './lib/game';
 import { levelPoints } from './lib/levelpoints';
+import { checkAssets, readLockFiles } from './lib/assetcheck';
 import { BASELINE_METHOD } from './lib/gate';
+import { type Checkpoint, emptyCheckpoint, incompatibility, isDone, markDone } from './lib/isocheckpoint';
 import { bucketGroups, compareRuns, stat, toMarkdown, type IsoPoint, type IsoRun, round } from './lib/isoreport';
 
 const QUICK = flag('--quick');
@@ -514,6 +520,8 @@ async function runPreset(
   preset: string,
   errors: string[],
   meta: Partial<IsoRun>,
+  ck: Checkpoint,
+  saveCk: () => void,
 ): Promise<IsoPoint[]> {
   const boot = async (): Promise<{ ctx: import('playwright').BrowserContext; page: Page }> => {
     const ctx = await browser.newContext({ viewport: { width: VW, height: VH } });
@@ -609,6 +617,10 @@ async function runPreset(
   const ts = targets();
   let sinceBoot = 0;
   for (const t of ts) {
+    if (isDone(ck, preset, t.id)) {
+      console.log(`  [${preset}] ${t.id}: đã có trong checkpoint, bỏ qua`);
+      continue;
+    }
     if (RECYCLE > 0 && sinceBoot >= RECYCLE && t.kind !== 'trib') {
       // Mở trang mới: WebGPU dễ mất thiết bị khi đổi nhiều level liền (thấy ở Vân Hải sau 3 level).
       await ctx.close().catch(() => undefined);
@@ -616,6 +628,7 @@ async function runPreset(
       sinceBoot = 0;
     }
     sinceBoot++;
+    const before = out.length;
     try {
       if (t.kind === 'map') {
         await gm(page, 'level 45');
@@ -632,9 +645,15 @@ async function runPreset(
       }
       // Một cảnh đánh đông cho mỗi bản đồ/bí cảnh thường (phòng cầu/sân độ kiếp đã có quái riêng của chúng).
       if (t.kind === 'map' || t.kind === 'dungeon') out.push(await fight(page, t, preset));
+      markDone(ck, preset, t.id, out.slice(before));
+      ck.meta = { adapter: meta.adapter, backend: meta.backend, devBytesMB: meta.devBytesMB };
+      ck.errors = errors.slice();
+      saveCk();
     } catch (e) {
       errors.push(`${preset}/${t.id}: ${e instanceof Error ? e.message : e}`);
       console.warn(`  [${preset}] bỏ ${t.id}: ${e instanceof Error ? e.message.split('\n')[0] : e}`);
+      out.length = before; // không giữ điểm dở dang của mục tiêu lỗi
+      sinceBoot = RECYCLE; // trang có thể đã hỏng (mất thiết bị GPU/phòng): mở trang mới trước mục tiêu kế
     }
   }
   await ctx.close().catch(() => undefined);
@@ -658,7 +677,21 @@ function listGpus(): string[] {
   }
 }
 
+/** Thoát nếu worktree thiếu asset so sổ khóa (số đo sẽ thấp một cách im lặng). `--allow-missing-assets` bỏ qua. */
+function assertAssets(): void {
+  if (flag('--allow-missing-assets')) return;
+  const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
+  const r = checkAssets(readLockFiles(path.join(root, 'assets/asset-lock.json')), path.join(root, 'apps/client/public'));
+  if (!r.missing.length) return;
+  console.error(
+    `[perf:iso] thiếu ${r.missing.length}/${r.total} tệp asset của cảnh so với sổ khóa (vd ${r.missing.slice(0, 5).join(', ')}).
+` + 'Số đo sẽ THẤP một cách im lặng (thiếu kiến trúc/prop/cây). Chạy `pnpm assets:pull` rồi đo lại; cố ý thì thêm --allow-missing-assets.',
+  );
+  process.exit(1);
+}
+
 async function main(): Promise<void> {
+  assertAssets();
   const dev = createDevServer({
     port: PORT,
     clientPort: CLIENT_PORT,
@@ -671,7 +704,27 @@ async function main(): Promise<void> {
   console.log(`[perf:iso] GPU máy: ${gpus.join(' | ') || '(không đọc được)'}`);
   const errors: string[] = [];
   const meta: Partial<IsoRun> = {};
-  const points: IsoPoint[] = [];
+  const method = SETTLE_MAX > 0 ? BASELINE_METHOD : undefined;
+  const ckDir = outDir('bench/results');
+  fs.mkdirSync(ckDir, { recursive: true });
+  const ckFile = path.join(ckDir, 'iso-checkpoint.json');
+  let ck = emptyCheckpoint(`${VW}x${VH}`, method);
+  const resume = opt('--resume', '');
+  if (resume) {
+    const loaded = JSON.parse(fs.readFileSync(path.resolve(resume), 'utf8')) as Checkpoint;
+    const why = incompatibility(loaded, { viewport: `${VW}x${VH}`, method, backend: RENDERER === 'webgpu' ? 'WebGPU' : 'WebGL2' });
+    if (why) throw new Error(`không làm tiếp được từ ${resume}: ${why}`);
+    ck = loaded;
+    errors.push(...ck.errors);
+    Object.assign(meta, ck.meta);
+    console.log(`[perf:iso] làm tiếp từ checkpoint: ${ck.done.length} mục tiêu đã xong, ${ck.points.length} điểm`);
+  }
+  /** Ghi checkpoint nguyên tử (tệp tạm rồi đổi tên) sau mỗi mục tiêu. */
+  const saveCk = (): void => {
+    ck.backend = meta.backend;
+    fs.writeFileSync(`${ckFile}.tmp`, JSON.stringify(ck));
+    fs.renameSync(`${ckFile}.tmp`, ckFile);
+  };
   let browser: Awaited<ReturnType<typeof launchChrome>> | undefined;
   try {
     await dev.start();
@@ -684,7 +737,7 @@ async function main(): Promise<void> {
       args: ['--disable-gpu-vsync', '--disable-frame-rate-limit', ...(flag('--igpu') ? ['--force_low_power_gpu'] : [])],
       tag: 'perf-iso',
     });
-    for (const preset of PRESETS) points.push(...(await runPreset(browser, preset, errors, meta)));
+    for (const preset of PRESETS) await runPreset(browser, preset, errors, meta, ck, saveCk);
   } finally {
     await browser?.close().catch(() => undefined);
     await bots.stop();
@@ -698,10 +751,10 @@ async function main(): Promise<void> {
     backend: meta.backend ?? '?',
     viewport: `${VW}x${VH}`,
     quick: QUICK,
-    ...(SETTLE_MAX > 0 ? { method: BASELINE_METHOD } : {}),
+    ...(method ? { method } : {}),
     ...(CPU_THROTTLE > 1 || flag('--igpu') ? { emulation: { cpuThrottle: CPU_THROTTLE, igpu: flag('--igpu') } } : {}),
     devBytesMB: meta.devBytesMB ?? null,
-    points,
+    points: ck.points,
     errors,
   };
   const dir = outDir('bench/results');
@@ -713,6 +766,7 @@ async function main(): Promise<void> {
   console.log(toMarkdown(run, deltas));
   reportErrors('perf-iso', errors);
   console.log(`[perf-iso] ghi ${path.join(dir, `iso-${date}.json`)} (.md cạnh bên)`);
+  fs.rmSync(ckFile, { force: true }); // chạy xong trọn: bỏ checkpoint để không làm tiếp nhầm lần sau
 }
 
 main().catch((e) => {

@@ -84,18 +84,22 @@ export function createDevServer(o: {
   const logFile = path.join(os.tmpdir(), `dtl-${tag}-${port}-${stamp}.log`);
   const dbFile = path.join(os.tmpdir(), `dtl-${tag}-${port}-${stamp}.db`);
 
-  /** Tắt cả cây tiến trình đã spawn, rồi mọi tiến trình còn nghe ở hai cổng (trước khi chạy đã trống, nên chắc chắn là của mình). */
+  /** PID nghe ở hai cổng ngay sau khi server của MÌNH lên: `stop()` chỉ kill đúng các PID này, không kill theo cổng (một tiến trình khác, vd. zombie của lần chạy cũ,
+   *  có thể đã mở server mới ở cùng cổng; kill theo cổng sẽ tắt nhầm nó). */
+  const ownedPids = new Set<number>();
+
+  /** Tắt cả cây tiến trình đã spawn, rồi các tiến trình của mình còn nghe ở hai cổng. */
   function stop(): void {
     if (!child || stopped) return;
     stopped = true;
     if (child.pid) killTree(child.pid);
     for (let i = 0; i < 10; i++) {
-      const left = listeningPids(owned);
-      if (left.size === 0) break;
-      for (const pid of new Set(left.values())) killTree(pid);
+      const left = [...new Set(listeningPids(owned).values())].filter((pid) => ownedPids.has(pid));
+      if (left.length === 0) break;
+      for (const pid of left) killTree(pid);
       execFileSync(process.execPath, ['-e', 'setTimeout(()=>{},300)']);
     }
-    const still = listeningPids(owned);
+    const still = new Map([...listeningPids(owned)].filter(([, pid]) => ownedPids.has(pid)));
     if (still.size) console.warn(`[${tag}] cổng vẫn bận sau khi tắt: ${[...still.keys()].join(', ')}`);
     else console.log(`[${tag}] đã tắt server, cổng ${owned.join('/')} trống`);
     // Windows có thể còn giữ khóa tệp vài trăm ms sau khi tiến trình chết: thử lại, không làm hỏng cả lần chạy vì tệp tạm.
@@ -164,6 +168,7 @@ export function createDevServer(o: {
     });
     await waitHttp(`http://localhost:${port}/health`, 90_000);
     if (!o.serverOnly) await waitHttp(`http://localhost:${clientPort}/`, 60_000);
+    for (const pid of listeningPids(owned).values()) ownedPids.add(pid);
   }
 
   return { port, clientPort, logFile, start, stop };
