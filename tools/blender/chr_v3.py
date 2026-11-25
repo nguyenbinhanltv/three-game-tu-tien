@@ -582,7 +582,7 @@ if BASE_W:
     bgn = {g.index: g.name for g in b_mesh.vertex_groups}
     bone_of = {}
     for bb in b_arm.data.bones:
-        tgt_n = mix_to_man(clean_name(bb.name))
+        tgt_n = mix_to_man(clean_name(bb.name)) or (bb.name if bb.name in IDX else None)  # thân nền Mixamo (MakeHuman) hoặc đã rig Mannequin (pilot C)
         if tgt_n in IDX and tgt_n in F_HEAD and tgt_n in F_TAIL:
             bone_of[bb.name] = (tgt_n, np3(b_arm.matrix_world @ bb.head_local), np3(b_arm.matrix_world @ bb.tail_local))
     base_h = float(BV[:, 2].max() - BV[:, 2].min())
