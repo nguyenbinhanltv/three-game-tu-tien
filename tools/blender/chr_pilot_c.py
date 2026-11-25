@@ -83,6 +83,46 @@ def decimate_body(o, target):
     return sum(len(p.vertices) - 2 for p in o.data.polygons)
 
 
+def match_arms(arm, mesh, ref_arm, ref_mesh):
+    """Khớp tư thế tay: xoay chuỗi tay của THÂN NỀN quanh vai sao cho hướng vai→cổ tay trùng với bản rig của lớp đồ (tay thân nền dang rộng/cao hơn tay áo B' ~7°), nướng vào lưới và làm tư thế nghỉ."""
+    from mathutils import Matrix
+    bpy.context.view_layer.objects.active = arm
+    bpy.ops.object.mode_set(mode='POSE')
+    rep = {}
+    for sd in 'lr':
+        up = arm.pose.bones.get(f'upperarm_{sd}')
+        hd = arm.data.bones.get(f'hand_{sd}')
+        r_up, r_hd = ref_arm.data.bones.get(f'upperarm_{sd}'), ref_arm.data.bones.get(f'hand_{sd}')
+        if not (up and hd and r_up and r_hd):
+            continue
+        sh = arm.matrix_world @ arm.data.bones[f'upperarm_{sd}'].head_local
+        # Đích theo LƯỚI (không theo xương của bản rig đồ: xương tay B' là ước lượng): đầu bàn tay/tay áo xa nhất theo x ở mỗi lưới.
+        sx = 1.0 if sh.x > 0 else -1.0  # phía của xương (xương `_l` có thể nằm ở -x tùy bộ xương)
+        Pb = np.array([arm_mesh_w for arm_mesh_w in (mesh.matrix_world @ v.co for v in mesh.data.vertices)], float).reshape(-1, 3)
+        Pc = np.array([ref_mesh.matrix_world @ v.co for v in ref_mesh.data.vertices], float).reshape(-1, 3)
+        tb = Pb[sx * Pb[:, 0] > (sx * Pb[:, 0]).max() - 0.02 * 1.7].mean(axis=0)
+        tc = Pc[sx * Pc[:, 0] > (sx * Pc[:, 0]).max() - 0.02 * 1.7].mean(axis=0)
+        va = Vector(tb) - sh
+        vr = Vector(tc) - sh
+        q = va.rotation_difference(vr)
+        rep[sd] = round(math.degrees(q.angle), 2)
+        # `pose.matrix` ở hệ ARMATURE, còn sh/q ở hệ thế giới (armature nhập từ GLB có thể bị xoay): đổi sang hệ armature bằng M⁻¹·Rw·M.
+        Mw = arm.matrix_world
+        Rw = Matrix.Translation(sh) @ q.to_matrix().to_4x4() @ Matrix.Translation(-sh)
+        up.matrix = Mw.inverted() @ Rw @ Mw @ up.matrix
+        bpy.context.view_layer.update()
+    bpy.ops.object.mode_set(mode='OBJECT')
+    mod = mesh.modifiers.new('Armature', 'ARMATURE')
+    mod.object = arm
+    bpy.context.view_layer.objects.active = mesh
+    bpy.ops.object.modifier_apply(modifier=mod.name)
+    bpy.context.view_layer.objects.active = arm
+    bpy.ops.object.mode_set(mode='POSE')
+    bpy.ops.pose.armature_apply(selected=False)
+    bpy.ops.object.mode_set(mode='OBJECT')
+    return rep
+
+
 def world_verts(o):
     return np.array([o.matrix_world @ v.co for v in o.data.vertices], float).reshape(-1, 3)
 
@@ -131,6 +171,9 @@ REP['bone_dev_cm_core'] = {'n': len(core), 'max': round(max(core), 2), 'mean': r
 REP['bone_dev_cm'] = {'common': len(common), 'max': round(max(dev.values()), 2), 'mean': round(sum(dev.values()) / len(dev), 2), 'worst': [(k, round(v, 2)) for k, v in worst]}
 log(f'xương chung {len(common)}, lệch đầu xương max {REP["bone_dev_cm"]["max"]} cm, trung bình {REP["bone_dev_cm"]["mean"]} cm')
 
+if '--no-match-arms' not in argv:
+    REP['match_arms_deg'] = match_arms(b_arm, b_mesh, c_arm, c_mesh)
+    log(f'khớp tư thế tay thân nền theo lớp đồ: xoay {REP["match_arms_deg"]} độ')
 REP['base_decimate'] = {'before': sum(len(p.vertices) - 2 for p in b_mesh.data.polygons), 'after': decimate_body(b_mesh, BASE_TRIS)}
 VB, VC = world_verts(b_mesh), world_verts(c_mesh)
 TB, TC = tris_of(b_mesh), tris_of(c_mesh)
