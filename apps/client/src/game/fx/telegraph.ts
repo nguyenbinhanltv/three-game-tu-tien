@@ -38,8 +38,7 @@ export function telegraph(v: Vfx, m: HazardMsg, boss = false, danger: 0 | 1 | 2 
     (k) => {
       s.fxA.x = k;
       s.fxA.z = hazardFlash(k, m.delay);
-      // Báo theo màu hệ (A4): viền sáng + tô mờ lấp dần, không tô đặc cả quạt.
-      s.fxOpacity = Math.min(1, k * 10) * ISO_HAZARD_OPACITY * (tint === undefined ? 1 : 0.28);
+      s.fxOpacity = Math.min(1, k * 10) * ISO_HAZARD_OPACITY;
     },
     () => {
       v.drop(s);

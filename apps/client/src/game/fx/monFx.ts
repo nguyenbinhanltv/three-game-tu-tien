@@ -27,6 +27,14 @@ export function monScale(height: number): number {
 }
 
 /** Hệ số cỡ của vùng nổ theo bán kính: tính cho `mon_boom_circle`/`mon_warn` (cỡ gốc 4 m) và đường/nón (cỡ gốc 8 m). */
+/** Số decal một timeline cần (mỗi decal giữ một chỗ trong trần `DECAL_MAX` của `FxRunner`). */
+export function decalNeed(tl: FxTimeline): number {
+  return tl.events.filter((e) => e.type === 'decal').length;
+}
+
+/** Bỏ pháp trận quạt/dải cũ CHỈ khi chiêu báo theo màu hệ VÀ vạch riêng đã thật sự phát (đủ chỗ decal, atlas đã nạp...); ngược lại giữ vạch cũ (có `tint` màu hệ làm đường lùi). */
+export const dropLegacyTelegraph = (tint: number | undefined, warned: boolean): boolean => tint !== undefined && warned;
+
 export function hazardMul(r: number, base: number): number {
   return Math.min(4, Math.max(0.5, r / base));
 }
@@ -245,6 +253,9 @@ export class MonFx {
       tl = (mv ? this.tl(`${key}__${src.s.t}__${mv}`) : undefined) ?? this.tl(`${key}__${src.s.t}`);
     }
     if (!tl || !key) return false;
+    // Runner đã đầy decal (`DECAL_MAX` dùng chung): decal sẽ bị bỏ lặng lẽ → không phát nửa vời, trả false để `room.ts` giữ vạch cũ.
+    // Chỉ áp cho chiêu báo theo màu hệ (A4, nơi pháp trận cũ bị bỏ khi vạch riêng phát); boss/quái đỏ giữ hành vi cũ (phát một phần, pháp trận cũ luôn vẽ).
+    if (this.warnTint(h, src) !== undefined && this.runner.decalSlots() < decalNeed(tl)) return false;
     const y = groundAt(h.x, h.z);
     this.runner.startAt(tl, {
       actor: { x: h.x, y, z: h.z, yaw: h.yaw ?? 0, model: {} },

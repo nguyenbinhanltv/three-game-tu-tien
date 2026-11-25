@@ -257,6 +257,10 @@ export class FxRunner {
   private casts = new Map<string, Cast>();
   private jobs: BladeJob[] = [];
   private decals = 0;
+  /** Còn bao nhiêu chỗ decal (trần `DECAL_MAX` dùng chung cả runner): vạch báo riêng của quái cần đủ chỗ cho mọi decal của nó, không thì giữ vạch cũ. */
+  decalSlots(): number {
+    return Math.max(0, DECAL_MAX - this.decals);
+  }
   private serial = 0;
   /** Nhật ký dev: sự kiện đã phát (`__game.skillFx.runner.log`). */
   readonly log: { skill: string; type: string; at: number; real: number }[] = [];

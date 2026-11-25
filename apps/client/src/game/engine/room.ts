@@ -45,6 +45,7 @@ import { EntityManager, type WorldView } from '../entities/entities';
 import { MapVis } from '../world/mapVis';
 import { hazardDanger } from '../../render/vfx/phases';
 import { telegraph } from '../fx/telegraph';
+import { dropLegacyTelegraph } from '../fx/monFx';
 import { HAZARD_COLORS } from '../fx/vfx';
 import { isWorldRoom, levelOfInit } from './common';
 import { isBossSrc, lightningFlash, monFlagFx, monsterInk, onDmg, onSys, resetSound, shakeForHazard, volumeAt } from './fxMsgs';
@@ -90,12 +91,13 @@ export function onHazard(eng: Game, m: HazardMsg): void {
     // Chiêu quái có timeline vạch báo riêng (V-P9): vẫn dùng pháp trận quạt/chữ nhật (hình đúng hitbox, tiến độ quét) nhưng vẽ đè lên thân boss.
     // `own` ở nhánh này chỉ đổi cách vẽ (đè lên thân boss); pháp trận quạt/chữ nhật luôn được vẽ nên không mất vạch báo khi `warn` bị bỏ qua.
     const own = !!eng.monFx?.ownWarn(m, m.src ? eng.ents?.monsters.get(m.src) : undefined);
-    const tint = eng.monFx?.warnTint(m, m.src ? eng.ents?.monsters.get(m.src) : undefined);
-    // Chiêu báo theo màu hệ (A4: tím-hồng, hổ phách): vạch riêng đủ rõ, BỎ pháp trận quạt/dải cũ (vệt trắng nhạt phủ thêm); các quái khác giữ nguyên.
-    if (tint === undefined && Math.hypot(m.x - eng.renderPos.x, m.z - eng.renderPos.z) < 90)
-      telegraph(eng.vfx, m, isBossSrc(eng, m.src), hazardDangerOf(eng, m), own);
-    // Vạch pháp trận cũ giữ nguyên; boss thêm nhấp nháy dọc vạch (`mon_warn_line|cone`, V5).
-    eng.monFx?.warn(m, m.src ? eng.ents?.monsters.get(m.src) : undefined);
+    const wsrc = m.src ? eng.ents?.monsters.get(m.src) : undefined;
+    const tint = eng.monFx?.warnTint(m, wsrc);
+    // Vạch riêng (timeline) chạy TRƯỚC: boss/tinh anh thêm nhấp nháy dọc vạch. Báo theo màu hệ (A4: tím-hồng, hổ phách): chỉ BỎ pháp trận quạt/dải cũ khi vạch riêng
+    // thật sự phát (`warn` trả true: đủ chỗ decal trong trần chung của runner, atlas đã nạp); ngược lại vẽ pháp trận cũ với `tint` màu hệ làm đường lùi (không mất vạch báo).
+    const warned = !!eng.monFx?.warn(m, wsrc);
+    if (!dropLegacyTelegraph(tint, warned) && Math.hypot(m.x - eng.renderPos.x, m.z - eng.renderPos.z) < 90)
+      telegraph(eng.vfx, m, isBossSrc(eng, m.src), hazardDangerOf(eng, m), own, tint);
   } else if (m.mv === 'trail') eng.vfx?.trailPool(m.x, m.z, m.r, m.delay, m.dur ?? 8);
   else if (m.mv === 'pool') eng.vfx?.venomPool(m.x, m.z, m.r, m.delay, m.dur ?? 6, m.kind);
   else {
