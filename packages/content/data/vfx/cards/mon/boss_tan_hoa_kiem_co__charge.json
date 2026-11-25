@@ -1,0 +1,34 @@
+{
+  "monId": "boss_tan_hoa_kiem_co",
+  "move": "charge",
+  "idea": "Tàn Hỏa Kiếm Cơ dùng chiêu charge: vạch báo là dải dài 16 m rộng 3 m ĐỎ chuẩn kẻ địch (viền sáng + tô mờ lấp dần) theo nhịp 1 s; nổ ra lửa ma tím lõi đen viền trắng-tím, mạch sét thưa (không đỏ/cam).",
+  "element": "hoa",
+  "palette": {
+    "core": "140a1e",
+    "body": "6a3fa0",
+    "rim": "f0d8ff",
+    "accent": "ff1f3d"
+  },
+  "shapeLang": [
+    "spike",
+    "beam"
+  ],
+  "zone": {
+    "shape": "rect",
+    "r": 16,
+    "at": "forward",
+    "w": 3
+  },
+  "timing": {
+    "anticipationMs": 1000,
+    "impactMs": 140,
+    "lingerMs": 800
+  },
+  "readability": "Vạch báo đỏ chuẩn kẻ địch đúng dải dài 16 m rộng 3 m đọc rõ trên nền sáng; thân hiệu ứng lửa ma tím lõi đen viền trắng-tím, mạch sét thưa, không che người chơi.",
+  "budget": {
+    "drawCalls": 10,
+    "particles": 300,
+    "screenCover": 0.2,
+    "overdraw": 5
+  }
+}

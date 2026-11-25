@@ -1,0 +1,33 @@
+{
+  "monId": "elite_cot_kiem_thong_linh",
+  "move": "leap",
+  "idea": "Cốt Kiếm Thông Linh dùng chiêu leap: vạch báo là vòng tròn r3.5 m ĐỎ chuẩn kẻ địch (viền sáng + tô mờ lấp dần) theo nhịp 1 s; nổ ra xương trắng ngà, mảnh vỡ bạc, bụi xám (không đỏ/cam).",
+  "element": "kim",
+  "palette": {
+    "core": "16161c",
+    "body": "c9bfa8",
+    "rim": "fff3d6",
+    "accent": "ff1f3d"
+  },
+  "shapeLang": [
+    "spike",
+    "ring"
+  ],
+  "zone": {
+    "shape": "circle",
+    "r": 3.5,
+    "at": "target"
+  },
+  "timing": {
+    "anticipationMs": 1000,
+    "impactMs": 140,
+    "lingerMs": 800
+  },
+  "readability": "Vạch báo đỏ chuẩn kẻ địch đúng vòng tròn r3.5 m đọc rõ trên nền sáng; thân hiệu ứng xương trắng ngà, mảnh vỡ bạc, bụi xám, không che người chơi.",
+  "budget": {
+    "drawCalls": 10,
+    "particles": 300,
+    "screenCover": 0.2,
+    "overdraw": 5
+  }
+}

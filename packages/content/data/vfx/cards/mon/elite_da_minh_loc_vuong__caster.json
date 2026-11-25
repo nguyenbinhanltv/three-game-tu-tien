@@ -1,0 +1,33 @@
+{
+  "monId": "elite_da_minh_loc_vuong",
+  "move": "caster",
+  "idea": "Dạ Minh Lộc Vương dùng chiêu caster: vạch báo là vòng tròn r6 m ĐỎ chuẩn kẻ địch (viền sáng + tô mờ lấp dần) theo nhịp 1.3 s; nổ ra sóng xanh, bọt trắng, tia nước (không đỏ/cam).",
+  "element": "thuy",
+  "palette": {
+    "core": "0a2a55",
+    "body": "3a8cf0",
+    "rim": "d6f1ff",
+    "accent": "ff1f3d"
+  },
+  "shapeLang": [
+    "spike",
+    "ring"
+  ],
+  "zone": {
+    "shape": "circle",
+    "r": 6,
+    "at": "target"
+  },
+  "timing": {
+    "anticipationMs": 1300,
+    "impactMs": 140,
+    "lingerMs": 800
+  },
+  "readability": "Vạch báo đỏ chuẩn kẻ địch đúng vòng tròn r6 m đọc rõ trên nền sáng; thân hiệu ứng sóng xanh, bọt trắng, tia nước, không che người chơi.",
+  "budget": {
+    "drawCalls": 10,
+    "particles": 300,
+    "screenCover": 0.2,
+    "overdraw": 5
+  }
+}
