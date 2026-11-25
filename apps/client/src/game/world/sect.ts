@@ -72,7 +72,7 @@ function pavilion(b: GeoBuilder, x: number, y: number, z: number): void {
 
 /**
  * Dựng các công trình tĩnh thành một lưới duy nhất.
- * `buildings = true`: dựng cả kiến trúc tông môn bằng code (dùng khi chưa/không tải được sect.glb từ Blender).
+ * `buildings = true`: dựng cả kiến trúc tông môn bằng code (dùng khi chưa/không tải được arch_sect từ Blender).
  */
 export function buildSect(buildings = true): THREE.BufferGeometry {
   const b = new GeoBuilder();

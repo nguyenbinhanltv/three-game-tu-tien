@@ -61,7 +61,7 @@ pnpm --filter @dtl/asset-pipeline test
 - Dùng `assets` (singleton `AssetCache` trong `apps/client/src/game/core/assets.ts`): `await assets.attach(renderer)` một lần cho mỗi renderer (KTX2 dò định dạng GPU), rồi `const h = await assets.acquire('<id>', { pos })`, thêm `h.scene` vào cảnh, và `h.release()` đúng một lần khi bỏ. Handle cuối release thì geometry/material/texture của bản gốc được dispose.
 - Không `new GLTFLoader()` riêng trong game. Material tự gán đè lên bản sao là của người gọi, người gọi tự dispose.
 - Transcoder Basis lấy từ `node_modules/three` qua URL Vite (`?url`), phục vụ cùng origin; không dùng CDN ngoài. Trang xem asset dùng chung `createGltfLoader`/`createKtx2Loader` và thêm Draco.
-- `apps/client/public/assets/sect.glb` là bản chép của GLB thô `arch_sect`, chỉ còn làm đầu vào cho test pipeline; client không nạp nó.
+- Test pipeline (`tools/asset-pipeline/test/pipeline.test.ts`) tự dựng GLB kiến trúc tổng hợp nhỏ bằng gltf-transform, không cần file mẫu trong repo (`sect.glb` đã xóa ở A2).
 
 ## Quy ước
 

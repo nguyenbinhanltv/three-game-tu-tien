@@ -260,5 +260,5 @@ if __name__ == '__main__':
         mode, target = args[0], (args[1] if len(args) > 1 else None)
     else:  # run.mjs truyền thẳng đường dẫn GLB ra
         mode, target = 'sect', (args[0] if args else None)
-    target = target or ('sect.glb' if mode == 'sect' else 'kit_out')
+    target = target or ('arch_sect.glb' if mode == 'sect' else 'kit_out')
     (run_sect if mode == 'sect' else run_kit)(target)

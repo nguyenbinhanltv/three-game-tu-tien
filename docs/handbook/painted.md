@@ -36,7 +36,7 @@ Rút từ painted-valley (xem README và LICENCE-NOTES của nó). **Phạm vi: 
 | --- | --- | --- |
 | P1 | cờ `style`, `render/painted/palette.ts` (bảng lit/shade, `cel2`), giấy phép, trang này | xong |
 | P2 | mặt đất + cỏ lá mảnh + hoa (port từ painted-valley) | xong ở PR #614 (cảnh thử đo khớp: nhánh riêng, chưa vào) |
-| P3 | núi xa nướng một lần vào dải sơn, sương theo giờ | |
+| P3 | núi xa nướng một lần vào dải sơn, sương theo giờ | code xong sau cờ `?far=1` (tắt mặc định, PR này); Vân Lam là thung lũng kín nên KHÔNG bật; bật ở P9 cho bản đồ có chân trời mở |
 | P4 | mây trời đắp khối nướng vào cubemap | |
 | P5 | hoàn thiện Kuwahara + mặt nạ (bỏ qua trời/VFX/HUD) | |
 | P6 | cây + nhà ngoài tông (cel2, chi tiết shader) | |
@@ -78,3 +78,14 @@ Lần đầu (bụi cỏ hai tông + nét cọ xoay theo dốc) bị người d�
 - Pass cuối `paintedOutput` (`render/painted/frame.ts`) nhận thêm hai móc: `aberration` (quang sai màu khi trúng đòn, lấy mẫu lệch R/B) và `overlay` (lớp phủ ở không gian hiển thị). `PostPipeline` truyền `feedbackLayers` (`render/post.ts`) làm `overlay`, nên `hit()`, `flash()`, `impactFrame()`, `punch()`, nhuộm chuyển pha và mực khi chết vẫn hoạt động như chuỗi thường.
 - Kuwahara bỏ qua điểm sáng HDR: ảnh trả về ảnh gốc dần khi độ chói đi từ 1,3 đến 2,2, để VFX (chuẩn HPL2) và nhân vật rực sáng không bị nhòe.
 - Bloom TẮT khi `?style=painted` (quyết định tạm: painted-valley không có bloom; VFX sẽ mất quầng sáng). Khi Họa Cảnh thành mặc định (P10) cần quyết định riêng: bật lại bloom chỉ cho lớp VFX hay chấp nhận không có.
+
+## P3 — vùng xa nướng một lần (`?style=painted&far=1`)
+
+Dịch từ painted-valley/src/valley/backdrop.js (MIT, © 2026 Patch). Mặc định TẮT; chỉ `?style=painted&far=1` ở Vân Lam, WebGPU.
+
+- **Độ cao (`render/painted/lab/farHeight.ts`, `farHeightCpu.ts`, `farHeightBake.ts`, `farHeight.worker.ts`):** bản TSL dịch từng dòng; bản **CPU float32 chính xác** (Math.fround, worker, 1024², ~2,3 s) là bản dùng thật, vì hàm băm của nguồn (tích tới ~2,5e5) hỗn loạn theo từng ulp: WebGPU và WebGL2 cho địa hình khác nhau ở chi tiết mịn. GLSL gốc qua ANGLE gộp `a*b + c` thành mad (fma), nên bản CPU mô phỏng fma. Đo (`tools/painted-compare/far-compare.mjs --cpu`): SSIM độ cao 0,9987 so GLSL gốc (WebGPU thuần 0,86, WebGL2 0,999998).
+- **Pass bức tranh (`render/painted/lab/farPaint.ts`):** ray-march qua độ cao, ra màu sáng / tối + độ sáng / không khí + sương (kèm dải mây chân núi). Đo (`far-paint-compare.mjs`, dải 2048×137): WebGL2 sáng 0,980, tối 0,966, không khí 0,9993; WebGPU với độ cao CPU 0,85 / 0,86 / 0,992 (còn lệch ở hash/noise toạ độ lớn trong chính pass bức tranh). Alpha tách ra lượt vẽ riêng (vật liệu alpha = 0 bị bỏ điểm ảnh).
+- **Vòm (`render/painted/farBackdrop.ts`):** nướng sáu lượt, mỗi lượt 16 lát qua nhiều khung (không giật), một draw call trộn theo `LIGHT` như sky.js. Cảnh thử: `?paintedlab=far&stage=dome` (`tools/painted-compare/far-capture.mjs --query "stage=dome&el=8" --wait __domeReady`).
+- **Camera vista theo cờ (`game/camera/vista.ts`):** điểm ngắm cảnh pitch 5°/nâng 9 m; ngự kiếm 9,5°/6 m (`?vistafly=<độ>` để so). Không có cờ thì giữ `VISTA` cũ; camera chiến đấu không đổi.
+- **Kết luận:** Vân Lam là thung lũng kín, vòng núi/vách đá thật của địa hình che chân trời ở mọi điểm ngắm cảnh và khi ngự kiếm, nên vùng xa chưa có chỗ hiện và KHÔNG bật ở level này. Bật ở P9 cho bản đồ có chân trời mở.
+- **Công cụ:** `far-compare.mjs`, `far-paint-compare.mjs`, `far-capture.mjs`, `pnpm shots paintedvista`. Ảnh tham chiếu của painted-valley không commit (artifact phiên).
