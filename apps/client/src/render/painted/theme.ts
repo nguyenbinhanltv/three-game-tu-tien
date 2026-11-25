@@ -59,7 +59,7 @@ export const PAINTED_THEMES: Record<string, PaintedTheme> = {
   // Thiên Lộ Giới / Cửu Kiều (TN-7): cao nguyên đá rêu trên biển mây, bình minh vàng hồng; đất rêu xanh lam, đá xám ấm, sương hồng nhạt ở rìa
   cuu_kieu: {
     // cỏ rêu đậm và bão hòa hơn (follow-up #685: bản đầu pastel nhạt); tối vẫn pha lam, không phải sáng nhân cho tối
-    ground: [0x7fa652, 0x355a44],
+    ground: [0x8aa556, 0x355a44],
     rock: [0xbdb5a4, 0x5a5878],
     // đá lát ngà ấm dưới nắng bình minh, khe và mặt khuất tím lam (cùng họ với bóng của `rock`, sáng hơn để đường/cầu tách khỏi vách)
     paving: [0xd6cbb0, 0x66668a],
@@ -73,7 +73,7 @@ export const PAINTED_THEMES: Record<string, PaintedTheme> = {
     nightLift: 1.8,
     groundMix: 0.5,
     dryMix: 0.9,
-    groundSat: 1.05,
+    groundSat: 0.95,
   },
 };
 

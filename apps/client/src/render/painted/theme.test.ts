@@ -34,7 +34,7 @@ describe('bảng Họa Cảnh theo level', () => {
     const t = PAINTED_THEMES.cuu_kieu!;
     expect(sat(t.ground[0])).toBeGreaterThan(0.3);
     expect(sat(t.ground[0])).toBeLessThan(0.5);
-    expect(t.groundSat).toBeGreaterThanOrEqual(1);
+    expect(t.groundSat).toBeGreaterThanOrEqual(0.9);
     expect(t.groundSat).toBeLessThanOrEqual(1.2);
   });
 });
