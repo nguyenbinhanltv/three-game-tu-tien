@@ -1,5 +1,5 @@
 import * as THREE from 'three/webgpu';
-import { hash01, tierRank, TC_ORIGIN, type HitTier } from '@dtl/shared';
+import { tierRank, TC_ORIGIN, type HitTier } from '@dtl/shared';
 import { heightAt } from '../../base/levelCtx';
 
 /**
@@ -169,23 +169,23 @@ const _p = new THREE.Vector3();
 const _s = new THREE.Vector3();
 const _c = new THREE.Color();
 const _up = new THREE.Vector3(0, 1, 0);
+const _m2 = new THREE.Matrix4();
 
-/** Màu theo bộ kit Lạc Kiếm (`lacKiemScenes.ts` `C`): gỗ, đất nung, rơm, đá phiến, rêu. */
+/** Màu theo bộ kit Lạc Kiếm (`lacKiemScenes.ts` `C`): gỗ, đất nung, rơm. Đá không có hình riêng: dùng mesh đá của kit (xem `attachExternal`). */
 const KIT = {
   clay: '#9a6e4a',
   band: '#5a3328',
   wood: '#6c4c33',
   straw: '#c9b27a',
-  stone: '#7b857f',
-  stoneDark: '#5f6a66',
-  moss: '#74904c',
 } as const;
 
 interface Item {
   spec: BreakableSpec;
-  /** InstancedMesh của loại vật và chỉ số ô trong đó. */
-  mesh: THREE.InstancedMesh;
+  /** InstancedMesh của loại vật và chỉ số ô trong đó; đá (`rock`) dùng mesh đá của kit gắn sau bằng `attachExternal`. */
+  mesh: THREE.InstancedMesh | null;
   slot: number;
+  /** Đá kit: các InstancedMesh (theo vật liệu) cùng ô, và ma trận gốc của ô. */
+  ext?: { meshes: THREE.InstancedMesh[]; base: THREE.Matrix4 };
   alive: boolean;
   /** Giây còn lại tới lúc mọc lại (khi đã vỡ). */
   respawnIn: number;
@@ -228,34 +228,6 @@ function merge(parts: Part[]): THREE.BufferGeometry {
   return out;
 }
 
-/** Đá nhỏ: khối đa diện gồ ghề (dịch đỉnh theo băm vị trí), mặt trên phủ rêu, chân đá sẫm. Màu đỉnh theo pháp tuyến. */
-function rockGeometry(): THREE.BufferGeometry {
-  const g = new THREE.IcosahedronGeometry(0.42, 1).toNonIndexed();
-  const a = g.attributes.position as THREE.BufferAttribute;
-  const v = new THREE.Vector3();
-  for (let i = 0; i < a.count; i++) {
-    v.fromBufferAttribute(a, i);
-    const k = 0.82 + hash01(Math.round(v.x * 40), Math.round(v.y * 40), Math.round(v.z * 40)) * 0.36;
-    a.setXYZ(i, v.x * k * 1.05, v.y * k * 0.72, v.z * k * 0.92);
-  }
-  g.computeVertexNormals();
-  const n = g.attributes.normal as THREE.BufferAttribute;
-  const stone = new THREE.Color(KIT.stone);
-  const dark = new THREE.Color(KIT.stoneDark);
-  const moss = new THREE.Color(KIT.moss);
-  const c = new THREE.Color();
-  const col = new Float32Array(a.count * 3);
-  for (let i = 0; i < a.count; i++) {
-    const up = Math.min(1, Math.max(0, (n.getY(i) - 0.45) / 0.4));
-    c.copy(stone)
-      .lerp(dark, Math.min(1, Math.max(0, (0.15 - a.getY(i)) / 0.3)))
-      .lerp(moss, up * 0.4);
-    col.set([c.r, c.g, c.b], i * 3);
-  }
-  g.setAttribute('color', new THREE.BufferAttribute(col, 3));
-  return g;
-}
-
 function jarGeometry(): THREE.BufferGeometry {
   // Hình vò: miệng nhỏ, bụng phình, đáy hẹp (lathe, 10 điểm).
   const pts = [
@@ -287,8 +259,6 @@ function kindGeometry(kind: BreakKind): THREE.BufferGeometry {
         { g: new THREE.CylinderGeometry(0.28, 0.32, 0.9, 10), color: col(KIT.straw), pos: [0, 1.05, 0] },
         { g: new THREE.BoxGeometry(1.0, 0.1, 0.1), color: col(KIT.wood), pos: [0, 1.25, 0] },
       ]);
-    case 'rock':
-      return rockGeometry().translate(0, 0.26, 0);
     default:
       return merge([{ g: new THREE.CylinderGeometry(0.1, 0.14, 1.1, 8), color: col(KIT.wood), pos: [0, 0.55, 0] }]);
   }
@@ -322,7 +292,10 @@ export class Breakables {
     this.geos.push(this.shardGeo);
     // Mỗi LOẠI vật = một InstancedMesh (tối đa 4 draw call bất kể số vật), mỗi vật một ô ma trận; ẩn = ma trận co về 0.
     const byKind = new Map<BreakKind, BreakableSpec[]>();
-    for (const spec of specs) byKind.set(spec.kind, [...(byKind.get(spec.kind) ?? []), spec]);
+    for (const spec of specs) {
+      if (spec.kind === 'rock') this.items.push({ spec, mesh: null, slot: -1, alive: true, respawnIn: 0, grow: 1 });
+      else byKind.set(spec.kind, [...(byKind.get(spec.kind) ?? []), spec]);
+    }
     for (const [kind, list] of byKind) {
       const geo = kindGeometry(kind);
       this.geos.push(geo);
@@ -347,12 +320,35 @@ export class Breakables {
 
   /** Đặt ma trận của vật: tỉ lệ `k` (0 = ẩn). */
   private place(it: Item, k: number): void {
+    if (it.spec.kind === 'rock') {
+      if (!it.ext) return;
+      _m.copy(it.ext.base).multiply(_m2.makeScale(Math.max(k, 1e-4), Math.max(k, 1e-4), Math.max(k, 1e-4)));
+      for (const m of it.ext.meshes) {
+        m.setMatrixAt(it.slot, _m);
+        m.instanceMatrix.needsUpdate = true;
+      }
+      return;
+    }
+    if (!it.mesh) return;
     _p.set(it.spec.x, heightAt(it.spec.x, it.spec.z), it.spec.z);
     _q.setFromAxisAngle(_up, it.spec.yaw);
     _s.setScalar(Math.max(k, 1e-4));
     _m.compose(_p, _q, _s);
     it.mesh.setMatrixAt(it.slot, _m);
     it.mesh.instanceMatrix.needsUpdate = true;
+  }
+
+  /**
+   * Gắn đá vỡ vào mesh đá của kit (do `LacKiemScenes` rải bằng `GlbScatter`, cùng hình + vật liệu đá PBR): vật `id` nằm ở ô `slot` của mọi mesh trong `meshes`.
+   * Đá chưa gắn thì chưa vỡ được (không có hình để ẩn).
+   */
+  attachExternal(id: string, meshes: THREE.InstancedMesh[], slot: number): void {
+    const it = this.items.find((i) => i.spec.id === id);
+    if (!it || !meshes.length) return;
+    const base = new THREE.Matrix4();
+    meshes[0]!.getMatrixAt(slot, base);
+    it.ext = { meshes, base };
+    it.slot = slot;
   }
 
   /** Số mesh vẽ khi yên (chưa có mảnh vỡ): bằng số loại vật hiện có. */
@@ -362,6 +358,11 @@ export class Breakables {
 
   get specs(): BreakableSpec[] {
     return this.items.map((i) => i.spec);
+  }
+
+  /** Số đá đã gắn mesh kit. */
+  get rocksAttached(): number {
+    return this.items.filter((i) => i.ext).length;
   }
 
   /** Số vật còn nguyên. */
@@ -377,7 +378,7 @@ export class Breakables {
   hit(x: number, z: number, r: number, tier: HitTier, fromX?: number, fromZ?: number): number {
     const idx = brokenBy(
       this.items.map((i) => i.spec),
-      this.items.map((i) => i.alive),
+      this.items.map((i) => i.alive && (i.spec.kind !== 'rock' || !!i.ext)),
       x,
       z,
       r,

@@ -41,17 +41,18 @@ export class GlbScatter {
   }
 
   /** `material`: thay mọi vật liệu của asset bằng vật liệu này (vd. đá PBR của kit); mảnh thiếu màu đỉnh được thêm màu xám trung tính. */
-  async add(id: string, places: readonly GlbPlace[], material?: THREE.Material): Promise<void> {
-    if (!places.length) return;
+  async add(id: string, places: readonly GlbPlace[], material?: THREE.Material): Promise<THREE.InstancedMesh[]> {
+    const made: THREE.InstancedMesh[] = [];
+    if (!places.length) return made;
     let handle: AssetHandle;
     try {
       handle = await this.cache.acquire(id, { priority: 60 });
     } catch {
-      return; // thiếu asset: bỏ qua, cảnh vẫn dựng được phần còn lại
+      return made; // thiếu asset: bỏ qua, cảnh vẫn dựng được phần còn lại
     }
     if (this.disposed) {
       handle.release();
-      return;
+      return made;
     }
     this.handles.push(handle);
     const root = handle.scene;
@@ -125,7 +126,9 @@ export class GlbScatter {
       im.name = `glb-${id}`;
       this.tris += (geo.index ? geo.index.count / 3 : geo.getAttribute('position').count / 3) * places.length;
       this.group.add(im);
+      made.push(im);
     }
+    return made;
   }
 
   dispose(): void {

@@ -1,6 +1,17 @@
+import * as THREE from 'three/webgpu';
 import { describe, expect, it } from 'vitest';
 import { BRIDGE_A, BRIDGE_B, SCENE_GLB, TC_GATE, TC_ORIGIN, TC_POND } from '@dtl/shared';
-import { Breakables, BREAKABLES_BY_LEVEL, BREAK_KINDS, breakableTriangles, SHARD_LIFE, brokenBy, spawnShard, stepShard, type BreakableSpec } from './breakables';
+import {
+  Breakables,
+  BREAKABLES_BY_LEVEL,
+  BREAK_KINDS,
+  breakableTriangles,
+  SHARD_LIFE,
+  brokenBy,
+  spawnShard,
+  stepShard,
+  type BreakableSpec,
+} from './breakables';
 
 const specs: BreakableSpec[] = [
   { id: 'a', kind: 'jar', x: 0, z: 0, yaw: 0 },
@@ -83,14 +94,14 @@ describe('vật vỡ Lạc Kiếm: bố cục (M5)', () => {
 });
 
 describe('vật vỡ: chi phí vẽ (đếm offline, tất định)', () => {
-  it('toàn bộ vật vỡ Lạc Kiếm chỉ tốn ≤ 4 draw call (mỗi loại một InstancedMesh) và ≤ 12k tam giác', () => {
+  it('vò/bia/cọc Lạc Kiếm chỉ tốn ≤ 3 draw call (mỗi loại một InstancedMesh; đá dùng mesh kit) và ≤ 12k tam giác', () => {
     const list = BREAKABLES_BY_LEVEL.van_lam!;
     const b = new Breakables(list);
-    const kinds = new Set(list.map((s) => s.kind));
+    const kinds = new Set(list.filter((s) => s.kind !== 'rock').map((s) => s.kind)); // đá dùng mesh đá của kit (không thêm draw call)
     expect(b.meshCount).toBe(kinds.size);
-    expect(b.meshCount).toBeLessThanOrEqual(4);
+    expect(b.meshCount).toBeLessThanOrEqual(3);
     let tris = 0;
-    for (const k of list) tris += breakableTriangles(k.kind);
+    for (const k of list) if (k.kind !== 'rock') tris += breakableTriangles(k.kind);
     console.log(`breakables: ${b.meshCount} draw, ${tris} tam giác, ${list.length} vật`);
     expect(tris).toBeLessThanOrEqual(12000);
     b.dispose();
@@ -99,11 +110,32 @@ describe('vật vỡ: chi phí vẽ (đếm offline, tất định)', () => {
     const list = BREAKABLES_BY_LEVEL.van_lam!;
     const b = new Breakables(list);
     const n = b.meshCount;
-    const first = list[0]!;
+    const first = list.find((s) => s.kind === 'jar')!;
     expect(b.hit(first.x, first.z, 1, 'heavy')).toBeGreaterThan(0);
     b.update(BREAK_KINDS.jar.respawn + 1);
     expect(b.aliveCount).toBe(list.length);
     expect(b.meshCount).toBe(n);
+    b.dispose();
+  });
+  it('đá vỡ dùng mesh kit: chưa gắn thì không vỡ; gắn rồi vỡ → ẩn ô, mọc lại → khôi phục', () => {
+    const list = BREAKABLES_BY_LEVEL.van_lam!;
+    const rock = list.find((s) => s.kind === 'rock')!;
+    const b = new Breakables(list);
+    expect(b.hit(rock.x, rock.z, 1, 'heavy')).toBe(0);
+    const mesh = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshBasicMaterial(), 3);
+    const base = new THREE.Matrix4().compose(new THREE.Vector3(5, 2, 7), new THREE.Quaternion(), new THREE.Vector3(2, 2, 2));
+    mesh.setMatrixAt(1, base);
+    b.attachExternal(rock.id, [mesh], 1);
+    expect(b.rocksAttached).toBe(1);
+    expect(b.hit(rock.x, rock.z, 1, 'heavy')).toBe(1);
+    const m = new THREE.Matrix4();
+    mesh.getMatrixAt(1, m);
+    expect(new THREE.Vector3().setFromMatrixScale(m).x).toBeLessThan(0.01);
+    b.update(BREAK_KINDS.rock.respawn + 1);
+    b.update(1);
+    mesh.getMatrixAt(1, m);
+    expect(new THREE.Vector3().setFromMatrixScale(m).x).toBeCloseTo(2, 3);
+    expect(new THREE.Vector3().setFromMatrixPosition(m).toArray()).toEqual([5, 2, 7]);
     b.dispose();
   });
 });
