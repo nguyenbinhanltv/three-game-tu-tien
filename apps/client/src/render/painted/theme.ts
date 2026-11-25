@@ -68,7 +68,7 @@ export const PAINTED_THEMES: Record<string, PaintedTheme> = {
     nightLift: 1.8,
     groundMix: 0.5,
     dryMix: 0.9,
-    groundSat: 0.7,
+    groundSat: 0.8,
   },
 };
 

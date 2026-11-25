@@ -48,7 +48,7 @@ import { LacKiemSkyScene } from '../world/lacKiemSky';
 import { ThienKhuyetSkyScene, TK_ORIGIN } from '../world/thienKhuyetSky';
 import { VanHaiWow } from '../world/vanHaiWow';
 import { VanHaiGarden } from '../world/vanHaiGarden';
-import { applyGrading, markBloom } from '../../render/post';
+import { applyGrading, markBloom, markVfxMask } from '../../render/post';
 import { adoptGltfMaterials } from '../../render/materials/world';
 import { bhTod, GRADING, GRADING_DEFAULT, mixHex, mixPreset, moodVariant, URL_MOOD, type GradingName } from '../../render/grading';
 import { archWrap, withOccluderFade, withSightFade } from '../world/occlusion';
@@ -376,6 +376,8 @@ export function buildLevelA(eng: Game, id: string, q: (typeof QUALITY)[string]):
     if (eng.gateDiscs.length) eng.scene.add(...eng.gateDiscs);
     for (const disc of eng.gateDiscs)
       if (disc.name !== 'moon-gate' && !disc.userData.isoFlat) markBloom(disc.material as THREE.Material, 0.8);
+      // Họa Cảnh: đĩa trận phẳng (camera chéo) không bloom nhưng phải vào mặt nạ VFX, nếu không Kuwahara làm nhòe rune (ban ngày gần như mất)
+      else if (disc.userData.isoFlat) markVfxMask(disc.material as THREE.Material);
     // Cung gương: vòng ra nằm trên sàn gương (cao hơn 0,08 m của sàn), không bị sàn cắt thành bán nguyệt.
     if (levelAssets(id).palace) for (const disc of eng.gateDiscs) disc.position.y += 0.2;
   }
