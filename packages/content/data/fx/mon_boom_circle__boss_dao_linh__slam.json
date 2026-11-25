@@ -1,0 +1,282 @@
+{
+ "skill": "mon_boom_circle__boss_dao_linh__slam",
+ "palette": "mon_a6_dao",
+ "events": [
+  {
+   "type": "decal",
+   "tex": "scorch",
+   "t": 0,
+   "r": 4,
+   "dur": 2.4,
+   "at": "area",
+   "grow": 0.02,
+   "tone": "core",
+   "alpha": 0.6,
+   "tier": 0,
+   "from": "start",
+   "top": true
+  },
+  {
+   "type": "decal",
+   "tex": "steel_crack",
+   "t": 0,
+   "r": 4,
+   "dur": 1.8,
+   "at": "area",
+   "grow": 0.02,
+   "tone": "rim",
+   "alpha": 0.35,
+   "tier": 0,
+   "from": "start",
+   "top": true
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.0,
+   "dur": 0.9,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.9,
+   "seed": 8200,
+   "tier": 0,
+   "sprite": "dao_arcs",
+   "scale": 4.0,
+   "scaleTo": 4.0,
+   "offset": [
+    0.0,
+    0.4,
+    0.0
+   ],
+   "erodeFrom": 0.35,
+   "sweep": 0,
+   "ragged": 0.5,
+   "billboard": false,
+   "rot": [
+    -90,
+    0,
+    0
+   ]
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.02,
+   "dur": 0.9,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.6,
+   "seed": 8201,
+   "tier": 0,
+   "sprite": "dao_blot",
+   "scale": 4.0,
+   "scaleTo": 4.0,
+   "offset": [
+    0.0,
+    0.42,
+    0.0
+   ],
+   "erodeFrom": 0.35,
+   "sweep": 0,
+   "ragged": 0.5,
+   "billboard": false,
+   "rot": [
+    -90,
+    0,
+    0
+   ]
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.03,
+   "dur": 0.8,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.95,
+   "seed": 8220,
+   "tier": 0,
+   "sprite": "dao_drops",
+   "scale": 1.36,
+   "scaleTo": 1.36,
+   "offset": [
+    1.842,
+    1.12,
+    0.779
+   ],
+   "erodeFrom": 0.35,
+   "sweep": 0,
+   "ragged": 0.5
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.065,
+   "dur": 0.8,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.95,
+   "seed": 8221,
+   "tier": 0,
+   "sprite": "dao_drops",
+   "scale": 1.36,
+   "scaleTo": 1.36,
+   "offset": [
+    -0.779,
+    1.12,
+    1.842
+   ],
+   "erodeFrom": 0.35,
+   "sweep": 0,
+   "ragged": 0.5
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.1,
+   "dur": 0.8,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.95,
+   "seed": 8222,
+   "tier": 0,
+   "sprite": "dao_drops",
+   "scale": 1.36,
+   "scaleTo": 1.36,
+   "offset": [
+    -1.842,
+    1.12,
+    -0.779
+   ],
+   "erodeFrom": 0.35,
+   "sweep": 0,
+   "ragged": 0.5
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.135,
+   "dur": 0.8,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.95,
+   "seed": 8223,
+   "tier": 0,
+   "sprite": "dao_drops",
+   "scale": 1.36,
+   "scaleTo": 1.36,
+   "offset": [
+    0.779,
+    1.12,
+    -1.842
+   ],
+   "erodeFrom": 0.35,
+   "sweep": 0,
+   "ragged": 0.5
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.065,
+   "dur": 0.8,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.95,
+   "seed": 8224,
+   "tier": 0,
+   "sprite": "dao_stroke",
+   "scale": 1.6,
+   "scaleTo": 1.6,
+   "offset": [
+    0.272,
+    1.28,
+    1.577
+   ],
+   "erodeFrom": 0.35,
+   "sweep": 0,
+   "ragged": 0.5
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.1,
+   "dur": 0.8,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.95,
+   "seed": 8225,
+   "tier": 0,
+   "sprite": "dao_stroke",
+   "scale": 1.6,
+   "scaleTo": 1.6,
+   "offset": [
+    -1.501,
+    1.28,
+    -0.553
+   ],
+   "erodeFrom": 0.35,
+   "sweep": 0,
+   "ragged": 0.5
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.135,
+   "dur": 0.8,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.95,
+   "seed": 8226,
+   "tier": 0,
+   "sprite": "dao_stroke",
+   "scale": 1.6,
+   "scaleTo": 1.6,
+   "offset": [
+    1.23,
+    1.28,
+    -1.024
+   ],
+   "erodeFrom": 0.35,
+   "sweep": 0,
+   "ragged": 0.5
+  },
+  {
+   "type": "particles",
+   "kind": "shard",
+   "t": 0,
+   "n": 34,
+   "speed": 6,
+   "spread": 0.9,
+   "life": 0.8,
+   "size": 0.1,
+   "at": "area",
+   "tone": "rim",
+   "tier": 0,
+   "offset": [
+    0,
+    0.3,
+    0
+   ],
+   "grav": 9
+  },
+  {
+   "type": "particles",
+   "kind": "spark",
+   "t": 0,
+   "n": 24,
+   "speed": 5,
+   "spread": 0.9,
+   "life": 0.8,
+   "size": 0.08,
+   "at": "area",
+   "tone": "rim",
+   "tier": 0,
+   "offset": [
+    0,
+    0.4,
+    0
+   ],
+   "grav": 2
+  }
+ ]
+}

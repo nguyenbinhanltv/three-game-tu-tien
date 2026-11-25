@@ -1,0 +1,58 @@
+{
+ "skill": "mon_warn_cone__boss_tu_quang_duc_chu__sweep",
+ "palette": "mon_a6_tuq",
+ "events": [
+  {
+   "type": "decal",
+   "tex": "warn_crack",
+   "t": 0,
+   "r": 8,
+   "dur": 2,
+   "at": "area",
+   "grow": 0.04,
+   "tone": "accent",
+   "alpha": 0.9,
+   "tier": 0,
+   "from": "start",
+   "top": true,
+   "untilDelay": true,
+   "sector": 25
+  },
+  {
+   "type": "decal",
+   "tex": "warn_crack",
+   "t": 0,
+   "r": 8,
+   "dur": 2,
+   "at": "area",
+   "grow": 1.4,
+   "tone": "accent",
+   "alpha": 0.95,
+   "tier": 0,
+   "from": "start",
+   "top": true,
+   "untilDelay": true,
+   "sector": 25,
+   "growUntilDelay": true
+  },
+  {
+   "type": "particles",
+   "kind": "spark",
+   "t": 0,
+   "n": 20,
+   "speed": 2.2,
+   "spread": 0.5,
+   "life": 1.2,
+   "size": 0.1,
+   "at": "area",
+   "tone": "accent",
+   "tier": 1,
+   "inward": true,
+   "offset": [
+    0,
+    0.3,
+    3
+   ]
+  }
+ ]
+}

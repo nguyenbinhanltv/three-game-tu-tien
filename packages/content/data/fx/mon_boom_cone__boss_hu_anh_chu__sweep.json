@@ -1,0 +1,233 @@
+{
+ "skill": "mon_boom_cone__boss_hu_anh_chu__sweep",
+ "palette": "mon_a6_guong",
+ "events": [
+  {
+   "type": "decal",
+   "tex": "steel_crack",
+   "t": 0,
+   "r": 8,
+   "dur": 2.2,
+   "at": "area",
+   "grow": 0.04,
+   "tone": "core",
+   "alpha": 0.85,
+   "tier": 0,
+   "from": "start",
+   "sector": 45,
+   "lift": 0.35
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.0,
+   "dur": 0.85,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.95,
+   "seed": 6200,
+   "tier": 0,
+   "sprite": "guong_hands",
+   "scale": 2.429,
+   "scaleTo": 2.429,
+   "offset": [
+    0.0,
+    0.4,
+    1.44
+   ],
+   "erodeFrom": 0.4,
+   "sweep": 0,
+   "ragged": 0.5,
+   "aim": true,
+   "move": {
+    "to": "area",
+    "offset": [
+     0.0,
+     0.4,
+     6.56
+    ],
+    "ease": "out"
+   }
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.06,
+   "dur": 0.85,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.7,
+   "seed": 6201,
+   "tier": 0,
+   "sprite": "guong_glint",
+   "scale": 2.286,
+   "scaleTo": 2.286,
+   "offset": [
+    0.0,
+    0.4,
+    1.44
+   ],
+   "erodeFrom": 0.4,
+   "sweep": 0,
+   "ragged": 0.5,
+   "aim": true,
+   "move": {
+    "to": "area",
+    "offset": [
+     0.0,
+     0.4,
+     6.56
+    ],
+    "ease": "out"
+   }
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.05,
+   "dur": 0.8,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.95,
+   "seed": 6220,
+   "tier": 0,
+   "sprite": "guong_hand",
+   "scale": 1.143,
+   "scaleTo": 1.143,
+   "offset": [
+    -2.411,
+    0.686,
+    5.231
+   ],
+   "erodeFrom": 0.4,
+   "sweep": 0,
+   "ragged": 0.5
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.08,
+   "dur": 0.8,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.95,
+   "seed": 6221,
+   "tier": 0,
+   "sprite": "guong_hand",
+   "scale": 1.143,
+   "scaleTo": 1.143,
+   "offset": [
+    0.0,
+    0.686,
+    5.76
+   ],
+   "erodeFrom": 0.4,
+   "sweep": 0,
+   "ragged": 0.5
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.11,
+   "dur": 0.8,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.95,
+   "seed": 6222,
+   "tier": 0,
+   "sprite": "guong_hand",
+   "scale": 1.143,
+   "scaleTo": 1.143,
+   "offset": [
+    2.411,
+    0.686,
+    5.231
+   ],
+   "erodeFrom": 0.4,
+   "sweep": 0,
+   "ragged": 0.5
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.08,
+   "dur": 0.8,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.95,
+   "seed": 6224,
+   "tier": 0,
+   "sprite": "guong_feather",
+   "scale": 0.914,
+   "scaleTo": 0.914,
+   "offset": [
+    -2.411,
+    0.686,
+    5.231
+   ],
+   "erodeFrom": 0.4,
+   "sweep": 0,
+   "ragged": 0.5
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.11,
+   "dur": 0.8,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.95,
+   "seed": 6225,
+   "tier": 0,
+   "sprite": "guong_feather",
+   "scale": 0.914,
+   "scaleTo": 0.914,
+   "offset": [
+    2.411,
+    0.686,
+    5.231
+   ],
+   "erodeFrom": 0.4,
+   "sweep": 0,
+   "ragged": 0.5
+  },
+  {
+   "type": "particles",
+   "kind": "shard",
+   "t": 0,
+   "n": 34,
+   "speed": 8,
+   "spread": 0.4,
+   "life": 0.7,
+   "size": 0.1,
+   "at": "area",
+   "tone": "rim",
+   "tier": 0,
+   "offset": [
+    0,
+    0.2857142857142857,
+    0.4571428571428572
+   ],
+   "grav": 4
+  },
+  {
+   "type": "particles",
+   "kind": "spark",
+   "t": 0.04,
+   "n": 24,
+   "speed": 4,
+   "spread": 0.7,
+   "life": 0.8,
+   "size": 0.08,
+   "at": "area",
+   "tone": "rim",
+   "tier": 0,
+   "offset": [
+    0,
+    0.17142857142857143,
+    3.2
+   ],
+   "grav": 1.5
+  }
+ ]
+}

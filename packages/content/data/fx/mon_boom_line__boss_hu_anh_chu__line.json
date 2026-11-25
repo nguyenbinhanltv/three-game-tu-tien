@@ -1,0 +1,312 @@
+{
+ "skill": "mon_boom_line__boss_hu_anh_chu__line",
+ "palette": "mon_a6_guong",
+ "events": [
+  {
+   "type": "decal",
+   "tex": "steel_crack",
+   "t": 0,
+   "r": 1,
+   "dur": 2.6,
+   "at": "area",
+   "grow": 0.1,
+   "tone": "core",
+   "alpha": 0.8,
+   "tier": 0,
+   "from": "start",
+   "strip": [
+    20,
+    4
+   ],
+   "lift": 0.35
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.0,
+   "dur": 0.8,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.9,
+   "seed": 6300,
+   "tier": 0,
+   "sprite": "guong_ray",
+   "scale": 2.4,
+   "scaleTo": 2.4,
+   "offset": [
+    -0.32,
+    0.4,
+    0.8
+   ],
+   "erodeFrom": 0.45,
+   "sweep": 0,
+   "ragged": 0.5,
+   "aim": true,
+   "move": {
+    "to": "area",
+    "offset": [
+     -0.32,
+     0.4,
+     6.88
+    ],
+    "ease": "out"
+   }
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.05,
+   "dur": 0.8,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.8,
+   "seed": 6301,
+   "tier": 0,
+   "sprite": "guong_ray",
+   "scale": 2.2,
+   "scaleTo": 2.2,
+   "offset": [
+    0.32,
+    0.4,
+    0.8
+   ],
+   "erodeFrom": 0.45,
+   "sweep": 0,
+   "ragged": 0.5,
+   "aim": true,
+   "move": {
+    "to": "area",
+    "offset": [
+     0.32,
+     0.4,
+     6.32
+    ],
+    "ease": "out"
+   }
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.1,
+   "dur": 0.8,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.85,
+   "seed": 6302,
+   "tier": 0,
+   "sprite": "guong_pane",
+   "scale": 1.4,
+   "scaleTo": 1.4,
+   "offset": [
+    -0.32,
+    0.4,
+    0.8
+   ],
+   "erodeFrom": 0.45,
+   "sweep": 0,
+   "ragged": 0.5,
+   "aim": true,
+   "move": {
+    "to": "area",
+    "offset": [
+     -0.32,
+     0.4,
+     6.88
+    ],
+    "ease": "out"
+   }
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.08,
+   "dur": 0.7,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.95,
+   "seed": 6320,
+   "tier": 0,
+   "sprite": "guong_shard",
+   "scale": 0.68,
+   "scaleTo": 0.68,
+   "offset": [
+    -0.544,
+    0.56,
+    1.6
+   ],
+   "erodeFrom": 0.4,
+   "sweep": 0,
+   "ragged": 0.5
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.13,
+   "dur": 0.7,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.95,
+   "seed": 6321,
+   "tier": 0,
+   "sprite": "guong_shard",
+   "scale": 0.68,
+   "scaleTo": 0.68,
+   "offset": [
+    0.544,
+    0.56,
+    3.2
+   ],
+   "erodeFrom": 0.4,
+   "sweep": 0,
+   "ragged": 0.5
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.18,
+   "dur": 0.7,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.95,
+   "seed": 6322,
+   "tier": 0,
+   "sprite": "guong_shard",
+   "scale": 0.68,
+   "scaleTo": 0.68,
+   "offset": [
+    -0.544,
+    0.56,
+    4.8
+   ],
+   "erodeFrom": 0.4,
+   "sweep": 0,
+   "ragged": 0.5
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.23000000000000004,
+   "dur": 0.7,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.95,
+   "seed": 6323,
+   "tier": 0,
+   "sprite": "guong_shard",
+   "scale": 0.68,
+   "scaleTo": 0.68,
+   "offset": [
+    0.544,
+    0.56,
+    6.4
+   ],
+   "erodeFrom": 0.4,
+   "sweep": 0,
+   "ragged": 0.5
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.18,
+   "dur": 0.7,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.95,
+   "seed": 6324,
+   "tier": 0,
+   "sprite": "guong_splinter",
+   "scale": 0.52,
+   "scaleTo": 0.52,
+   "offset": [
+    0.544,
+    0.56,
+    2.0
+   ],
+   "erodeFrom": 0.4,
+   "sweep": 0,
+   "ragged": 0.5
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.23000000000000004,
+   "dur": 0.7,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.95,
+   "seed": 6325,
+   "tier": 0,
+   "sprite": "guong_splinter",
+   "scale": 0.52,
+   "scaleTo": 0.52,
+   "offset": [
+    -0.544,
+    0.56,
+    4.0
+   ],
+   "erodeFrom": 0.4,
+   "sweep": 0,
+   "ragged": 0.5
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.28,
+   "dur": 0.7,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.95,
+   "seed": 6326,
+   "tier": 0,
+   "sprite": "guong_splinter",
+   "scale": 0.52,
+   "scaleTo": 0.52,
+   "offset": [
+    0.544,
+    0.56,
+    6.0
+   ],
+   "erodeFrom": 0.4,
+   "sweep": 0,
+   "ragged": 0.5
+  },
+  {
+   "type": "particles",
+   "kind": "shard",
+   "t": 0,
+   "n": 40,
+   "speed": 8,
+   "spread": 0.5,
+   "life": 0.8,
+   "size": 0.1,
+   "at": "area",
+   "tone": "rim",
+   "tier": 0,
+   "offset": [
+    0,
+    0.16,
+    2.8
+   ],
+   "grav": 9
+  },
+  {
+   "type": "particles",
+   "kind": "spark",
+   "t": 0,
+   "n": 26,
+   "speed": 5,
+   "spread": 0.5,
+   "life": 0.9,
+   "size": 0.08,
+   "at": "area",
+   "tone": "body",
+   "tier": 0,
+   "offset": [
+    0,
+    0.12,
+    2.4
+   ],
+   "grav": 1.5
+  }
+ ]
+}

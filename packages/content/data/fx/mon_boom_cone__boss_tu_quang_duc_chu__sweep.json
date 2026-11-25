@@ -1,0 +1,233 @@
+{
+ "skill": "mon_boom_cone__boss_tu_quang_duc_chu__sweep",
+ "palette": "mon_a6_tuq",
+ "events": [
+  {
+   "type": "decal",
+   "tex": "bolt_scorch",
+   "t": 0,
+   "r": 8,
+   "dur": 2.2,
+   "at": "area",
+   "grow": 0.04,
+   "tone": "core",
+   "alpha": 0.85,
+   "tier": 0,
+   "from": "start",
+   "sector": 25,
+   "lift": 0.35
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.0,
+   "dur": 0.85,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.95,
+   "seed": 7200,
+   "tier": 0,
+   "sprite": "tuq_wing",
+   "scale": 2.375,
+   "scaleTo": 2.375,
+   "offset": [
+    0.0,
+    0.35,
+    1.44
+   ],
+   "erodeFrom": 0.4,
+   "sweep": 0,
+   "ragged": 0.5,
+   "aim": true,
+   "move": {
+    "to": "area",
+    "offset": [
+     0.0,
+     0.35,
+     6.56
+    ],
+    "ease": "out"
+   }
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.06,
+   "dur": 0.85,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.6,
+   "seed": 7201,
+   "tier": 0,
+   "sprite": "tuq_halo",
+   "scale": 2.25,
+   "scaleTo": 2.25,
+   "offset": [
+    0.0,
+    0.35,
+    1.44
+   ],
+   "erodeFrom": 0.4,
+   "sweep": 0,
+   "ragged": 0.5,
+   "aim": true,
+   "move": {
+    "to": "area",
+    "offset": [
+     0.0,
+     0.35,
+     6.56
+    ],
+    "ease": "out"
+   }
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.05,
+   "dur": 0.8,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.95,
+   "seed": 7220,
+   "tier": 0,
+   "sprite": "tuq_feather",
+   "scale": 0.9,
+   "scaleTo": 0.9,
+   "offset": [
+    -1.369,
+    0.6,
+    5.595
+   ],
+   "erodeFrom": 0.4,
+   "sweep": 0,
+   "ragged": 0.5
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.08,
+   "dur": 0.8,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.95,
+   "seed": 7221,
+   "tier": 0,
+   "sprite": "tuq_feather",
+   "scale": 0.9,
+   "scaleTo": 0.9,
+   "offset": [
+    0.0,
+    0.6,
+    5.76
+   ],
+   "erodeFrom": 0.4,
+   "sweep": 0,
+   "ragged": 0.5
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.11,
+   "dur": 0.8,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.95,
+   "seed": 7222,
+   "tier": 0,
+   "sprite": "tuq_feather",
+   "scale": 0.9,
+   "scaleTo": 0.9,
+   "offset": [
+    1.369,
+    0.6,
+    5.595
+   ],
+   "erodeFrom": 0.4,
+   "sweep": 0,
+   "ragged": 0.5
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.08,
+   "dur": 0.8,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.95,
+   "seed": 7224,
+   "tier": 0,
+   "sprite": "tuq_trail",
+   "scale": 0.75,
+   "scaleTo": 0.75,
+   "offset": [
+    -1.369,
+    0.6,
+    5.595
+   ],
+   "erodeFrom": 0.4,
+   "sweep": 0,
+   "ragged": 0.5
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.11,
+   "dur": 0.8,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.95,
+   "seed": 7225,
+   "tier": 0,
+   "sprite": "tuq_trail",
+   "scale": 0.75,
+   "scaleTo": 0.75,
+   "offset": [
+    1.369,
+    0.6,
+    5.595
+   ],
+   "erodeFrom": 0.4,
+   "sweep": 0,
+   "ragged": 0.5
+  },
+  {
+   "type": "particles",
+   "kind": "shard",
+   "t": 0,
+   "n": 34,
+   "speed": 8,
+   "spread": 0.4,
+   "life": 0.7,
+   "size": 0.1,
+   "at": "area",
+   "tone": "rim",
+   "tier": 0,
+   "offset": [
+    0,
+    0.25,
+    0.4
+   ],
+   "grav": 4
+  },
+  {
+   "type": "particles",
+   "kind": "spark",
+   "t": 0.04,
+   "n": 24,
+   "speed": 4,
+   "spread": 0.7,
+   "life": 0.8,
+   "size": 0.08,
+   "at": "area",
+   "tone": "rim",
+   "tier": 0,
+   "offset": [
+    0,
+    0.15,
+    3.2
+   ],
+   "grav": 1.5
+  }
+ ]
+}
