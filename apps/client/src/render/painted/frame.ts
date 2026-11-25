@@ -148,7 +148,7 @@ export function paintedOutput(scenePass: N, o: PaintedOutputOpts): N {
     .mul(vec3(0.3, 0.46, 0.88))
     .mul(0.62);
   // vùng tối (nhân vật, quái, bóng) được nâng sàn lam để còn đọc được hình; điểm sáng HDR (đèn, VFX) không bị nhuộm trăng: giữ màu và độ chói của chúng
-  const floorLift: N = vec3(0.04, 0.062, 0.115).mul(float(1).sub(smoothstep(0.0, 0.2, ln)));
+  const floorLift: N = vec3(0.02, 0.03, 0.055).mul(float(1).sub(smoothstep(0.0, 0.2, ln)));
   const hot: N = smoothstep(0.7, 1.5, ln);
   c = mix(c, moon.add(floorLift), paintedNight.mul(float(1).sub(hot)));
   // a painter's curve: what is below white stays as it was mixed, and only the brightest lights are eased in
