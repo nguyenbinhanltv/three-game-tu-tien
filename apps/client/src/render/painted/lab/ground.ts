@@ -5,6 +5,9 @@ import {
   distance,
   dot,
   float,
+  floor,
+  fract,
+  length,
   fwidth,
   max,
   min,
@@ -14,12 +17,14 @@ import {
   positionWorld,
   select,
   smoothstep,
+  step,
   texture,
   uniform,
   vec2,
   vec3,
 } from 'three/tsl';
 import type { N, RefField } from './field';
+import { hash42 } from './hash';
 
 /**
  * Đất dưới cỏ: dựa trên painted-valley/src/lib/ground.js (MIT, © 2026 Patch; xem assets/LICENSES.md), dịch từng dòng sang TSL. Cảnh thử
@@ -93,7 +98,13 @@ export function flatTextures(): GroundTextures {
  * khi `?style=painted`. Trong `Fn` để `.toVar()` được phát theo thứ tự (xem skill tsl-shaders-vfx). `opts.m` thay ô bản đồ (dry, growth,
  * wet, flowers) và `opts.landNormal` thay pháp tuyến "thế đất" khi dữ liệu không đến từ texture của cánh đồng (game).
  */
-export function groundColor(F: RefField, textures: GroundTextures, vWorld: N, vNormal: N, opts: { m?: N; landNormal?: N } = {}): N {
+export function groundColor(
+  F: RefField,
+  textures: GroundTextures,
+  vWorld: N,
+  vNormal: N,
+  opts: { m?: N; landNormal?: N; dab?: N } = {},
+): N {
   return Fn(() => {
     let xz: N = vWorld.xz;
     xz = xz.toVar();
@@ -216,6 +227,39 @@ export function groundColor(F: RefField, textures: GroundTextures, vWorld: N, vN
           .mul(float(1).sub(smoothstep(80, 170, dist))),
       );
       g = g.toVar();
+      // Chấm hoa vẽ lên đất (không tốn tam giác): hoa 3D chỉ phủ vòng gần, xa hơn đất tự mang chấm trắng/hồng như nét dab của họa sĩ. Mật độ theo
+      // đám (drift) và hệ số `opts.dab` (vùng nhiều hoa như bên suối); không truyền `dab` thì tắt (cảnh thử đo khớp giữ đúng nguồn); mờ dần khi quá xa, nơi `dust` ở trên đã thay bằng màu chung.
+      if (opts.dab) {
+        const DAB = 0.42;
+        let dCell: N = floor(xz.div(DAB));
+        dCell = dCell.toVar();
+        let dh: N = hash42(dCell);
+        dh = dh.toVar();
+        let dh2: N = hash42(dCell.add(7.3));
+        dh2 = dh2.toVar();
+        let dd: N = length(fract(xz.div(DAB)).sub(vec2(0.2).add(dh.xy.mul(0.6)))).mul(DAB);
+        dd = dd.toVar();
+        let dr: N = dh.z.mul(0.03).add(0.026);
+        dr = dr.toVar();
+        let dens: N = m.a
+          .mul(drift.mul(0.9).add(0.1))
+          .mul(opts.dab ?? 1)
+          .mul(0.9);
+        dens = dens.toVar();
+        let dabW: N = float(1)
+          .sub(smoothstep(dr.mul(0.6), dr, dd))
+          .mul(step(dh2.x, dens))
+          .mul(smoothstep(4, 14, dist))
+          .mul(float(1).sub(smoothstep(55, 95, dist)));
+        dabW = dabW.toVar();
+        const dabCol: N = select(
+          dh2.y.lessThan(0.6),
+          vec3(0.93, 0.9, 0.82),
+          select(dh2.y.lessThan(0.85), vec3(0.86, 0.38, 0.58), vec3(0.9, 0.78, 0.2)),
+        );
+        g = mix(g, dabCol, dabW.mul(0.92));
+        g = g.toVar();
+      }
       // past the meadow it is farmland, as it is painted
       let fl: N = F.floorAt(xz);
       fl = fl.toVar();
