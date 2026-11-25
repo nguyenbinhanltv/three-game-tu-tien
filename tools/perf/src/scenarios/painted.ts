@@ -23,7 +23,7 @@ export default {
   name: 'painted',
   desc: 'Họa Cảnh: ảnh so sánh mặc định | ?style=painted ở Thung Lũng Thanh Phong (ngày/đêm × 720p/1080p) + số đo',
   usage:
-    '[--styles off,painted] [--moods day,night] [--views 720p,1080p] [--points a,b|all] [--preset high] [--burst N] [--spawn <id quái> --spawn-n N]',
+    '[--styles off,painted] [--moods day,night] [--views 720p,1080p] [--points a,b|all] [--preset high] [--burst N] [--spawn <id quái> --spawn-n N] [--cast 0,1,2: bấm chiêu ở ô số này giữa các khung burst]',
   async run(r) {
     const only = list('--points', 'all');
     const pts = POINTS.filter((p) => only.includes('all') || only.includes(p.name));
@@ -50,10 +50,17 @@ export default {
           for (const p of pts) {
             await tp(page, p.x, p.z);
             await sleep(first ? 3000 : 0);
+            const cast = list('--cast', '').filter(Boolean).map(Number);
+            const press = async (k: number): Promise<void> => {
+              if (cast.length) await page.evaluate((i) => window.__game!.useSkill(i), cast[k % cast.length]!);
+            };
+            await press(0);
             await snap(page, r.out, `${style}-${view}-${mood}-${p.name}.png`, { wait: first ? 6000 : 4000 });
             // --burst N: thêm N khung cách nhau ~2,5 s (bắt hiệu ứng thoáng qua như chiêu vùng của quái)
-            for (let b = 1; b < num('--burst', 1); b++)
+            for (let b = 1; b < num('--burst', 1); b++) {
+              await press(b);
               await snap(page, r.out, `${style}-${view}-${mood}-${p.name}-b${b}.png`, { wait: 2500 });
+            }
             first = false;
             perf[`${style}-${view}-${mood}-${p.name}`] = await perfSample(page);
           }
