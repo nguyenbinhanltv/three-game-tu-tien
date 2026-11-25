@@ -2,6 +2,7 @@
 // Git giữ sổ này (mỗi file một dòng, sắp theo đường dẫn nên merge/diff gọn); nhị phân nằm trên R2.
 // Khóa trên R2 = đường dẫn tương đối so với public (ví dụ `assets/arch_sect.4d15d27b64.glb`).
 
+import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -106,6 +107,24 @@ export async function pool<T>(items: T[], n: number, fn: (x: T) => Promise<void>
       while (i < items.length) await fn(items[i++]);
     }),
   );
+}
+
+/**
+ * Nhị phân trong `dir` (mặc định public/) mà sổ khóa KHÔNG có: do cache CI khôi phục từ nhánh khác (`restore-keys`) hoặc file mồ côi. Chỉ xét NHỊ PHÂN
+ * (manifest json không đụng) và KHÔNG bao giờ file git đang theo dõi (`tracked`). Chỉ xóa file cục bộ khi `apply`; KHÔNG bao giờ chạm R2.
+ */
+export function pruneStale(lock: Lock, apply: boolean, dir: string = PUBLIC_DIR, tracked: Set<string> = trackedIn(dir)): string[] {
+  const stale = walk(dir)
+    .filter((r) => isLocked(r) && BINARY_EXT.test(r) && !lock.files[r] && !tracked.has(r))
+    .sort();
+  if (apply) for (const r of stale) fs.rmSync(path.join(dir, r), { force: true });
+  return stale;
+}
+
+/** File git đang theo dõi dưới `dir` (đường dẫn tương đối `dir`, dấu `/`): favicon, file tĩnh commit trong public/ — không bao giờ bị prune. Lỗi git → ném (an toàn: không xóa gì). */
+export function trackedIn(dir: string): Set<string> {
+  const out = execFileSync('git', ['ls-files', '-z', '--', '.'], { cwd: dir, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
+  return new Set(out.split('\u0000').filter(Boolean));
 }
 
 /**

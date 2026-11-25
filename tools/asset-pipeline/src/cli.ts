@@ -2,7 +2,7 @@
 //   tsx src/cli.ts build    [--only <id>] [--force] [--no-ktx]   Blender (tools/blender/run.mjs) rồi optimize
 //   tsx src/cli.ts optimize [--only <id>] [--force] [--no-ktx] [--raw <dir>] [--out <dir>] [--cache <file>]
 //   tsx src/cli.ts validate [--only <id>] [--raw <dir>] [--out <dir>] [--no-r2]
-//   tsx src/cli.ts lock | push [--dry] [--only <khóa>] | pull [--verify] | gc [--days N] [--apply]   (R2, xem push.ts/pull.ts/gc.ts)
+//   tsx src/cli.ts lock | push [--dry] [--only <khóa>] | pull [--verify] | prune [--apply] | gc [--days N] [--apply]   (R2, xem push.ts/pull.ts/gc.ts)
 // Lệnh ở gốc repo: pnpm assets:build, pnpm assets:validate.
 
 import { spawnSync } from 'node:child_process';
@@ -13,7 +13,7 @@ import { gc } from './gc.js';
 import { pull } from './pull.js';
 import { push } from './push.js';
 import { assetBase } from './r2/env.js';
-import { readLock, scanLock, unhashedBinaries, writeLock } from './r2/lock.js';
+import { pruneStale, readLock, scanLock, unhashedBinaries, writeLock } from './r2/lock.js';
 import { changedKeys, hasR2Credentials, readBaseLock, rotatingSample, verifyLock, verifyRemote, verifyRemoteList } from './r2/verify.js';
 import { validate } from './validate.js';
 
@@ -125,6 +125,12 @@ else if (cmd === 'lock') {
     console.error(`[pull] LỖI: ${e instanceof Error ? e.message : String(e)}`);
     ok = false;
   }
+} else if (cmd === 'prune') {
+  // Dọn nhị phân trong apps/client/public không có trong sổ khóa (cache CI cũ). Mặc định chạy thử; CI truyền --apply. Không đụng R2.
+  const apply = args.includes('--apply');
+  const stale = pruneStale(readLock(), apply);
+  console.log(`[prune] ${stale.length} file ngoài sổ khóa${apply ? ', đã xóa khỏi thư mục cục bộ' : ' — chạy thử, thêm --apply để xóa'}`);
+  for (const k of stale.slice(0, 30)) console.log(`[prune]   ${k}`);
 } else if (cmd === 'gc') {
   try {
     const apply = args.includes('--apply');
@@ -139,7 +145,7 @@ else if (cmd === 'lock') {
     ok = false;
   }
 } else {
-  console.error(`Lệnh không rõ: ${cmd} (build | optimize | validate | lock | push | pull | gc)`);
+  console.error(`Lệnh không rõ: ${cmd} (build | optimize | validate | lock | push | pull | prune | gc)`);
   ok = false;
 }
 // Node trên Windows có thể abort (libuv UV_HANDLE_CLOSING) nếu thoát ngay khi socket fetch còn đang đóng: chờ một nhịp.
