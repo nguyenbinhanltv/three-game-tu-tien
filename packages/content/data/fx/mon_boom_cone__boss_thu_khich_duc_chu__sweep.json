@@ -1,0 +1,185 @@
+{
+ "skill": "mon_boom_cone__boss_thu_khich_duc_chu__sweep",
+ "palette": "mon_tho_pk",
+ "events": [
+  {
+   "type": "decal",
+   "tex": "jade_crack",
+   "t": 0,
+   "r": 8,
+   "dur": 2.0,
+   "at": "area",
+   "grow": 0.04,
+   "tone": "core",
+   "alpha": 0.3,
+   "tier": 0,
+   "from": "start",
+   "sector": 45,
+   "lift": 0.35
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.0,
+   "dur": 1.0,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.7,
+   "seed": 4420,
+   "tier": 0,
+   "sprite": "ham_crack",
+   "scale": 1.829,
+   "scaleTo": 1.829,
+   "offset": [
+    0.0,
+    0.257,
+    3.2
+   ],
+   "erodeFrom": 0.45,
+   "sweep": 0,
+   "ragged": 0.5,
+   "billboard": false,
+   "rot": [
+    -90,
+    0,
+    0
+   ]
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.03,
+   "dur": 1.0,
+   "at": "area",
+   "tone": "body",
+   "alpha": 1.0,
+   "seed": 4421,
+   "tier": 0,
+   "sprite": "ham_spikes",
+   "scale": 1.143,
+   "scaleTo": 1.143,
+   "offset": [
+    -2.299,
+    0.914,
+    4.4
+   ],
+   "erodeFrom": 0.5,
+   "sweep": 0,
+   "ragged": 0.5
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.07,
+   "dur": 1.0,
+   "at": "area",
+   "tone": "body",
+   "alpha": 1.0,
+   "seed": 4422,
+   "tier": 0,
+   "sprite": "ham_spikes",
+   "scale": 1.143,
+   "scaleTo": 1.143,
+   "offset": [
+    2.299,
+    0.914,
+    4.4
+   ],
+   "erodeFrom": 0.5,
+   "sweep": 0,
+   "ragged": 0.5
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.02,
+   "dur": 1.0,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.8,
+   "seed": 4424,
+   "tier": 0,
+   "sprite": "ham_ridge",
+   "scale": 2.286,
+   "scaleTo": 2.286,
+   "offset": [
+    0.0,
+    0.4,
+    1.44
+   ],
+   "erodeFrom": 0.5,
+   "sweep": 0,
+   "ragged": 0.5,
+   "aim": true,
+   "move": {
+    "to": "area",
+    "offset": [
+     0.0,
+     0.4,
+     4.4
+    ],
+    "ease": "out"
+   }
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.05,
+   "dur": 0.9,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.8,
+   "seed": 4425,
+   "tier": 0,
+   "sprite": "ham_debris",
+   "scale": 1.257,
+   "scaleTo": 1.257,
+   "offset": [
+    0.0,
+    0.971,
+    4.0
+   ],
+   "erodeFrom": 0.45,
+   "sweep": 0,
+   "ragged": 0.5
+  },
+  {
+   "type": "particles",
+   "kind": "shard",
+   "t": 0,
+   "n": 22,
+   "speed": 6,
+   "spread": 0.5,
+   "life": 1.0,
+   "size": 0.1,
+   "at": "area",
+   "tone": "rim",
+   "tier": 0,
+   "offset": [
+    0,
+    0.2857142857142857,
+    1.7142857142857142
+   ],
+   "grav": 8
+  },
+  {
+   "type": "particles",
+   "kind": "dust",
+   "t": 0,
+   "n": 14,
+   "speed": 4,
+   "spread": 0.5,
+   "life": 1.2,
+   "size": 0.2,
+   "at": "area",
+   "tone": "body",
+   "tier": 1,
+   "offset": [
+    0,
+    0.17142857142857143,
+    1.7142857142857142
+   ],
+   "grav": 0.8
+  }
+ ]
+}
