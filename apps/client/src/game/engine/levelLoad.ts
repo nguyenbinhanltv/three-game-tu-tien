@@ -626,6 +626,7 @@ export function buildLevelB(eng: Game, id: string, q: (typeof QUALITY)[string]):
     eng.kinhNguyetArt = new KinhNguyetArt({
       reflect: q.lights && isWebGPU(eng.renderer),
       hideInReflection: eng.vfx.group,
+      reflectFrustumMargin: 16, // cắt mesh tĩnh ngoài khung nhìn nới 16 m khỏi lượt phản chiếu (lượt chính chỉ vẽ ~13 mesh tĩnh, phản chiếu ~45)
       reflectEvery: 2, // phản chiếu chỉ bật ở Cao/Cực cao (q.lights); cập nhật mỗi 2 khung để bớt ~nửa số draw của lượt này
     });
     eng.scene.add(eng.kinhNguyetArt.group);
