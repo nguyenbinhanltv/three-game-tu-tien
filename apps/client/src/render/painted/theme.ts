@@ -125,5 +125,5 @@ export function paintedFarOn(levelId: string): boolean {
 }
 
 /** Ngưỡng độ đỏ-hơn-xanh (r − g của màu đỉnh tuyến tính) cho mảng đất trần: dưới `DRY_LO` là cỏ, trên `DRY_HI` là đất hẳn. Dùng chung shader đất và lưới cỏ. */
-export const DRY_LO = 0.02;
-export const DRY_HI = 0.07;
+export const DRY_LO = 0.008;
+export const DRY_HI = 0.03;
