@@ -25,7 +25,14 @@ export interface PaintedTheme {
 
 export const PAINTED_THEMES: Record<string, PaintedTheme> = {
   // Bắc Hoang Tẫn Nguyên (MAP-5): tuyết trắng lam, bóng tím chàm, đá đen tím, sương lam lạnh
-  bac_hoang: { ground: [0xe4ecf6, 0x8a98c4], rock: [0x6a6585, 0x2a2540], mist: 0xc4d0ea, mistBand: [10, 60], mistK: 0.6, far: [0xdce6f6, 0x5c6896] },
+  bac_hoang: {
+    ground: [0xe4ecf6, 0x8a98c4],
+    rock: [0x6a6585, 0x2a2540],
+    mist: 0xc4d0ea,
+    mistBand: [10, 60],
+    mistK: 0.6,
+    far: [0xdce6f6, 0x5c6896],
+  },
 };
 
 /** Vân Lam (pilot) và level chưa có bảng: sương cũ của P4. */
