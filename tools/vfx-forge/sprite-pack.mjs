@@ -16,8 +16,12 @@ const flag = (n, d) => {
   const i = argv.indexOf(n);
   return i >= 0 ? argv[i + 1] : d;
 };
-if (!input) throw new Error('dùng: sprite-pack.mjs <bảng.png> [--cols 4] [--rows 2] [--cell 512] [--out <webp>]');
-const cols = Number(flag('--cols', 4));
+if (!input)
+  throw new Error('dùng: sprite-pack.mjs <bảng.png> [--cols <số cột atlas, mặc định SPRITE_COLS>] [--rows 2] [--cell 512] [--out <webp>]');
+// Số cột của ATLAS lấy từ `SPRITE_COLS` ở `render/vfx/art.ts` (hiện 8; cạnh atlas ≤ 8192 px nên cột × 512 ≤ 8192); `--cols` ghi đè. Số cột của một BẢNG vẽ riêng là `--sheet <png>:<cột>:<hàng>` (hoặc `--sheet-cols` cho dạng tắt).
+const artSrc = fs.readFileSync(path.join(here, '../../apps/client/src/render/vfx/art.ts'), 'utf8');
+const cols = Number(flag('--cols', artSrc.match(/SPRITE_COLS = (\d+)/)?.[1] ?? 4));
+const sheetCols = Number(flag('--sheet-cols', 4));
 const rows = Number(flag('--rows', 2));
 const cell = Number(flag('--cell', 512));
 // Mặc định ghi ra `apps/client/public/hoa-truc/vfx_sprites.<hash10>.webp` (hash10 = 10 ký tự đầu của sha256 nội dung): R2 bất biến, không bao giờ đè tên cũ.
@@ -44,7 +48,7 @@ const patches = argv
     const col = Number(parts.pop());
     return { file: parts.join(':'), cols: cols2, rows: rows2, only: { col, row }, forcedIdx: Number(idx) };
   });
-if (!sheets.length && !patches.length) sheets.push({ file: input, cols, rows });
+if (!sheets.length && !patches.length) sheets.push({ file: input, cols: sheetCols, rows });
 const comps = [];
 const report = [];
 let cellNo = 0;

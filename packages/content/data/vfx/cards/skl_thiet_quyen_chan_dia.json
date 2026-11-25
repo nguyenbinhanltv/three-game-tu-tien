@@ -1,17 +1,16 @@
 {
   "skillId": "skl_thiet_quyen_chan_dia",
-  "idea": "Hộ pháp giáng nắm đấm xuống đất: sóng xung kích hổ phách tỏa thành vòng tròn từ chân, đất nứt hình tia, đá vụn bắn lên rồi rơi, kẻ địch quanh người choáng.",
+  "idea": "Thiết Quyền Chấn Địa: một nắm đấm khổng lồ bằng vàng-đá (các khớp ngón chạm khắc) giáng thẳng xuống đất, đất nứt thành tia xòe ra từ điểm giáng, đá vụn tảng lớn bay lên rồi rơi. Màu: lõi nâu đồng sẫm ngả vàng olive (#3B3010) ở tâm, thân VÀNG KIM–ĐỒNG ẤM (hue 46–50°, #D9B13A), viền vàng nhạt kem sáng (#FFF1B8) mỏng; KHÔNG đỏ, KHÔNG cam, KHÔNG nâu đỏ/gạch, KHÔNG tím (Hồn tu), KHÔNG xanh lam (Lôi tu), KHÔNG xanh ngọc/teal (Kiếm tu); vàng sáng #FFE27A chỉ là điểm nhỏ.",
   "element": "tho",
   "path": "the_tu",
   "shapeLang": [
-    "ring",
     "burst",
     "spike"
   ],
   "timing": {
-    "anticipationMs": 350,
-    "impactMs": 90,
-    "lingerMs": 900
+    "anticipationMs": 300,
+    "impactMs": 80,
+    "lingerMs": 600
   },
   "footprint": {
     "lengthM": 12,
@@ -23,7 +22,7 @@
   "budget": {
     "drawCalls": 12,
     "particles": 500,
-    "screenCover": 0.35,
+    "screenCover": 0.2,
     "overdraw": 4
   },
   "textures": [
@@ -32,5 +31,11 @@
       "kind": "flipbook"
     }
   ],
-  "impactFrame": true
+  "impactFrame": true,
+  "silhouette": "nắm đấm khổng lồ vàng-đá giáng xuống, vết nứt tia xòe, đá tảng bay lên",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles"
+  ]
 }
