@@ -233,7 +233,39 @@ async function run(r: Run, poses: string[], cams: string[], sizes: string[]): Pr
       await ctx.close();
       return { ...out, stills: stillsMode };
     }
-    if (stillsMode === 'tp1b') {
+    if (stillsMode === 'pin') {
+      // A/B lò xo ghim gốc-thả ngọn (`?pin=1` so với không): đứng, chạy (giữa và cuối), dừng lại, né (Roll), chém — thời gian thật, ảnh cắt rộng quanh nhân vật theo cỡ màn hình.
+      const setId = opt('--set', 'none');
+      if (setId !== 'none') await gm(page, `set ${setId}`, 1500);
+      await page.evaluate(() => window.__animlab!.cam('iso'));
+      await sleep(1500);
+      const wideShot = async (name: string) => {
+        const buf = await page.screenshot({ clip: { x: 540 * sk, y: 270 * sk, width: 200 * sk, height: 190 * sk }, type: 'png' });
+        await sharp(buf)
+          .resize(400, 300)
+          .png()
+          .toFile(path.join(r.out, `${stillsMode}-${name}.png`));
+        console.log('  ảnh', `${stillsMode}-${name}.png`);
+      };
+      await wideShot('0-dung');
+      await page.keyboard.down('w');
+      await sleep(1200);
+      await wideShot('1-chay');
+      await sleep(500);
+      await wideShot('1b-chay');
+      await page.keyboard.up('w');
+      await sleep(120);
+      await wideShot('2-dung-lai');
+      await sleep(450);
+      await wideShot('2b-lang');
+      await page.keyboard.press('Space');
+      await sleep(240);
+      await wideShot('3-ne');
+      await sleep(1600);
+      await page.evaluate(() => window.__animlab!.perform('kiem_khi_tram'));
+      await sleep(320);
+      await wideShot('4-chem');
+    } else if (stillsMode === 'tp1b') {
       await page.evaluate(() => window.__animlab!.cam('iso'));
       await sleep(1200);
       await page.keyboard.down('w'); // bắt đầu chạy
