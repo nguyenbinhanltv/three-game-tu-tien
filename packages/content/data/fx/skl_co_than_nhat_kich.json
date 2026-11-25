@@ -386,29 +386,6 @@
   },
   {
    "type": "mesh",
-   "t": 0.1,
-   "dur": 1.1,
-   "at": "target",
-   "sweep": 0,
-   "erodeFrom": 0.3,
-   "ragged": 0.5,
-   "tone": "body",
-   "alpha": 0.55,
-   "tier": 0,
-   "seed": 1007,
-   "shape": "sprite",
-   "sprite": "cth_dust",
-   "billboard": true,
-   "offset": [
-    0,
-    0.9,
-    0
-   ],
-   "scale": 3.5,
-   "scaleTo": 3.5
-  },
-  {
-   "type": "mesh",
    "t": 0.24,
    "dur": 0.6,
    "at": "target",
@@ -418,7 +395,7 @@
    "tone": "body",
    "alpha": 0.75,
    "tier": 0,
-   "seed": 1008,
+   "seed": 1007,
    "shape": "sprite",
    "sprite": "cth_dust",
    "billboard": true,

@@ -161,7 +161,6 @@ const SPEC = {
     sprite('cth_veins', { t: 0.08, dur: 1.2, off: [0, 0.6, 0], size: 6, alpha: 0.8, erodeFrom: 0.5 }),
     flash('target', [0, 1.4, 0], 2.6, 0.04, { dur: 0.16 }),
     scorch('target', [0, 0.02, 0], 4.2, 0.04, 2.6),
-    sprite('cth_dust', { t: 0.1, dur: 1.1, off: [0, 0.9, 0], size: 5, alpha: 0.55, erodeFrom: 0.3 }),
     after('target', [0, 1.6, 0], 3.8, 0.24, 1.4),
     sparks('target', [0, 1.4, 0], 12, 0),
   ],
