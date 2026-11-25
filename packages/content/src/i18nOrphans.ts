@@ -1,5 +1,5 @@
 // `pnpm i18n:orphans`: chỉ chạy kiểm khóa chuỗi mồ côi (cũng nằm trong `content:check`). Luật ở checkparts/i18nOrphans.ts.
-import { errors } from './checkparts/base';
+import { errors } from './checkparts/errors';
 import './checkparts/i18nOrphans';
 
 if (errors.length) {

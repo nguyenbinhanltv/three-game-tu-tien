@@ -51,8 +51,8 @@ import {
 import { HK_MECHANICS, SUY_MECHANICS } from '@dtl/shared';
 import { PATH } from '../index';
 
-export const errors: string[] = [];
-export const err = (m: string) => errors.push(m);
+import { err, errors } from './errors';
+export { err, errors };
 
 export function uniqueIds(kind: string, list: { id: string }[]) {
   const seen = new Set<string>();

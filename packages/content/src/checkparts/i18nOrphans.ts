@@ -11,7 +11,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { ARTIFACTS, ITEMS, LEVELS, MARKS, METHODS, MONSTERS, NPCS, ORIGINS, PATHS, QUESTS, SETS, SKILLS, METHOD_SKILLS } from '../index';
-import { err } from './base';
+import { err } from './errors';
 
 /** Khóa dựng nhiều mảnh (không có chuỗi literal tiền tố trong mã). Thêm dòng kèm lý do khi cần. */
 const DYNAMIC_ALLOW: { prefix: string; why: string }[] = [
