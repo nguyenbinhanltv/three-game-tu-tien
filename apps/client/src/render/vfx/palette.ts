@@ -81,6 +81,19 @@ for (const e of ['kim', 'moc', 'thuy', 'hoa', 'tho', 'neutral']) {
 FX_PALETTE.mon_hoa_am = { core: 0x140a1e, body: 0x6a3fa0, rim: 0xf0d8ff, accent: 0xff1f3d, shadow: 0x0a0414 };
 FX_PALETTE.mon_tho_pk = { core: 0x2a1a10, body: 0x7a4a2c, rim: 0xf2d28a, accent: 0xff1f3d, shadow: 0x120a05 };
 FX_PALETTE.mon_boss_loi = { core: 0x14103a, body: 0x7f8cff, rim: 0xfff4b0, accent: 0xff1f3d, shadow: 0x0a0818 };
+// A6 (boss/tinh anh chương 6–7): thân theo hệ KHÔNG đỏ/cam (vàng đồng/ngà hue ≥ 50°), accent = ĐỎ chuẩn kẻ địch cho vạch báo.
+FX_PALETTE.mon_a6_guong = { core: 0x140f28, body: 0x3f8f9a, rim: 0xd9f6f2, accent: 0xff1f3d, shadow: 0x0a0a0c };
+FX_PALETTE.mon_a6_dong = { core: 0x16150a, body: 0xa99a3c, rim: 0xf3e8bd, accent: 0xff1f3d, shadow: 0x0a0a0c };
+FX_PALETTE.mon_a6_phu = { core: 0x131b2a, body: 0x4a6a8c, rim: 0xdfe8f2, accent: 0xff1f3d, shadow: 0x0a0a0c };
+FX_PALETTE.mon_a6_tuq = { core: 0x160d28, body: 0x6b3fa0, rim: 0xe2d4f7, accent: 0xff1f3d, shadow: 0x0a0a0c };
+FX_PALETTE.mon_a6_kieu = { core: 0x2a2a28, body: 0xcfc8b0, rim: 0xf4f6ee, accent: 0xff1f3d, shadow: 0x0a0a0c };
+FX_PALETTE.mon_a6_ve = { core: 0x1f2a26, body: 0x8aa59a, rim: 0xf0f6f3, accent: 0xff1f3d, shadow: 0x0a0a0c };
+FX_PALETTE.mon_a6_thach = { core: 0x1e1c16, body: 0xa29d8c, rim: 0xf4eed8, accent: 0xff1f3d, shadow: 0x0a0a0c };
+FX_PALETTE.mon_a6_dao = { core: 0x161c2a, body: 0x8e98b8, rim: 0xf2f6fa, accent: 0xff1f3d, shadow: 0x0a0a0c };
+FX_PALETTE.mon_a6_lo = { core: 0x241f12, body: 0xc2b27a, rim: 0xfff6d0, accent: 0xff1f3d, shadow: 0x0a0a0c };
+FX_PALETTE.mon_a6_nhan = { core: 0x16132a, body: 0x55507a, rim: 0xdde3ee, accent: 0xff1f3d, shadow: 0x0a0a0c };
+FX_PALETTE.mon_a6_sa = { core: 0x231e12, body: 0xc9b878, rim: 0xfff4cc, accent: 0xff1f3d, shadow: 0x0a0a0c };
+FX_PALETTE.mon_a6_may = { core: 0x17222a, body: 0x9fc4c0, rim: 0xf6fbfa, accent: 0xff1f3d, shadow: 0x0a0a0c };
 // Cảnh lớn (VFX-V4 phần 2): đột phá theo cảnh giới và độ kiếp.
 FX_PALETTE.dotpha_tc = { core: 0x5a3a08, body: 0xe8b13c, rim: 0xfff2c4, accent: 0x3fb8d8, shadow: 0x2a1c05 };
 FX_PALETTE.dotpha_kd = { core: 0x5a1e08, body: 0xf08a3a, rim: 0xffe2b8, accent: 0xffc95a, shadow: 0x2a0f05 };

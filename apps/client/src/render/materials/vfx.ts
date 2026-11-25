@@ -83,6 +83,9 @@ export type FxKind =
   | 'sprite_hai'
   | 'sprite_tinh'
   | 'sprite_lam'
+  | 'sprite_kieu'
+  | 'sprite_dong'
+  | 'sprite_guong'
   | 'wind'
   | 'flip'
   /** Decal từ trên bằng texture Codex (`forgeTex.ts`; vân nứt vạch báo, băng nứt). */
@@ -121,6 +124,9 @@ const SPEC: Record<FxKind, { blending: THREE.Blending; boost: number; bloom: num
   sprite_hai: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.2, fog: false },
   sprite_tinh: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.2, fog: false },
   sprite_lam: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.2, fog: false },
+  sprite_kieu: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.2, fog: false },
+  sprite_dong: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.2, fog: false },
+  sprite_guong: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.2, fog: false },
   wind: { blending: THREE.AdditiveBlending, boost: 1.0, bloom: 0.2, fog: false },
   flip: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.25, fog: false },
   mapDecal: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.1, fog: false },
@@ -152,6 +158,9 @@ const BUILDERS: Partial<Record<FxKind, (u: FxUniforms) => { color: unknown; opac
   sprite_hai: spriteNodesFor('hai'),
   sprite_tinh: spriteNodesFor('tinh'),
   sprite_lam: spriteNodesFor('lam'),
+  sprite_kieu: spriteNodesFor('kieu'),
+  sprite_dong: spriteNodesFor('dong'),
+  sprite_guong: spriteNodesFor('guong'),
   wind: windNodes,
   flip: flipNodes,
   mapDecal: mapDecalNodes,

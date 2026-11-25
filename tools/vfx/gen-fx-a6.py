@@ -58,6 +58,7 @@ def circle_boom(B, mv, P, r, base, flats, ups, seed, elite=False, topbase=False,
 
 
 def cone_boom(B, mv, P, r, half, base, sweeps, ups, seed, elite=False, topbase=False):
+    base = 'bolt_scorch' if base == 'scorch' else base  # decal `sector` không nhận `scorch`
     k = clamp(r / 8.0, 0.5, 4.0)
     a = 0.8 if elite else 1.0
     ev = []
@@ -81,6 +82,7 @@ def cone_boom(B, mv, P, r, half, base, sweeps, ups, seed, elite=False, topbase=F
 
 
 def line_boom(B, mv, P, r, w, base, beams, ups, seed, elite=False, topbase=False):
+    base = 'bolt_scorch' if base == 'scorch' else base  # decal `strip` không nhận `scorch`
     k = clamp(r / 8.0, 0.5, 4.0)
     a = 0.8 if elite else 1.0
     ev = []

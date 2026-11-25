@@ -49,10 +49,10 @@ def zone(shape, r, w=None, at='target'):
 # Màu: `accent` = ĐỎ chuẩn kẻ địch (vạch báo, quyết định 25/11: đỏ/cam dành cho cảnh báo); core/body/rim = màu hệ, KHÔNG đỏ/cam (vàng đồng/ngà hue ≥ 50°).
 MON = {
     'boss_hu_anh_chu': ('thuy', {'core': '140f28', 'body': '3f8f9a', 'rim': 'd9f6f2', 'accent': 'ff1f3d'}, False),
-    'boss_dinh_linh': ('kim', {'core': '1c150a', 'body': 'a99a3c', 'rim': 'f3e8bd', 'accent': 'ff1f3d'}, False),
+    'boss_dinh_linh': ('kim', {'core': '16150a', 'body': 'a99a3c', 'rim': 'f3e8bd', 'accent': 'ff1f3d'}, False),
     'boss_phu_chu': ('tho', {'core': '131b2a', 'body': '4a6a8c', 'rim': 'dfe8f2', 'accent': 'ff1f3d'}, False),
     'boss_tu_quang_duc_chu': ('thuy', {'core': '160d28', 'body': '6b3fa0', 'rim': 'e2d4f7', 'accent': 'ff1f3d'}, False),
-    'boss_kieu_thu': ('kim', {'core': '2a2a28', 'body': 'cfc8b0', 'rim': 'fffaf0', 'accent': 'ff1f3d'}, False),
+    'boss_kieu_thu': ('kim', {'core': '2a2a28', 'body': 'cfc8b0', 'rim': 'f4f6ee', 'accent': 'ff1f3d'}, False),
     'boss_ve_kieu': ('tho', {'core': '1f2a26', 'body': '8aa59a', 'rim': 'f0f6f3', 'accent': 'ff1f3d'}, False),
     'boss_thach_tuong': ('tho', {'core': '1e1c16', 'body': 'a29d8c', 'rim': 'f4eed8', 'accent': 'ff1f3d'}, False),
     'boss_dao_linh': ('thuy', {'core': '161c2a', 'body': '8e98b8', 'rim': 'f2f6fa', 'accent': 'ff1f3d'}, False),
@@ -60,7 +60,7 @@ MON = {
     'elite_hu_anh_nhan': ('kim', {'core': '16132a', 'body': '55507a', 'rim': 'dde3ee', 'accent': 'ff1f3d'}, True),
     'elite_anh_hac_vuong': ('thuy', {'core': '140f28', 'body': '3f8f9a', 'rim': 'd9f6f2', 'accent': 'ff1f3d'}, True),
     'elite_lo_thach_tuong': ('tho', {'core': '1b1a15', 'body': '9a9a8c', 'rim': 'f4eed8', 'accent': 'ff1f3d'}, True),
-    'elite_sa_tuong': ('tho', {'core': '231e12', 'body': 'c9b878', 'rim': 'fff3cf', 'accent': 'ff1f3d'}, True),
+    'elite_sa_tuong': ('tho', {'core': '231e12', 'body': 'c9b878', 'rim': 'fff4cc', 'accent': 'ff1f3d'}, True),
     'elite_may_lang_vuong': ('thuy', {'core': '17222a', 'body': '9fc4c0', 'rim': 'f6fbfa', 'accent': 'ff1f3d'}, True),
 }
 
