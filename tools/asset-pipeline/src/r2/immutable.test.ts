@@ -181,6 +181,7 @@ describe('prune: dọn nhị phân cache ngoài sổ khóa (CI)', () => {
   });
   it('trackedIn đọc git ls-files thật: file đã commit trong public/ được nhận ra', () => {
     const t = trackedIn(path.resolve(__dirname, '../../../../apps/client/public'));
-    expect(t.size).toBeGreaterThan(0);
+    expect(t.size).toBeGreaterThan(1); // -z phải tách đúng từng đường dẫn (không gộp thành một phần tử)
+    expect(t.has('assets/manifest.json')).toBe(true); // manifest json đã commit trong public/ (đường dẫn tương đối public)
   });
 });
