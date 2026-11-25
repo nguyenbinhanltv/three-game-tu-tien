@@ -30,6 +30,7 @@ import { LEVELS } from '@dtl/content';
 import { heightAt } from '../../base/levelCtx';
 import { getCloudNoise } from '../../render/noiseTex';
 import { DungeonFx } from './dungeonFx';
+import { frustumOf, mirrorOutsideFrustum } from './reflectCull';
 import { reflectionThrottle } from './reflectThrottle';
 
 /**
@@ -329,8 +330,13 @@ export class KinhNguyetArt {
   /**
    * `reflect`: phản chiếu phẳng thật của sàn (một lần vẽ cảnh thêm, nửa độ phân giải); tắt ở preset Thấp/Vừa/WebGL2 (`q.lights`).
    * `reflectEvery`: cập nhật phản chiếu mỗi N khung (mặc định 1 = mỗi khung): ở cảnh đánh lượt này chiếm ~67 draw/khung nên cho Cao/Cực cao dùng 2.
+   * `reflectFrustumMargin`: (m) cắt mesh tĩnh nằm ngoài khung nhìn camera chính nới thêm ngần này khỏi lượt phản chiếu (không đặt = chỉ cắt theo khoảng cách).
    */
-  constructor(opts: { reflect: boolean; hideInReflection?: THREE.Object3D; reflectEvery?: number } = { reflect: false }) {
+  constructor(
+    opts: { reflect: boolean; hideInReflection?: THREE.Object3D; reflectEvery?: number; reflectFrustumMargin?: number } = {
+      reflect: false,
+    },
+  ) {
     this.group.name = 'kinh-nguyet-art';
     let planar = undefined;
     if (opts.reflect) {
@@ -347,6 +353,10 @@ export class KinhNguyetArt {
       const before = base.updateBefore.bind(base);
       // Danh sách vật cần ẩn được quét lại mỗi ~0,5 s (không `traverse` mỗi khung); vật mới sinh ra có thể lọt vào phản chiếu tối đa nửa giây.
       let hidden: THREE.Object3D[] = [];
+      // Mesh tĩnh (không xương, không instanced) còn lại sau luật khoảng cách: ứng viên cắt theo khung nhìn mỗi lượt phản chiếu (tâm/bán kính thế giới lúc quét).
+      let statics: { o: THREE.Object3D; x: number; y: number; z: number; r: number }[] = [];
+      const margin = opts.reflectFrustumMargin;
+      const frustum = new THREE.Frustum();
       let sweepAt = 0;
       const due = reflectionThrottle(opts.reflectEvery ?? 1);
       const camSig = new Array<number>(18).fill(0);
@@ -367,6 +377,7 @@ export class KinhNguyetArt {
         if (now >= sweepAt) {
           sweepAt = now + 500;
           hidden = [];
+          statics = [];
           const cam = (frame as { camera?: THREE.Camera } | undefined)?.camera?.position;
           scene?.traverse((o) => {
             // O2: vật xa camera chéo hơn `REFLECT_FAR` m (theo mặt phẳng ngang, trừ bán kính bao) không thể hiện lên phần sàn nằm trong khung → bỏ khỏi lượt phản chiếu.
@@ -382,6 +393,14 @@ export class KinhNguyetArt {
                 hidden.push(o);
                 return;
               }
+              if (
+                margin !== undefined &&
+                !(m as THREE.SkinnedMesh).isSkinnedMesh &&
+                (m.material as THREE.Material)?.constructor !== THREE.MeshBasicMaterial
+              ) {
+                const cy = e[1]! * bs.center.x + e[5]! * bs.center.y + e[9]! * bs.center.z + e[13]!;
+                statics.push({ o, x: cx, y: cy, z: cz, r: bs.radius * sc });
+              }
             }
             if (
               o === hide ||
@@ -392,12 +411,21 @@ export class KinhNguyetArt {
               hidden.push(o);
           });
         }
-        const was = hidden.map((o) => o.visible);
-        for (const o of hidden) o.visible = false;
+        let list = hidden;
+        const camObj = (frame as { camera?: THREE.Camera } | undefined)?.camera;
+        if (margin !== undefined && camObj && statics.length) {
+          frustumOf(camObj, frustum);
+          // Ảnh gương của vật (lật qua mặt sàn) có nằm trong khung nhìn chính không: phép thử chính xác cho phản chiếu phẳng.
+          const floorY = rf.target.position.y;
+          const cull = statics.filter((s) => mirrorOutsideFrustum(frustum, s.x, s.y, s.z, s.r, floorY, margin)).map((s) => s.o);
+          if (cull.length) list = hidden.concat(cull);
+        }
+        const was = list.map((o) => o.visible);
+        for (const o of list) o.visible = false;
         try {
           before(frame);
         } finally {
-          hidden.forEach((o, k) => (o.visible = was[k]!));
+          list.forEach((o, k) => (o.visible = was[k]!));
         }
       };
     }
