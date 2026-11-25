@@ -1,0 +1,224 @@
+{
+ "skill": "mon_boom_circle__elite_loi_van_su_vuong__caster",
+ "palette": "mon_boss_loi",
+ "events": [
+  {
+   "type": "decal",
+   "tex": "scorch",
+   "t": 0,
+   "r": 4,
+   "dur": 2.4,
+   "at": "area",
+   "grow": 0.02,
+   "tone": "core",
+   "alpha": 0.9,
+   "tier": 0,
+   "from": "start",
+   "lift": 0.35
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.0,
+   "dur": 1.0,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.95,
+   "seed": 2700,
+   "tier": 0,
+   "sprite": "tim_arcs",
+   "scale": 4.0,
+   "scaleTo": 4.0,
+   "offset": [
+    0.0,
+    0.4,
+    0.0
+   ],
+   "erodeFrom": 0.4,
+   "sweep": 0,
+   "ragged": 0.5,
+   "billboard": false,
+   "rot": [
+    -90,
+    0,
+    0
+   ]
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.0,
+   "dur": 0.5,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.9,
+   "seed": 2701,
+   "tier": 0,
+   "sprite": "tim_flash",
+   "scale": 3.25,
+   "scaleTo": 3.25,
+   "offset": [
+    0.0,
+    0.5,
+    0.0
+   ],
+   "erodeFrom": 0.2,
+   "sweep": 0,
+   "ragged": 0.5,
+   "billboard": false,
+   "rot": [
+    -90,
+    0,
+    0
+   ]
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.02,
+   "dur": 0.7,
+   "at": "area",
+   "tone": "body",
+   "alpha": 1.0,
+   "seed": 2702,
+   "tier": 0,
+   "sprite": "tim_bolt",
+   "scale": 3.0,
+   "scaleTo": 3.0,
+   "offset": [
+    1.529,
+    3.0,
+    0.473
+   ],
+   "erodeFrom": 0.35,
+   "sweep": 0,
+   "ragged": 0.5
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.05,
+   "dur": 0.7,
+   "at": "area",
+   "tone": "body",
+   "alpha": 1.0,
+   "seed": 2703,
+   "tier": 0,
+   "sprite": "tim_bolt",
+   "scale": 3.0,
+   "scaleTo": 3.0,
+   "offset": [
+    -1.174,
+    3.0,
+    1.087
+   ],
+   "erodeFrom": 0.35,
+   "sweep": 0,
+   "ragged": 0.5
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.08,
+   "dur": 0.7,
+   "at": "area",
+   "tone": "body",
+   "alpha": 1.0,
+   "seed": 2704,
+   "tier": 0,
+   "sprite": "tim_bolt",
+   "scale": 3.0,
+   "scaleTo": 3.0,
+   "offset": [
+    -0.355,
+    3.0,
+    -1.56
+   ],
+   "erodeFrom": 0.35,
+   "sweep": 0,
+   "ragged": 0.5
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.0,
+   "dur": 0.9,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.85,
+   "seed": 2710,
+   "tier": 0,
+   "sprite": "tim_cloud",
+   "scale": 3.5,
+   "scaleTo": 3.5,
+   "offset": [
+    0.0,
+    5.0,
+    0.0
+   ],
+   "erodeFrom": 0.4,
+   "sweep": 0,
+   "ragged": 0.5
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.03,
+   "dur": 0.7,
+   "at": "area",
+   "tone": "body",
+   "alpha": 1.0,
+   "seed": 2711,
+   "tier": 0,
+   "sprite": "tim_orb",
+   "scale": 1.6,
+   "scaleTo": 1.6,
+   "offset": [
+    0.0,
+    1.2,
+    0.0
+   ],
+   "erodeFrom": 0.3,
+   "sweep": 0,
+   "ragged": 0.5
+  },
+  {
+   "type": "particles",
+   "kind": "spark",
+   "t": 0,
+   "n": 34,
+   "speed": 6,
+   "spread": 1,
+   "life": 0.7,
+   "size": 0.09,
+   "at": "area",
+   "tone": "rim",
+   "tier": 0,
+   "offset": [
+    0,
+    0.4,
+    0
+   ],
+   "grav": 2
+  },
+  {
+   "type": "particles",
+   "kind": "dust",
+   "t": 0,
+   "n": 20,
+   "speed": 3,
+   "spread": 0.9,
+   "life": 0.9,
+   "size": 0.22,
+   "at": "area",
+   "tone": "core",
+   "tier": 1,
+   "offset": [
+    0,
+    0.2,
+    0
+   ],
+   "grav": 0.8
+  }
+ ]
+}

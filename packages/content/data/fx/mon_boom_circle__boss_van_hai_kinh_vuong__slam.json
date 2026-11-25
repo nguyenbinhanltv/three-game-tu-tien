@@ -1,0 +1,252 @@
+{
+ "skill": "mon_boom_circle__boss_van_hai_kinh_vuong__slam",
+ "palette": "mon_boss_thuy",
+ "events": [
+  {
+   "type": "decal",
+   "tex": "scorch",
+   "t": 0,
+   "r": 4,
+   "dur": 2.6,
+   "at": "area",
+   "grow": 0.02,
+   "tone": "core",
+   "alpha": 0.95,
+   "tier": 0,
+   "from": "start",
+   "lift": 0.35
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.0,
+   "dur": 0.9,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.8,
+   "seed": 1100,
+   "tier": 0,
+   "sprite": "thuy_whirl",
+   "scale": 4.0,
+   "scaleTo": 4.0,
+   "offset": [
+    0.0,
+    0.4,
+    0.0
+   ],
+   "erodeFrom": 0.3,
+   "sweep": 0,
+   "ragged": 0.5,
+   "billboard": false,
+   "rot": [
+    -90,
+    0,
+    0
+   ]
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.03,
+   "dur": 0.8,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.7,
+   "seed": 1101,
+   "tier": 0,
+   "sprite": "thuy_foam_ring",
+   "scale": 4.2,
+   "scaleTo": 4.2,
+   "offset": [
+    0.0,
+    0.45,
+    0.0
+   ],
+   "erodeFrom": 0.3,
+   "sweep": 0,
+   "ragged": 0.5,
+   "billboard": false,
+   "rot": [
+    -90,
+    0,
+    0
+   ]
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.02,
+   "dur": 0.5,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.75,
+   "seed": 1102,
+   "tier": 0,
+   "sprite": "thuy_spray",
+   "scale": 2.5,
+   "scaleTo": 2.5,
+   "offset": [
+    0.0,
+    0.5,
+    0.0
+   ],
+   "erodeFrom": 0.15,
+   "sweep": 0,
+   "ragged": 0.5,
+   "billboard": false,
+   "rot": [
+    -90,
+    0,
+    0
+   ]
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.03,
+   "dur": 0.7,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.9,
+   "seed": 1103,
+   "tier": 0,
+   "sprite": "thuy_spout",
+   "scale": 1.429,
+   "scaleTo": 1.429,
+   "offset": [
+    0.0,
+    1.429,
+    0.0
+   ],
+   "erodeFrom": 0.3,
+   "sweep": 0,
+   "ragged": 0.5
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.02,
+   "dur": 0.6,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.9,
+   "seed": 1104,
+   "tier": 0,
+   "sprite": "thuy_jet",
+   "scale": 1.029,
+   "scaleTo": 1.029,
+   "offset": [
+    2.511,
+    1.029,
+    0.777
+   ],
+   "erodeFrom": 0.3,
+   "sweep": 0,
+   "ragged": 0.5
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.05,
+   "dur": 0.6,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.9,
+   "seed": 1105,
+   "tier": 0,
+   "sprite": "thuy_jet",
+   "scale": 1.029,
+   "scaleTo": 1.029,
+   "offset": [
+    -0.777,
+    1.029,
+    2.511
+   ],
+   "erodeFrom": 0.3,
+   "sweep": 0,
+   "ragged": 0.5
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.08,
+   "dur": 0.6,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.9,
+   "seed": 1106,
+   "tier": 0,
+   "sprite": "thuy_jet",
+   "scale": 1.029,
+   "scaleTo": 1.029,
+   "offset": [
+    -2.511,
+    1.029,
+    -0.777
+   ],
+   "erodeFrom": 0.3,
+   "sweep": 0,
+   "ragged": 0.5
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.11,
+   "dur": 0.6,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.9,
+   "seed": 1107,
+   "tier": 0,
+   "sprite": "thuy_jet",
+   "scale": 1.029,
+   "scaleTo": 1.029,
+   "offset": [
+    0.777,
+    1.029,
+    -2.511
+   ],
+   "erodeFrom": 0.3,
+   "sweep": 0,
+   "ragged": 0.5
+  },
+  {
+   "type": "particles",
+   "kind": "dust",
+   "t": 0,
+   "n": 40,
+   "speed": 4,
+   "spread": 0.9,
+   "life": 1.0,
+   "size": 0.26,
+   "at": "area",
+   "tone": "rim",
+   "tier": 1,
+   "offset": [
+    0,
+    0.3,
+    0
+   ],
+   "grav": 0.8
+  },
+  {
+   "type": "particles",
+   "kind": "shard",
+   "t": 0,
+   "n": 34,
+   "speed": 7,
+   "spread": 0.9,
+   "life": 0.8,
+   "size": 0.1,
+   "at": "area",
+   "tone": "body",
+   "tier": 0,
+   "offset": [
+    0,
+    0.3,
+    0
+   ],
+   "grav": 10
+  }
+ ]
+}

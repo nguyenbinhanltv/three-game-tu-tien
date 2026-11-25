@@ -8,6 +8,7 @@ import type { HazardMsg } from '@dtl/shared';
 import { movesOf } from '../fx/monMove';
 import { FxMesh } from '../../render/materials/vfx';
 import { PARTICLES } from '../../render/vfx/particles';
+import { evictSpriteGroups, residentSpriteGroups } from '../../render/vfx/art';
 import type { Game } from '../engine';
 
 /** Trạng thái điều khiển thời gian, đọc bởi vòng khung (`labDt`). */
@@ -104,6 +105,10 @@ export interface VfxLabApi {
   /** Chạy tiếp đúng `ms` mili giây trình diễn rồi dừng lại (vào chế độ tạm dừng). */
   step(ms: number): void;
   budget(): LabBudget;
+  /** Giải phóng mọi atlas sprite đang giữ (kiểm vòng nạp lại lười); trả tên nhóm đã giải phóng. */
+  evictSprites(): string[];
+  /** Các nhóm atlas sprite đang nằm trong GPU. */
+  residentSprites(): string[];
   /** Chiêu có timeline FX hay đường cũ. */
   skills(): string[];
 }
@@ -183,14 +188,26 @@ export function installVfxLab(g: Game, onHazard?: (g: Game, m: HazardMsg) => voi
         : (ai?.[mv] ?? def?.phases?.map((p) => (p.ai as typeof ai)?.[mv]).find(Boolean));
       if (!def || !hit || !cfg || !gg.monFx || !onHazard) return false;
       gg.monFx.bypass = true; // phòng thử: FX do `onHazard` phát, bỏ chặn của `lab`
-      const [id, b] = hit;
-      const yaw = Math.atan2(gg.cur.x - b.x, gg.cur.z - b.z);
+      const [id, hitView] = hit;
+      const b = { x: hitView.x, z: hitView.z }; // bản sao: phòng thử dời gốc vùng mà không đụng trạng thái quái
+      // Quái spawn ngay dưới chân người (hướng quạt/dải không xác định) hoặc đã đi xa khỏi khung: đặt gốc lùi về phía camera và hướng vào cảnh để quạt/dải trải qua người, nằm trong khung.
+      const camYaw = (g as unknown as { camYaw: number }).camYaw;
+      const dist = Math.hypot(gg.cur.x - b.x, gg.cur.z - b.z);
+      const near = dist < 2 || dist > 14; // quái ở dưới chân hoặc xa khỏi khung
+      const yaw = near ? camYaw + Math.PI : Math.atan2(gg.cur.x - b.x, gg.cur.z - b.z);
+      if (near) {
+        b.x = gg.cur.x + Math.sin(camYaw) * 4;
+        b.z = gg.cur.z + Math.cos(camYaw) * 4;
+      }
       const kind = cfg.kind ?? 'frost';
       const known = movesOf(def).some((m) => m.move === mv);
       if (!known) return false;
       const base: Partial<HazardMsg> = { delay: cfg.delay, kind, src: id, r: cfg.r };
       let m: HazardMsg;
-      if (mv === 'emerge') {
+      if (mv === 'caster' && cfg.shape === 'cone') {
+        // Đòn niệm quạt của tinh anh: niệm `cast` giây rồi quạt từ chỗ quái đứng về phía người.
+        m = { ...base, x: b.x, z: b.z, yaw, sh: 'cone', w: ((cfg.w ?? 30) * Math.PI) / 180 } as HazardMsg;
+      } else if (mv === 'emerge') {
         m = { ...base, mv, x: b.x, z: b.z, yaw, sh: 'cone', w: ((cfg as { w: number }).w * Math.PI) / 180 } as HazardMsg;
       } else if (mv === 'sweep' || mv === 'line' || mv === 'charge') {
         const rect = cfg.shape === 'rect' || mv !== 'sweep';
@@ -237,6 +254,8 @@ export function installVfxLab(g: Game, onHazard?: (g: Game, m: HazardMsg) => voi
       state.stepSec = Math.max(0, ms) / 1000;
     },
     budget: () => measureBudget(g),
+    evictSprites: () => evictSpriteGroups(),
+    residentSprites: () => residentSpriteGroups(),
     skills: () => [...SKILL.keys()],
   };
   (window as unknown as { __vfxlab?: VfxLabApi }).__vfxlab = api;

@@ -1,6 +1,8 @@
 // Chân Cảnh M1–M5 (pilot Lạc Kiếm Tông): ảnh tiểu cảnh camera chéo, 6 điểm × 4 thời điểm × 2 cỡ ảnh, cùng góc trước/sau, kèm số đo.
 //   pnpm shots tieucanh --out <thư mục> [--tag truoc|sau] [--moods dawn,day,dusk,night] [--views 720p,1080p] [--points a,b|all] [--perf 1] [--at x,z;x,z] (tọa độ tương đối tâm)
 //   `--dpr 2` ảnh cận (độ phân giải gấp đôi, dùng với --views 720p).
+//   `--seq x,z,n,ms` dải n ảnh cách nhau ms ở một điểm.
+//   `--still x,z,giây` clip đứng yên 720p tại điểm (chuyển động: cờ, đèn, nước, chim; `--mood`, `--query`).
 //   `--deck 1` đi bộ lên cầu treo, ảnh đầu cầu/giữa cầu/bờ kia (ghi cao độ người);
 //   `--clip 1` quay đoạn đi bộ xuyên tông môn (webm ~60 s, 1080p, `--mood`); `--hit 1` thêm khung +30 ms sau trúng đòn ở điểm đánh.
 import { SECT } from '@dtl/shared';
@@ -238,6 +240,60 @@ export default {
       await page.evaluate(() => (window.__game as unknown as { useSkill(n: number): void }).useSkill(0));
       await sleep(30);
       await snap(page, r.out, `${tag}-${view}-hit-30ms.png`);
+      await ctx.close();
+    }
+    if (opt('--seq', '')) {
+      // Dải ảnh theo thời gian ở một điểm (kiểm chuyển động không cần xem video): --seq x,z,số ảnh,ms giữa ảnh; lưu `${tag}-seq-<i>.png` (720p, HUD ẩn).
+      const [qx, qz, qn, qdt] = opt('--seq', '').split(',').map(Number);
+      const { ctx, page } = await r.open({
+        name: 'TcSeq',
+        quality: 'high',
+        viewport: SIZES['720p']!,
+        query: { mood: opt('--mood', 'day'), cam: 'iso', quiet: 1 },
+        extra: opt('--query', ''),
+        seenIntro: true,
+        hide: 'hud',
+      });
+      await gm(page, 'level 15');
+      await gm(page, 'god on');
+      await tp(page, SECT.x + qx!, SECT.z + qz!);
+      await sleep(7000);
+      console.log(
+        'birds:',
+        JSON.stringify(
+          await page.evaluate(() => {
+            const g = window.__game as unknown as {
+              lacKiemBirds?: { count: number; mesh: { visible: boolean; parent: unknown; count: number } };
+            };
+            return g.lacKiemBirds
+              ? { count: g.lacKiemBirds.count, visible: g.lacKiemBirds.mesh.visible, attached: !!g.lacKiemBirds.mesh.parent }
+              : null;
+          }),
+        ),
+      );
+      for (let i = 0; i < (qn ?? 6); i++) {
+        await snap(page, r.out, `${tag}-seq-${i}.png`, { wait: qdt ?? 1500 });
+      }
+      await ctx.close();
+    }
+    if (opt('--still', '')) {
+      // Clip đứng yên ở một điểm (M4: chuyển động của cờ, đèn, nước, chim cần clip): --still x,z,giây (tọa độ tương đối tâm), webm 720p, HUD ẩn.
+      const [sx, sz, secs] = opt('--still', '').split(',').map(Number);
+      const dir = `${r.out}/still-${tag}`;
+      const { ctx, page } = await r.open({
+        name: 'TcStill',
+        quality: 'high',
+        viewport: SIZES['720p']!,
+        query: { mood: opt('--mood', 'day'), cam: 'iso', quiet: 1 },
+        extra: opt('--query', ''),
+        seenIntro: true,
+        hide: 'hud',
+        video: dir,
+      });
+      await gm(page, 'level 15');
+      await gm(page, 'god on');
+      await tp(page, SECT.x + sx!, SECT.z + sz!);
+      await sleep(6000 + (secs ?? 10) * 1000);
       await ctx.close();
     }
     if (flag('--clip')) {

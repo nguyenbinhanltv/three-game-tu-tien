@@ -12,6 +12,7 @@ interface MonAi {
   line?: { r: number; delay: number } | null;
   charge?: { r: number; delay: number } | null;
   leap?: { r: number; delay: number } | null;
+  caster?: { shape?: string; r: number; delay: number } | null;
   burrow?: { r: number; hide: number; cone: { r: number; delay: number } } | null;
 }
 
@@ -34,6 +35,8 @@ export function movesOf(def: Pick<MonDef, 'ai' | 'phases'>): Cand[] {
     if (ai.line) out.push({ move: 'line', shape: 'rect', r: ai.line.r, delay: ai.line.delay });
     if (ai.charge) out.push({ move: 'charge', shape: 'rect', r: ai.charge.r, delay: ai.charge.delay });
     if (ai.leap) out.push({ move: 'leap', shape: 'circle', r: ai.leap.r, delay: ai.leap.delay });
+    if (ai.caster && (ai.caster.shape === 'cone' || ai.caster.shape === 'circle'))
+      out.push({ move: 'caster', shape: ai.caster.shape, r: ai.caster.r, delay: ai.caster.delay });
     if (ai.burrow) {
       out.push({ move: 'burrow', shape: 'circle', r: ai.burrow.r, delay: ai.burrow.hide });
       out.push({ move: 'emerge', shape: 'cone', r: ai.burrow.cone.r, delay: ai.burrow.cone.delay });

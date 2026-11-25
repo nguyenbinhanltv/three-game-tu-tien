@@ -146,7 +146,19 @@ for (const f of FX_TIMELINES) for (const m of validateFxTimeline(f, (id) => SKIL
     }
     const c = def?.ai?.[mv!] ?? def?.phases?.map((p) => p.ai?.[mv!]).find(Boolean);
     if (!c) return undefined;
-    const shape = mv === 'sweep' ? (c.shape === 'rect' ? 'rect' : 'cone') : mv === 'line' || mv === 'charge' ? 'rect' : 'circle';
+    // Đòn niệm của tinh anh (`caster`): vùng `circle`/`cone` theo `shape` của chiêu (đạn `bolt` là đạn bay, không có thẻ vùng).
+    const shape =
+      mv === 'sweep'
+        ? c.shape === 'rect'
+          ? 'rect'
+          : 'cone'
+        : mv === 'caster'
+          ? c.shape === 'cone'
+            ? 'cone'
+            : 'circle'
+          : mv === 'line' || mv === 'charge'
+            ? 'rect'
+            : 'circle';
     return { r: c.r, delay: c.delay, shape: shape as 'circle' | 'cone' | 'rect', w: shape === 'circle' ? undefined : c.w };
   };
   if (fs.existsSync(dir)) {

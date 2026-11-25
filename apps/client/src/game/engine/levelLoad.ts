@@ -1,4 +1,5 @@
 // R-8: tách từ game/engine.ts (hàm nhận `g: Game`, trước là phương thức private của lớp Game).
+import { paintedProp } from '../../render/painted/props';
 import * as THREE from 'three/webgpu';
 import { KIEM_TRUNG, padsOfLevel, vdGateYaw, terrainOf, propsOf, SECT, tribDef, MF_FACE, MF_FACE_T, MS_DEAD } from '@dtl/shared';
 import { heightAt, levelAssets, levelId, levelTerrain } from '../../base/levelCtx';
@@ -26,6 +27,7 @@ import { GodRays } from '../../render/godRays';
 import { CARD_TREE_IDS, CardForest } from '../world/cardForest';
 import { loadSkyTextures } from '../world/skyAssets';
 import { LacKiemGarden } from '../world/lacKiemGarden';
+import { LacKiemBirds } from '../world/lacKiemBirds';
 import { LacKiemGround } from '../world/lacKiemGround';
 import { LacKiemScenes } from '../world/lacKiemScenes';
 import { DoanMachArt } from '../world/doanMachArt';
@@ -549,6 +551,10 @@ export function buildLevelB(eng: Game, id: string, q: (typeof QUALITY)[string]):
     eng.scene.add(eng.lacKiemSky.group);
     eng.lacKiemGarden = new LacKiemGarden();
     eng.scene.add(eng.lacKiemGarden.group);
+    if (FLAGS.birds) {
+      eng.lacKiemBirds = new LacKiemBirds();
+      eng.scene.add(eng.lacKiemBirds.mesh);
+    }
     if (FLAGS.ground) {
       eng.lacKiemGround = new LacKiemGround();
       eng.scene.add(eng.lacKiemGround.group);
@@ -772,6 +778,11 @@ export function unloadLevel(eng: Game): void {
     eng.kiemTrungArt.dispose();
     eng.kiemTrungArt = null;
   }
+  if (eng.lacKiemBirds) {
+    drop(eng.lacKiemBirds.mesh);
+    eng.lacKiemBirds.dispose();
+    eng.lacKiemBirds = null;
+  }
   if (eng.lacKiemGround) {
     drop(eng.lacKiemGround.group);
     eng.lacKiemGround.dispose();
@@ -834,7 +845,7 @@ async function loadSectModel(eng: Game, shadows: boolean): Promise<void> {
     }
     const root = handle.scene;
     // Giữ vật liệu PBR của GLB (mỗi chất liệu một material), chỉ gắn thêm làm mờ vật che.
-    eng.sectAsset = { handle, mats: adoptGltfMaterials(root, archWrap) };
+    eng.sectAsset = { handle, mats: adoptGltfMaterials(root, (m) => paintedProp(archWrap(m))) };
     root.position.set(SECT.x, SECT.y, SECT.z);
     root.traverse((o) => {
       const m = o as THREE.Mesh;
@@ -872,7 +883,7 @@ async function loadTkModel(eng: Game, shadows: boolean): Promise<void> {
       return;
     }
     const root = handle.scene;
-    eng.tkAsset = { handle, mats: adoptGltfMaterials(root, archWrap) };
+    eng.tkAsset = { handle, mats: adoptGltfMaterials(root, (m) => paintedProp(archWrap(m))) };
     root.position.set(TK_ORIGIN.x, TK_ORIGIN.y, TK_ORIGIN.z);
     root.traverse((o) => {
       const m = o as THREE.Mesh;

@@ -1,0 +1,34 @@
+{
+  "monId": "elite_xich_sa_ngo_cong",
+  "move": "caster",
+  "idea": "Xích Sa Ngô Công phun độc về phía người chơi: quạt ĐỎ dài 12 m nửa góc 30° tô dần theo nhịp 1,3 s; nổ ra luồng độc xanh lục đục thẫm cuộn theo quạt, bào tử và giọt độc bắn.",
+  "element": "moc",
+  "palette": {
+    "core": "0e2410",
+    "body": "4f9a38",
+    "rim": "c8f09a",
+    "accent": "ff1f3d"
+  },
+  "shapeLang": [
+    "cloud",
+    "beam"
+  ],
+  "zone": {
+    "shape": "cone",
+    "r": 12,
+    "at": "forward",
+    "w": 30
+  },
+  "timing": {
+    "anticipationMs": 1300,
+    "impactMs": 140,
+    "lingerMs": 800
+  },
+  "readability": "Quạt đỏ đặc đúng 12 m, nửa góc 30°; luồng độc xanh lục tối ở lõi, sáng ở viền, không lẫn đỏ; sương mỏng không che người chơi.",
+  "budget": {
+    "drawCalls": 9,
+    "particles": 300,
+    "screenCover": 0.25,
+    "overdraw": 5
+  }
+}

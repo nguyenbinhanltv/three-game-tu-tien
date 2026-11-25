@@ -1,0 +1,34 @@
+{
+  "monId": "elite_xich_sa_ngo_cong",
+  "move": "emerge",
+  "idea": "Xích Sa Ngô Công trồi lên hất thân về phía người chơi: quạt ĐỎ dài 10 m nửa góc 35° tô dần theo nhịp 1,6 s; nổ ra gai rễ nâu và đất tung theo quạt, bào tử xanh lục.",
+  "element": "moc",
+  "palette": {
+    "core": "1c140c",
+    "body": "6b4a32",
+    "rim": "bfe8a0",
+    "accent": "ff1f3d"
+  },
+  "shapeLang": [
+    "spike",
+    "beam"
+  ],
+  "zone": {
+    "shape": "cone",
+    "r": 10,
+    "at": "self",
+    "w": 35
+  },
+  "timing": {
+    "anticipationMs": 1600,
+    "impactMs": 140,
+    "lingerMs": 800
+  },
+  "readability": "Quạt đỏ đặc đúng 10 m, nửa góc 35°; gai rễ nâu-xanh lục tối ở lõi, sáng ở viền.",
+  "budget": {
+    "drawCalls": 10,
+    "particles": 300,
+    "screenCover": 0.25,
+    "overdraw": 5
+  }
+}

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Họa Pháp Lô 2: tách nền xanh chroma của bảng sprite Codex (`forge sprites`) và xếp thành atlas WebP trong suốt cho `FX_SPRITES` (packages/shared/src/fxtimeline.ts).
-// Dùng: node tools/vfx-forge/sprite-pack.mjs <bảng.png> | --sheet <bảng.png>:<cột>:<hàng> ... [--cols 4] [--base <atlas.webp> nối thêm vào atlas có sẵn] [--patch <ô>=<bảng.png>:<cột>:<hàng>:<số cột>:<số hàng> thay một ô] [--cell 512] [--out <đường dẫn>; mặc định public/hoa-truc/vfx_sprites.<hash10>.webp] [--preview <png>]
+// Dùng: node tools/vfx-forge/sprite-pack.mjs <bảng.png> | --sheet <bảng.png>:<cột>:<hàng> ... [--cols 8: số cột của atlas, khớp SPRITE_COLS] [--base <atlas.webp> nối thêm vào atlas có sẵn] [--patch <ô>=<bảng.png>:<cột>:<hàng>:<số cột>:<số hàng> thay một ô] [--cell 512] [--out <đường dẫn>; mặc định public/hoa-truc/vfx_sprites.<hash10>.webp] [--preview <png>]
 // Mỗi ô lưới đều (cols × rows) của bảng: tìm khung bao của phần không phải nền, cắt, thu vừa ô (chừa lề), xếp vào atlas. alpha = 1 − (g − max(r,b))/255; khử viền xanh bằng cách trừ phần nền.
 import { createHash } from 'node:crypto';
 import fs from 'node:fs';
@@ -17,10 +17,9 @@ const flag = (n, d) => {
   return i >= 0 ? argv[i + 1] : d;
 };
 if (!input)
-  throw new Error('dùng: sprite-pack.mjs <bảng.png> [--cols <số cột atlas, mặc định SPRITE_COLS>] [--rows 2] [--cell 512] [--out <webp>]');
-// Số cột của ATLAS lấy từ `SPRITE_COLS` ở `render/vfx/art.ts` (hiện 8; cạnh atlas ≤ 8192 px nên cột × 512 ≤ 8192); `--cols` ghi đè. Số cột của một BẢNG vẽ riêng là `--sheet <png>:<cột>:<hàng>` (hoặc `--sheet-cols` cho dạng tắt).
-const artSrc = fs.readFileSync(path.join(here, '../../apps/client/src/render/vfx/art.ts'), 'utf8');
-const cols = Number(flag('--cols', artSrc.match(/SPRITE_COLS = (\d+)/)?.[1] ?? 4));
+  throw new Error('dùng: sprite-pack.mjs <bảng.png> [--cols <số cột atlas nhóm, mặc định 4>] [--rows 2] [--cell 512] [--out <webp>]');
+// Atlas TÁCH THEO HƯỚNG TU: mỗi nhóm (tiền tố tên sprite) một atlas lưới 4 cột (cạnh ≤ 8192 px). `--base` là atlas của nhóm đó, `--group <nhóm>` đặt tên file ra `vfx_sprites_<nhóm>.<hash10>.webp`. Số cột của một BẢNG vẽ riêng là `--sheet <png>:<cột>:<hàng>` (hoặc `--sheet-cols`).
+const cols = Number(flag('--cols', 4));
 const sheetCols = Number(flag('--sheet-cols', 4));
 const rows = Number(flag('--rows', 2));
 const cell = Number(flag('--cell', 512));
@@ -144,7 +143,8 @@ const atlas = sharp({
 }).composite(comps);
 const webpBuf = await atlas.clone().webp({ quality: 90, alphaQuality: 100 }).toBuffer();
 const hash10 = createHash('sha256').update(webpBuf).digest('hex').slice(0, 10);
-const out = outArg ?? path.join(here, '../../apps/client/public/hoa-truc', `vfx_sprites.${hash10}.webp`);
+const group = flag('--group');
+const out = outArg ?? path.join(here, '../../apps/client/public/hoa-truc', `vfx_sprites${group ? '_' + group : ''}.${hash10}.webp`);
 fs.mkdirSync(path.dirname(out), { recursive: true });
 fs.writeFileSync(out, webpBuf);
 const pv = flag('--preview');
@@ -171,5 +171,5 @@ if (pv) {
 console.log(report.join('\n'));
 console.log(`đã ghi ${out} (${fs.statSync(out).size} byte)`);
 console.log(
-  `Tiếp: sửa SPRITE_ATLAS_FILE ở apps/client/src/render/vfx/art.ts thành 'hoa-truc/vfx_sprites.${hash10}.webp', rồi pnpm assets:lock và pnpm assets:push --only hoa-truc/vfx_sprites.${hash10}.webp (KHÔNG đẩy đè tên cũ).`,
+  `Tiếp: đổi tên file theo nhóm (vfx_sprites_<nhóm>.${hash10}.webp), sửa file/rows của nhóm đó trong SPRITE_GROUPS ở apps/client/src/render/vfx/art.ts, rồi pnpm assets:lock và pnpm assets:push --only <khóa mới> (KHÔNG đẩy đè tên cũ).`,
 );

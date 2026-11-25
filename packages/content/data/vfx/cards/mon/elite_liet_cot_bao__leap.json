@@ -1,0 +1,33 @@
+{
+  "monId": "elite_liet_cot_bao",
+  "move": "leap",
+  "idea": "Liệt Cốt Báo nhảy vồ xuống chỗ người chơi: vòng ĐỎ tròn đúng 3 m tô dần theo nhịp 0,8 s; chạm đất nổ ra vết cào xương trắng ngà, mảnh xương vỡ bạc bắn tung và bụi xám.",
+  "element": "kim",
+  "palette": {
+    "core": "16161c",
+    "body": "c9bfa8",
+    "rim": "fff3d6",
+    "accent": "ff1f3d"
+  },
+  "shapeLang": [
+    "burst",
+    "spike"
+  ],
+  "zone": {
+    "shape": "circle",
+    "r": 3,
+    "at": "target"
+  },
+  "timing": {
+    "anticipationMs": 800,
+    "impactMs": 140,
+    "lingerMs": 800
+  },
+  "readability": "Vòng đỏ đặc đúng 3 m, rất nhanh (0,8 s) nên viền phải rõ ngay; mảnh xương trắng ngà viền sáng không lẫn đỏ, bụi mỏng không che người chơi.",
+  "budget": {
+    "drawCalls": 8,
+    "particles": 300,
+    "screenCover": 0.25,
+    "overdraw": 5
+  }
+}
