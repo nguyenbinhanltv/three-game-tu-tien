@@ -75,7 +75,7 @@ describe.skipIf(!OUT)('đo xuyên thân của vạt với lò xo mô phỏng th�
     for (const k of ['stiffness', 'drag', 'maxAngle', 'maxInward'] as const)
       if (tune[k] !== undefined) V3_SKIRT_SPRING2[k] = tune[k] as number;
     const armFitDeg = typeof tune.armFit === 'number' ? tune.armFit : null; // quét góc ARM_FIT (độ) cho mọi asset đo
-    const ids = (process.env.SPRING_ASSETS ?? 'chr_v3b_lac_kiem_nam,chr_v3b_lac_kiem_nu').split(',');
+    const ids = (process.env.SPRING_ASSETS ?? 'chr_v3b2_lac_kiem_nam,chr_v3b2_lac_kiem_nu').split(',');
     const result: Record<string, { poses: PoseScore[]; pen: number; cap: number }> = {};
     const lib = await cache.acquire(V3_LIB);
     for (const id of ids) {
@@ -151,7 +151,7 @@ describe.skipIf(!OUT)('đo xuyên thân của vạt với lò xo mô phỏng th�
 describe.skipIf(!process.env.SPRING_CPU)('CPU 50 nhân vật: lò xo cũ so với mới', () => {
   it('đo ms mỗi khung', async () => {
     const lib = await cache.acquire(V3_LIB);
-    const ids = (process.env.SPRING_ASSETS ?? 'chr_v3b_lac_kiem_nam,chr_v3b2_lac_kiem_nam').split(',');
+    const ids = (process.env.SPRING_ASSETS ?? 'chr_v3b2_lac_kiem_nam,chr_v3b3_lac_kiem_nam').split(',');
     const res: Record<string, number[]> = {};
 
     for (let round = 0; round < 3; round++) {

@@ -106,16 +106,13 @@ export const CHR_V3 = FLAGS.chr !== 'v1';
 /** `?v3anim=0` về hệ animation cũ (một clip chạy, crossfade 0,16 s, không lớp phụ) để so video trước/sau. */
 export const V3_ANIM = FLAGS.v3Anim;
 export const V3_LIB = 'anim_ual_native';
-/** Asset theo giới tính: Lạc Kiếm Môn Phục v3 (N-3), model Tripo toàn thân đặt lên xương Mannequin (chr_v3.py). */
-export const V3_MODELS_A = { m: 'chr_v3_lac_kiem_nam', f: 'chr_v3_lac_kiem_nu' } as const;
-/** Bản v3b: vạt xẻ hai bên đối xứng (concept v3b), là bản mặc định của `?chr=v3`; `?v3model=a` về bản v3 cũ để so ảnh. */
-export const V3_MODELS_B = { m: 'chr_v3b_lac_kiem_nam', f: 'chr_v3b_lac_kiem_nu' } as const;
-/** Bản v3b2: cùng model v3b, vạt 12 chuỗi lò xo; cùng với cải tiến lò xo ở client (gấu cứng hơn, viên nang tay, vạt nằm lên đùi khi ngồi) là mặc định của `?chr=v3`; `?v3model=b` về v3b để so. */
+/** Asset Lạc Kiếm theo giới tính: Lạc Kiếm Môn Phục v3 (N-3), model Tripo toàn thân đặt lên xương Mannequin (chr_v3.py). Bản v3/v3b cũ đã gỡ (A2). */
+/** Bản v3b2: cùng model v3b, vạt 12 chuỗi lò xo; cùng với cải tiến lò xo ở client (gấu cứng hơn, viên nang tay, vạt nằm lên đùi khi ngồi) là mặc định của `?chr=v3`; `?v3model=b2` chọn lại bản này để so. */
 export const V3_MODELS_B2 = { m: 'chr_v3b2_lac_kiem_nam', f: 'chr_v3b2_lac_kiem_nu' } as const;
 const V3_PICK = FLAGS.v3Model;
-/** Bản v3b3: v3b2 + chuỗi lò xo dải đai/ngọc bội (`tassel`, Thân Pháp T6); MẶC ĐỊNH cho bộ Lạc Kiếm và nhánh của nó (Hàn Giao, Trấn Khích, Vô Danh Kiếm). `?v3model=b2|b|a` về bản cũ để so ảnh. */
+/** Bản v3b3: v3b2 + chuỗi lò xo dải đai/ngọc bội (`tassel`, Thân Pháp T6); MẶC ĐỊNH cho bộ Lạc Kiếm và nhánh của nó (Hàn Giao, Trấn Khích, Vô Danh Kiếm). `?v3model=b2` về bản b2 (không tua) để so ảnh. */
 export const V3_MODELS_B3 = { m: 'chr_v3b3_lac_kiem_nam', f: 'chr_v3b3_lac_kiem_nu' } as const;
-export const V3_MODELS = V3_PICK === 'a' ? V3_MODELS_A : V3_PICK === 'b' ? V3_MODELS_B : V3_PICK === 'b2' ? V3_MODELS_B2 : V3_MODELS_B3;
+export const V3_MODELS = V3_PICK === 'b2' ? V3_MODELS_B2 : V3_MODELS_B3;
 /** Asset dùng lò xo v2 (`chr_v3b2_*` và các bộ dựng hàng loạt `chr_v3_<bộ>_*`): hệ số cứng gấu vạt, viên nang tay, phình viên nang khi ngồi. */
 export const isSpring2 = (assetId: string | undefined): boolean =>
   !!assetId &&
@@ -407,7 +404,7 @@ export const ROBE_LIB = 'anim_robe';
 
 export function mannequinTemplate(handle: AssetHandle, lib: AssetHandle, robe?: AssetHandle, patch?: AssetHandle): MannequinTemplate {
   const mats = adoptGltfMaterials(handle.scene);
-  if (/^chr_v3b[23]?_lac_kiem/.test(handle.id)) for (const m of mats) applyV3Palette(m);
+  if (/^chr_v3b[23]_lac_kiem/.test(handle.id)) for (const m of mats) applyV3Palette(m);
   if (KEEP_ORIGINAL_ASSETS.has(handle.id)) for (const m of mats) tuneTripoMaterial(m);
   if (KEEP_ORIGINAL_ASSETS.has(handle.id) && FLAGS.v3Veil) {
     const silk = FLAGS.v3Silk ? v3SilkOf(handle.id) : undefined;
