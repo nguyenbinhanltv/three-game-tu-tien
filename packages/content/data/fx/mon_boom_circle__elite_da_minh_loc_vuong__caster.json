@@ -27,42 +27,14 @@
    "seed": 5600,
    "tier": 0,
    "sprite": "thuy_whirl",
-   "scale": 2.8,
-   "scaleTo": 2.8,
+   "scale": 1.26,
+   "scaleTo": 1.26,
    "offset": [
     0.0,
     0.45,
     0.0
    ],
    "erodeFrom": 0.5,
-   "sweep": 0,
-   "ragged": 0.5,
-   "billboard": false,
-   "rot": [
-    -90,
-    0,
-    0
-   ]
-  },
-  {
-   "type": "mesh",
-   "shape": "sprite",
-   "t": 0.03,
-   "dur": 1.0,
-   "at": "area",
-   "tone": "body",
-   "alpha": 0.1,
-   "seed": 5601,
-   "tier": 0,
-   "sprite": "thuy_spray",
-   "scale": 2.87,
-   "scaleTo": 2.87,
-   "offset": [
-    0.0,
-    0.5,
-    0.0
-   ],
-   "erodeFrom": 0.4,
    "sweep": 0,
    "ragged": 0.5,
    "billboard": false,

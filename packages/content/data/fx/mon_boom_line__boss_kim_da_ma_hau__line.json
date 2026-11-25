@@ -31,8 +31,8 @@
    "seed": 5228,
    "tier": 0,
    "sprite": "cot_crack",
-   "scale": 1.733,
-   "scaleTo": 1.733,
+   "scale": 1.067,
+   "scaleTo": 1.067,
    "offset": [
     0.0,
     0.15,
@@ -59,8 +59,8 @@
    "seed": 5229,
    "tier": 0,
    "sprite": "cot_crack",
-   "scale": 1.733,
-   "scaleTo": 1.733,
+   "scale": 1.067,
+   "scaleTo": 1.067,
    "offset": [
     0.0,
     0.15,
@@ -87,8 +87,8 @@
    "seed": 5230,
    "tier": 0,
    "sprite": "cot_crack",
-   "scale": 1.733,
-   "scaleTo": 1.733,
+   "scale": 1.067,
+   "scaleTo": 1.067,
    "offset": [
     0.0,
     0.15,
@@ -115,8 +115,8 @@
    "seed": 5220,
    "tier": 0,
    "sprite": "cot_swipe",
-   "scale": 1.5,
-   "scaleTo": 1.5,
+   "scale": 1.083,
+   "scaleTo": 1.083,
    "offset": [
     -0.2,
     0.267,
@@ -132,38 +132,6 @@
      -0.2,
      0.267,
      6.4
-    ],
-    "ease": "out"
-   }
-  },
-  {
-   "type": "mesh",
-   "shape": "sprite",
-   "t": 0.04,
-   "dur": 0.9,
-   "at": "area",
-   "tone": "body",
-   "alpha": 0.32,
-   "seed": 5221,
-   "tier": 0,
-   "sprite": "cot_swipe",
-   "scale": 1.5,
-   "scaleTo": 1.5,
-   "offset": [
-    0.2,
-    0.267,
-    0.667
-   ],
-   "erodeFrom": 0.5,
-   "sweep": 0,
-   "ragged": 0.5,
-   "aim": true,
-   "move": {
-    "to": "area",
-    "offset": [
-     0.2,
-     0.267,
-     5.6
     ],
     "ease": "out"
    }

@@ -99,6 +99,7 @@ def slam_boom(B, move, r, theme, seed, ground=False):
     # Vùng lớn (r ≥ 8): sprite phẳng/nền co lại để độ phủ không vượt trần (chant r16 từng phủ ~0,46): đường kính sprite tối đa ~20 m, nền mờ hơn.
     cap = min(1.0, 10.0 / r) * (0.7 if theme in ('kim', 'thuy') else 1.0)  # kim/thủy: sprite phẳng nhỏ lại (đĩa đặc che cả vùng)
     fade = min(1.0, 11.0 / r)
+    lite = theme in ('kim', 'thuy')  # kim/thủy: chỉ điểm nhấn (gai, mảnh vỡ, hạt) + vân nhỏ, bỏ đĩa tô đặc phủ cả vùng hitbox
     wide = r >= 8  # vùng rộng: bỏ màn bụi phẳng, bụi hạt ít và thấp (màn bụi làm mờ cả nhân vật)
     thin = theme == 'hoa' and r >= 10  # lửa ma vùng lớn: chỉ mạch/sét mảnh, không mảng đặc
     ev = [
@@ -113,6 +114,12 @@ def slam_boom(B, move, r, theme, seed, ground=False):
         parts('shard', 0, 22, 6, 0.9, 0.9, 0.1, 'rim', offset=[0, 0.3, 0], grav=9, tier=0),
         parts('dust', 0, 6 if wide else 16, 2.0 if wide else 3.5, 0.7 if wide else 0.9, 1.0, 0.18 if wide else 0.22, 'body', offset=[0, 0.3, 0], grav=0.8),
     ]
+    if lite:
+        ev = [e for e in ev if not (e.get('sprite') == sp_['dust'] and e.get('type') == 'mesh')]
+        for e in ev:
+            if e.get('sprite') == sp_['crack']:
+                e['scale'] = round(e['scale'] * 0.45, 3)
+                e['scaleTo'] = round(e['scaleTo'] * 0.45, 3)
     if thin:
         ev = [e for e in ev if not (e.get('sprite') in (sp_['dust'], sp_['debris']) and e.get('type') == 'mesh')]
         for e in ev:
@@ -162,6 +169,7 @@ def cone(B, move, r, half, delay, theme, seed):
 def line(B, move, length, width, delay, theme, seed):
     pal, sp_, dec = THEMES[theme]
     k = clip(length / 8)
+    lite = theme in ('kim', 'thuy')  # kim/thủy: ít sprite lớn (1 vệt quét thay 2, vân nhỏ hơn)
     write(f'mon_warn_line__{B}__{move}', warn_strip_soft(delay, length, width), pal)
     write(
         f'mon_boom_line__{B}__{move}',
@@ -169,12 +177,12 @@ def line(B, move, length, width, delay, theme, seed):
             decal(dec, 0, 1, 2.2, 'core', 0.35, 0.06, top=False, untilDelay=False, strip=[length, width], lift=LIFT),
             # vệt nứt phẳng dọc dải hiện ngay lúc nổ (không chờ sprite trượt tới), cỡ theo bề rộng dải
             *[
-                sp(sp_['crack'], 0.0 + 0.02 * i, 1.0, width * 2.6, y=0.45, z=length * (0.18 + 0.32 * i), k=k, flat=True, alpha=0.7, erode=0.5, seed=seed + 8 + i)
+                sp(sp_['crack'], 0.0 + 0.02 * i, 1.0, width * (1.6 if lite else 2.6), y=0.45, z=length * (0.18 + 0.32 * i), k=k, flat=True, alpha=0.7, erode=0.5, seed=seed + 8 + i)
                 for i in range(3)
             ],
             *[
-                sp(sp_['ridge'], 0.04 * i, 0.9, 9.0, y=0.8, x=(i % 2 - 0.5) * 1.2, z=2.0, k=k, aim=True, to=((i % 2 - 0.5) * 1.2, length * (0.8 - 0.1 * (i % 2))), alpha=0.9, erode=0.5, seed=seed + i)
-                for i in range(2)
+                sp(sp_['ridge'], 0.04 * i, 0.9, 6.5 if lite else 9.0, y=0.8, x=(i % 2 - 0.5) * 1.2, z=2.0, k=k, aim=True, to=((i % 2 - 0.5) * 1.2, length * (0.8 - 0.1 * (i % 2))), alpha=0.9, erode=0.5, seed=seed + i)
+                for i in range(1 if lite else 2)
             ],
             *[
                 sp(sp_['spikes'], 0.01 + 0.025 * i, 0.9, 4.0, x=(-width * 0.55 if i % 2 == 0 else width * 0.55), y=1.6, z=length * (0.22 + 0.2 * i), k=k, alpha=1.0, erode=0.45, seed=seed + 4 + i)

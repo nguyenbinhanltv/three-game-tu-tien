@@ -27,8 +27,8 @@
    "seed": 5200,
    "tier": 0,
    "sprite": "cot_crack",
-   "scale": 2.8,
-   "scaleTo": 2.8,
+   "scale": 1.26,
+   "scaleTo": 1.26,
    "offset": [
     0.0,
     0.45,
