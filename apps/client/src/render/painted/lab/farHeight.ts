@@ -1,4 +1,23 @@
-import { Fn, abs, clamp, dot, exp, float, floor, fract, length, max, pow, select, smoothstep, sqrt, step, vec2, vec3 } from 'three/tsl';
+import {
+  Fn,
+  uniform,
+  abs,
+  clamp,
+  dot,
+  exp,
+  float,
+  floor,
+  fract,
+  length,
+  max,
+  pow,
+  select,
+  smoothstep,
+  sqrt,
+  step,
+  vec2,
+  vec3,
+} from 'three/tsl';
 import type { N } from './field';
 
 /**
@@ -8,6 +27,10 @@ import type { N } from './field';
  */
 export const FAR_SPAN = 86;
 
+/**
+ * Hàm băm của nguồn, giữ nguyên. Lưu ý (đo bằng far-compare): tích `p.x*p.y*(p.x+p.y)` tới ~2,5e5 nên float32 chỉ còn ~2^-5 độ chính xác; trên
+ * WebGL2 (ANGLE) khớp GLSL gốc (SSIM 0,999998) nhưng trên WebGPU (WGSL) trình biên dịch cho giá trị khác ở tần số cao (SSIM 0,86 trên độ cao).
+ */
 const hash = Fn(([p0]: [N]) => {
   const p: N = vec2(p0).mul(0.3183099).add(vec2(0.71, 0.113)).fract().mul(50).toVar();
   return fract(p.x.mul(p.y).mul(p.x.add(p.y)));
@@ -119,7 +142,12 @@ function ridged(p0: N, oct: number): N {
  * Độ cao (km) của vùng xa tại điểm p (km, tâm = người đi bộ). `hero` = hướng thung lũng (vector đơn vị), `detail` = số bát độ của dãy núi
  * (nguồn: 9 cho bản đồ 2048, 10 cho 4096).
  */
-export function farHeightAt(p: N, hero: readonly [number, number], detail = 9): N {
+export function farHeightAt(p: N, hero: readonly [number, number], detail = 9, stop = 0): N {
+  if (stop === 9) return hash(floor(p.mul(37)));
+  if (stop === 8) return noise(p.mul(3));
+  if (stop === 7) return voro(p.mul(2)).x;
+  if (stop === 6) return ridged(p.mul(0.095), detail);
+  if (stop === 5) return treesAt(p).x;
   const H: N = vec2(hero[0], hero[1]);
   const r: N = length(p).toVar();
   const dir: N = p.div(max(r, 1e-3));
@@ -158,6 +186,7 @@ export function farHeightAt(p: N, hero: readonly [number, number], detail = 9): 
       ).mul(exp(off.mul(off).negate())),
     ).toVar();
   }
+  if (stop === 1) return h;
   // cây mọc lên khỏi đồi: tán là một phần hình khối nên có viền và che phía sau
   const wood: N = treesAt(p).toVar();
   h = h
@@ -170,12 +199,14 @@ export function farHeightAt(p: N, hero: readonly [number, number], detail = 9): 
         .mul(float(1).sub(smoothstep(13.5, 15, r))),
     )
     .toVar();
+  if (stop === 2) return h;
   // dãy núi: các khối với đèo giữa chúng
   const q: N = p.add(vec2(noise(p.mul(0.11).add(3)), noise(p.mul(0.11).add(9))).mul(1.6));
   const mass: N = smoothstep(0.34, 0.6, noise(p.mul(0.052).add(9.3)));
   const band: N = smoothstep(12, 17.5, r).mul(float(1).sub(smoothstep(21, 26, r).mul(0.65)));
   const m: N = ridged(q.mul(0.095).add(vec2(11.3, 1.9)), detail).toVar();
   h = h.add(pow(m, float(1.25)).mul(4.4).mul(mass.mul(0.78).add(0.22)).mul(band).mul(ahead)).toVar();
+  if (stop === 3) return h;
   // hai đỉnh lớn, nơi mắt dừng lại
   const perp: N = vec2(-hero[1], hero[0]);
   const d1: N = length(p.sub(H.mul(18.5).sub(perp.mul(4.2))));

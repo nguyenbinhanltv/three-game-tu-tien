@@ -19,6 +19,7 @@ const out = path.resolve(arg('--out', 'far-compare'));
 const n = Number(arg('--n', '512'));
 const port = Number(arg('--port', '5192'));
 const renderer = arg('--renderer', 'webgpu');
+const stop = arg('--stop', '0');
 fs.mkdirSync(out, { recursive: true });
 
 // trích đoạn GLSL gốc (NOISE + heightFragment) bằng cách chạy phần đầu tệp nguồn
@@ -168,13 +169,20 @@ try {
     },
     { vert, frag, n },
   );
-  const R = decode(refB64);
+  let R = decode(refB64);
+  if (stop !== '0') {
+    // chẩn đoán từng thành phần: tham chiếu = chính bản TSL của ta trên backend WebGL2 (đã khớp GLSL gốc)
+    const alt = await ctx.newPage();
+    await alt.goto(`http://127.0.0.1:${port}/?paintedlab=far&mute=1&size=256&renderer=webgl2&stop=${stop}`, { waitUntil: 'load' });
+    await alt.waitForFunction(() => window.__farLab, null, { timeout: 60000 });
+    R = decode((await alt.evaluate((nn) => window.__farLab.readback(nn), n)).b64);
+  }
 
   // --- bản TSL của ta ---
   const our = await ctx.newPage();
   const logs = [];
   our.on('console', (m) => ['error', 'warning'].includes(m.type()) && logs.push(m.text().slice(0, 300)));
-  await our.goto(`http://127.0.0.1:${port}/?paintedlab=far&mute=1&size=256&renderer=${renderer}`, { waitUntil: 'load' });
+  await our.goto(`http://127.0.0.1:${port}/?paintedlab=far&mute=1&size=256&renderer=${renderer}&stop=${stop}`, { waitUntil: 'load' });
   await our.waitForFunction(() => window.__farLab, null, { timeout: 60000 });
   const O0 = decode((await our.evaluate((nn) => window.__farLab.readback(nn), n)).b64);
 

@@ -25,7 +25,7 @@ export async function startFarLab(host: HTMLElement): Promise<void> {
 
   const hero: [number, number] = [0.6, 0.8];
   const p = uv().sub(0.5).mul(FAR_SPAN);
-  const h = farHeightAt(p, hero, 9);
+  const h = farHeightAt(p, hero, 9, Number(q.get('stop') ?? 0));
   const g = h.div(6);
   const material = new THREE.MeshBasicNodeMaterial();
   material.colorNode = mix(vec3(0.05, 0.1, 0.2), vec3(1, 1, 0.95), g.clamp(0, 1)).mul(float(1));
