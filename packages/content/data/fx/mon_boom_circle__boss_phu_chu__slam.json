@@ -11,7 +11,7 @@
    "at": "area",
    "grow": 0.02,
    "tone": "core",
-   "alpha": 0.9,
+   "alpha": 0.26,
    "tier": 0,
    "from": "start",
    "lift": 0.35
@@ -27,8 +27,8 @@
    "seed": 6900,
    "tier": 0,
    "sprite": "phu_half",
-   "scale": 4.0,
-   "scaleTo": 4.0,
+   "scale": 3.904,
+   "scaleTo": 3.904,
    "offset": [
     0.0,
     0.4,
@@ -55,8 +55,8 @@
    "seed": 6901,
    "tier": 0,
    "sprite": "phu_split",
-   "scale": 3.6,
-   "scaleTo": 3.6,
+   "scale": 3.514,
+   "scaleTo": 3.514,
    "offset": [
     0.0,
     0.42,
@@ -83,8 +83,8 @@
    "seed": 6920,
    "tier": 0,
    "sprite": "phu_flip",
-   "scale": 1.778,
-   "scaleTo": 1.778,
+   "scale": 1.735,
+   "scaleTo": 1.735,
    "offset": [
     1.658,
     1.333,
@@ -105,8 +105,8 @@
    "seed": 6921,
    "tier": 0,
    "sprite": "phu_flip",
-   "scale": 1.778,
-   "scaleTo": 1.778,
+   "scale": 1.735,
+   "scaleTo": 1.735,
    "offset": [
     -1.658,
     1.333,
@@ -127,8 +127,8 @@
    "seed": 6924,
    "tier": 0,
    "sprite": "phu_dust",
-   "scale": 1.956,
-   "scaleTo": 1.956,
+   "scale": 1.909,
+   "scaleTo": 1.909,
    "offset": [
     0.0,
     0.711,

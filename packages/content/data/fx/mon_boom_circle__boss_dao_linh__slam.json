@@ -11,7 +11,7 @@
    "at": "area",
    "grow": 0.02,
    "tone": "core",
-   "alpha": 0.6,
+   "alpha": 0.26,
    "tier": 0,
    "from": "start",
    "top": true
@@ -25,7 +25,7 @@
    "at": "area",
    "grow": 0.02,
    "tone": "rim",
-   "alpha": 0.35,
+   "alpha": 0.18,
    "tier": 0,
    "from": "start",
    "top": true

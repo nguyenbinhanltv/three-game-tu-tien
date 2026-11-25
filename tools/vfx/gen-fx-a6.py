@@ -21,6 +21,72 @@ def clamp(x, a, b):
     return max(a, min(b, x))
 
 
+import json  # noqa: E402
+
+_FILL = json.load(open(os.path.join(os.path.dirname(__file__), 'a6-fill.json'), encoding='utf8'))
+_AREA = (2 * 20 * math.tan(math.radians(16))) ** 2 * 16 / 9  # khung camera chéo (m²)
+_ZONE = {}
+_write0 = write
+
+
+def _num(v):
+    return max(v[0], v[2] if len(v) > 2 else v[0]) if isinstance(v, list) else (v if v is not None else 1)
+
+
+def _zone(shape, r, w=None, half=None):
+    area = math.pi * r * r if shape == 'circle' else (2 * half / 360 * math.pi * r * r if shape == 'cone' else r * (w or 3))
+    mul = r / 4.0 if shape == 'circle' else clamp(r / 8.0, 0.5, 4.0)
+    _ZONE.update(area=area, mul=mul)
+
+
+def _body_peak(ev, f):
+    """Ước lượng phủ THÂN (sprite + decal nền) cao nhất trong 0,4 s, sprite nhân cỡ f (khớp tools/vfx-forge/cover-mon.mjs)."""
+    spr = [e for e in ev if e.get('type') == 'mesh' and e.get('shape') == 'sprite']
+    dec = [e for e in ev if e.get('type') == 'decal']
+    best = 0.0
+    for i in range(41):
+        t = i / 100.0
+        sp_a = 0.0
+        for e in spr:
+            k = (t - e['t']) / e['dur']
+            if not 0 <= k <= 1:
+                continue
+            e0 = e.get('erodeFrom', 0.5)
+            sc = _num(e['scale']) + (_num(e.get('scaleTo', e['scale'])) - _num(e['scale'])) * (1 - (1 - k) ** 2)
+            rem = max(0.0, 1 - max(0.0, (k - e0) / (1 - e0)))
+            edge = 2 * sc * f * (1 if e.get('fit') == 'area' else _ZONE['mul'])
+            sp_a += edge * edge * _FILL.get(e['sprite'], 1.0) * e.get('alpha', 1) * rem / _AREA
+        d_a = sum(_ZONE['area'] * e.get('alpha', 1) / _AREA for e in dec if e.get('t', 0) <= t <= e.get('t', 0) + e.get('dur', 1))
+        best = max(best, sp_a + d_a)
+    return best
+
+
+def write(name, events, palette):  # noqa: F811
+    """Co cỡ sprite để thân hiệu ứng ≤ trần HPL2 (tinh anh 0,2; boss 0,35; chant — vùng > khung — trần 0,35 chỉ cho sprite). Hệ số tối thiểu 0,5."""
+    if _ZONE:
+        cap = 0.97 * (0.2 if name.split('__')[1].startswith('elite_') else 0.35)
+        if name.endswith('__chant'):  # vùng r12 > 1 khung: decal nền chỉ còn vệt mờ, sprite co mạnh hơn
+            for e in events:
+                if e.get('type') == 'decal':
+                    e['alpha'] = round(e.get('alpha', 1) * 0.35, 3)
+        lo, hi = (0.3 if name.endswith('__chant') else 0.5), 1.0
+        if _body_peak(events, 1.0) > cap:
+            for _ in range(14):
+                mid = (lo + hi) / 2
+                if _body_peak(events, mid) > cap:
+                    hi = mid
+                else:
+                    lo = mid
+            f = lo
+            for e in events:
+                if e.get('type') == 'mesh' and e.get('shape') == 'sprite':
+                    e['scale'] = round(_num(e['scale']) * f, 3)
+                    if 'scaleTo' in e:
+                        e['scaleTo'] = round(_num(e['scaleTo']) * f, 3)
+        _ZONE.clear()
+    _write0(name, events, palette)
+
+
 def arc_pts(n, rad, half_deg, frac=0.55):
     """n điểm trên cung bán kính `rad` (mét thật) trong quạt nửa góc `half_deg`; (x ngang, z dọc hướng quạt)."""
     if n == 1:
@@ -35,15 +101,16 @@ def arc_pts(n, rad, half_deg, frac=0.55):
 def circle_boom(B, mv, P, r, base, flats, ups, seed, elite=False, topbase=False, shard=34, spark=24):
     """Vùng tròn r (mul = r/4): `flats` = (sprite, hệ số cỡ, alpha) phẳng phủ đĩa; `ups` = (sprite, cỡ mét, số lượng, bán kính vòng / r, độ cao) dựng đứng quanh tâm."""
     k = r / 4.0
+    _zone('circle', r)
     a = 0.8 if elite else 1.0
     ev = []
     if topbase:
         ev += [
-            decal(base, 0, 4, 2.4, 'core', 0.6, 0.02, top=True, untilDelay=False),  # lõi sẫm phủ đúng zone, vẽ ĐÈ lên thân boss
-            decal(base, 0, 4, 1.8, 'rim', 0.35, 0.02, top=True, untilDelay=False),  # viền sáng
+            decal(base, 0, 4, 2.4, 'core', 0.26, 0.02, top=True, untilDelay=False),  # lõi sẫm phủ đúng zone, vẽ ĐÈ lên thân boss
+            decal(base, 0, 4, 1.8, 'rim', 0.18, 0.02, top=True, untilDelay=False),  # viền sáng
         ]
     else:
-        ev.append(decal(base, 0, 4, 2.4, 'core', 0.9 * a, 0.02, top=False, untilDelay=False, lift=LIFT))
+        ev.append(decal(base, 0, 4, 2.4, 'core', 0.26 * a, 0.02, top=False, untilDelay=False, lift=LIFT))
     for i, (name, fac, al) in enumerate(flats):
         ev.append(sp(name, 0.02 * i, 0.9, 8.0 * fac, y=0.4 + 0.02 * i, flat=True, alpha=al * a, erode=0.35, seed=seed + i))
     j = 0
@@ -59,15 +126,16 @@ def circle_boom(B, mv, P, r, base, flats, ups, seed, elite=False, topbase=False,
 
 def cone_boom(B, mv, P, r, half, base, sweeps, ups, seed, elite=False, topbase=False):
     k = clamp(r / 8.0, 0.5, 4.0)
+    _zone('cone', r, half=half)
     a = 0.8 if elite else 1.0
     ev = []
     if topbase:
         ev += [
-            decal(base, 0, 8, 2.2, 'core', 0.6, 0.04, top=True, untilDelay=False, sector=half),
-            decal(base, 0, 8, 1.8, 'rim', 0.3, 0.04, top=True, untilDelay=False, sector=half),
+            decal(base, 0, 8, 2.2, 'core', 0.24, 0.04, top=True, untilDelay=False, sector=half),
+            decal(base, 0, 8, 1.8, 'rim', 0.16, 0.04, top=True, untilDelay=False, sector=half),
         ]
     else:
-        ev.append(decal(base, 0, 8, 2.2, 'core', 0.85 * a, 0.04, top=False, untilDelay=False, sector=half, lift=LIFT))
+        ev.append(decal(base, 0, 8, 2.2, 'core', 0.24 * a, 0.04, top=False, untilDelay=False, sector=half, lift=LIFT))
     for i, (name, size, al) in enumerate(sweeps):
         ev.append(sp(name, 0.06 * i, 0.85, size + i, y=0.7, z=0.18 * r, k=k, aim=True, to=(0, 0.82 * r), alpha=al * a, erode=0.4, seed=seed + i))
     j = 0
@@ -82,15 +150,16 @@ def cone_boom(B, mv, P, r, half, base, sweeps, ups, seed, elite=False, topbase=F
 
 def line_boom(B, mv, P, r, w, base, beams, ups, seed, elite=False, topbase=False):
     k = clamp(r / 8.0, 0.5, 4.0)
+    _zone('line', r, w=w)
     a = 0.8 if elite else 1.0
     ev = []
     if topbase:
         ev += [
-            decal(base, 0, 1, 2.6, 'core', 0.6, 0.1, top=True, untilDelay=False, strip=[r, w]),
-            decal(base, 0, 1, 1.9, 'rim', 0.3, 0.1, top=True, untilDelay=False, strip=[r, w]),
+            decal(base, 0, 1, 2.6, 'core', 0.22, 0.1, top=True, untilDelay=False, strip=[r, w]),
+            decal(base, 0, 1, 1.9, 'rim', 0.16, 0.1, top=True, untilDelay=False, strip=[r, w]),
         ]
     else:
-        ev.append(decal(base, 0, 1, 2.6, 'core', 0.8 * a, 0.1, top=False, untilDelay=False, strip=[r, w], lift=LIFT))
+        ev.append(decal(base, 0, 1, 2.6, 'core', 0.22 * a, 0.1, top=False, untilDelay=False, strip=[r, w], lift=LIFT))
     for i, (name, size, al) in enumerate(beams):
         bx = (i % 2 - 0.5) * 0.4 * w
         ev.append(sp(name, 0.05 * i, 0.8, size, y=1.0, x=bx, z=0.1 * r, k=k, aim=True, to=(bx, 0.86 * r - 0.07 * r * (i % 2)), alpha=al * a, erode=0.45, seed=seed + i))

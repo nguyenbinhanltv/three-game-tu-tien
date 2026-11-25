@@ -11,7 +11,7 @@
    "at": "area",
    "grow": 0.02,
    "tone": "core",
-   "alpha": 0.6,
+   "alpha": 0.26,
    "tier": 0,
    "from": "start",
    "top": true
@@ -25,7 +25,7 @@
    "at": "area",
    "grow": 0.02,
    "tone": "rim",
-   "alpha": 0.35,
+   "alpha": 0.18,
    "tier": 0,
    "from": "start",
    "top": true
@@ -41,8 +41,8 @@
    "seed": 8500,
    "tier": 0,
    "sprite": "kieu_flip",
-   "scale": 4.0,
-   "scaleTo": 4.0,
+   "scale": 3.852,
+   "scaleTo": 3.852,
    "offset": [
     0.0,
     0.4,
@@ -69,8 +69,8 @@
    "seed": 8501,
    "tier": 0,
    "sprite": "kieu_slab",
-   "scale": 4.0,
-   "scaleTo": 4.0,
+   "scale": 3.852,
+   "scaleTo": 3.852,
    "offset": [
     0.0,
     0.42,
@@ -97,8 +97,8 @@
    "seed": 8520,
    "tier": 0,
    "sprite": "kieu_chunks",
-   "scale": 1.36,
-   "scaleTo": 1.36,
+   "scale": 1.31,
+   "scaleTo": 1.31,
    "offset": [
     1.842,
     1.12,
@@ -119,8 +119,8 @@
    "seed": 8521,
    "tier": 0,
    "sprite": "kieu_chunks",
-   "scale": 1.36,
-   "scaleTo": 1.36,
+   "scale": 1.31,
+   "scaleTo": 1.31,
    "offset": [
     -1.596,
     1.12,
@@ -141,8 +141,8 @@
    "seed": 8522,
    "tier": 0,
    "sprite": "kieu_chunks",
-   "scale": 1.36,
-   "scaleTo": 1.36,
+   "scale": 1.31,
+   "scaleTo": 1.31,
    "offset": [
     -0.247,
     1.12,
