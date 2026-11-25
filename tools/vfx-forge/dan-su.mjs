@@ -29,16 +29,16 @@ const SCALE = {
   skl_dan_hoa_chi: 1,
   skl_dan_hoa_vu: 1,
   skl_lo_hoa_hoi_nguyen: 1,
-  skl_dan_hoa_phong_tran: 0.8,
+  skl_dan_hoa_phong_tran: 0.7,
   skl_duoc_vu: 0.85,
   skl_hoi_xuan_quyet: 0.85,
-  skl_moc_linh_tran: 0.8,
-  skl_ngung_dan_ho_the: 0.8,
+  skl_moc_linh_tran: 0.6,
+  skl_ngung_dan_ho_the: 0.62,
   skl_thuan_di_cuu_vien: 1,
   skl_anh_duoc_hoa_than: 0.9,
   skl_luu_huong_bo: 0.9,
-  skl_hoi_thien_dan_lo: 0.8,
-  skl_thien_dan_phap_gioi: 0.8,
+  skl_hoi_thien_dan_lo: 0.7,
+  skl_thien_dan_phap_gioi: 0.58,
 };
 /** Hệ số alpha thân theo chiêu (không áp cho chớp `dan_sparks`): chiêu bao quanh người để mục tiêu/tên/thanh máu còn đọc được. */
 let A = 1;
