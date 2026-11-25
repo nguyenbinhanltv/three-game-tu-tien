@@ -11,6 +11,7 @@ import path from 'node:path';
 import sharp from 'sharp';
 import { ROOT } from './config.js';
 import { buildMaskData, MASK_RES } from '../../../apps/client/src/render/groundMask.js';
+import { at as checkedAt } from '@dtl/shared';
 
 /** Thứ tự = chỉ số lớp trong texture mảng; khớp `GROUND_LAYER` ở client. */
 export const LAYERS = [
@@ -302,7 +303,7 @@ async function source(ph: string, kind: 'Diffuse' | 'nor_gl' | 'Rough'): Promise
     string,
     Record<string, Record<string, { url: string }>>
   >;
-  const buf = await fetchBuf(files[kind][TAG].jpg.url);
+  const buf = await fetchBuf(checkedAt(checkedAt(checkedAt(files, kind, 'files'), TAG, 'files'), 'jpg', 'files').url);
   await mkdir(path.dirname(f), { recursive: true });
   await writeFile(f, buf);
   return buf;
@@ -395,7 +396,7 @@ async function main(): Promise<void> {
     // Pháp tuyến: R = x, G = y (z dựng lại ở shader), B = độ nhám.
     const nrm = await sharp(nor).resize(NSIZE, NSIZE).removeAlpha().raw().toBuffer();
     const r = await sharp(rough).resize(NSIZE, NSIZE).greyscale().raw().toBuffer();
-    for (let i = 0; i < NSIZE * NSIZE; i++) nrm[i * 3 + 2] = r[i];
+    for (let i = 0; i < NSIZE * NSIZE; i++) nrm[i * 3 + 2] = r[i] ?? 0;
     const n = await sharp(nrm, { raw: { width: NSIZE, height: NSIZE, channels: 3 } })
       .webp({ quality: 78 })
       .toBuffer();

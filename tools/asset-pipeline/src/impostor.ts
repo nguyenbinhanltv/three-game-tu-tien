@@ -8,6 +8,7 @@ import os from 'node:os';
 import path from 'node:path';
 import sharp from 'sharp';
 import { findBlender } from '../../blender/find-blender.mjs';
+import { at } from '@dtl/shared';
 
 const root = path.resolve(import.meta.dirname, '../../..');
 const outDir = path.join(root, 'apps/client/public/assets/impostor');
@@ -53,7 +54,7 @@ for (const id of TREES) {
     console.error(r.stdout, r.stderr);
     process.exit(1);
   }
-  const info = JSON.parse(m[1]) as { frame: number; height: number };
+  const info = JSON.parse(at(m, 1, 'm')) as { frame: number; height: number };
   rows.push({ id, png, ...info });
 }
 const atlas = await sharp({
