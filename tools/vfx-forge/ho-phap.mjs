@@ -24,16 +24,16 @@ const mesh = (o) => ({
 /** Hệ số cỡ theo chiêu (chỉnh sau khi đo `pnpm shots vfxlab --clean`: chiêu thường phủ ≤ 0,2, chiêu cuối ≤ 0,35). */
 let K = 1;
 const SCALE = {
-  skl_thiet_bich_xung: 1,
-  skl_tran_son_an: 1,
+  skl_thiet_bich_xung: 0.8,
+  skl_tran_son_an: 0.65,
   skl_kim_cuong_bat_hoai: 1,
-  skl_thiet_quyen_chan_dia: 1,
+  skl_thiet_quyen_chan_dia: 0.8,
   skl_kim_chung_tran: 1,
-  skl_son_nhac_hoa_than: 1,
-  skl_dich_son_xung: 1,
+  skl_son_nhac_hoa_than: 0.92,
+  skl_dich_son_xung: 0.75,
   skl_anh_thiet_than: 1,
-  skl_thuan_di_ho_the: 1,
-  skl_thien_kim_phap_tuong: 0.9,
+  skl_thuan_di_ho_the: 0.82,
+  skl_thien_kim_phap_tuong: 0.68,
 };
 /** Hệ số alpha thân theo chiêu (không áp cho chớp `hp_flash`). */
 let A = 1;
@@ -118,8 +118,8 @@ const SPEC = {
     strike('hp_wedge', { size: 5.6, at: 'ahead', off: [0, 1.1, 2.8], dur: 0.5, align: 'aim', erodeFrom: 0.3 }),
     sprite('hp_furrows', { t: 0.02, dur: 0.7, at: 'ahead', off: [0, 0.5, 3.2], size: 7, alpha: 0.8, align: 'aim', erodeFrom: 0.4 }),
     flash('ahead', [0, 1.1, 6.2], 1.8, 0.03, { dur: 0.12 }),
-    scorch('ahead', [0, 0.02, 2.2], 2.2, 0, 1.4),
-    scorch('ahead', [0, 0.02, 5], 2.4, 0.03, 1.4),
+    scorch('ahead', [0, 0.02, 2.2], 3.2, 0, 1.4),
+    scorch('ahead', [0, 0.02, 5], 3.4, 0.03, 1.4),
     after('ahead', [0, 1.1, 5], 3, 0.2, 1),
     sparks('ahead', [0, 1.1, 5], 8, 0.04),
   ],
@@ -190,8 +190,8 @@ const SPEC = {
     strike('hp_earthwave', { size: 7, at: 'ahead', off: [0, 1.2, 3.8], dur: 0.6, align: 'aim', erodeFrom: 0.3, unless: 'pull' }),
     sprite('hp_rubble', { t: 0.04, dur: 0.6, at: 'ahead', off: [0, 1.4, 5], size: 4.6, alpha: 0.85, align: 'aim', erodeFrom: 0.3 }),
     flash('ahead', [0, 1.2, 7], 1.8, 0.03, { dur: 0.12 }),
-    scorch('ahead', [0, 0.02, 3], 2.4, 0, 1.4),
-    scorch('ahead', [0, 0.02, 6], 2.6, 0.03, 1.4),
+    scorch('ahead', [0, 0.02, 3], 3.4, 0, 1.4),
+    scorch('ahead', [0, 0.02, 6], 3.6, 0.03, 1.4),
     after('ahead', [0, 1.1, 6], 3, 0.22, 1),
   ],
   // Anh Thiết Thân: bóng giáp trụ cổ phong trong suốt đứng che sau lưng, mắt xích vàng nối tới đồng đội.
@@ -200,7 +200,7 @@ const SPEC = {
     pullIn('self', [0, 1.4, 0], -0.24),
     strike('hp_armor', { size: 4.4, at: 'self', off: [0, 2.2, -0.8], dur: 1.6, alpha: 0.75, erodeFrom: 0.5 }),
     flash('self', [0, 1.4, 0], 2, 0.03, { dur: 0.14 }),
-    scorch('self', [0, -1.05, 0], 2.2, -0.1, 2.4),
+    scorch('self', [0, -1.05, 0], 3.2, -0.1, 2.4),
     after('self', [0, 1.3, 0], 2.6, 0.25, 1.2),
   ],
   // Thuấn Di Hộ Thế: vệt ánh vàng nối hai điểm, tới nơi úp lên đồng đội tấm khiên cổ đỉnh nhọn.
@@ -209,7 +209,7 @@ const SPEC = {
     pullIn('target', [0, 1.6, 0], -0.22),
     strike('hp_shield', { size: 3.4, off: [0, 1.8, 0], dur: 1.0, erodeFrom: 0.45 }),
     flash('target', [0, 1.6, 0], 2, 0.03, { dur: 0.14 }),
-    scorch('target', [0, 0.02, 0], 2, 0.03, 1.8),
+    scorch('target', [0, 0.02, 0], 3, 0.03, 1.8),
     sprite('hp_dust', { t: 0.15, dur: 0.7, off: [0, 1, 0], size: 3, alpha: 0.6, erodeFrom: 0.3 }),
     after('target', [0, 1.3, 0], 2.4, 0.25, 1.2),
   ],
