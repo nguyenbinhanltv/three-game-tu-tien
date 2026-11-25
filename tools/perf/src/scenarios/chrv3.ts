@@ -34,10 +34,14 @@ interface SlideRow {
   f: [number, number, number][];
 }
 
-/** Trượt chân của chân trụ từ dãy khung (xem chú thích ở `slide`). Hàm thuần. */
+/**
+ * Trượt chân của chân trụ từ dãy khung. Mỗi ĐOẠN tiếp đất liên tục (cổ chân trong 3 cm trên điểm thấp nhất của chân đó, ≥ 4 khung) hồi quy vị trí chân TRONG THẾ GIỚI
+ * theo thời gian, chiếu lên hướng chạy: độ dốc = tốc độ trượt của đoạn (chân dính đất = 0). Hồi quy triệt nhiễu bước vị trí theo gói tin của thân (khác lấy
+ * hiệu từng khung). Trả trung vị/p90 trên các đoạn. Hàm thuần.
+ */
 export function contactSlide(
   rows: SlideRow[],
-): { median: number; p90: number; samples: number; contactFrac: number; bodySpeed: number } | null {
+): { median: number; p90: number; segments: number; bodySpeed: number; segSec: number } | null {
   if (rows.length < 10) return null;
   const a = rows[0]!;
   const b = rows[rows.length - 1]!;
@@ -48,30 +52,47 @@ export function contactSlide(
   if (dist < 1 || span <= 0) return null;
   const ux = dx / dist;
   const uz = dz / dist;
-  const vbar = dist / span;
-  const out: number[] = [];
-  let contactFrames = 0;
+  const slips: number[] = [];
+  let segSec = 0;
   for (const i of [0, 1]) {
     const ymin = Math.min(...rows.map((q) => q.f[i]![1]));
-    const rel = rows.map((q) => (q.f[i]![0] - q.r[0]) * ux + (q.f[i]![2] - q.r[1]) * uz);
     const on = rows.map((q) => q.f[i]![1] < ymin + 0.03);
-    contactFrames += on.filter(Boolean).length;
-    for (let k = 1; k < rows.length; k++) {
-      if (!on[k] || !on[k - 1]) continue;
-      const dt = rows[k]!.t - rows[k - 1]!.t;
-      if (dt < 0.002) continue;
-      out.push(Math.abs((rel[k]! - rel[k - 1]!) / dt + vbar));
+    let k = 0;
+    while (k < rows.length) {
+      if (!on[k]) {
+        k++;
+        continue;
+      }
+      let j = k;
+      while (j + 1 < rows.length && on[j + 1]) j++;
+      if (j - k >= 3) {
+        const xs = rows.slice(k, j + 1).map((q) => q.t - rows[k]!.t);
+        const ws = rows.slice(k, j + 1).map((q) => q.f[i]![0] * ux + q.f[i]![2] * uz);
+        const mx = xs.reduce((s, x) => s + x, 0) / xs.length;
+        const mw = ws.reduce((s, x) => s + x, 0) / ws.length;
+        let num = 0;
+        let den = 0;
+        xs.forEach((x, q) => {
+          num += (x - mx) * (ws[q]! - mw);
+          den += (x - mx) ** 2;
+        });
+        if (den > 1e-9) {
+          slips.push(Math.abs(num / den));
+          segSec += xs[xs.length - 1]!;
+        }
+      }
+      k = j + 1;
     }
   }
-  if (out.length < 8) return null;
-  const s = [...out].sort((x, y) => x - y);
+  if (slips.length < 3) return null;
+  const s = [...slips].sort((x, y) => x - y);
   const r2 = (x: number) => Math.round(x * 100) / 100;
   return {
     median: r2(s[Math.floor(s.length * 0.5)]!),
     p90: r2(s[Math.floor(s.length * 0.9)]!),
-    samples: s.length,
-    contactFrac: r2(contactFrames / (2 * rows.length)),
-    bodySpeed: r2(vbar),
+    segments: s.length,
+    bodySpeed: r2(dist / span),
+    segSec: r2(segSec / s.length),
   };
 }
 
@@ -215,7 +236,7 @@ export default {
           await page.evaluate(
             '(() => { window.__slide.samples.length = 0; window.__slide.speeds.length = 0; window.__slide.rows.length = 0; })()',
           );
-          await sleep(3500);
+          await sleep(Number(process.env.SLIDE_SEC ?? 3.5) * 1000);
           await page.keyboard.up('KeyW');
           const res = (await page.evaluate(`(() => {
             const w = window.__slide;
@@ -224,7 +245,11 @@ export default {
             return { frames: w.samples.length, runSpeedMean: run.reduce((a, b) => a + b, 0) / Math.max(1, run.length), slideMedian: q(w.samples, 0.5), slideP90: q(w.samples, 0.9), rows: w.rows };
           })()`)) as { rows: SlideRow[] } & Record<string, unknown>;
           // Trượt chân đo ĐÚNG chân trụ: chỉ khung hai khung liền chân đang tiếp đất (cổ chân trong 3 cm trên điểm thấp nhất của nó), vị trí chân tính TƯƠNG ĐỐI thân
-          // (triệt nhiễu bước vị trí theo gói tin) chiếu lên hướng chạy; trượt = |vận tốc chân so với thân + tốc độ thân trung bình|. 0 = chân dính đất.
+          // hồi quy vị trí chân trong thế giới theo từng đoạn tiếp đất (xem `contactSlide`). 0 = chân dính đất; `SLIDE_SEC` đặt thời gian chạy đo (mặc định 3,5 s).
+          fs.writeFileSync(
+            path.join(r.out, `slide-rows-${tag}${process.env.PSTRIDE ? '-ps' + process.env.PSTRIDE : ''}.json`),
+            JSON.stringify(res.rows),
+          );
           const contact = contactSlide(res.rows);
           delete (res as { rows?: unknown }).rows;
           Object.assign(res, { contact });
@@ -246,7 +271,8 @@ export default {
             viewport,
             quality: 'high',
             look: { g },
-            query: QUERY[v] ?? {},
+            query: { ...(QUERY[v] ?? {}), ...(process.env.RS_ISOYAW ? { isoyaw: process.env.RS_ISOYAW } : {}) },
+            dpr: Number(process.env.RS_DPR ?? 1),
             hide: 'hud',
             warnings: /models|chr_v3|clip/,
           });
@@ -259,19 +285,25 @@ export default {
           await sleep(1500);
           const t0 = Date.now();
           let n = 0;
+          const key = process.env.RS_KEY ?? 'KeyW';
+          // RS_CLIP=1: chụp vùng quanh nhân vật (CSS 360×330 ở giữa khung) với RS_DPR lần phân giải → nhân vật ~1/3 khung, thấy rõ chân.
+          const clip = process.env.RS_CLIP ? { x: viewport[0] / 2 - 180, y: viewport[1] / 2 - 190, width: 360, height: 330 } : undefined;
           const grab = async (until: number) => {
             while (Date.now() - t0 < until) {
               const ms = Date.now() - t0;
-              await page.screenshot({ path: path.join(r.out, `rs-${tag}-${String(n++).padStart(3, '0')}-${ms}.png`) });
+              await page.screenshot({
+                path: path.join(r.out, `rs-${tag}-${String(n++).padStart(3, '0')}-${ms}.png`),
+                ...(clip ? { clip } : {}),
+              });
             }
           };
-          await page.keyboard.down('KeyW');
+          await page.keyboard.down(key);
           await grab(1600);
-          await page.keyboard.up('KeyW');
+          await page.keyboard.up(key);
           await grab(3100);
-          await page.keyboard.down('KeyW');
+          await page.keyboard.down(key);
           await grab(4700);
-          await page.keyboard.up('KeyW');
+          await page.keyboard.up(key);
           await grab(5600);
           console.log(`[shots:chrv3] runstop ${tag}: ${n} khung`);
           await ctx.close();
