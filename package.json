@@ -22,6 +22,7 @@
     "size": "pnpm --filter @dtl/perf size",
     "bench:aoi": "pnpm --filter @dtl/perf aoi --",
     "perf:iso": "pnpm --filter @dtl/perf iso --",
+    "perf:gate": "pnpm --filter @dtl/perf gate --",
     "bench:client": "pnpm --filter @dtl/perf bench",
     "bench:switch": "pnpm --filter @dtl/perf bench --switch 20",
     "compat": "pnpm --filter @dtl/perf compat",
