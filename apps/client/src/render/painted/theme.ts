@@ -1,6 +1,6 @@
 import * as THREE from 'three/webgpu';
 import { uniform } from 'three/tsl';
-import type { PaintPair } from './palette';
+import { PAINTED, type PaintPair } from './palette';
 import { LIGHT } from './fieldShared';
 import { FLAGS } from '../../base/flags';
 
@@ -35,6 +35,8 @@ export interface PaintedTheme {
    * nhạt ấm, viền mềm. Chưa thưa lá cỏ trên mảng đất (cần mặt nạ trên CPU). 0 = không (mặc định, như Vân Lam).
    */
   dryMix?: number;
+  /** Đá lát (sân, mặt đường, mặt cầu): [sáng, tối]. Bỏ trống = cặp `paving` chung của bảng Họa Cảnh. */
+  paving?: PaintPair;
   /** Sương thấp: dải cao độ (m) mà sương nằm dưới, từ đỉnh dải trở xuống; và cường độ 0..1. */
   mistBand: [number, number];
   mistK: number;
@@ -56,8 +58,11 @@ export const PAINTED_THEMES: Record<string, PaintedTheme> = {
   },
   // Thiên Lộ Giới / Cửu Kiều (TN-7): cao nguyên đá rêu trên biển mây, bình minh vàng hồng; đất rêu xanh lam, đá xám ấm, sương hồng nhạt ở rìa
   cuu_kieu: {
-    ground: [0x8fab6e, 0x445f52],
+    // cỏ rêu đậm và bão hòa hơn (follow-up #685: bản đầu pastel nhạt); tối vẫn pha lam, không phải sáng nhân cho tối
+    ground: [0x8aa556, 0x355a44],
     rock: [0xbdb5a4, 0x5a5878],
+    // đá lát ngà ấm dưới nắng bình minh, khe và mặt khuất tím lam (cùng họ với bóng của `rock`, sáng hơn để đường/cầu tách khỏi vách)
+    paving: [0xd6cbb0, 0x66668a],
     mist: 0xf2e2da,
     mistBand: [66, 90],
     mistK: 0.55,
@@ -68,7 +73,7 @@ export const PAINTED_THEMES: Record<string, PaintedTheme> = {
     nightLift: 1.8,
     groundMix: 0.5,
     dryMix: 0.9,
-    groundSat: 0.8,
+    groundSat: 0.95,
   },
 };
 
@@ -82,6 +87,8 @@ export const themeU = {
   gShade: uniform(new THREE.Color()),
   rLit: uniform(new THREE.Color()),
   rShade: uniform(new THREE.Color()),
+  pLit: uniform(new THREE.Color().setHex(PAINTED.paving[0], THREE.SRGBColorSpace)),
+  pShade: uniform(new THREE.Color().setHex(PAINTED.paving[1], THREE.SRGBColorSpace)),
   mist: uniform(new THREE.Color().fromArray(LIGHT.fogColor).multiplyScalar(1.05)),
   mistLo: uniform(DEFAULT_MIST.band[0]),
   mistHi: uniform(DEFAULT_MIST.band[1]),
@@ -104,6 +111,9 @@ export function setPaintedTheme(levelId: string): void {
   themeU.groundMix.value = t?.groundMix ?? 1;
   themeU.groundSat.value = t?.groundSat ?? 1;
   themeU.dryMix.value = t?.dryMix ?? 0;
+  const pv = t?.paving ?? PAINTED.paving;
+  themeU.pLit.value.setHex(pv[0], THREE.SRGBColorSpace);
+  themeU.pShade.value.setHex(pv[1], THREE.SRGBColorSpace);
   if (t) {
     themeU.gLit.value.setHex(t.ground[0], THREE.SRGBColorSpace);
     themeU.gShade.value.setHex(t.ground[1], THREE.SRGBColorSpace);
