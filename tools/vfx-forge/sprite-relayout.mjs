@@ -23,7 +23,8 @@ const cell = Number(flag('--cell', 512));
 if (!input) throw new Error('dùng: sprite-relayout.mjs --in <atlas.webp> --from-cols 4 --to-cols 8 [--cell 512] [--out <webp>]');
 
 const meta = await sharp(input).metadata();
-if (meta.width !== fromCols * cell || meta.height % cell !== 0) throw new Error(`atlas ${meta.width}×${meta.height} không khớp ${fromCols} cột × ô ${cell}`);
+if (meta.width !== fromCols * cell || meta.height % cell !== 0)
+  throw new Error(`atlas ${meta.width}×${meta.height} không khớp ${fromCols} cột × ô ${cell}`);
 const n = (meta.height / cell) * fromCols;
 const rows = Math.ceil(n / toCols);
 const raw = await sharp(input).ensureAlpha().raw().toBuffer();
@@ -48,4 +49,6 @@ const dst = flag('--out') ?? path.resolve(here, `../../apps/client/public/hoa-tr
 fs.writeFileSync(dst, webp);
 const name = path.basename(dst);
 console.log(`đã ghi ${dst}: ${n} ô, lưới ${toCols} cột × ${rows} hàng = ${W}×${H} px (${webp.length} byte)`);
-console.log(`Tiếp: art.ts: SPRITE_ATLAS_FILE = 'hoa-truc/${name}', SPRITE_COLS = ${toCols}, SPRITE_ROWS = ${rows}; pnpm assets:lock; pnpm assets:push --only hoa-truc/${name}`);
+console.log(
+  `Tiếp: art.ts: SPRITE_ATLAS_FILE = 'hoa-truc/${name}', SPRITE_COLS = ${toCols}, SPRITE_ROWS = ${rows}; pnpm assets:lock; pnpm assets:push --only hoa-truc/${name}`,
+);
