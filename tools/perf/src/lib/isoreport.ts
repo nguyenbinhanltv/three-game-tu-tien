@@ -89,7 +89,12 @@ export interface IsoPoint {
   drawCalls: { p50: number; max: number };
   triangles: { p50: number; max: number };
   textures: number;
+  /** Tổng byte texture GPU đã tạo (MB) = tài sản + đích vẽ. */
   textureMB: number;
+  /** Texture tài sản (GLB/ảnh): không phụ thuộc viewport. Thiếu ở kết quả cũ. */
+  textureAssetMB?: number;
+  /** Đích vẽ (render target, MSAA/MRT ×số mẫu): phình theo viewport/preset. Thiếu ở kết quả cũ. */
+  textureRtMB?: number;
   geometries: number;
   materials: number;
   /** Ước tính bộ nhớ GPU: texture + buffer hình học (byte → MB). */
@@ -116,6 +121,10 @@ export interface IsoRun {
   backend: string;
   viewport: string;
   quick: boolean;
+  /** Cách đo của lần chạy này: `settled-v1` = đã chờ cảnh nạp xong trước mỗi điểm (`--settle-max` > 0). Thiếu = đo non (bản trước #675 hoặc `--settle-max 0`). */
+  method?: string;
+  /** Có mô phỏng máy yếu (`--cpu-throttle`, `--igpu`): số ms là ƯỚC LƯỢNG, không phải máy thật. */
+  emulation?: { cpuThrottle: number; igpu: boolean };
   /** Byte đã giải nén từ Vite dev server tới lúc vào game (+6 s stream); KHÔNG phải tải lần đầu của bản build, không so với ngân sách 30 MB (dùng `pnpm bench:load`). */
   devBytesMB: number | null;
   points: IsoPoint[];
@@ -172,6 +181,10 @@ const fmt = (n: number): string => (n >= 10_000 ? `${(n / 1000).toFixed(0)}k` : 
 export function toMarkdown(run: IsoRun, deltas: Delta[] = []): string {
   const L: string[] = [];
   L.push(`# perf:iso ${run.date}`, '', `GPU: ${run.adapter || '?'} · ${run.backend} · ${run.viewport}${run.quick ? ' · --quick' : ''}`);
+  if (run.emulation)
+    L.push(
+      `**MÔ PHỎNG máy yếu**: CPU chậm ${run.emulation.cpuThrottle}×${run.emulation.igpu ? ', ép GPU tiết kiệm điện (iGPU)' : ''}. Số ms là ƯỚC LƯỢNG, không phải máy thật.`,
+    );
   if (run.devBytesMB !== null)
     L.push(
       `Byte đã giải nén từ dev server tới lúc vào game: ${run.devBytesMB} MB (không phải tải lần đầu của bản build; đo cái đó bằng \`pnpm bench:load\`)`,
@@ -181,12 +194,12 @@ export function toMarkdown(run: IsoRun, deltas: Delta[] = []): string {
     L.push(
       `## Preset ${preset}`,
       '',
-      '| điểm | DC p50 | tam giác | CPU p50/p95 ms | GPU p95 ms | tex MB | mat | geo | GPU mem MB | render ms | ents ms | vfx ms |',
+      '| điểm | DC p50 | tam giác | CPU p50/p95 ms | GPU p95 ms | tex MB (tài sản+đích vẽ) | mat | geo | GPU mem MB | render ms | ents ms | vfx ms |',
     );
     L.push('|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|');
     for (const p of run.points.filter((q) => q.preset === preset)) {
       L.push(
-        `| ${p.id} | ${p.drawCalls.p50} | ${fmt(p.triangles.p50)} | ${p.cpuMs.p50}/${p.cpuMs.p95} | ${p.gpuMs ? p.gpuMs.p95 : '–'} | ${p.textureMB} | ${p.materials} | ${p.geometries} | ${p.gpuMemMB} | ${p.parts.render ?? '–'} | ${p.parts.ents ?? '–'} | ${p.parts.vfx ?? '–'} |`,
+        `| ${p.id} | ${p.drawCalls.p50} | ${fmt(p.triangles.p50)} | ${p.cpuMs.p50}/${p.cpuMs.p95} | ${p.gpuMs ? p.gpuMs.p95 : '–'} | ${p.textureMB}${p.textureAssetMB === undefined ? '' : ` (${p.textureAssetMB}+${p.textureRtMB ?? 0})`} | ${p.materials} | ${p.geometries} | ${p.gpuMemMB} | ${p.parts.render ?? '–'} | ${p.parts.ents ?? '–'} | ${p.parts.vfx ?? '–'} |`,
       );
     }
     L.push('');

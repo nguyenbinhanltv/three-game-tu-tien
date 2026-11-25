@@ -1,0 +1,34 @@
+{
+  "monId": "boss_kieu_thu",
+  "move": "sweep",
+  "idea": "Pha 3: Kiều Thủ quét ngang, gió biển mây thổi NGƯỢC lên: quạt 14 m nửa góc 45° (vạch báo ĐỎ), dải mây ngà cuộn ngược qua cầu, bụi đá bay theo.",
+  "element": "kim",
+  "palette": {
+    "core": "2a2a28",
+    "body": "cfc8b0",
+    "rim": "f4f6ee",
+    "accent": "ff1f3d"
+  },
+  "shapeLang": [
+    "arc",
+    "cloud"
+  ],
+  "zone": {
+    "shape": "cone",
+    "r": 14,
+    "w": 45,
+    "at": "forward"
+  },
+  "timing": {
+    "anticipationMs": 1300,
+    "impactMs": 140,
+    "lingerMs": 900
+  },
+  "readability": "Vạch báo ĐỎ đặc đúng vùng quạt dài 14 m, nửa góc 45°, đọc rõ trên nền đá sáng cả ngày lẫn đêm, ngoài vùng hoàn toàn sạch; thân hiệu ứng nổ màu hệ (ngà trắng và vàng nhạt (không cam)), tuyệt đối không đỏ/cam, không che người chơi.",
+  "budget": {
+    "drawCalls": 8,
+    "particles": 300,
+    "screenCover": 0.3,
+    "overdraw": 5
+  }
+}

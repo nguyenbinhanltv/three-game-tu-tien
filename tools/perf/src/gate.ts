@@ -11,7 +11,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { args, flag, opt as optEnv } from './lib/env';
-import { failed, findingsToMarkdown, gate, toBaseline, type Baseline } from './lib/gate';
+import { BASELINE_METHOD, failed, findingsToMarkdown, gate, toBaseline, type Baseline } from './lib/gate';
 import type { IsoRun } from './lib/isoreport';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
@@ -68,6 +68,12 @@ if (has('--make-baseline')) {
   const out = opt('--out');
   if (!out) {
     console.error('--make-baseline cần --out <file>');
+    process.exit(2);
+  }
+  if (run.method !== BASELINE_METHOD) {
+    console.error(
+      `lần chạy này không có method=${BASELINE_METHOD} (đo non: bản perf:iso trước #675 hoặc --settle-max 0): không lập baseline từ nó. Chạy lại perf:iso mới.`,
+    );
     process.exit(2);
   }
   const b = toBaseline(run, opt('--note') || undefined);
