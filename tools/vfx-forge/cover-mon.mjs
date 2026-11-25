@@ -15,7 +15,8 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const sharp = createRequire(path.join(here, 'package.json'))('sharp');
 const art = fs.readFileSync('apps/client/src/render/vfx/art.ts', 'utf8');
 const groups = {};
-for (const m of art.matchAll(/^\s{2}(\w+): \{ file: '([^']+)', cols: (\d+), rows: (\d+) \}/gm)) groups[m[1]] = { file: m[2], cols: Number(m[3]) };
+for (const m of art.matchAll(/^\s{2}(\w+): \{ file: '([^']+)', cols: (\d+), rows: (\d+) \}/gm))
+  groups[m[1]] = { file: m[2], cols: Number(m[3]) };
 const prefixGroup = {};
 {
   const blk = art.match(/const PREFIX_GROUP[^{]*\{([\s\S]*?)\n\};/)[1];
@@ -71,14 +72,33 @@ const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
 
 const CARDS = 'packages/content/data/vfx/cards/mon/';
 const A6 = [
-  'boss_hu_anh_chu', 'boss_dinh_linh', 'boss_phu_chu', 'boss_tu_quang_duc_chu', 'boss_kieu_thu', 'boss_ve_kieu', 'boss_thach_tuong', 'boss_dao_linh', 'boss_lo_linh',
-  'elite_hu_anh_nhan', 'elite_anh_hac_vuong', 'elite_lo_thach_tuong', 'elite_sa_tuong', 'elite_may_lang_vuong',
+  'boss_hu_anh_chu',
+  'boss_dinh_linh',
+  'boss_phu_chu',
+  'boss_tu_quang_duc_chu',
+  'boss_kieu_thu',
+  'boss_ve_kieu',
+  'boss_thach_tuong',
+  'boss_dao_linh',
+  'boss_lo_linh',
+  'elite_hu_anh_nhan',
+  'elite_anh_hac_vuong',
+  'elite_lo_thach_tuong',
+  'elite_sa_tuong',
+  'elite_may_lang_vuong',
 ];
 const BASE = ['elite_cu_nham_vien__caster', 'elite_huyet_nha_lang__caster'];
 const args = process.argv.slice(2);
 const keys = args.length
   ? args
-  : [...fs.readdirSync(CARDS).filter((f) => A6.some((m) => f.startsWith(`${m}__`))).map((f) => f.replace(/\.json$/, '')).sort(), ...BASE];
+  : [
+      ...fs
+        .readdirSync(CARDS)
+        .filter((f) => A6.some((m) => f.startsWith(`${m}__`)))
+        .map((f) => f.replace(/\.json$/, ''))
+        .sort(),
+      ...BASE,
+    ];
 
 const rows = [];
 for (const key of keys) {
@@ -116,10 +136,20 @@ for (const key of keys) {
     peakS = Math.max(peakS, sprAt(t));
     peakT = Math.max(peakT, sprAt(t) + decAt(t));
   }
-  rows.push({ key, elite: key.startsWith('elite_'), zoneFrac: zoneArea / AREA, spr30: sprAt(0.03), tot30: sprAt(0.03) + decAt(0.03), peakS, peakT });
+  rows.push({
+    key,
+    elite: key.startsWith('elite_'),
+    zoneFrac: zoneArea / AREA,
+    spr30: sprAt(0.03),
+    tot30: sprAt(0.03) + decAt(0.03),
+    peakS,
+    peakT,
+  });
 }
 const f = (x) => x.toFixed(2);
-console.log(`khung ${H.toFixed(1)}×${(H * 16 / 9).toFixed(1)} m = ${AREA.toFixed(0)} m²; sprite thiếu atlas: ${missing.length ? missing.join(',') : 'không'}`);
+console.log(
+  `khung ${H.toFixed(1)}×${((H * 16) / 9).toFixed(1)} m = ${AREA.toFixed(0)} m²; sprite thiếu atlas: ${missing.length ? missing.join(',') : 'không'}`,
+);
 console.log('chiêu'.padEnd(46), 'vùng', 'sprite@30', 'thân@30', 'sprite đỉnh', 'thân đỉnh', 'trần', 'đạt?');
 for (const r of rows) {
   if (r.err) {
@@ -127,5 +157,14 @@ for (const r of rows) {
     continue;
   }
   const cap = r.elite ? 0.2 : 0.35;
-  console.log(r.key.padEnd(46), f(r.zoneFrac).padStart(4), f(r.spr30).padStart(9), f(r.tot30).padStart(8), f(r.peakS).padStart(11), f(r.peakT).padStart(9), String(cap).padStart(4), r.peakT <= cap ? 'đạt' : 'VƯỢT');
+  console.log(
+    r.key.padEnd(46),
+    f(r.zoneFrac).padStart(4),
+    f(r.spr30).padStart(9),
+    f(r.tot30).padStart(8),
+    f(r.peakS).padStart(11),
+    f(r.peakT).padStart(9),
+    String(cap).padStart(4),
+    r.peakT <= cap ? 'đạt' : 'VƯỢT',
+  );
 }
