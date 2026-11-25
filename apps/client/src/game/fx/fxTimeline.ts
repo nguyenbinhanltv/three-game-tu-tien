@@ -6,7 +6,6 @@
 import * as THREE from 'three/webgpu';
 import {
   FLIP_ATLASES,
-  FX_SPRITES,
   FORGE_DECALS,
   FORGE_FLIPS,
   fxAwayFromCam,
@@ -41,6 +40,7 @@ import {
 } from '../../render/vfx/isoFx';
 import { forgeDecalIndex, forgeFlipIndex } from '../../render/vfx/forgeTex';
 import { shapeGeometry, shapeKind, QUAD_XZ } from '../../render/vfx/fxShapes';
+import { spriteCell, useSpriteGroup } from '../../render/vfx/art';
 import {
   DECAL_CRACK,
   DECAL_CRACK_INK,
@@ -559,7 +559,16 @@ export class FxRunner {
   private mesh(c: Cast, ev: FxMeshEvent, tgt: FxTarget | null, idx: number): void {
     const yaw = this.aim(c, tgt);
     const geo = shapeGeometry(ev.shape);
-    const kind = ev.shape === 'flip' && ev.flip && (FORGE_FLIPS as readonly string[]).includes(ev.flip) ? 'mapFlip' : shapeKind(ev.shape);
+    const kind0 = ev.shape === 'flip' && ev.flip && (FORGE_FLIPS as readonly string[]).includes(ev.flip) ? 'mapFlip' : shapeKind(ev.shape);
+    // Sprite vẽ tay: mỗi nhóm atlas hướng tu một kind riêng (`sprite`, `sprite_loi`...); nạp atlas của nhóm khi lần đầu có chiêu của hướng đó hiện ra.
+    const cell = kind0 === 'sprite' ? spriteCell(ev.sprite ?? 'hon_hand_claw') : null;
+    const kind = cell
+      ? cell.group === 'hon'
+        ? 'sprite'
+        : (`sprite_${cell.group}` as 'sprite_loi' | 'sprite_kiem' | 'sprite_hp' | 'sprite_hai' | 'sprite_tinh')
+      : kind0;
+    const isSprite = cell !== null;
+    if (cell) useSpriteGroup(cell.group);
     const start = this.anchor(c, ev.at ?? 'self', ev.offset, yaw, tgt, new THREE.Vector3());
     if (FLAGS.isoFxCompress && isBoltGroundHit(ev.shape, ev.at)) this.boltFoot(c, ev, start);
     if (FLAGS.isoFxCompress && kind === 'card' && (ev.at ?? 'self') === 'self') {
@@ -679,7 +688,7 @@ export class FxRunner {
           } else if (kind === 'card') {
             m.fxA.x = Math.min(1.2, (k / Math.max(sweep, 1e-3)) * 1.2);
             m.fxA.y = erode;
-          } else if (kind === 'sprite') {
+          } else if (isSprite) {
             // Sprite vẽ tay: hiện cả hình ngay, tan DẦN theo tuyến tính (khói mỏng đi từ `erodeFrom`), không dùng smoothstep nên khung +150 ms đã thấy thưa.
             m.fxA.y = Math.min(1.1, Math.max(0, (k - erodeFrom) / Math.max(1e-3, 1 - erodeFrom)) * 1.1);
           } else if (kind === 'burst') {
@@ -729,6 +738,8 @@ export class FxRunner {
 
   /** Ghi màu viền, độ rách và bảng màu vào tham số của lưới. */
   private style(m: FxMesh, pal: FxPalette, ev: FxMeshEvent, kind: string): void {
+    const isSprite = kind.startsWith('sprite');
+    const cell = isSprite ? spriteCell(ev.sprite ?? 'hon_hand_claw') : null;
     _col.setHex(pal.rim);
     m.fxB.set(_col.r, _col.g, _col.b, ev.ragged ?? 0.5);
     m.fxA.w =
@@ -746,8 +757,8 @@ export class FxRunner {
                   : ev.card === 'fist'
                     ? 7
                     : 0
-            : kind === 'sprite'
-              ? Math.max(0, FX_SPRITES.indexOf(ev.sprite ?? 'hon_hand_claw'))
+            : isSprite
+              ? (cell?.idx ?? 0)
               : kind === 'burst' && ev.cross
                 ? 1
                 : 0;
@@ -755,10 +766,9 @@ export class FxRunner {
     // Sprite: `fxA.x` chọn kiểu tô theo tiền tố tên: 0 = âm hồn tím mực, 1 = lôi (viền mực chàm, lõi trắng xanh), 2 = kiếm (viền mực lam lục, thân xanh ngọc, viền bạc),
     // 3 = hộ pháp (vàng đất), 4 = thủy (chàm → xanh biển → bọt trắng), 5 = nguyệt (thép sẫm → bạc → trắng), 6 = xương cot_ (bảng kim lạnh),
     // 7 = đất/đá/độc tho_/doc_ (bảng nâu, giữ phần ngả lục), 8 = sét tím tim_ (nguyên màu).
-    if (kind === 'sprite') {
+    if (isSprite) {
       const sn = ev.sprite ?? '';
-      const pre = sn.slice(0, sn.indexOf('_') + 1);
-      m.fxA.x = SPRITE_STYLE[pre] ?? 0;
+      m.fxA.x = SPRITE_STYLE[sn.slice(0, sn.indexOf('_') + 1)] ?? 0;
     }
   }
 

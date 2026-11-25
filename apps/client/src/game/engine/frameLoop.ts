@@ -273,6 +273,7 @@ export function runFrame(eng: Game): void {
   eng.lanterns?.update(_v.set(rp.x, rp.y, rp.z));
   if (me) eng.ambient.update(dt, eng.camera.position, rp);
   if (me) eng.butterflies?.update(dt, rp);
+  eng.lacKiemBirds?.update(rp.x, rp.y, rp.z, eng.camera.position);
   eng.breakables?.update(dt);
   if (eng.mapVis && me) {
     const st = get();

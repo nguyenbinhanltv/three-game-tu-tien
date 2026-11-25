@@ -12,7 +12,7 @@ import { fileURLToPath } from 'node:url';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const sharp = createRequire(path.join(here, 'package.json'))('sharp');
-// Tỉ lệ phủ THẬT của từng sprite = phần ô có alpha > 16%: đo từ atlas (`SPRITE_ATLAS_FILE` ở `render/vfx/art.ts`, kéo bằng `pnpm assets:pull`), thứ tự ô = `FX_SPRITES`.
+// Tỉ lệ phủ THẬT của từng sprite = phần ô có alpha > 16%: đo từ atlas (`SPRITE_GROUPS` ở `render/vfx/art.ts`, kéo bằng `pnpm assets:pull`), thứ tự ô trong nhóm = thứ tự tên cùng tiền tố trong `FX_SPRITES`.
 // Nhờ đó sprite dạng dải mảnh (zigzag, giáo) không bị tính như ô vuông đặc.
 const NAMES = [
   ...fs
@@ -22,24 +22,36 @@ const NAMES = [
 ].map((m) => m[1]);
 const FILL = {};
 {
-  const atlas = `apps/client/public/${fs.readFileSync('apps/client/src/render/vfx/art.ts', 'utf8').match(/SPRITE_ATLAS_FILE = '([^']+)'/)[1]}`;
-  if (fs.existsSync(atlas)) {
-    const { data, info } = await sharp(atlas).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
-    const cols = Number(fs.readFileSync('apps/client/src/render/vfx/art.ts', 'utf8').match(/SPRITE_COLS = (\d+)/)[1]);
-    const cell = info.width / cols;
-    NAMES.forEach((n, i) => {
-      const cx = (i % cols) * cell;
-      const cy = Math.floor(i / cols) * cell;
-      let c = 0;
-      let tot = 0;
-      for (let y = 0; y < cell; y += 2)
-        for (let x = 0; x < cell; x += 2) {
-          tot++;
-          if (data[((cy + y) * info.width + cx + x) * 4 + 3] > 40) c++;
-        }
-      FILL[n] = c / tot;
-    });
-  } else console.error('thiếu atlas (chạy `pnpm assets:pull`): coi mọi sprite phủ đặc ô vuông');
+  // Atlas TÁCH THEO HƯỚNG TU (`SPRITE_GROUPS` ở `render/vfx/art.ts`): mỗi nhóm (tiền tố tên) một file lưới 4 cột; chỉ số ô = thứ hạng trong nhóm.
+  const art = fs.readFileSync('apps/client/src/render/vfx/art.ts', 'utf8');
+  const groups = {};
+  for (const m of art.matchAll(/(\w+): \{ file: '([^']+)', cols: (\d+), rows: (\d+) \}/g))
+    groups[m[1]] = { file: m[2], cols: Number(m[3]) };
+  const seen = {};
+  const cache = {};
+  for (const n of NAMES) {
+    const g = n.split('_')[0];
+    const i = (seen[g] = (seen[g] ?? -1) + 1);
+    const grp = groups[g];
+    const atlas = grp && `apps/client/public/${grp.file}`;
+    if (!grp || !fs.existsSync(atlas)) {
+      console.error(`thiếu atlas nhóm ${g} (chạy \`pnpm assets:pull\`): coi sprite ${n} phủ đặc ô vuông`);
+      continue;
+    }
+    cache[g] ??= await sharp(atlas).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+    const { data, info } = cache[g];
+    const cell = info.width / grp.cols;
+    const cx = (i % grp.cols) * cell;
+    const cy = Math.floor(i / grp.cols) * cell;
+    let c = 0;
+    let tot = 0;
+    for (let y = 0; y < cell; y += 2)
+      for (let x = 0; x < cell; x += 2) {
+        tot++;
+        if (data[((cy + y) * info.width + cx + x) * 4 + 3] > 40) c++;
+      }
+    FILL[n] = c / tot;
+  }
 }
 
 const H = 2 * 20 * Math.tan((16 * Math.PI) / 180);

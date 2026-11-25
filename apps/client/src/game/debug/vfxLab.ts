@@ -8,6 +8,7 @@ import type { HazardMsg } from '@dtl/shared';
 import { movesOf } from '../fx/monMove';
 import { FxMesh } from '../../render/materials/vfx';
 import { PARTICLES } from '../../render/vfx/particles';
+import { evictSpriteGroups, residentSpriteGroups } from '../../render/vfx/art';
 import type { Game } from '../engine';
 
 /** Trạng thái điều khiển thời gian, đọc bởi vòng khung (`labDt`). */
@@ -104,6 +105,10 @@ export interface VfxLabApi {
   /** Chạy tiếp đúng `ms` mili giây trình diễn rồi dừng lại (vào chế độ tạm dừng). */
   step(ms: number): void;
   budget(): LabBudget;
+  /** Giải phóng mọi atlas sprite đang giữ (kiểm vòng nạp lại lười); trả tên nhóm đã giải phóng. */
+  evictSprites(): string[];
+  /** Các nhóm atlas sprite đang nằm trong GPU. */
+  residentSprites(): string[];
   /** Chiêu có timeline FX hay đường cũ. */
   skills(): string[];
 }
@@ -249,6 +254,8 @@ export function installVfxLab(g: Game, onHazard?: (g: Game, m: HazardMsg) => voi
       state.stepSec = Math.max(0, ms) / 1000;
     },
     budget: () => measureBudget(g),
+    evictSprites: () => evictSpriteGroups(),
+    residentSprites: () => residentSpriteGroups(),
     skills: () => [...SKILL.keys()],
   };
   (window as unknown as { __vfxlab?: VfxLabApi }).__vfxlab = api;
