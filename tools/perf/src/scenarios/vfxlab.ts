@@ -1,7 +1,7 @@
 // Phòng thử VFX (V-P0): chụp một chiêu ở 0 / +30 / +150 / +400 ms sau khung trúng đòn, 720p + 1080p cùng góc camera chéo, dừng thời gian
 // bằng `window.__vfxlab` để các khung đúng từng mili giây; đo ngân sách (draw call, hạt, phủ màn hình, overdraw), so với thẻ chiêu
 // (`packages/content/data/vfx/cards/<id>.json`) và (tùy chọn) đặt ảnh concept cạnh khung +30 ms.
-// Dùng: pnpm shots vfxlab --skill <id> --out <thư mục tuyệt đối> [--dummies 1..5] [--mon <id quái>] [--concept <ảnh>] [--sizes 720p,1080p] [--at 0,30,150,400] [--clean]
+// Dùng: pnpm shots vfxlab --skill <id> --out <thư mục tuyệt đối> [--dummies 1..5] [--mon <id quái>] [--concept <ảnh>] [--sizes 720p,1080p] [--at 0,30,150,400] [--clean] [--reload]
 import fs from 'node:fs';
 import path from 'node:path';
 import sharp from 'sharp';
@@ -196,6 +196,26 @@ async function run(r: Run, skills: string[], sizes: string[], at: number[]): Pro
           .jpeg({ quality: 88 })
           .toFile(path.join(outDir, `${skill}-${tag}-concept-vs-game.jpg`));
       }
+      await page.evaluate(() => {
+        window.__vfxlab!.pause(false);
+      });
+      await sleep(2500);
+    }
+    // `--reload`: xác nhận vòng NẠP LẠI atlas sprite theo hướng tu: giải phóng mọi nhóm, phát lại chiêu, chờ nạp xong rồi chụp +30 ms (`<chiêu>-reload-+30ms.jpg`) để so với ảnh trước khi giải phóng.
+    if (process.argv.includes('--reload')) {
+      const tag = sizes[0]!;
+      const evicted = await page.evaluate(() => window.__vfxlab!.evictSprites());
+      await sleep(400);
+      await page.evaluate(() => {
+        window.__vfxlab!.pause(true);
+      });
+      await page.evaluate((s) => window.__vfxlab!.cast(s), skill);
+      await sleep(2500); // chờ ảnh atlas nạp lại (bất đồng bộ, không phụ thuộc đồng hồ trình diễn)
+      await advance(page, hitMs + 30);
+      await frame(page);
+      await snap(page, outDir, `${skill}-reload-+30ms.jpg`, { wait: 0 });
+      const resident = await page.evaluate(() => window.__vfxlab!.residentSprites());
+      (out as Record<string, unknown>).reload = { tag, evicted, resident };
       await page.evaluate(() => {
         window.__vfxlab!.pause(false);
       });
