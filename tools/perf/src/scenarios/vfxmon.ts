@@ -97,7 +97,17 @@ async function run(r: Run, mon: string, moves: string[], sizes: string[], at: nu
       const baseBuf = await snap(page, outDir, `base-${tag}.jpg`, { wait: 0 });
       const b0 = await page.evaluate(() => window.__vfxlab!.budget());
       // `--control`: KHÔNG ra chiêu, chỉ trôi thời gian như khi đo: `pixelCover` lúc này là độ LỆCH NỀN thuần (ánh sáng/hậu kỳ/động vật nền), trừ nó khỏi số đo thật.
-      const ok = process.argv.includes('--control') || (await page.evaluate((a) => window.__vfxlab!.castMon(a[0]!, a[1]!), [mon, mv]));
+      const cast = () => page.evaluate((a) => window.__vfxlab!.castMon(a[0]!, a[1]!), [mon, mv]);
+      let ok = process.argv.includes('--control') || (await cast());
+      if (!ok) {
+        // Chạy nối nhiều chiêu: boss thật có thể đã chết/dời sau chiêu trước nên `castMon` không thấy quái. Gọi lại quái đúng chỗ rồi thử một lần nữa.
+        await gm(page, 'spawn clear', 1400);
+        await gm(page, `spawn ${mon} 1`, 2500);
+        await gm(page, 'tp 2048 2078', 1800);
+        await sleep(9000);
+        await gm(page, 'cd', 1300);
+        ok = await cast();
+      }
       if (!ok) throw new Error(`castMon(${mon}, ${mv}) thất bại (quái không có chiêu này hoặc chưa spawn)`);
       const files: Buffer[] = [];
       const rows: Record<string, unknown>[] = [];
