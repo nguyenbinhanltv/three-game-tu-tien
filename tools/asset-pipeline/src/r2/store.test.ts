@@ -66,18 +66,21 @@ describe('kho asset chung theo hash', () => {
 });
 
 describe('validate giảm yêu cầu tới R2', () => {
-  const L: Lock = { version: 1, files: { a: { sha256: 'x', bytes: 1 }, b: { sha256: 'y', bytes: 2 }, c: { sha256: 'z', bytes: 3 } } };
+  const L: Lock = {
+    version: 1,
+    files: { 'a.glb': { sha256: 'x', bytes: 1 }, 'b.glb': { sha256: 'y', bytes: 2 }, 'c.glb': { sha256: 'z', bytes: 3 } },
+  };
   it('compareListing: thiếu hoặc lệch kích thước', () => {
     const errs = compareListing(
       L,
       new Map([
-        ['a', { size: 1 }],
-        ['b', { size: 9 }],
+        ['a.glb', { size: 1 }],
+        ['b.glb', { size: 9 }],
       ]),
     );
     expect(errs).toHaveLength(2);
-    expect(errs.join('|')).toMatch(/b: kích thước R2 9/);
-    expect(errs.join('|')).toMatch(/c: chưa có trên R2/);
+    expect(errs.join('|')).toMatch(/b.glb: kích thước R2 9/);
+    expect(errs.join('|')).toMatch(/c.glb: chưa có trên R2/);
   });
   it('rotatingSample: các lát theo ngày phủ hết khóa, không trùng', () => {
     const big: Lock = {
@@ -89,8 +92,8 @@ describe('validate giảm yêu cầu tới R2', () => {
     expect(all).toHaveLength(200);
   });
   it('changedKeys: chỉ khóa mới/đổi so với sổ gốc', () => {
-    const base: Lock = { version: 1, files: { a: { sha256: 'x', bytes: 1 }, b: { sha256: 'OLD', bytes: 2 } } };
-    expect(changedKeys(L, base)).toEqual(['b', 'c']);
+    const base: Lock = { version: 1, files: { 'a.glb': { sha256: 'x', bytes: 1 }, 'b.glb': { sha256: 'OLD', bytes: 2 } } };
+    expect(changedKeys(L, base)).toEqual(['b.glb', 'c.glb']);
   });
 });
 
@@ -131,5 +134,14 @@ describe('an toàn hardlink', () => {
     // kho hỏng → tải lại từ CDN; kho không hỏng (bản chép) → đặt lại từ kho
     expect(corruptedStore ? r.downloaded : r.fromStore).toBe(1);
     expect(await verifyInStore(store, sha(data), data.length)).toBe(true);
+  });
+});
+
+describe('chống path traversal', () => {
+  it('storeFile từ chối sha256 không phải 64 hex', () => {
+    expect(() => storeFile(tmp, '../../etc/passwd')).toThrow();
+    expect(() => storeFile(tmp, 'ab')).toThrow();
+    expect(() => storeFile(tmp, 'A'.repeat(64))).toThrow();
+    expect(storeFile(tmp, 'a'.repeat(64)).startsWith(path.resolve(tmp))).toBe(true);
   });
 });

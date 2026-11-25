@@ -1,0 +1,34 @@
+{
+  "monId": "boss_thon_mach_ngo_cong_vuong",
+  "move": "emerge",
+  "idea": "Thôn Mạch Ngô Công Vương trồi lên từ vòng chui đầu tiên rồi hất thân về phía người chơi: quạt ĐỎ dài 14 m nửa góc 35° tô dần theo nhịp 1,5 s; nổ ra hàng gai rễ gỗ nâu và dải đất tung theo quạt, bào tử xanh lục bắn dọc đường hất.",
+  "element": "moc",
+  "palette": {
+    "core": "1c140c",
+    "body": "6b4a32",
+    "rim": "bfe8a0",
+    "accent": "ff1f3d"
+  },
+  "shapeLang": [
+    "spike",
+    "beam"
+  ],
+  "zone": {
+    "shape": "cone",
+    "r": 14,
+    "at": "self",
+    "w": 35
+  },
+  "timing": {
+    "anticipationMs": 1500,
+    "impactMs": 140,
+    "lingerMs": 800
+  },
+  "readability": "Quạt đỏ đặc đúng 14 m, nửa góc 35°, vân nứt đỏ sáng dần lan từ chân boss; gai rễ nâu-xanh lục lúc nổ tối ở lõi, sáng ở viền nên không lẫn với vạch đỏ.",
+  "budget": {
+    "drawCalls": 11,
+    "particles": 300,
+    "screenCover": 0.3,
+    "overdraw": 5
+  }
+}

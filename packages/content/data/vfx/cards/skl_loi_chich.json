@@ -1,0 +1,35 @@
+{
+  "skillId": "skl_loi_chich",
+  "idea": "Lôi Chích: ngọn giáo sét dài đâm thẳng từ người ra mục tiêu, mũi giáo nhọn lõi trắng chói, thân gấp khúc nhẹ, đuôi xòe thành tia. Màu: lõi trắng xanh lạnh RẤT SÁNG, thân xanh lam điện/chàm (hue 215–240°), chỉ viền ngoài rất mỏng mới hơi tím chàm; KHÔNG tím đậm, KHÔNG hồng; vàng chỉ là điểm nhỏ.",
+  "element": "kim",
+  "path": "loi_tu",
+  "shapeLang": [
+    "line",
+    "spike"
+  ],
+  "timing": {
+    "anticipationMs": 260,
+    "impactMs": 80,
+    "lingerMs": 540
+  },
+  "footprint": {
+    "lengthM": 14,
+    "widthM": 2.5,
+    "heightM": 2
+  },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": {
+    "drawCalls": 7,
+    "particles": 230,
+    "screenCover": 0.1,
+    "overdraw": 4
+  },
+  "textures": [],
+  "silhouette": "ngọn giáo/mũi tên sét dài thẳng, mũi nhọn lõi trắng, thân gấp khúc nhẹ, đuôi xòe tia",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles"
+  ]
+}

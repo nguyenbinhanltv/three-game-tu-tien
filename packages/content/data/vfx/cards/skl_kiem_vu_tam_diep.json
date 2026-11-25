@@ -1,21 +1,20 @@
 {
   "skillId": "skl_kiem_vu_tam_diep",
-  "idea": "Kiếm Vũ Tam Điệp: Kiếm múa ba nhịp liền trong một hơi thở, ba nhát lần lượt gây 110%, 110% rồi 180% công kích lên mục tiêu. Mỗi nhát trúng đích tích 1 ô Kiếm ý. Nhát cuối khắc 1 tầng Kiếm ấn.",
+  "idea": "Kiếm Vũ Tam Điệp: ba nhát kiếm nối nhau thành chữ ký ba nét: ba vòng cung chém ở ba góc khác nhau chồng lệch như cánh quạt ba lá, nét thứ ba to và sáng nhất, khắc xuống mục tiêu một Kiếm ấn nhỏ. Màu: lõi LAM LỤC TỐI (teal đậm #0A3F5E) ở tâm vệt, thân XANH NGỌC/CYAN (hue 185–195°, #2CC7DC), viền trắng bạc lạnh #F2FDFF mỏng và sáng; KHÔNG xanh lam điện/chàm (dành cho Lôi tu), KHÔNG tím, KHÔNG hồng; vàng #F3C860 chỉ là điểm nhỏ ở mũi kiếm/ấn.",
   "element": "kim",
   "path": "kiem_tu",
   "shapeLang": [
     "arc",
-    "burst",
     "spike"
   ],
   "timing": {
-    "anticipationMs": 200,
+    "anticipationMs": 300,
     "impactMs": 80,
-    "lingerMs": 400
+    "lingerMs": 600
   },
   "footprint": {
-    "lengthM": 8,
-    "widthM": 2.5,
+    "lengthM": 5,
+    "widthM": 5,
     "heightM": 2
   },
   "colorRole": "own",
@@ -23,8 +22,14 @@
   "budget": {
     "drawCalls": 9,
     "particles": 120,
-    "screenCover": 0.2,
+    "screenCover": 0.06,
     "overdraw": 4
   },
-  "textures": []
+  "textures": [],
+  "silhouette": "ba vòng cung chém ba góc chồng lệch như cánh quạt ba lá, nét cuối to nhất",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles"
+  ]
 }

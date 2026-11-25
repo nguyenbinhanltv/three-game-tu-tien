@@ -1,0 +1,63 @@
+// Họa Cảnh (`?style=painted`): ảnh so sánh mặc định | painted cùng điểm, cùng góc camera chéo, kèm số đo draw call/khung.
+//   pnpm shots painted --out <thư mục tuyệt đối> [--moods day,night] [--views 720p,1080p] [--points a,b|all] [--styles off,painted] [--preset high] [--renderer webgpu|webgl2]
+// Ảnh: <style>-<view>-<mood>-<điểm>.png; số đo: perf.json (drawCalls, triangles, textures, frameMs, heapMB mỗi điểm).
+import { sleep } from '../lib/devserver';
+import { list, num, opt } from '../lib/env';
+import { gm, perfSample, tp } from '../lib/game';
+import type { Scenario } from '../lib/scenario';
+import { snap, writeJson } from '../lib/shot';
+
+/** Điểm đứng ở Thung Lũng Thanh Phong (VALLEY 2048,2460; thế giới, mét). */
+export const POINTS: { name: string; x: number; z: number }[] = [
+  { name: 'thunglung', x: 2048, z: 2420 },
+  { name: 'giua', x: 2110, z: 2490 },
+  { name: 'suoi', x: 2390, z: 2440 },
+];
+
+const SIZES: Record<string, [number, number]> = { '720p': [1280, 720], '1080p': [1920, 1080] };
+
+export default {
+  name: 'painted',
+  desc: 'Họa Cảnh: ảnh so sánh mặc định | ?style=painted ở Thung Lũng Thanh Phong (ngày/đêm × 720p/1080p) + số đo',
+  usage:
+    '[--styles off,painted] [--moods day,night] [--views 720p,1080p] [--points a,b|all] [--preset high] [--burst N] [--spawn <id quái> --spawn-n N]',
+  async run(r) {
+    const only = list('--points', 'all');
+    const pts = POINTS.filter((p) => only.includes('all') || only.includes(p.name));
+    const perf: Record<string, unknown> = {};
+    for (const style of list('--styles', 'off,painted')) {
+      for (const view of list('--views', '720p,1080p')) {
+        for (const mood of list('--moods', 'day,night')) {
+          const { ctx, page } = await r.open({
+            name: `Pt${style[0]}${mood[0]}${view[0]}`,
+            quality: opt('--preset', 'high'),
+            viewport: SIZES[view]!,
+            query: { mood, cam: 'iso', quiet: 1, style: style === 'painted' ? 'painted' : undefined },
+            extra: opt('--query', ''),
+            seenIntro: true,
+            warnings: true,
+          });
+          await gm(page, 'level 15', 2500);
+          await gm(page, 'god on', 2500);
+          await gm(page, 'killall', 2500);
+          // --spawn <id quái> [--spawn-n N]: đặt quái quanh người để bắt chiêu vùng (telegraph) trên nền cỏ
+          const spawn = opt('--spawn', '');
+          if (spawn) await gm(page, `spawn ${spawn} ${num('--spawn-n', 3)}`, 2500);
+          let first = true;
+          for (const p of pts) {
+            await tp(page, p.x, p.z);
+            await sleep(first ? 3000 : 0);
+            await snap(page, r.out, `${style}-${view}-${mood}-${p.name}.png`, { wait: first ? 6000 : 4000 });
+            // --burst N: thêm N khung cách nhau ~2,5 s (bắt hiệu ứng thoáng qua như chiêu vùng của quái)
+            for (let b = 1; b < num('--burst', 1); b++)
+              await snap(page, r.out, `${style}-${view}-${mood}-${p.name}-b${b}.png`, { wait: 2500 });
+            first = false;
+            perf[`${style}-${view}-${mood}-${p.name}`] = await perfSample(page);
+          }
+          await ctx.close();
+        }
+      }
+    }
+    writeJson(r.out, 'perf.json', perf);
+  },
+} satisfies Scenario;

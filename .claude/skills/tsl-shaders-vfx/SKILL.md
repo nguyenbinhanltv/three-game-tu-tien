@@ -108,6 +108,9 @@ Viết ngắn, đủ các dòng sau. Thiếu dòng nào thì chưa nên viết s
 - Trong suốt 2 mặt tốn 2 draw call: giữ `forceSinglePass`.
 - Kiểu hiệu ứng mới biên dịch lần đầu gây khựng: nhớ cho vào `warmKinds`/`warmBatches`.
 - Hai backend có thể lệch nhẹ về màu texture (WebGPU không có BC7, xem `docs/ktx2/`): so ảnh cả hai.
+- **`.toVar()` ngoài `Fn` chỉ được phát ở lần dùng đầu tiên, có thể nằm trong nhánh `if` của `select()`.** `select(c, a, b)` biên dịch thành `if/else`; một biến dựng ở phạm vi toàn cục (không trong `Fn`) mà lần dùng đầu nằm trong một nhánh thì chỉ được tính ở nhánh đó, nhánh kia đọc giá trị chưa tính (0): lá cỏ Họa Cảnh biến mất gần hết (chỉ nhánh "lá có đầu hạt" sống). Không có lỗi biên dịch, chỉ hình sai. Cách làm đúng: bọc toàn bộ phép tính vertex trong `Fn(() => { ... })` (trong `Fn` mỗi `.toVar()` được phát theo thứ tự câu lệnh), trả `world`, và đưa giá trị sang fragment bằng `varyingProperty('vec3')` + `.assign(...)` trong `Fn` (không dùng `.toVarying()` ngoài `Fn`). Soi mã đã sinh: `renderer.debug.getShaderAsync(scene, camera, object)` trả vertex/fragment WGSL (xem `render/painted/lab/page.ts`, `tools/painted-compare/lab-shader.mjs`).
+- **Biểu thức dùng lại nhiều lần mà không `.toVar()` bị inline lặp**: đồ thị tự tham chiếu (vòng lặp `d1 = select(d < d1, d, d1)`) bùng nổ theo cấp số (shader biên dịch hàng chục giây, khung đứng ở 0 khung/s, nghi mất thiết bị GPU). Đặt `.toVar()` sau mỗi bước của chuỗi và của mọi giá trị dùng từ hai lần trở lên (kể cả `texture()` đọc `m.g`, `m.r`...).
+- **Gỡ lỗi shader TSL**: thêm chế độ `?dbg=` (tô màu các giá trị trung gian, ép nhánh, bỏ phép uốn) và đọc ảnh bằng `readRenderTargetPixelsAsync` (không dùng `page.screenshot` khi khung nặng); mô phỏng CPU công thức với cùng hash/bản đồ để biết lỗi ở dữ liệu hay ở shader.
 
 ## Kiểm tra
 
@@ -129,3 +132,7 @@ Lệnh:
 - `pnpm bench:client`, `pnpm bench:crowd`, `pnpm bench:switch` (skill `perf-budget`).
 - `pnpm test` (có `phases.test.ts`, `fxShapes.test.ts`, `fxTimeline.test.ts`, `fxBudget.test.ts`, `fxBatch.test.ts`), `pnpm content:check`.
 - Sau khi sửa VFX: gọi subagent `vfx-reviewer`.
+
+## Họa Cảnh (`?style=painted`)
+
+Khi viết shader cho chế độ này, theo `docs/handbook/painted.md`: hai tông sáng và tối pha tay từ một bảng chung (`cel2`, `meadowGreen`), không nhiễu hay texture ảnh chụp, chi tiết chỉ ở gần; dịch TỪNG DÒNG từ painted-valley (MIT, © 2026 Patch; dòng đầu file ghi nguồn), giữ hằng số, không "nhìn cho giống"; hậu kỳ chỉ Kuwahara (bỏ qua trời và điểm sáng HDR của VFX), không ACES hay hạt phim. VFX HPL2 giữ chuẩn riêng.

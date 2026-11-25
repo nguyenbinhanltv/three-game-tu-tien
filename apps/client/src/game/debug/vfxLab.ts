@@ -108,6 +108,15 @@ export interface VfxLabApi {
   skills(): string[];
 }
 
+/** `MonsterBurrow` rút gọn: các trường phòng thử cần. */
+interface BurrowCfg {
+  r: number;
+  hide: number;
+  mul: number;
+  kind: HazardMsg['kind'];
+  cone: { r: number; w: number; delay: number; mul: number };
+}
+
 /** Gắn `window.__vfxlab` (gọi một lần khi tạo Game, chỉ khi `?vfxlab=1` ở bản dev). */
 export function installVfxLab(g: Game, onHazard?: (g: Game, m: HazardMsg) => void): void {
   const api: VfxLabApi = {
@@ -161,7 +170,17 @@ export function installVfxLab(g: Game, onHazard?: (g: Game, m: HazardMsg) => voi
             | undefined
           >
         | undefined;
-      const cfg = ai?.[mv] ?? def?.phases?.map((p) => (p.ai as typeof ai)?.[mv]).find(Boolean);
+      // Chui đất: `burrow` = vòng tròn quanh người (báo `hide` giây), `emerge` = quạt `cone` từ chỗ boss trồi lên (ở phòng thử: chỗ boss đang đứng).
+      const bu = (
+        mv === 'burrow' || mv === 'emerge'
+          ? [def?.ai, ...(def?.phases?.map((p) => p.ai) ?? [])].map((x) => (x as { burrow?: BurrowCfg } | undefined)?.burrow).find(Boolean)
+          : undefined
+      ) as BurrowCfg | undefined;
+      const cfg = bu
+        ? mv === 'burrow'
+          ? { r: bu.r, delay: bu.hide, mul: bu.mul, kind: bu.kind }
+          : { r: bu.cone.r, delay: bu.cone.delay, mul: bu.cone.mul, kind: bu.kind, w: bu.cone.w }
+        : (ai?.[mv] ?? def?.phases?.map((p) => (p.ai as typeof ai)?.[mv]).find(Boolean));
       if (!def || !hit || !cfg || !gg.monFx || !onHazard) return false;
       gg.monFx.bypass = true; // phòng thử: FX do `onHazard` phát, bỏ chặn của `lab`
       const [id, b] = hit;
@@ -171,7 +190,9 @@ export function installVfxLab(g: Game, onHazard?: (g: Game, m: HazardMsg) => voi
       if (!known) return false;
       const base: Partial<HazardMsg> = { delay: cfg.delay, kind, src: id, r: cfg.r };
       let m: HazardMsg;
-      if (mv === 'sweep' || mv === 'line' || mv === 'charge') {
+      if (mv === 'emerge') {
+        m = { ...base, mv, x: b.x, z: b.z, yaw, sh: 'cone', w: ((cfg as { w: number }).w * Math.PI) / 180 } as HazardMsg;
+      } else if (mv === 'sweep' || mv === 'line' || mv === 'charge') {
         const rect = cfg.shape === 'rect' || mv !== 'sweep';
         // Server gửi `w` quạt là NỬA GÓC bằng radian (độ trong monsters.json); chữ nhật là bề rộng (m).
         m = { ...base, x: b.x, z: b.z, yaw, sh: rect ? 'rect' : 'cone', w: !rect && cfg.w ? (cfg.w * Math.PI) / 180 : cfg.w } as HazardMsg;
@@ -190,6 +211,16 @@ export function installVfxLab(g: Game, onHazard?: (g: Game, m: HazardMsg) => voi
           );
         else onHazard(g, m);
         return true;
+      }
+      // Chui đất ở phòng thử không có cờ MF_BURROW của server: tự dựng hình như game thật (thân thụt xuống, ụ đất chạy sang bên, trồi lên).
+      if (mv === 'burrow' || mv === 'emerge') {
+        const fx = (g as unknown as { burrowFx: import('../fx/burrowFx').BurrowFx }).burrowFx;
+        const to = { x: gg.cur.x + 3.5, z: gg.cur.z - 3.5 };
+        if (mv === 'burrow') fx.start(id, b.x, b.z, Date.now(), { move: true, auto: true, to, hide: cfg.delay });
+        else {
+          fx.start(id, b.x, b.z, Date.now(), { move: true, to: { x: b.x, z: b.z }, hide: 0 });
+          fx.finish(id);
+        }
       }
       onHazard(g, m);
       return true;

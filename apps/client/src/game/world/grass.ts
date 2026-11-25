@@ -48,6 +48,16 @@ const grassLog = logger('grass');
 
 /** Số vị trí rạp cỏ truyền vào shader (mình + 5 thực thể gần nhất). */
 export const GRASS_PUSH_SLOTS = 6;
+
+/** Giao diện chung của lớp cỏ (bụi cỏ thường `Grass` và cỏ lá mảnh Họa Cảnh `PaintedGameField`). */
+export interface GrassLayer {
+  readonly mesh: THREE.Object3D;
+  count: number;
+  setQuality(q: string, shadows?: boolean): void;
+  setEnabled(on: boolean): void;
+  update(dt: number, center: { x: number; y: number; z: number }, pushers: Pusher[], budget?: number): void;
+  dispose(): void;
+}
 const CHUNK = 16;
 
 interface GrassPreset {
@@ -123,20 +133,20 @@ function nearCollider(x: number, z: number, pad: number): boolean {
 }
 
 /**
- * Bụi cỏ tại điểm (x, z) với độ cao `h`, độ dốc `slope`: trả false nếu không mọc (sân đá, bệ cổng,
- * Kiếm Trủng, nước, dốc, tuyết, chân công trình), không thì ghi gốc, góc, cỡ, màu vào `out` (8 float).
+ * Mật độ cỏ tại (x, z) với độ cao `h`, độ dốc `slope`: 0 nếu không mọc (sân đá, bệ cổng, Kiếm Trủng, nước, dốc, tuyết, chân công trình),
+ * ngược lại 0..~1,3 (cỏ vẽ tay Họa Cảnh và bụi cỏ thường cùng dùng luật này). Không xét va chạm vật (`nearCollider`).
  */
-function grassTuftAt(x: number, z: number, h: number, slope: number, r: number, out: Float32Array, o: number): boolean {
-  if (h < WATER_Y + 2.2 || h > 240 || slope > 2.2) return false;
+export function grassDensityAt(x: number, z: number, h: number, slope: number): number {
+  if (h < WATER_Y + 2.2 || h > 240 || slope > 2.2) return 0;
   const isl = levelTerrain().def;
-  if (isl.islands && h < (isl.voidFloor ?? 0) + 40) return false; // không cỏ trên sàn mây và vách đảo
+  if (isl.islands && h < (isl.voidFloor ?? 0) + 40) return 0; // không cỏ trên sàn mây và vách đảo
   // Đỉnh tông môn (MAP-1 bản B): có cỏ ở chỗ không lát đá và không có công trình/đại lộ (`blocked`, `sectPaving`).
   if (
     (featureWeight(SECT, x, z) > 0.8 && (sectPaving(x - SECT.x, z - SECT.z) > 0.02 || blocked(x - SECT.x, z - SECT.z))) ||
     portalPaving(x, z) > 0.02 ||
     featureWeight(KIEM_TRUNG, x, z) > 0.12
   )
-    return false;
+    return 0;
   const wValley = featureWeight(VALLEY, x, z);
   const wForest = featureWeight(FOREST, x, z);
   const wLake = featureWeight(LAKE, x, z);
@@ -147,8 +157,35 @@ function grassTuftAt(x: number, z: number, h: number, slope: number, r: number, 
   if (h > 170) dens *= 0.5;
   // Bờ hồ thưa dần: không cỏ sát mặt nước, đầy dần khi cách mực nước 2 → 9 m.
   if (wLake > 0.3) dens *= Math.min(1, Math.max(0, (h - WATER_Y - 2.2) / 6.8));
-  if (r > dens) return false;
+  return Math.max(0, dens);
+}
+
+/** Chân va chạm của ô đang dựng có phủ (x, z) không (đệm `pad`). Dùng cho lớp cỏ Họa Cảnh sau `setColliders`. */
+export function grassBlockedByCollider(x: number, z: number): boolean {
+  return nearCollider(x, z, 1.2);
+}
+
+/** Đặt các vật va chạm gần ô [x0, x0+size]×[z0, z0+size] cho `grassBlockedByCollider`. */
+export function setGrassColliders(x0: number, z0: number, size: number): void {
+  _cols.length = 0;
+  for (const c of levelTerrain().colliders) {
+    const pad = c.r + 2;
+    if (c.x > x0 - pad && c.x < x0 + size + pad && c.z > z0 - pad && c.z < z0 + size + pad) _cols.push(c);
+  }
+}
+
+/**
+ * Bụi cỏ tại điểm (x, z) với độ cao `h`, độ dốc `slope`: trả false nếu không mọc (xem `grassDensityAt`), không thì ghi gốc, góc, cỡ, màu
+ * vào `out` (8 float).
+ */
+function grassTuftAt(x: number, z: number, h: number, slope: number, r: number, out: Float32Array, o: number): boolean {
+  const dens = grassDensityAt(x, z, h, slope);
+  if (dens <= 0 || r > dens) return false;
   if (nearCollider(x, z, 1.2)) return false;
+  const isl = levelTerrain().def;
+  const wForest = featureWeight(FOREST, x, z);
+  const wLake = featureWeight(LAKE, x, z);
+  const n = fbm(x * 0.045, z * 0.045, 2, TERRAIN_SEED + 777);
 
   const r2 = hash01(Math.floor(x * 7.3), Math.floor(z * 7.3), 811);
   _c.copy(C_SUN);

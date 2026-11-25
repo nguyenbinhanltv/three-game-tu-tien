@@ -26,10 +26,14 @@ import {
   uniform,
   vec2,
   vec3,
+  vec4,
 } from 'three/tsl';
 import { WORLD_SIZE } from '@dtl/shared';
 import { GROUND_LAYER as L, type GroundTextures } from '../../base/groundTextures';
+import { FLAGS } from '../../base/flags';
 import { isoTerrainDetail } from './isoDetail';
+import { getPaintedRefField } from '../painted/fieldShared';
+import { flatTextures, groundColor } from '../painted/lab/ground';
 
 /**
  * Shader mặt đất PBR (P2-A2): trộn 8 lớp texture CC0 Poly Haven theo vùng, độ dốc, độ cao.
@@ -640,6 +644,19 @@ export function applyGroundShader(mat: THREE.MeshStandardNodeMaterial, tex: Grou
   }
   mat.vertexColors = false;
   mat.colorNode = col;
+  if (FLAGS.style === 'painted') {
+    // Họa Cảnh: đất cỏ và đường mòn dùng đúng màu đất của painted-valley (bản dịch TSL đã đo khớp ở render/painted/lab), phát sáng không qua
+    // đèn (không ACES/mood); đá, vách, tuyết, lát đá, mộ giữ shader cũ có đèn. Độ phủ cỏ ở đây là mặt nạ của chính địa hình (đường mòn = đất trần).
+    const keep = max(max(max(rockW, cliffW), snowW), max(pav, bio.z));
+    const grassW = float(1).sub(keep);
+    const F = getPaintedRefField();
+    const painted = groundColor(F, flatTextures(), positionWorld, nGeo, {
+      m: vec4(0.25, float(1).sub(pathW), 0, 0.55),
+      landNormal: nGeo,
+    });
+    mat.colorNode = col.mul(keep);
+    mat.emissiveNode = painted.mul(grassW);
+  }
 
   // ----- pháp tuyến + độ nhám -----
   if (lo) {

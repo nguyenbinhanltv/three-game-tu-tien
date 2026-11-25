@@ -1,0 +1,33 @@
+{
+  "monId": "boss_van_hai_kinh_vuong",
+  "move": "slam",
+  "idea": "Vân Hải Kình Vương quật đuôi xuống: vòng ĐỎ tròn đúng 7 m tô dần theo nhịp 1,5 s; nổ ra cột nước xanh thẫm xoáy bật lên từ biển mây, bọt trắng và vảy xanh bắn tung, sóng tan nhanh.",
+  "element": "thuy",
+  "palette": {
+    "core": "071a2e",
+    "body": "3f86b8",
+    "rim": "d6f1ff",
+    "accent": "ff1f3d"
+  },
+  "shapeLang": [
+    "ring",
+    "spiral"
+  ],
+  "zone": {
+    "shape": "circle",
+    "r": 7,
+    "at": "target"
+  },
+  "timing": {
+    "anticipationMs": 1500,
+    "impactMs": 140,
+    "lingerMs": 800
+  },
+  "readability": "Đĩa đỏ đặc đúng 7 m; cột nước xanh thẫm viền trắng bạc không lẫn với đỏ, bọt mỏng không che người chơi.",
+  "budget": {
+    "drawCalls": 9,
+    "particles": 300,
+    "screenCover": 0.3,
+    "overdraw": 5
+  }
+}

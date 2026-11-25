@@ -10,7 +10,7 @@ const LEGACY = {
     art: 'kiem',
     dao: 'kiem',
     tint: 'cff3ff',
-    palette: { core: '0a3f5e', body: '2cc7dc', rim: 'f2fdff', accent: 'f3c860', shadow: '08202e' },
+    palette: { core: '0a3f5e', body: '2cc7dc', rim: 'f2fdff', accent: 'ffe58a', shadow: '08202e' },
     hit: { sfx: 'crit', gain: 0.18, rate: 1.2, strongOnly: true },
   },
   bat_dong_kim_than: {

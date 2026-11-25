@@ -57,7 +57,7 @@ import { FrameBudget, type SectionStat } from '../base/frameBudget';
 import { AmbientParticles } from './world/ambient';
 import { Butterflies } from './world/butterflies';
 import { Breakables } from './world/breakables';
-import { Grass, GRASS_PUSH_SLOTS, type Pusher } from './world/grass';
+import { type GrassLayer, GRASS_PUSH_SLOTS, type Pusher } from './world/grass';
 import { setHeightFog } from '../render/atmosphere';
 import { type RiftVeil } from '../render/riftVeil';
 import { DeadTrees } from './world/deadTrees';
@@ -142,6 +142,8 @@ import { debugAllowed, readTestParams } from './core/testParams';
 import { CharPreview } from './camera/charPreview';
 import { IsoRig } from './camera/isoRig';
 import { currentSearch, FLAGS } from '../base/flags';
+import { VistaRig } from './camera/vista';
+import { BurrowFx } from './fx/burrowFx';
 import { installVfxLab } from './debug/vfxLab';
 import { ANIM_LAB, VFX_LAB } from './engine/common';
 import { installAnimLab } from './debug/animLab';
@@ -260,7 +262,7 @@ export class Game {
   terrain!: Terrain;
   env!: Environment;
   /** Cỏ tương tác quanh người chơi (V4); preset Thấp tắt. */
-  grass!: Grass;
+  grass!: GrassLayer;
   props: PropLayer | null = null;
   /** Cột linh quang ở các điểm đáng chú ý (M-5); chỉ hiện ở thế giới chính. */
   beacons: Beacons | null = null;
@@ -446,6 +448,10 @@ export class Game {
   bossLineId = 0;
   /** Thẻ chương (C2): khung camera nhẹ, thẻ chờ tới khi thế giới đã dựng, đã xét lần đầu vào tông môn chưa. */
   camFrame = new CamFrame();
+  /** Chui đất/trồi lên của quái (chỉ hiển thị). */
+  burrowFx = new BurrowFx();
+  /** Camera mở tầm nhìn (ngự kiếm / điểm ngắm cảnh), chỉ trình diễn. */
+  vista = new VistaRig();
   /** Cảnh mở đầu (P2-B1): camera điện ảnh lần đầu vào Lạc Kiếm Tông; xong thì hiện thẻ chương 'sect'. */
   cine = new Cutscene();
   /** Loại cảnh đang chạy (xem CineState.kind) và cờ rung lần hai của cảnh chuyển pha. */
@@ -815,6 +821,7 @@ export class Game {
     this.ents.onSkillEvent = (sid, e) => this.emitSkillEvent(sid, e);
     this.ents.onMonsterDeath = (m) => monsterInk(this, m);
     this.ents.onMonFlags = (m, e) => monFlagFx(this, m, e);
+    this.ents.burrow = this.burrowFx;
     this.minimap = renderMinimap(320);
     mark('minimap');
     this.startedAt = t0;

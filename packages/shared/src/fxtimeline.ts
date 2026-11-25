@@ -34,7 +34,7 @@ export type FxShape =
   | 'card'
   /** Chùm đường gió: bảy vệt mảnh cuộn quanh trục +Z, đầu vệt chạy dọc đường rồi tan (kiểu `wind`, Storm & Wind CC BY). */
   | 'gust'
-  /** Sprite vẽ tay (Họa Pháp Lô 2): một ô của atlas `public/hoa-truc/vfx_sprites.webp` (lưới 4×6) (nền trong suốt) quay mặt về camera, tô ink theo bảng màu nhánh; chọn ô bằng `sprite` (kiểu `art`). */
+  /** Sprite vẽ tay (Họa Pháp Lô 2): một ô của atlas `public/hoa-truc/vfx_sprites.webp` (lưới 4×10) (nền trong suốt) quay mặt về camera, tô ink theo bảng màu nhánh; chọn ô bằng `sprite` (kiểu `art`). */
   | 'sprite'
   /** Tấm flipbook (VS-1): khói mực, tia lửa, bụi, nét bút... phát tuần tự 16 khung theo tiến độ vòng đời; chọn atlas bằng `flip` (kiểu `flip`). */
   | 'flip'
@@ -114,7 +114,7 @@ export const FLIP_ATLASES = ['ink_smoke', 'spark_burst', 'dust_kick', 'slash_str
 export type FlipAtlas = (typeof FLIP_ATLASES)[number];
 
 /**
- * Sprite vẽ tay (Codex, qua `tools/vfx-forge/sprite-pack.mjs`): thứ tự = ô trong atlas 4×6 (hàng trên trước, trái sang phải). Mỗi sprite là khối khói/hình có
+ * Sprite vẽ tay (Codex, qua `tools/vfx-forge/sprite-pack.mjs`): thứ tự = ô trong atlas 4×10 (hàng trên trước, trái sang phải). Mỗi sprite là khối khói/hình có
  * lõi tối + viền sáng lạnh; shader đọc độ sáng làm tầng màu theo bảng màu nhánh (đọc được cả nền sáng lẫn đêm).
  */
 export const FX_SPRITES = [
@@ -142,6 +142,39 @@ export const FX_SPRITES = [
   'hon_face_horn',
   'hon_bone_hand',
   'hon_swarm9',
+  // Lôi tu (tô kiểu "lôi": viền mực chàm tối → thân tím-lam → lõi trắng xanh; tiền tố `loi_` chọn kiểu tô)
+  'loi_bolt_forked',
+  'loi_bolt_zigzag',
+  'loi_spear',
+  'loi_cloud',
+  'loi_bolts9',
+  'loi_orbs',
+  'loi_tablet',
+  'loi_web',
+  'loi_spiral',
+  'loi_scales',
+  'loi_wave',
+  'loi_ground_arcs',
+  'loi_flash',
+  'loi_sparks',
+  'loi_mark',
+  'loi_arcs_pair',
+  'kiem_afterimages',
+  'kiem_flying',
+  'kiem_seal',
+  'kiem_rain',
+  'kiem_circle',
+  'kiem_wave',
+  'kiem_arcs3',
+  'kiem_pill',
+  'kiem_drill',
+  'kiem_ghost',
+  'kiem_rift',
+  'kiem_bigsword',
+  'kiem_cracks',
+  'kiem_flash',
+  'kiem_sparks',
+  'kiem_slash',
 ] as const;
 export type FxSprite = (typeof FX_SPRITES)[number];
 
@@ -235,6 +268,8 @@ export interface FxMeshEvent extends FxBase {
   flip?: FlipAtlas | ForgeFlip;
   /** Ô sprite của hình `sprite` (bắt buộc với `shape: "sprite"`). */
   sprite?: FxSprite;
+  /** Sprite billboard: `aim` xoay trong mặt phẳng nhìn để trục +x của tranh chạy dọc HƯỚNG NGẮM (chiêu tia/giáo/đường sét dài), tính từ camera chéo; `rot[2]` cộng thêm. */
+  align?: 'aim';
   /** Tranh của hình `card`: `arhat` (La Hán ngồi + hào quang) hoặc `phoenix` (Phượng dang cánh); `colossus` (Cổ Thần khổng lồ nửa thân) và `fist` (cự quyền) của Cổ Thần (TN-5). */
   card?: 'arhat' | 'phoenix' | 'ghost' | 'colossus' | 'fist';
   /** Với `move`: giữ hướng thẳng đứng (chỉ xoay theo hướng nhìn) thay vì quay mũi theo hướng bay (rồng lao xuống). */

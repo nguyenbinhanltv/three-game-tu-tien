@@ -578,6 +578,21 @@ export function spriteNodes(U: FxUniforms): { color: N; opacity: N } {
     smoothstep(0.9, 1.0, spTier),
   );
   const spLift = mix(spRamp, mix(spRimC, spWhiteC, 0.5), spBright.mul(spTier).mul(0.9));
+  // Kiểu "lôi" (`fxA.x` = 1): viền mực chàm tối (hơi tím, rất mỏng) bọc ngoài, thân XANH LAM ĐIỆN (hue ~215–235°), lõi trắng xanh lạnh rất sáng (tia sét sáng ở TÂM, khác khói hồn tối ở tâm).
+  const lCore = vec3(0.02, 0.012, 0.1);
+  const lBody = vec3(0.03, 0.17, 1.0);
+  const lRim = vec3(0.45, 0.78, 1.0);
+  const lWhite = vec3(0.97, 1.0, 1.0);
+  const lT = smoothstep(0.1, 0.78, spLum.sqrt());
+  const lRamp = mix(mix(mix(lCore, lBody, smoothstep(0.04, 0.4, lT)), lRim, smoothstep(0.36, 0.72, lT)), lWhite, smoothstep(0.78, 1.0, lT));
+  // Kiểu "kiếm" (`fxA.x` = 2): viền mực lam lục tối, thân XANH NGỌC/teal ngả lục (hue ~165–175°), viền bạc ngọc mỏng, ít trắng (chỉ điểm sáng nhất); tách khỏi lam điện của Lôi và tím của Hồn.
+  const kCore = vec3(0.0, 0.04, 0.05);
+  const kBody = vec3(0.0, 0.58, 0.47);
+  const kRim = vec3(0.3, 0.86, 0.72);
+  const kWhite = vec3(0.8, 0.98, 0.92);
+  const kT = smoothstep(0.1, 0.78, spLum.sqrt());
+  const kRamp = mix(mix(mix(kCore, kBody, smoothstep(0.04, 0.4, kT)), kRim, smoothstep(0.4, 0.8, kT)), kWhite, smoothstep(0.9, 1.0, kT));
+  const spStyled = mix(mix(spLift, lRamp, step(0.5, U.a.x).mul(float(1).sub(step(1.5, U.a.x)))), kRamp, step(1.5, U.a.x));
   // Tan như khói mỏng dần: nhiễu thấp tần + mép mỏng (tranh sáng/trong) tan trước, ngưỡng rộng nên không ra đường cắt răng cưa.
   const spE = vnoise(q.mul(vec2(5, 7)).add(U.a.z.mul(7)))
     .mul(0.55)
@@ -589,7 +604,7 @@ export function spriteNodes(U: FxUniforms): { color: N; opacity: N } {
   const spPaint = mix(vec3(spLum, spLum, spLum), ts.rgb, 0.5)
     .mul(mix(float(0.3), float(1.0), spTier))
     .mul(vec3(1.05, 0.82, 1.1));
-  const spCol = min(mix(spLift, spPaint, 0.2).add(spRimC.mul(spEdge.mul(0.5))), U.maxHdr);
+  const spCol = min(mix(spStyled, spPaint, float(0.2).mul(float(1).sub(step(0.5, U.a.x)))).add(spRimC.mul(spEdge.mul(0.5))), U.maxHdr);
   const spOpacity = U.opacity.mul(smoothstep(0.0, 0.85, ts.a)).mul(spAlive);
   return { color: spCol, opacity: spOpacity };
 }

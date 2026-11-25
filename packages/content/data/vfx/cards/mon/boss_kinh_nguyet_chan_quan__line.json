@@ -1,0 +1,34 @@
+{
+  "monId": "boss_kinh_nguyet_chan_quan",
+  "move": "line",
+  "idea": "Kính Nguyệt Chân Quân bắn tia phản chiếu: dải ĐỎ dài 20 m rộng 3 m tô dần 1,2 s; nổ ra tia sáng bạc-xanh cắt thẳng qua dải gương vỡ.",
+  "element": "kim",
+  "palette": {
+    "core": "10151d",
+    "body": "8fa6c4",
+    "rim": "eef3fb",
+    "accent": "ff1f3d"
+  },
+  "shapeLang": [
+    "beam",
+    "line"
+  ],
+  "zone": {
+    "shape": "rect",
+    "r": 20,
+    "at": "forward",
+    "w": 3
+  },
+  "timing": {
+    "anticipationMs": 1200,
+    "impactMs": 140,
+    "lingerMs": 800
+  },
+  "readability": "Dải đỏ đặc đúng 20×3 m; tia bạc lõi tối viền trắng không lẫn đỏ.",
+  "budget": {
+    "drawCalls": 10,
+    "particles": 300,
+    "screenCover": 0.3,
+    "overdraw": 5
+  }
+}

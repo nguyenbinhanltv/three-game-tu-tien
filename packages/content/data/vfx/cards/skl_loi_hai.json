@@ -1,0 +1,40 @@
+{
+  "skillId": "skl_loi_hai",
+  "idea": "Lôi Hải: một vùng 6 m đầy hồ quang bò sát mặt đất cuộn lên như sóng điện, nhiều tia sét nhỏ nhảy cao từ mặt biển điện, giữa vùng nổ chớp lớn. Màu: lõi trắng xanh lạnh RẤT SÁNG, thân xanh lam điện/chàm (hue 215–240°), chỉ viền ngoài rất mỏng mới hơi tím chàm; KHÔNG tím đậm, KHÔNG hồng; vàng chỉ là điểm nhỏ.",
+  "element": "kim",
+  "path": "loi_tu",
+  "shapeLang": [
+    "arc",
+    "spike"
+  ],
+  "timing": {
+    "anticipationMs": 450,
+    "impactMs": 80,
+    "lingerMs": 550
+  },
+  "footprint": {
+    "lengthM": 12,
+    "widthM": 12,
+    "heightM": 6
+  },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": {
+    "drawCalls": 9,
+    "particles": 308,
+    "screenCover": 0.18,
+    "overdraw": 4
+  },
+  "textures": [
+    {
+      "id": "proc:spark_burst",
+      "kind": "flipbook"
+    }
+  ],
+  "silhouette": "biển hồ quang: sóng điện bò sát đất cuộn lên, nhiều tia sét nhỏ nhảy cao",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles"
+  ]
+}

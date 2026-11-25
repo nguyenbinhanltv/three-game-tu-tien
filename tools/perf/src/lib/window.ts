@@ -76,6 +76,9 @@ export interface AnimLabDebug {
     loco?: boolean;
     idle?: boolean;
     cutin?: boolean;
+    impulse?: boolean;
+    ragdoll?: boolean;
+    patch?: boolean;
   }): {
     exaggerate: boolean;
     bounce: boolean;
@@ -85,6 +88,9 @@ export interface AnimLabDebug {
     loco: boolean;
     idle: boolean;
     cutin: boolean;
+    impulse: boolean;
+    ragdoll: boolean;
+    patch: boolean;
   };
   poses(): string[];
   hitSelf(from: 'front' | 'back' | 'left' | 'right', tier: number, knock?: boolean): boolean;

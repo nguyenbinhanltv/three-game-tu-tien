@@ -62,3 +62,7 @@ description: Quy ước code client Three.js của Đạp Thiên Lộ — render
 
 - Chạy skill `perf-budget` nếu thay đổi ảnh hưởng render (`pnpm bench:client` là số đo chuẩn).
 - Mở game bằng skill `playtest` và nhìn tận mắt, không chỉ dựa vào typecheck.
+
+## Họa Cảnh (`?style=painted`)
+
+Mọi nhánh mới nằm sau `FLAGS.style === 'painted'` (đọc qua `src/base/flags.ts`), mặc định không đổi; lớp cỏ chi tiết chỉ vòng gần (theo khoảng cách tới camera), cảnh xa vẽ sẵn không tốn gì mỗi khung; cảnh thử đối chiếu `?paintedlab=1` và `tools/painted-compare` (SSIM, ΔE) (vào cùng PR #614) trước khi áp vào địa hình thật. Xem `docs/handbook/painted.md`.

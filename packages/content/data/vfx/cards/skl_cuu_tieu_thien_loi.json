@@ -1,12 +1,12 @@
 {
   "skillId": "skl_cuu_tieu_thien_loi",
-  "idea": "Chiêu cuối Lôi tu: pháp trận hiện dưới chân mục tiêu, trời tụ lôi, một cột sét tím trắng giáng thẳng xuống kèm nhánh rẽ, nổ vòng sáng và để lại vết rạn cháy tan dần.",
+  "idea": "Chiêu cuối Lôi tu: đám mây giông chàm đen cuộn lên trên đầu mục tiêu, chín nhánh sét lớn chẻ nhánh đồng loạt giáng xuống tụ về một điểm, cột sét lõi trắng chói nổ sáng rồi để lại khói và tia lửa xanh tan dần. Màu: lõi trắng xanh lạnh RẤT SÁNG, thân xanh lam điện/chàm (hue 215–240°), chỉ viền ngoài rất mỏng mới hơi tím chàm; KHÔNG tím đậm, KHÔNG hồng; vàng chỉ là điểm nhỏ.",
   "element": "loi",
   "path": "loi_tu",
   "shapeLang": [
-    "line",
-    "ring",
-    "spike"
+    "cloud",
+    "spike",
+    "line"
   ],
   "timing": {
     "anticipationMs": 600,
@@ -14,17 +14,17 @@
     "lingerMs": 1000
   },
   "footprint": {
-    "lengthM": 7,
-    "widthM": 7,
+    "lengthM": 8,
+    "widthM": 8,
     "heightM": 14
   },
   "colorRole": "own",
   "telegraph": false,
   "budget": {
-    "drawCalls": 12,
+    "drawCalls": 8,
     "particles": 700,
-    "screenCover": 0.35,
-    "overdraw": 6
+    "screenCover": 0.25,
+    "overdraw": 4
   },
   "textures": [
     {
@@ -32,5 +32,11 @@
       "kind": "flipbook"
     }
   ],
-  "impactFrame": true
+  "impactFrame": true,
+  "silhouette": "một đám mây giông cuộn ở trên cao và chín nhánh sét lớn tỏa như chùm rễ giáng xuống một điểm",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles"
+  ]
 }

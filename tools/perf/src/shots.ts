@@ -17,6 +17,7 @@ import bossfaces from './scenarios/bossfaces';
 import dungeon from './scenarios/dungeon';
 import hires from './scenarios/hires';
 import lackiem from './scenarios/lackiem';
+import painted from './scenarios/painted';
 import tieucanh from './scenarios/tieucanh';
 import thienkhuyet from './scenarios/thienkhuyet';
 import bachoang from './scenarios/bachoang';
@@ -31,6 +32,7 @@ import quality from './scenarios/quality';
 import map from './scenarios/map';
 import mons from './scenarios/mons';
 import camiso from './scenarios/camiso';
+import vista from './scenarios/vista';
 import points from './scenarios/points';
 import propstc from './scenarios/propstc';
 import huyenkiep from './scenarios/huyenkiep';
@@ -78,10 +80,12 @@ import collscan from './scenarios/collscan';
 
 const SCENARIOS: Scenario[] = [
   camiso,
+  vista,
   points,
   collscan,
   propstc,
   lackiem,
+  painted,
   tieucanh,
   collwalk,
   thienkhuyet,

@@ -114,10 +114,14 @@ interface Flags {
   ground: boolean;
   /** `?isoyaw=<độ>` ghi đè hướng nhìn cố định của camera chéo (chỉ để chọn hướng đẹp nhất cho từng bản đồ). */
   isoYaw: number | null;
+  /** `?vista=0` tắt "khoảnh khắc mở tầm nhìn" (camera hạ thấp khi ngự kiếm / đứng ở điểm ngắm cảnh). */
+  vista: boolean;
   /** `?isofx=0` tắt nén hình VFX đứng cao ở camera chéo (so ảnh trước/sau, Thiên Nhãn P4-1). */
   isoFxCompress: boolean;
   /** `?style=painted` phong cách "Họa Cảnh" (nền hoạt hình vẽ tay, thử ở Vân Lam); mặc định không đổi gì. Giá trị lạ = tắt. */
   style: 'painted' | null;
+  /** `?paint=0..3` mức lớp Kuwahara của Họa Cảnh (0 tắt, mặc định 1 khi `?style=painted`). */
+  paint: number | null;
   /** `?touch=1|0` ép bật/tắt chế độ cảm ứng (U2-6; kiểm thử, ghi đè cài đặt). */
   touch: boolean | null;
 }
@@ -127,6 +131,12 @@ export const FLAG_DOCS: Readonly<Record<string, { scope: 'user' | 'diag' | 'test
   style: {
     scope: 'diag',
     doc: '=painted: phong cách Họa Cảnh (nền hoạt hình vẽ tay, pilot Vân Lam); mặc định tắt, xem docs/handbook/painted.md',
+  },
+  paint: { scope: 'diag', doc: '0..3: mức Kuwahara của ?style=painted (0 tắt, mặc định 1)' },
+  vista: { scope: 'diag', doc: '0: tắt camera mở tầm nhìn (hạ thấp khi ngự kiếm và ở điểm ngắm cảnh)' },
+  paintedlab: {
+    scope: 'test',
+    doc: '=1: cảnh thử đối chiếu Họa Cảnh với painted-valley (render/painted/lab; tools/painted-compare); ?win=x,z ?paint=0..3',
   },
   isoyaw: { scope: 'diag', doc: 'độ: ghi đè hướng nhìn cố định của camera chéo (chọn hướng đẹp nhất cho từng bản đồ)' },
   isofx: { scope: 'diag', doc: '=0 tắt nén hình VFX đứng cao ở camera chéo (debug, so ảnh trước/sau)' },
@@ -217,7 +227,9 @@ export function readFlags(search: string): Flags {
   return {
     mute: q.get('mute') === '1',
     style: q.get('style') === 'painted' ? 'painted' : null,
+    paint: /^[0-3]$/.test(q.get('paint') ?? '') ? Number(q.get('paint')) : null,
     isoFxCompress: q.get('isofx') !== '0',
+    vista: q.get('vista') !== '0',
     isoYaw: q.get('isoyaw') === null || Number.isNaN(Number(q.get('isoyaw'))) ? null : (Number(q.get('isoyaw')) * Math.PI) / 180,
     touch: q.get('touch') === '1' ? true : q.get('touch') === '0' ? false : null,
     auto: q.get('auto'),

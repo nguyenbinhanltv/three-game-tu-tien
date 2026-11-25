@@ -152,6 +152,10 @@ import fx_mon_boom_circle__boss_dia_mach_long__chant from '../data/fx/mon_boom_c
 import fx_mon_boom_circle__boss_huyet_lang_vuong__slam from '../data/fx/mon_boom_circle__boss_huyet_lang_vuong__slam.json';
 import fx_mon_boom_circle__boss_kiem_khoi__slam from '../data/fx/mon_boom_circle__boss_kiem_khoi__slam.json';
 import fx_mon_boom_circle__boss_thach_tam_khoi_vuong__leap from '../data/fx/mon_boom_circle__boss_thach_tam_khoi_vuong__leap.json';
+import fx_mon_boom_circle__boss_thon_mach_ngo_cong_vuong__burrow from '../data/fx/mon_boom_circle__boss_thon_mach_ngo_cong_vuong__burrow.json';
+import fx_mon_boom_cone__boss_thon_mach_ngo_cong_vuong__emerge from '../data/fx/mon_boom_cone__boss_thon_mach_ngo_cong_vuong__emerge.json';
+import fx_mon_warn__boss_thon_mach_ngo_cong_vuong__burrow from '../data/fx/mon_warn__boss_thon_mach_ngo_cong_vuong__burrow.json';
+import fx_mon_warn_cone__boss_thon_mach_ngo_cong_vuong__emerge from '../data/fx/mon_warn_cone__boss_thon_mach_ngo_cong_vuong__emerge.json';
 import fx_mon_boom_circle__boss_thon_mach_ngo_cong_vuong__chant from '../data/fx/mon_boom_circle__boss_thon_mach_ngo_cong_vuong__chant.json';
 import fx_mon_boom_circle__boss_thon_mach_ngo_cong_vuong__slam from '../data/fx/mon_boom_circle__boss_thon_mach_ngo_cong_vuong__slam.json';
 import fx_mon_boom_circle__boss_thu_mo_tuong__chant from '../data/fx/mon_boom_circle__boss_thu_mo_tuong__chant.json';
@@ -351,6 +355,11 @@ import fx_skl_loi_an_kich from '../data/fx/skl_loi_an_kich.json';
 import fx_skl_cuu_tieu_thien_loi from '../data/fx/skl_cuu_tieu_thien_loi.json';
 import fx_skl_phich_lich from '../data/fx/skl_phich_lich.json';
 import fx_skl_loi_vong from '../data/fx/skl_loi_vong.json';
+import fx_skl_thiem_loi_bo from '../data/fx/skl_thiem_loi_bo.json';
+import fx_skl_loi_chich from '../data/fx/skl_loi_chich.json';
+import fx_skl_loi_the from '../data/fx/skl_loi_the.json';
+import fx_skl_loi_lien from '../data/fx/skl_loi_lien.json';
+import fx_skl_loi_giap from '../data/fx/skl_loi_giap.json';
 import fx_skl_loi_phat from '../data/fx/skl_loi_phat.json';
 import fx_skl_loi_hai from '../data/fx/skl_loi_hai.json';
 import fx_skl_kim_cuong_bat_hoai from '../data/fx/skl_kim_cuong_bat_hoai.json';
@@ -929,6 +938,11 @@ export const FX_TIMELINES = [
   fx_skl_thuan_di_tram,
   fx_skl_tran_son_an,
   fx_skl_van_kiem_quy_tong,
+  fx_skl_thiem_loi_bo,
+  fx_skl_loi_chich,
+  fx_skl_loi_the,
+  fx_skl_loi_lien,
+  fx_skl_loi_giap,
 ] as unknown as FxTimeline[];
 export const FX_TIMELINE = new Map(FX_TIMELINES.map((f) => [f.skill, f]));
 /** Dòng thời gian hiệu ứng của quái/tinh anh/boss (VFX-V5): `data/fx/mon_*.json`, khóa theo loại sự kiện (mon_hit, mon_strike, mon_boom_circle...). Màu theo ngũ hành lúc chạy. */
@@ -952,6 +966,10 @@ export const MON_FX_TIMELINES = [
   fx_mon_boom_circle__boss_huyet_lang_vuong__slam,
   fx_mon_boom_circle__boss_kiem_khoi__slam,
   fx_mon_boom_circle__boss_thach_tam_khoi_vuong__leap,
+  fx_mon_boom_circle__boss_thon_mach_ngo_cong_vuong__burrow,
+  fx_mon_boom_cone__boss_thon_mach_ngo_cong_vuong__emerge,
+  fx_mon_warn__boss_thon_mach_ngo_cong_vuong__burrow,
+  fx_mon_warn_cone__boss_thon_mach_ngo_cong_vuong__emerge,
   fx_mon_boom_circle__boss_thon_mach_ngo_cong_vuong__chant,
   fx_mon_boom_circle__boss_thon_mach_ngo_cong_vuong__slam,
   fx_mon_boom_circle__boss_thu_mo_tuong__chant,

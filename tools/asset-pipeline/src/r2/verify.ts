@@ -6,7 +6,7 @@ import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { ROOT } from '../config.js';
 import { urlOf } from '../pull.js';
-import { listBucket } from '../push.js';
+import { isMutableKey, listBucket } from '../push.js';
 import { makeClient } from './client.js';
 import { loadR2Env } from './env.js';
 import { type Lock, pool, readGrace, readLock, scanLock, unhashedBinaries } from './lock.js';
@@ -77,7 +77,7 @@ export function compareListing(lock: Lock, listing: Map<string, { size: number }
     const r = listing.get(key);
     const e = lock.files[key]!;
     if (!r) errs.push(`${key}: chưa có trên R2 (chạy pnpm assets:push)`);
-    else if (r.size !== e.bytes) errs.push(`${key}: kích thước R2 ${r.size} ≠ sổ khóa ${e.bytes}`);
+    else if (r.size !== e.bytes && !isMutableKey(key)) errs.push(`${key}: kích thước R2 ${r.size} ≠ sổ khóa ${e.bytes}`);
   }
   return errs;
 }
@@ -116,7 +116,7 @@ export async function verifyRemote(base: string, lock: Lock = readLock(), only?:
       else {
         const len = Number(res.headers.get('content-length'));
         // CDN có thể nén/bỏ content-length: chỉ báo lỗi khi có số và lệch.
-        if (Number.isFinite(len) && len > 0 && len !== lock.files[key].bytes)
+        if (Number.isFinite(len) && len > 0 && len !== lock.files[key].bytes && !isMutableKey(key))
           rep.errors.push(`${key}: kích thước R2 ${len} ≠ sổ khóa ${lock.files[key].bytes}`);
       }
     } catch {
