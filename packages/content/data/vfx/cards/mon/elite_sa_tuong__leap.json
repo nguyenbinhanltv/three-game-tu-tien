@@ -1,0 +1,33 @@
+{
+  "monId": "elite_sa_tuong",
+  "move": "leap",
+  "idea": "Sa Tướng nhảy đáp xuống: cuộn cát nổ bán kính 5,5 m (vạch báo ĐỎ), đao cát bắn ra theo vòng rồi tan thành bụi vàng.",
+  "element": "tho",
+  "palette": {
+    "core": "231e12",
+    "body": "c9b878",
+    "rim": "fff4cc",
+    "accent": "ff1f3d"
+  },
+  "shapeLang": [
+    "burst",
+    "cloud"
+  ],
+  "zone": {
+    "shape": "circle",
+    "r": 5.5,
+    "at": "target"
+  },
+  "timing": {
+    "anticipationMs": 1500,
+    "impactMs": 130,
+    "lingerMs": 700
+  },
+  "readability": "Vạch báo ĐỎ đặc đúng vùng tròn bán kính 5,5 m, đọc rõ trên nền đá sáng cả ngày lẫn đêm, ngoài vùng hoàn toàn sạch; thân hiệu ứng nổ màu hệ (cát vàng nhạt (không cam)), tuyệt đối không đỏ/cam, không che người chơi.",
+  "budget": {
+    "drawCalls": 7,
+    "particles": 220,
+    "screenCover": 0.2,
+    "overdraw": 4
+  }
+}

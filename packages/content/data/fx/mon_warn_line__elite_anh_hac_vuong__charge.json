@@ -1,0 +1,64 @@
+{
+ "skill": "mon_warn_line__elite_anh_hac_vuong__charge",
+ "palette": "mon_a6_guong",
+ "events": [
+  {
+   "type": "decal",
+   "tex": "warn_crack",
+   "t": 0,
+   "r": 1,
+   "dur": 2,
+   "at": "area",
+   "grow": 0.04,
+   "tone": "accent",
+   "alpha": 0.2,
+   "tier": 0,
+   "from": "start",
+   "top": true,
+   "untilDelay": true,
+   "strip": [
+    14,
+    3
+   ]
+  },
+  {
+   "type": "decal",
+   "tex": "warn_crack",
+   "t": 0,
+   "r": 1,
+   "dur": 2,
+   "at": "area",
+   "grow": 1.0,
+   "tone": "accent",
+   "alpha": 0.15,
+   "tier": 0,
+   "from": "start",
+   "top": true,
+   "untilDelay": true,
+   "strip": [
+    14,
+    3
+   ],
+   "growUntilDelay": true
+  },
+  {
+   "type": "particles",
+   "kind": "spark",
+   "t": 0,
+   "n": 14,
+   "speed": 2.2,
+   "spread": 0.4,
+   "life": 1.2,
+   "size": 0.1,
+   "at": "area",
+   "tone": "accent",
+   "tier": 1,
+   "inward": true,
+   "offset": [
+    0,
+    0.3,
+    4.2
+   ]
+  }
+ ]
+}

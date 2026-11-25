@@ -1,0 +1,34 @@
+{
+  "monId": "boss_lo_linh",
+  "move": "sweep",
+  "idea": "Pha 2: Lộ Linh quét dải sáng: quạt 14 m nửa góc 45° (vạch báo ĐỎ), dải sáng quét qua, mảnh cầu bay theo.",
+  "element": "kim",
+  "palette": {
+    "core": "241f12",
+    "body": "c2b27a",
+    "rim": "fff6d0",
+    "accent": "ff1f3d"
+  },
+  "shapeLang": [
+    "arc",
+    "cloud"
+  ],
+  "zone": {
+    "shape": "cone",
+    "r": 14,
+    "w": 45,
+    "at": "forward"
+  },
+  "timing": {
+    "anticipationMs": 1300,
+    "impactMs": 140,
+    "lingerMs": 900
+  },
+  "readability": "Vạch báo ĐỎ đặc đúng vùng quạt dài 14 m, nửa góc 45°, đọc rõ trên nền đá sáng cả ngày lẫn đêm, ngoài vùng hoàn toàn sạch; thân hiệu ứng nổ màu hệ (vàng sáng và ngà (không cam)), tuyệt đối không đỏ/cam, không che người chơi.",
+  "budget": {
+    "drawCalls": 8,
+    "particles": 300,
+    "screenCover": 0.3,
+    "overdraw": 5
+  }
+}
