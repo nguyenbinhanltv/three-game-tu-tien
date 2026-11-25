@@ -246,6 +246,22 @@ export const FX_SPRITES = [
   'ham_pillar',
   'ham_debris',
   'ham_ridge',
+  'dao_vwedge',
+  'dao_fan',
+  'dao_giant',
+  'dao_cleft',
+  'dao_scythe',
+  'dao_planted',
+  'dao_ribbons',
+  'dao_xcrack',
+  'dao_cutline',
+  'dao_crossed',
+  'dao_skyslash',
+  'dao_flash',
+  'dao_shards',
+  'dao_dust',
+  'dao_streaks',
+  'dao_shadow',
 ] as const;
 export type FxSprite = (typeof FX_SPRITES)[number];
 
