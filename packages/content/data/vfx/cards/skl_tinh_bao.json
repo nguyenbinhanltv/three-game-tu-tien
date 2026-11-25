@@ -1,0 +1,44 @@
+{
+  "skillId": "skl_tinh_bao",
+  "idea": "Tinh Bạo: bùng nổ tinh thạch: một khối đá nhân hổ phách nổ tung thành chùm mảnh hổ phách hóa thạch nhọn (mảnh nhựa cây cổ có ánh sáng bên trong) tỏa như sao nhiều cánh, bụi đá nâu bao quanh. Màu: TỐI: lõi nâu umber gần đen (#2A1D12) ở tâm, thân NÂU ĐẤT SẪM đá cổ (#5A4128, KHÔNG cát vàng, KHÔNG be/tan sáng) chiếm phần lớn, viền xương nhạt kem (#EDE3BD) mỏng, HỔ PHÁCH (#E0BC40) chỉ là mạch sáng nhỏ trong khe nứt/vân đá; nhìn tổng thể TỐI, NẶNG và THÔ như đá bazan nguyên thủy (độ chói thấp, tương phản mạnh với nền đá sáng), KHÔNG vàng kim sáng (Hộ pháp), KHÔNG xanh lục (Đan sư), KHÔNG bạc thép (Đao tu), KHÔNG đỏ/cam, KHÔNG tím, KHÔNG teal, KHÔNG xanh lam.",
+  "element": "tho",
+  "path": "co_than",
+  "shapeLang": [
+    "burst",
+    "spike"
+  ],
+  "timing": {
+    "anticipationMs": 300,
+    "impactMs": 80,
+    "lingerMs": 600
+  },
+  "footprint": {
+    "lengthM": 8,
+    "widthM": 8,
+    "heightM": 2
+  },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": {
+    "drawCalls": 8,
+    "particles": 267,
+    "screenCover": 0.19,
+    "overdraw": 5
+  },
+  "textures": [
+    {
+      "id": "proc:spark_burst",
+      "kind": "flipbook"
+    },
+    {
+      "id": "proc:dust_kick",
+      "kind": "flipbook"
+    }
+  ],
+  "silhouette": "khối đá nhân hổ phách nổ thành chùm mảnh hổ phách nhọn tỏa như sao",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles"
+  ]
+}

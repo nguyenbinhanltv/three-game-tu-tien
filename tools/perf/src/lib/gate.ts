@@ -1,7 +1,7 @@
 // Cổng đo bản đồ (B2 của kế hoạch hiệu năng): phần thuần, không đụng trình duyệt nên có test.
 // Đầu vào là kết quả `pnpm perf:iso` (IsoRun) và, nếu có, baseline gọn của `main`.
 // Luật:
-//  - CHẶN (fail) trên SỐ ĐẾM không phụ thuộc máy: draw call, tam giác, texture MB, heap JS MB, lỗi console.
+//  - CHẶN (fail) trên SỐ ĐẾM không phụ thuộc máy: draw call, tam giác, texture MB, lỗi console. Heap JS và ms CPU chỉ cảnh báo (heap dao động theo GC và độ dài lần chạy: cùng điểm 189 và 259 MB ở hai lần chạy khác nhau).
 //  - Vượt ngân sách vùng mà baseline đã vượt sẵn thì chỉ chặn khi TỆ HƠN baseline quá `tol` (ratchet: không ai làm xấu thêm).
 //  - Mọi chỉ số tệ hơn baseline quá `tol` (và quá ngưỡng tuyệt đối nhỏ) đều chặn, dù chưa vượt ngân sách.
 //  - ms (CPU p95) chỉ GHI/cảnh báo: phụ thuộc máy, nhiễu giữa các lượt, không chặn.
@@ -87,7 +87,7 @@ export interface Finding {
   value: number;
   /** Giới hạn đã áp (ngân sách hoặc baseline×(1+tol)). */
   limit: number;
-  why: 'vượt ngân sách' | 'tệ hơn baseline' | 'cảnh báo ms' | 'lỗi console' | 'thiếu điểm' | 'baseline khác backend';
+  why: 'vượt ngân sách' | 'tệ hơn baseline' | 'cảnh báo không chặn' | 'lỗi console' | 'thiếu điểm' | 'baseline khác backend';
 }
 
 export interface GateOptions {
@@ -117,7 +117,7 @@ function metricsOf(p: IsoPoint, b: BaselinePoint | undefined, z: ZoneBudget): Me
     { name: 'texture MB', value: p.textureMB, base: b?.texMB ?? null, budget: z.textureMB, minAbs: 4, soft: false },
     ...(p.jsHeapMB === null
       ? []
-      : [{ name: 'heap JS MB', value: p.jsHeapMB, base: b?.heapMB ?? null, budget: HEAP_MB_MAX, minAbs: 8, soft: false }]),
+      : [{ name: 'heap JS MB', value: p.jsHeapMB, base: b?.heapMB ?? null, budget: HEAP_MB_MAX, minAbs: 8, soft: true }]),
     { name: 'CPU p95 ms', value: p.cpuMs.p95, base: b?.cpu95 ?? null, budget: z.cpuP95, minAbs: 0.5, soft: true },
   ];
 }
@@ -162,7 +162,7 @@ export function gate(run: IsoRun, baseIn: Baseline | null, opts: GateOptions = {
           metric: m.name,
           value: m.value,
           limit: round(m.base! * (1 + tol)),
-          why: m.soft ? 'cảnh báo ms' : 'tệ hơn baseline',
+          why: m.soft ? 'cảnh báo không chặn' : 'tệ hơn baseline',
         });
       } else if (over && (m.base === null || m.base <= m.budget!)) {
         // Ngân sách vùng là cổng cứng, trừ điểm mà CHÍNH baseline đã vượt (ratchet: chỉ chặn khi tệ hơn baseline, xét ở nhánh trên).
@@ -174,13 +174,16 @@ export function gate(run: IsoRun, baseIn: Baseline | null, opts: GateOptions = {
           metric: m.name,
           value: m.value,
           limit: m.budget!,
-          why: m.soft ? 'cảnh báo ms' : 'vượt ngân sách',
+          why: m.soft ? 'cảnh báo không chặn' : 'vượt ngân sách',
         });
       }
     }
   }
+  // Chỉ báo thiếu điểm của mục tiêu mà lần chạy CÓ đo (chạy `--only` một vài bản đồ không bị báo thiếu các bản đồ còn lại).
+  const ranTargets = new Set(run.points.map((p) => `${p.preset}|${p.target}`));
   for (const b of base?.points ?? []) {
-    if (presets.has(b.preset) && !seen.has(`${b.preset}|${b.id}`))
+    const target = b.id.slice(0, b.id.indexOf('/'));
+    if (presets.has(b.preset) && ranTargets.has(`${b.preset}|${target}`) && !seen.has(`${b.preset}|${b.id}`))
       out.push({ severity: 'warn', id: b.id, preset: b.preset, metric: 'điểm đo', value: 0, limit: 0, why: 'thiếu điểm' });
   }
   const known = new Set(base?.errors ?? []);
