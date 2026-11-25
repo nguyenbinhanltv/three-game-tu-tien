@@ -84,7 +84,7 @@ Cột/bia/trụ đá cao cũng bật `sight` (`prop_mach_tinh_tru`, `prop_tru_nh
 
 ## Vật thể vỡ (Chân Cảnh S1c)
 
-- `apps/client/src/game/world/breakables.ts`: vò, bia, cọc vỡ khi chiêu CỦA MÌNH cấp `vừa` trở lên (xem `docs/handbook/gameplay-systems.md`, mục cấp đòn) trúng quái hoặc ra đòn gần vật. Chỉ là hình ở client: server không biết, không va chạm, không rơi đồ. Thêm vật mới: một `BreakableSpec` vào `BREAKABLES_BY_LEVEL` (hiện có `van_lam`, Lạc Kiếm Tông). `?brk=0` tắt. Ảnh: `pnpm shots breakables --out <thư mục> [--view 720p|1080p] [--tag truoc|sau] [--query brk=0]` (kịch bản đã gỡ ở tối ưu Đợt C).
+- `apps/client/src/game/world/breakables.ts`: vò, bia, cọc, đá nhỏ vỡ (M5: rải ở cổng bài, ao sen, kiếm bia, thạch lâm, lối men vách; test bố cục ở `breakables.test.ts`) khi chiêu CỦA MÌNH cấp `vừa` trở lên (xem `docs/handbook/gameplay-systems.md`, mục cấp đòn) trúng quái hoặc ra đòn gần vật. Chỉ là hình ở client: server không biết, không va chạm, không rơi đồ. Thêm vật mới: một `BreakableSpec` vào `BREAKABLES_BY_LEVEL` (hiện có `van_lam`, Lạc Kiếm Tông). `?brk=0` tắt. Ảnh: `pnpm shots breakables --out <thư mục> [--view 720p|1080p] [--tag truoc|sau] [--query brk=0]` (kịch bản đã gỡ ở tối ưu Đợt C).
 
 ## Hero light và tỉ lệ nhân vật (Chân Cảnh C1/C2)
 
