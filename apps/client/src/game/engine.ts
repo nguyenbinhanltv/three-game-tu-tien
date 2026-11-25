@@ -87,6 +87,7 @@ import type { ThienKhuyetSkyScene } from './world/thienKhuyetSky';
 import type { VanHaiWow } from './world/vanHaiWow';
 import type { VanHaiGarden } from './world/vanHaiGarden';
 import { PostPipeline, postParams } from '../render/post';
+import { patchDefaultTextureDestroy } from '../render/defaultTexFix';
 import { patchNodeCacheKey } from '../render/nodeCacheFix';
 import { createWorldMaterial } from '../render/materials/world';
 import { GRADING_DEFAULT, type GradingName } from '../render/grading';
@@ -687,6 +688,7 @@ export class Game {
     void describeGpu(this);
     // Đổi preset lúc chạy làm pass cảnh đổi giữa có/không MRT bloom: phải tách cache shader theo đích (nodeCacheFix.ts).
     patchNodeCacheKey(this.renderer);
+    patchDefaultTextureDestroy(this.renderer); // vá three r178: dispose texture chưa nạp không được destroy GPU texture 1×1 dùng chung (issue #692)
     mark('rendererInit');
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
     this.renderer.toneMappingExposure = 1.05;
