@@ -31,5 +31,5 @@ export function lampPoolAt(xz: N): N {
     const fall: N = float(1).sub(smoothstep(1.0, 8.5, length(xz.sub(p.xy))));
     sum = sum.add(fall.mul(fall).mul(p.z));
   }
-  return vec3(2.3, 1.45, 0.65).mul(sum.min(1)).mul(paintedNight);
+  return vec3(1.55, 0.92, 0.4).mul(sum.min(1)).mul(0.7).mul(paintedNight);
 }
