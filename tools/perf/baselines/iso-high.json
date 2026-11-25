@@ -1,12 +1,10 @@
 {
  "version": 1,
  "date": "2026-11-25-08-04",
- "note": "main d29c528de, RTX 3060 Ti, WebGPU 1280x720, preset Cao. Số đếm (draw call/tam giác/texture/heap) là chuẩn; ms CPU đo khi máy có tải song song nên chỉ tham khảo. do_kiep_bac_hoang không đo được (issue #668). 1 lỗi console đã biết: mergeGeometries Đoạn Mạch (sửa ở #667). CHỈ so với lần chạy cùng backend/viewport (WebGPU 1280x720).",
+ "note": "main d29c528de, RTX 3060 Ti, WebGPU 1280x720, preset Cao. Số đếm (draw call/tam giác/texture/heap) là chuẩn; ms CPU đo khi máy có tải song song nên chỉ tham khảo. do_kiep_bac_hoang không đo được (issue #668). Không còn lỗi console đã biết: lỗi mergeGeometries Đoạn Mạch đã sửa ở #667 (số đo này lấy trước khi #667 merge; cho tới khi #667 vào main, lần chạy trên main sẽ thấy lỗi đó như lỗi mới). CHỈ so với lần chạy cùng backend/viewport (WebGPU 1280x720).",
  "backend": "WebGPU",
  "viewport": "1280x720",
- "errors": [
-  "high: THREE.BufferGeometryUtils: .mergeGeometries() failed with geometry at index 1. Make sure all geometries have the same number of attributes."
- ],
+ "errors": [],
  "points": [
   {
    "id": "van_lam/san",
