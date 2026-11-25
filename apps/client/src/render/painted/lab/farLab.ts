@@ -1,6 +1,7 @@
 import * as THREE from 'three/webgpu';
 import { float, mix, uniform, uv, vec2, vec3, vec4 } from 'three/tsl';
 import { FAR_SPAN, farHeightAt } from './farHeight';
+import { bakeFarHeight } from './farHeightBake';
 import { farPaint } from './farPaint';
 
 /**
@@ -12,7 +13,8 @@ declare global {
     __farLab?: {
       stats(): Promise<{ min: number; max: number; mean: number }>;
       readback(n: number): Promise<{ n: number; b64: string }>;
-      paint?(): Promise<{ w: number; h: number; light: string; shade: string; air: string }>;
+      cpuReadback(n: number): Promise<{ n: number; ms: number; b64: string }>;
+      paint?(): Promise<{ w: number; h: number; light: string; shade: string; air: string; cpuMs: number }>;
     };
   }
 }
@@ -63,11 +65,26 @@ export async function startFarLab(host: HTMLElement): Promise<void> {
     renderer.setRenderTarget(heights);
     qh.render(renderer);
     renderer.setRenderTarget(null);
+    let tHeight: THREE.Texture = heights.texture;
+    let cpuMs = 0;
+    if (q.get('cpu') === '1') {
+      // bản đồ độ cao nướng trên CPU bằng float32 chính xác (worker) rồi lên texture nửa-float: cùng kết quả mọi backend
+      const t0 = performance.now();
+      const data = await bakeFarHeight(G, FAR_SPAN, hero, 9);
+      cpuMs = performance.now() - t0;
+      const half = new Uint16Array(G * G * 4);
+      for (let i = 0; i < G * G; i++) half[i * 4] = THREE.DataUtils.toHalfFloat(data[i]!);
+      const dt = new THREE.DataTexture(half, G, G, THREE.RGBAFormat, THREE.HalfFloatType);
+      dt.minFilter = dt.magFilter = THREE.LinearFilter;
+      dt.wrapS = dt.wrapT = THREE.ClampToEdgeWrapping;
+      dt.needsUpdate = true;
+      tHeight = dt;
+    }
     const sun = new THREE.Vector2(0.7168, -0.1073).normalize();
     const uOut = uniform(0);
     const pm = new THREE.MeshBasicNodeMaterial();
     pm.colorNode = farPaint(uv().x, uv().y, {
-      tHeight: heights.texture,
+      tHeight,
       uTexel: float(FAR_SPAN / G),
       uSide: vec2(sun.x, sun.y),
       uHero: vec2(hero[0], hero[1]),
@@ -98,10 +115,19 @@ export async function startFarLab(host: HTMLElement): Promise<void> {
       for (let i = 0; i < m.length; i += 0x8000) bin += String.fromCharCode(...m.subarray(i, i + 0x8000));
       outs.push(btoa(bin));
     }
-    return { w: W, h: H, light: outs[0]!, shade: outs[1]!, air: outs[2]! };
+    return { w: W, h: H, light: outs[0]!, shade: outs[1]!, air: outs[2]!, cpuMs };
   };
   window.__farLab = {
     paint: paintStage,
+    async cpuReadback(n: number) {
+      const t0 = performance.now();
+      const data = await bakeFarHeight(n, FAR_SPAN, hero, 9);
+      const ms = performance.now() - t0;
+      let bin = '';
+      const bytes = new Uint8Array(data.buffer);
+      for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+      return { n, ms, b64: btoa(bin) };
+    },
     async readback(n: number) {
       const data = await readN(n);
       const out = new Float32Array(n * n);

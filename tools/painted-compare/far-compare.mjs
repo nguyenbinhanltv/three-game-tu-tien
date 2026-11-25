@@ -21,6 +21,7 @@ const n = Number(arg('--n', '512'));
 const port = Number(arg('--port', '5192'));
 const renderer = arg('--renderer', 'webgpu');
 const stop = arg('--stop', '0');
+const cpu = process.argv.includes('--cpu');
 fs.mkdirSync(out, { recursive: true });
 
 // trích đoạn GLSL gốc (NOISE + heightFragment) bằng cách chạy phần đầu tệp nguồn
@@ -185,7 +186,16 @@ try {
   our.on('console', (m) => ['error', 'warning'].includes(m.type()) && logs.push(m.text().slice(0, 300)));
   await our.goto(`http://127.0.0.1:${port}/?paintedlab=far&mute=1&size=256&renderer=${renderer}&stop=${stop}`, { waitUntil: 'load' });
   await our.waitForFunction(() => window.__farLab, null, { timeout: 60000 });
-  const O0 = decode((await our.evaluate((nn) => window.__farLab.readback(nn), n)).b64);
+  let cpuMs = 0;
+  let O0;
+  if (cpu) {
+    // bản nướng CPU float32 chính xác (worker), không qua GPU
+    const r = await our.evaluate((nn) => window.__farLab.cpuReadback(nn), n);
+    cpuMs = r.ms;
+    O0 = decode(r.b64);
+  } else {
+    O0 = decode((await our.evaluate((nn) => window.__farLab.readback(nn), n)).b64);
+  }
 
   // ảnh có thể lật dọc giữa hai backend: lấy hướng khớp hơn
   const O1 = new Float32Array(O0.length);

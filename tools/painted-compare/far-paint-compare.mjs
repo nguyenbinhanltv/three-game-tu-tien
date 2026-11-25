@@ -21,6 +21,7 @@ const W = Number(arg('--w', '2048'));
 const G = Number(arg('--ground', '1024'));
 const port = Number(arg('--port', '5193'));
 const renderer = arg('--renderer', 'webgpu');
+const cpu = process.argv.includes('--cpu');
 fs.mkdirSync(out, { recursive: true });
 
 // trích GLSL gốc bằng cách chạy phần đầu tệp nguồn (tệp nguồn do người vận hành chỉ định, không phải đầu vào không tin cậy)
@@ -228,14 +229,16 @@ try {
   const our = await ctx.newPage();
   const logs = [];
   our.on('console', (m) => ['error', 'warning'].includes(m.type()) && logs.push(m.text().slice(0, 300)));
-  await our.goto(`http://127.0.0.1:${port}/?paintedlab=far&mute=1&size=256&renderer=${renderer}&w=${W}&ground=${G}`, { waitUntil: 'load' });
+  await our.goto(`http://127.0.0.1:${port}/?paintedlab=far&mute=1&size=256&renderer=${renderer}&w=${W}&ground=${G}${cpu ? '&cpu=1' : ''}`, {
+    waitUntil: 'load',
+  });
   await our.waitForFunction(() => window.__farLab, null, { timeout: 60000 });
   const t0 = Date.now();
   const ours = await our.evaluate(() => window.__farLab.paint());
   const ms = Date.now() - t0;
 
   const names = ['light', 'shade', 'air'];
-  const metrics = { w: W, h: H, ground: G, renderer, oursPaintMs: ms, logs: logs.slice(0, 6), outputs: {} };
+  const metrics = { w: W, h: H, ground: G, renderer, cpu, cpuBakeMs: ours.cpuMs, oursPaintMs: ms, logs: logs.slice(0, 6), outputs: {} };
   for (let k = 0; k < 3; k++) {
     const R = bytes(refOut[k]);
     const O0 = bytes(ours[names[k]]);
