@@ -1,0 +1,33 @@
+{
+  "monId": "boss_xich_tan_cu_khoi",
+  "move": "slam",
+  "idea": "Xích Tàn Cự Khôi dùng chiêu slam: vạch báo là vòng tròn r5 m ĐỎ chuẩn kẻ địch (viền sáng + tô mờ lấp dần) theo nhịp 1.4 s; nổ ra thân đá nâu, vết nứt sáng hổ phách, bụi nâu xám (không đỏ/cam).",
+  "element": "tho",
+  "palette": {
+    "core": "2a1a10",
+    "body": "7a4a2c",
+    "rim": "f2d28a",
+    "accent": "ff1f3d"
+  },
+  "shapeLang": [
+    "spike",
+    "ring"
+  ],
+  "zone": {
+    "shape": "circle",
+    "r": 5,
+    "at": "target"
+  },
+  "timing": {
+    "anticipationMs": 1400,
+    "impactMs": 140,
+    "lingerMs": 800
+  },
+  "readability": "Vạch báo đỏ chuẩn kẻ địch đúng vòng tròn r5 m đọc rõ trên nền sáng; thân hiệu ứng thân đá nâu, vết nứt sáng hổ phách, bụi nâu xám, không che người chơi.",
+  "budget": {
+    "drawCalls": 10,
+    "particles": 300,
+    "screenCover": 0.2,
+    "overdraw": 5
+  }
+}

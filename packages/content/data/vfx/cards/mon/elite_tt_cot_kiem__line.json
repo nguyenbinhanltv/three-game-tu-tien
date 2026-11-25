@@ -1,0 +1,34 @@
+{
+  "monId": "elite_tt_cot_kiem",
+  "move": "line",
+  "idea": "Tt Cốt Kiếm dùng chiêu line: vạch báo là dải dài 12 m rộng 3 m ĐỎ chuẩn kẻ địch (viền sáng + tô mờ lấp dần) theo nhịp 1.2 s; nổ ra xương trắng ngà, mảnh vỡ bạc, bụi xám (không đỏ/cam).",
+  "element": "kim",
+  "palette": {
+    "core": "16161c",
+    "body": "c9bfa8",
+    "rim": "fff3d6",
+    "accent": "ff1f3d"
+  },
+  "shapeLang": [
+    "spike",
+    "beam"
+  ],
+  "zone": {
+    "shape": "rect",
+    "r": 12,
+    "at": "forward",
+    "w": 3
+  },
+  "timing": {
+    "anticipationMs": 1200,
+    "impactMs": 140,
+    "lingerMs": 800
+  },
+  "readability": "Vạch báo đỏ chuẩn kẻ địch đúng dải dài 12 m rộng 3 m đọc rõ trên nền sáng; thân hiệu ứng xương trắng ngà, mảnh vỡ bạc, bụi xám, không che người chơi.",
+  "budget": {
+    "drawCalls": 10,
+    "particles": 300,
+    "screenCover": 0.2,
+    "overdraw": 5
+  }
+}
