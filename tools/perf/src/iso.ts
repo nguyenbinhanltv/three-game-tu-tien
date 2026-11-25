@@ -34,7 +34,7 @@ import { Bots } from './lib/bots';
 import { flag, list, opt, outDir, ports, size } from './lib/env';
 import { gameUrl, launchChrome, reportErrors, watchErrors } from './lib/browser';
 import { drawSources } from './lib/drawsrc';
-import { enterLevel, gm, skipCutscene, tp, waitInGame, waitLevel } from './lib/game';
+import { enterLevel, gm, shownLevel, skipCutscene, tp, waitInGame, waitLevel } from './lib/game';
 import { levelPoints } from './lib/levelpoints';
 import { checkAssets, readLockFiles } from './lib/assetcheck';
 import { BASELINE_METHOD } from './lib/gate';
@@ -468,6 +468,9 @@ async function dungeonEnter(page: Page, t: Target): Promise<void> {
     // Đang trong một kiếp trước (65–80 s) thì `/gm trib` bị từ chối: chờ kiếp kết thúc và được đưa ra ngoài.
     await page.waitForFunction(() => !/^do_kiep/.test(window.__game?.shownLevel ?? ''), undefined, { timeout: 150_000, polling: 500 });
     await sleep(2000);
+    // `/gm trib` bị từ chối khi người chơi đang ở bí cảnh (GM `tribulation`: `level().dungeon`): chạy theo nhóm, sân độ kiếp có thể đến ngay sau một bí cảnh trên cùng trang.
+    const here = await shownLevel(page);
+    if (LEVELS[here]?.dungeon) await enterLevel(page, 'van_lam');
     await gm(page, `trib ${TRIB[t.id]}`, 500);
     await waitLevel(page, t.id, 1500);
   } else if (t.kind === 'kieu') {
