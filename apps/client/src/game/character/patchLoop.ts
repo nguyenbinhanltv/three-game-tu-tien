@@ -21,16 +21,27 @@ export const PATCH_LOCO = {
   sprint: { clip: 'PM_Sprint', speed: 6.8, stride: 4.06 },
 } as const satisfies Partial<Record<LocoBand, LocoBandDef>>;
 
-/** Bảng đầy đủ cho `locoMix`/`locoClipName`: đi bộ UAL, chạy/chạy nhanh Patch. */
-export const PATCH_TABLE: LocoTable = { walk: LOCO.walk, ...PATCH_LOCO };
+/**
+ * Hệ số hiệu chỉnh độ dài chu kỳ (đo trong game, `pnpm shots chrv3 --slide`, `SLIDE_SEC=8`, trượt chân khi tiếp đất, trung vị m/s; 1,0 → 0,78; 1,05 → 0,41; 1,1 → 0,08;
+ * 1,15 → 0,22; UAL cũ 3,25): tốc độ `AnimState` cao hơn quãng thân thực di chuyển trên màn hình (~7,6 so với ~6,7 m/s đo từ vị trí gốc), nên nhịp tính từ
+ * tốc độ đó nhanh hơn ~10% so với chân cần để dính đất. Số này KHÔNG phải sai số của clip (chân trụ đo trên file khớp bảng, xem `patchLoopPhase.test.ts`).
+ */
+export const STRIDE_SCALE = 1.1;
 
-/** Bảng Patch với độ dài chu kỳ nhân `k` (hiệu chỉnh/quét trượt chân: `?pstride=<k>`); k = 1 trả về `PATCH_TABLE`. */
+/** Bảng đầy đủ cho `locoMix`/`locoClipName`: đi bộ UAL, chạy/chạy nhanh Patch (độ dài chu kỳ nhân `STRIDE_SCALE`). */
+export const PATCH_TABLE: LocoTable = {
+  walk: LOCO.walk,
+  jog: { ...PATCH_LOCO.jog, stride: PATCH_LOCO.jog.stride * STRIDE_SCALE },
+  sprint: { ...PATCH_LOCO.sprint, stride: PATCH_LOCO.sprint.stride * STRIDE_SCALE },
+};
+
+/** Bảng Patch với độ dài chu kỳ nhân thêm `k` (thử/quét trượt chân: `?pstride=<k>`, so với bảng đã hiệu chỉnh); k = 1 trả về `PATCH_TABLE`. */
 export function scaledTable(k: number): LocoTable {
   if (k === 1 || !(k > 0)) return PATCH_TABLE;
   return {
     walk: LOCO.walk,
-    jog: { ...PATCH_LOCO.jog, stride: PATCH_LOCO.jog.stride * k },
-    sprint: { ...PATCH_LOCO.sprint, stride: PATCH_LOCO.sprint.stride * k },
+    jog: { ...PATCH_TABLE.jog, stride: PATCH_TABLE.jog.stride * k },
+    sprint: { ...PATCH_TABLE.sprint, stride: PATCH_TABLE.sprint.stride * k },
   };
 }
 
