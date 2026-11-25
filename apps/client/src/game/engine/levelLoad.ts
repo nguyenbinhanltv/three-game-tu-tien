@@ -646,6 +646,7 @@ export function buildLevelB(eng: Game, id: string, q: (typeof QUALITY)[string]):
   if (brk && FLAGS.breakables) {
     eng.breakables = new Breakables(brk);
     eng.scene.add(eng.breakables.group);
+    eng.lacKiemScenes?.bindBreakables(eng.breakables);
   }
 }
 

@@ -164,6 +164,10 @@ import fx_mon_warn__elite_xich_sa_ngo_cong__burrow from '../data/fx/mon_warn__el
 import fx_mon_warn_cone__elite_xich_sa_ngo_cong__caster from '../data/fx/mon_warn_cone__elite_xich_sa_ngo_cong__caster.json';
 import fx_mon_warn_cone__elite_xich_sa_ngo_cong__emerge from '../data/fx/mon_warn_cone__elite_xich_sa_ngo_cong__emerge.json';
 import fx_mon_warn_line__elite_kinh_dien_ma_quan__line from '../data/fx/mon_warn_line__elite_kinh_dien_ma_quan__line.json';
+import fx_mon_boom_cone__elite_cu_nham_vien__caster from '../data/fx/mon_boom_cone__elite_cu_nham_vien__caster.json';
+import fx_mon_boom_cone__elite_huyet_nha_lang__caster from '../data/fx/mon_boom_cone__elite_huyet_nha_lang__caster.json';
+import fx_mon_warn_cone__elite_cu_nham_vien__caster from '../data/fx/mon_warn_cone__elite_cu_nham_vien__caster.json';
+import fx_mon_warn_cone__elite_huyet_nha_lang__caster from '../data/fx/mon_warn_cone__elite_huyet_nha_lang__caster.json';
 import fx_mon_boom_circle__boss_dia_mach_long__chant from '../data/fx/mon_boom_circle__boss_dia_mach_long__chant.json';
 import fx_mon_boom_circle__boss_huyet_lang_vuong__slam from '../data/fx/mon_boom_circle__boss_huyet_lang_vuong__slam.json';
 import fx_mon_boom_circle__boss_kiem_khoi__slam from '../data/fx/mon_boom_circle__boss_kiem_khoi__slam.json';
@@ -1009,6 +1013,10 @@ export const MON_FX_TIMELINES = [
   fx_mon_warn_cone__elite_xich_sa_ngo_cong__caster,
   fx_mon_warn_cone__elite_xich_sa_ngo_cong__emerge,
   fx_mon_warn_line__elite_kinh_dien_ma_quan__line,
+  fx_mon_boom_cone__elite_cu_nham_vien__caster,
+  fx_mon_boom_cone__elite_huyet_nha_lang__caster,
+  fx_mon_warn_cone__elite_cu_nham_vien__caster,
+  fx_mon_warn_cone__elite_huyet_nha_lang__caster,
   fx_mon_boom_circle__boss_dia_mach_long__chant,
   fx_mon_boom_circle__boss_huyet_lang_vuong__slam,
   fx_mon_boom_circle__boss_kiem_khoi__slam,

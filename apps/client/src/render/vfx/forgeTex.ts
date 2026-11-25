@@ -115,8 +115,16 @@ export function mapDecalNodes(U: FxUniforms): { color: N; opacity: N } {
     max(smoothstep(half.sub(0.12), half.sub(0.03), ang), smoothstep(0.88, 0.97, r)).mul(fan),
     max(smoothstep(0.84, 0.97, abs(p.x)), smoothstep(0.94, 0.99, along)).mul(strip),
   ).mul(mask);
-  const base = s.rgb.mul(tint).mul(heat.mul(0.55).add(0.7)).mul(bright);
-  const lit = mix(base, U.b.xyz.mul(1.6), edge.mul(1.0));
+  // Vạch báo THEO MÀU HỆ (A4: tím-hồng, hổ phách): vân Codex của `warn_crack` nung sẵn đỏ nên khi màu bảng màu không đỏ/cam (g/r hoặc b/r ≥ 0,42 trong không gian tuyến tính: hổ phách ~0,5) thì tô lại vân bằng độ sáng × màu bảng màu.
+  const nonRed = max(step(0.42, U.color.g.div(U.color.r.max(1e-3))), step(0.42, U.color.b.div(U.color.r.max(1e-3)))).mul(
+    float(1).sub(step(0.5, idx)),
+  );
+  const warnLum = s.r.mul(0.3).add(s.g.mul(0.59)).add(s.b.mul(0.11));
+  const srcRgb = mix(s.rgb, U.color.mul(warnLum.mul(2.6).add(0.15)), nonRed);
+  const base = srcRgb.mul(tint).mul(heat.mul(0.55).add(0.7)).mul(bright);
+  // Vạch báo theo màu hệ: viền dùng màu bảng màu (tím-hồng/hổ phách) thay vì màu viền nhạt gần trắng (trắng bệch trên nền đá sáng).
+  const edgeCol = mix(U.b.xyz.mul(1.6), U.color.mul(1.9), nonRed);
+  const lit = mix(base, edgeCol, edge.mul(1.0));
   // Nền đặc dưới vân (các khe của ảnh Codex trong suốt): vạch báo = đĩa đỏ, mỗi hệ một màu thẫm; đọc được trên nền sáng ban ngày.
   let fillCol: N = U.color.mul(0.8);
   FORGE_DECALS.forEach((id, i) => {
@@ -124,7 +132,8 @@ export function mapDecalNodes(U: FxUniforms): { color: N; opacity: N } {
     if (f) fillCol = mix(fillCol, vec3(f[0], f[1], f[2]), step(i - 0.5, idx).mul(step(idx, i + 0.5)));
   });
   // Vạch báo (0) nền mờ 0,5 để thấy mặt đất; vùng nổ các hệ nền đặc 0,8 (alpha ảnh suy từ độ sáng nên vùng đất/đá sẫm vốn trong suốt).
-  const fillA = mix(float(0.92), float(0.5), step(idx, 0.5))
+  // Vạch báo theo màu hệ: nền tô mờ (0,2) thay vì 0,5 để chỉ viền + vân đọc rõ, phần tô lấp dần.
+  const fillA = mix(float(0.92), mix(float(0.5), float(0.2), nonRed), step(idx, 0.5))
     .mul(mask)
     .mul(mix(float(1).sub(smoothstep(0.93, 0.985, r)), float(1), strip));
   const top = max(min(s.a.mul(1.6), 1), edge);

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { VfxCard } from '@dtl/shared';
 import { quoteArg } from './quote.js';
-import { conceptPrompt, texturePrompt, type PalHex, type StyleSheet } from './prompts.js';
+import { conceptPrompt, texturePrompt, warnColorRule, type PalHex, type StyleSheet } from './prompts.js';
 
 const style: StyleSheet = {
   name: 'T',
@@ -70,5 +70,15 @@ describe('monConceptPrompt', () => {
     expect(p).toMatch(/2x2/);
     expect(p).toMatch(/1700 ms/);
     expect(zoneWords({ shape: 'cone', r: 14, w: 35, at: 'forward' })).toMatch(/half-angle 35/);
+  });
+});
+
+describe('warnColorRule: vạch báo theo màu hệ khi accent không đỏ/cam', () => {
+  it('accent đỏ giữ luật đỏ-cam', () => {
+    expect(warnColorRule({ accent: 'ff1f3d', rim: 'ffffff', core: '000000', body: '888888' })).toMatch(/RED-ORANGE/);
+  });
+  it('accent tím hoặc hổ phách cấm đỏ/cam', () => {
+    expect(warnColorRule({ accent: 'b02a8c', rim: 'f0d8ff', core: '140a1e', body: '6a3fa0' })).toMatch(/NOT be red and NOT orange/);
+    expect(warnColorRule({ accent: 'd9a02a', rim: 'f2d28a', core: '2a1a10', body: '7a4a2c' })).toMatch(/NOT be red and NOT orange/);
   });
 });

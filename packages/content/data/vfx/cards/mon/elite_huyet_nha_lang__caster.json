@@ -1,0 +1,34 @@
+{
+  "monId": "elite_huyet_nha_lang",
+  "move": "caster",
+  "idea": "Huyết Nha Lang há miệng phun hơi lửa ma về phía người chơi: vạch báo là quạt TÍM-HỒNG sẫm đặc dài 9 m nửa góc 35° (viền tím-hồng sáng, nét lửa ma tím ở viền) tô dần theo nhịp 1,2 s; nổ ra luồng lửa ám tím sẫm lõi đen, viền trắng-tím sáng cuộn theo quạt, tàn than tím và tro bay. TUYỆT ĐỐI không đỏ/cam.",
+  "element": "hoa",
+  "palette": {
+    "core": "140a1e",
+    "body": "6a3fa0",
+    "rim": "f0d8ff",
+    "accent": "b02a8c"
+  },
+  "shapeLang": [
+    "cloud",
+    "burst"
+  ],
+  "zone": {
+    "shape": "cone",
+    "r": 9,
+    "at": "forward",
+    "w": 35
+  },
+  "timing": {
+    "anticipationMs": 1200,
+    "impactMs": 140,
+    "lingerMs": 800
+  },
+  "readability": "Quạt tím-hồng sẫm đặc đúng 9 m nửa góc 35° (đọc rõ trên nền sáng nhờ viền sáng và độ bão hòa cao); lửa ám tím lõi đen viền trắng-tím, không có đỏ/cam; tàn than mỏng không che người chơi.",
+  "budget": {
+    "drawCalls": 9,
+    "particles": 300,
+    "screenCover": 0.25,
+    "overdraw": 5
+  }
+}

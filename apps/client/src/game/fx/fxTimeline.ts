@@ -68,6 +68,8 @@ const SPRITE_STYLE: Record<string, number> = {
   tho_: 7,
   doc_: 7,
   tim_: 8,
+  lua_: 8,
+  ham_: 8,
 };
 
 export interface FxTarget {
@@ -255,6 +257,10 @@ export class FxRunner {
   private casts = new Map<string, Cast>();
   private jobs: BladeJob[] = [];
   private decals = 0;
+  /** Còn bao nhiêu chỗ decal (trần `DECAL_MAX` dùng chung cả runner): vạch báo riêng của quái cần đủ chỗ cho mọi decal của nó, không thì giữ vạch cũ. */
+  decalSlots(): number {
+    return Math.max(0, DECAL_MAX - this.decals);
+  }
   private serial = 0;
   /** Nhật ký dev: sự kiện đã phát (`__game.skillFx.runner.log`). */
   readonly log: { skill: string; type: string; at: number; real: number }[] = [];
@@ -565,7 +571,7 @@ export class FxRunner {
     const kind = cell
       ? cell.group === 'hon'
         ? 'sprite'
-        : (`sprite_${cell.group}` as 'sprite_loi' | 'sprite_kiem' | 'sprite_hp' | 'sprite_hai' | 'sprite_tinh')
+        : (`sprite_${cell.group}` as 'sprite_loi' | 'sprite_kiem' | 'sprite_hp' | 'sprite_hai' | 'sprite_tinh' | 'sprite_lam')
       : kind0;
     const isSprite = cell !== null;
     if (cell) useSpriteGroup(cell.group);

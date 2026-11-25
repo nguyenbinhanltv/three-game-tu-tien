@@ -41,6 +41,20 @@ function delayOf(mon: string, mv: string): number {
   return ((c?.delay ?? 1.5) + (mv === 'chant' ? (c?.cast ?? 0) : 0)) * 1000;
 }
 
+/** Tỉ lệ điểm ảnh khác nền (cùng hàm với `vfxlab`; gồm cả đổi tư thế quái/người nên là cận trên của phần FX). */
+async function coverage(base: Buffer, shot: Buffer): Promise<number> {
+  const a = await sharp(base).removeAlpha().resize(480).raw().toBuffer({ resolveWithObject: true });
+  const b = await sharp(shot).removeAlpha().resize(480).raw().toBuffer();
+  const n = a.info.width * a.info.height;
+  let diff = 0;
+  for (let i = 0; i < n; i++) {
+    const d =
+      Math.abs(a.data[i * 3]! - b[i * 3]!) + Math.abs(a.data[i * 3 + 1]! - b[i * 3 + 1]!) + Math.abs(a.data[i * 3 + 2]! - b[i * 3 + 2]!);
+    if (d > 45) diff++;
+  }
+  return diff / n;
+}
+
 async function run(r: Run, mon: string, moves: string[], sizes: string[], at: number[], mood: string): Promise<Record<string, unknown>[]> {
   if (!MONSTER.get(mon)) throw new Error(`không có quái ${mon}`);
   const { ctx, page } = await r.open({
@@ -50,6 +64,8 @@ async function run(r: Run, mon: string, moves: string[], sizes: string[], at: nu
     look: { g: 'm' },
     extra: opt('--query', ''),
     query: { realm: 'nk12', god: 1, chr: 'v3', vfxlab: 1, quiet: 1, mood: mood || undefined },
+    // `--clean`: đo phủ CHỈ của hình chiêu (tắt chớp/vignette/khung impact, rung/zoom camera, khựng hình) như `vfxlab --clean`.
+    ...(process.argv.includes('--clean') ? { store: { 'dtl.fxStatic': '1', 'dtl.camShakePct': '0', 'dtl.hitStop': '0' } } : {}),
     ...(opt('--clip', '') ? { video: path.join(r.out, 'clip') } : {}),
     hide: 'hud',
   });
@@ -78,9 +94,10 @@ async function run(r: Run, mon: string, moves: string[], sizes: string[], at: nu
       await sleep(500);
       await page.evaluate('window.__game.clearTarget()'); // không vòng chọn mục tiêu dưới chân boss (đỏ, dễ lẫn với vạch báo)
       await frame(page);
-      await snap(page, outDir, `base-${tag}.jpg`, { wait: 0 });
+      const baseBuf = await snap(page, outDir, `base-${tag}.jpg`, { wait: 0 });
       const b0 = await page.evaluate(() => window.__vfxlab!.budget());
-      const ok = await page.evaluate((a) => window.__vfxlab!.castMon(a[0]!, a[1]!), [mon, mv]);
+      // `--control`: KHÔNG ra chiêu, chỉ trôi thời gian như khi đo: `pixelCover` lúc này là độ LỆCH NỀN thuần (ánh sáng/hậu kỳ/động vật nền), trừ nó khỏi số đo thật.
+      const ok = process.argv.includes('--control') || (await page.evaluate((a) => window.__vfxlab!.castMon(a[0]!, a[1]!), [mon, mv]));
       if (!ok) throw new Error(`castMon(${mon}, ${mv}) thất bại (quái không có chiêu này hoặc chưa spawn)`);
       const files: Buffer[] = [];
       const rows: Record<string, unknown>[] = [];
@@ -102,6 +119,7 @@ async function run(r: Run, mon: string, moves: string[], sizes: string[], at: nu
           drawCalls: Math.max(0, raw.drawCalls - b0.drawCalls),
           particles: Math.max(0, raw.particles - b0.particles),
           screenCover: raw.screenCover,
+          pixelCover: Number((await coverage(baseBuf, buf)).toFixed(3)),
           overdraw: raw.overdraw,
         });
       }

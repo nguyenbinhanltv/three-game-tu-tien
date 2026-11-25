@@ -42,6 +42,8 @@ import { heightAt } from '../../base/levelCtx';
 import { assets } from '../core/assets';
 import { vnoise } from '../../render/materials/isoDetail';
 import { createWorldMaterial } from '../../render/materials/world';
+import type { Breakables } from './breakables';
+import { BREAKABLES_BY_LEVEL } from './breakables';
 import { GlbScatter, type GlbPlace } from './glbScatter';
 import { withSightFade } from './occlusion';
 import { loadSkyTextures, rockMaterial } from './skyAssets';
@@ -636,6 +638,9 @@ export class LacKiemScenes {
   private mats: THREE.Material[] = [];
   private scatter: GlbScatter | null = null;
   private disposed = false;
+  /** Đá vỡ được rải bằng mesh đá kit: id vật → ô; gắn vào `Breakables` khi cả hai đã sẵn sàng. */
+  private rockSlots: { meshes: THREE.InstancedMesh[]; ids: string[]; first: number } | null = null;
+  private brk: Breakables | null = null;
   /** Tam giác phần thủ tục (GLB tính riêng ở `scatter.tris`). */
   readonly tris: number;
 
@@ -711,7 +716,38 @@ export class LacKiemScenes {
     // Đá tảng/đá rêu: vật liệu đá PBR của kit (ba mặt chiếu + pháp tuyến), ô lặp ~3 m cho vật nhỏ; vật khác giữ vật liệu GLB gốc.
     const rock = tex ? withSightFade(rockMaterial(tex, 1 / 3, true)) : undefined;
     if (rock) this.mats.push(rock);
-    await Promise.all([...o.places].map(([id, list]) => scatter.add(id, list, id === 'prop_tc_da_reu' ? rock : undefined)));
+    // đá nhỏ vỡ được (M5): thêm vào cuối danh sách đá kit nên dùng đúng hình + vật liệu đá của kit; ô = chỉ số trong danh sách
+    const rockList = [...(o.places.get('prop_tc_da_reu') ?? [])];
+    const first = rockList.length;
+    const rocks = BREAKABLES_BY_LEVEL.van_lam!.filter((b) => b.kind === 'rock');
+    rocks.forEach((b, i) =>
+      rockList.push({
+        x: b.x - SECT.x,
+        z: b.z - SECT.z,
+        yaw: b.yaw,
+        h: 0.85 + hash01(i, 5, 3) * 0.5,
+        rx: (hash01(i, 6, 3) - 0.5) * 0.3,
+        sink: 0.08,
+      }),
+    );
+    o.places.set('prop_tc_da_reu', rockList);
+    const made = await Promise.all([...o.places].map(([id, list]) => scatter.add(id, list, id === 'prop_tc_da_reu' ? rock : undefined)));
+    if (this.disposed) return;
+    const ids = [...o.places.keys()];
+    this.rockSlots = { meshes: made[ids.indexOf('prop_tc_da_reu')] ?? [], ids: rocks.map((b) => b.id), first };
+    this.tryBindRocks();
+  }
+
+  /** Nối đá vỡ với `Breakables` (gọi sau khi tạo cả hai; chạy ngay hoặc khi đá kit nạp xong). */
+  bindBreakables(b: Breakables): void {
+    this.brk = b;
+    this.tryBindRocks();
+  }
+
+  private tryBindRocks(): void {
+    const r = this.rockSlots;
+    if (!this.brk || !r) return;
+    r.ids.forEach((id, i) => this.brk!.attachExternal(id, r.meshes, r.first + i));
   }
 
   /** Nước: ao sâu ở giữa, nông và ngả vàng lục ven bờ, sóng gợn + vòng lan; suối chảy dọc dải có bọt. */

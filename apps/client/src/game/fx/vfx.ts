@@ -164,6 +164,7 @@ export class Vfx {
       'sprite_hp',
       'sprite_hai',
       'sprite_tinh',
+      'sprite_lam',
       'wind',
       'mapDecal',
       'mapDecalTop',
