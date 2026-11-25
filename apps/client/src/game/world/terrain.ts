@@ -50,6 +50,11 @@ const VEG_FAR_R_ISO = 1;
 /** Vấn Đỉnh: vách dốc làm viền hai ô khác độ phân giải lệch cao hàng chục mét; viền rủ phải dài hơn mức lệch đó, nếu không khe hở ra thành lỗ sáng hình thoi ở góc vách. */
 const VD_SKIRT = 90;
 const COARSE_CELL = 32;
+/** Nạp trước theo hướng đi (B3): điểm dẫn = vận tốc × LEAD_SEC (≤ LEAD_MAX m) khi chạy nhanh hơn LEAD_MIN m/s; trễ hủy thêm HYST ô. */
+const LEAD_SEC = 4;
+const LEAD_MAX = 420;
+const LEAD_MIN = 6;
+const HYST = 1;
 const VEG_NEAR_R = 2;
 const VEG_FAR_R = 4;
 
@@ -617,16 +622,106 @@ export class Terrain {
     return d <= 1 ? 64 : 32;
   }
 
+  // Nạp trước theo hướng đi (B3): vận tốc làm mượt từ các lần gọi `update`; điểm dẫn = vị trí + vận tốc × LEAD_SEC (tối đa LEAD_MAX m).
+  private lastX = NaN;
+  private lastZ = NaN;
+  private lastT = 0;
+  private vx = 0;
+  private vz = 0;
+  private ltx = -999;
+  private ltz = -999;
+  private ensureTile(tx: number, tz: number, ring: number): boolean {
+    if (tx < 0 || tz < 0 || tx >= this.NT || tz >= this.NT) return false;
+    const key = tz * this.NT + tx;
+    let t = this.tiles.get(key);
+    if (!t) {
+      t = { key, tx, tz, res: 0, mesh: null, veg: null, vegFar: null };
+      this.tiles.set(key, t);
+    }
+    if (ring <= this.nearR) {
+      const res = this.desiredRes(ring);
+      if (t.res !== res && this.isVoidTile(tx, tz)) {
+        // Level đảo nổi: ô chỉ có sàn mây phẳng không dựng lưới mịn (lưới thô đã vẽ sàn; mặt sàn lại bị mặt vực/mây che): bớt ~nửa số draw call địa hình.
+        t.res = res;
+        return false;
+      }
+      if (t.res !== res) {
+        const geo = buildTileGeometry(
+          tx * TILE,
+          tz * TILE,
+          TILE,
+          res,
+          T.def.islands ? 1.2 : T.id === 'van_dinh' ? VD_SKIRT : (TILE / res) * 1.5 + 5,
+        );
+        if (t.mesh) {
+          this.group.remove(t.mesh);
+          t.mesh.geometry.dispose();
+        }
+        t.mesh = new THREE.Mesh(geo, this.material);
+        t.mesh.receiveShadow = this.shadows;
+        this.group.add(t.mesh);
+        t.res = res;
+        this.coarseDirty = true;
+        return true;
+      }
+    }
+    const wantFar = ring > VEG_NEAR_R;
+    if (ring <= this.vegFarR && t.vegFar !== wantFar) {
+      const geo = buildVegetation(tx, tz, wantFar);
+      if (t.veg) {
+        this.group.remove(t.veg);
+        t.veg.geometry.dispose();
+        t.veg = null;
+      }
+      if (geo) {
+        t.veg = new THREE.Mesh(geo, this.vegMaterial);
+        t.veg.castShadow = this.shadows && !wantFar;
+        this.group.add(t.veg);
+      }
+      t.vegFar = wantFar;
+      return true;
+    }
+    return false;
+  }
+
   /** Gọi mỗi khung hình. Dựng tối đa `budget` ô mỗi lần để không giật. */
   update(px: number, pz: number, budget = 1): void {
+    const now = performance.now();
+    if (Number.isFinite(this.lastX)) {
+      const dt = (now - this.lastT) / 1000;
+      if (dt > 0.001 && dt < 0.5) {
+        const k = Math.min(1, dt * 3);
+        this.vx += ((px - this.lastX) / dt - this.vx) * k;
+        this.vz += ((pz - this.lastZ) / dt - this.vz) * k;
+      } else if (dt >= 0.5) {
+        this.vx = 0;
+        this.vz = 0; // dịch chuyển tức thời / tạm dừng: bỏ vận tốc cũ
+      }
+    }
+    this.lastX = px;
+    this.lastZ = pz;
+    this.lastT = now;
     const ctx = Math.floor(px / TILE);
     const ctz = Math.floor(pz / TILE);
-    if (ctx !== this.ctx || ctz !== this.ctz) {
+    // Điểm dẫn chỉ khi chạy nhanh (> LEAD_MIN m/s): đi bộ không nạp thêm.
+    const sp = Math.hypot(this.vx, this.vz);
+    let ltx = ctx;
+    let ltz = ctz;
+    if (sp > LEAD_MIN) {
+      const lead = Math.min(LEAD_MAX, sp * LEAD_SEC) / sp;
+      ltx = Math.min(this.NT - 1, Math.max(0, Math.floor((px + this.vx * lead) / TILE)));
+      ltz = Math.min(this.NT - 1, Math.max(0, Math.floor((pz + this.vz * lead) / TILE)));
+    }
+    if (ctx !== this.ctx || ctz !== this.ctz || ltx !== this.ltx || ltz !== this.ltz) {
       this.ctx = ctx;
       this.ctz = ctz;
+      this.ltx = ltx;
+      this.ltz = ltz;
+      // Trễ hủy: ô chỉ bị bỏ khi xa cả người lẫn điểm dẫn hơn nearR + 1 + HYST (hết nạp–hủy lặp ở ranh ô).
+      const lim = this.nearR + 1 + HYST;
       for (const [key, t] of this.tiles) {
-        const d = Math.max(Math.abs(t.tx - ctx), Math.abs(t.tz - ctz));
-        if (d > this.nearR + 1) {
+        const d = Math.min(Math.max(Math.abs(t.tx - ctx), Math.abs(t.tz - ctz)), Math.max(Math.abs(t.tx - ltx), Math.abs(t.tz - ltz)));
+        if (d > lim) {
           this.disposeTile(t);
           this.tiles.delete(key);
           this.coarseDirty = true;
@@ -634,65 +729,21 @@ export class Terrain {
       }
     }
     let pending = 0;
-    // Duyệt từ gần ra xa để ô dưới chân có trước.
-    for (let ring = 0; ring <= Math.max(this.nearR, this.vegFarR) && budget > 0; ring++) {
-      for (let dz = -ring; dz <= ring && budget > 0; dz++) {
-        for (let dx = -ring; dx <= ring && budget > 0; dx++) {
-          if (Math.max(Math.abs(dx), Math.abs(dz)) !== ring) continue;
-          const tx = ctx + dx;
-          const tz = ctz + dz;
-          if (tx < 0 || tz < 0 || tx >= this.NT || tz >= this.NT) continue;
-          const key = tz * this.NT + tx;
-          let t = this.tiles.get(key);
-          if (!t) {
-            t = { key, tx, tz, res: 0, mesh: null, veg: null, vegFar: null };
-            this.tiles.set(key, t);
-          }
-          if (ring <= this.nearR) {
-            const res = this.desiredRes(ring);
-            if (t.res !== res && this.isVoidTile(tx, tz)) {
-              // Level đảo nổi: ô chỉ có sàn mây phẳng không dựng lưới mịn (lưới thô đã vẽ sàn; mặt sàn lại bị mặt vực/mây che): bớt ~nửa số draw call địa hình.
-              t.res = res;
-              continue;
-            }
-            if (t.res !== res) {
-              const geo = buildTileGeometry(
-                tx * TILE,
-                tz * TILE,
-                TILE,
-                res,
-                T.def.islands ? 1.2 : T.id === 'van_dinh' ? VD_SKIRT : (TILE / res) * 1.5 + 5,
-              );
-              if (t.mesh) {
-                this.group.remove(t.mesh);
-                t.mesh.geometry.dispose();
-              }
-              t.mesh = new THREE.Mesh(geo, this.material);
-              t.mesh.receiveShadow = this.shadows;
-              this.group.add(t.mesh);
-              t.res = res;
-              this.coarseDirty = true;
+    const R = Math.max(this.nearR, this.vegFarR);
+    // Duyệt từ gần ra xa quanh người (ô dưới chân có trước), rồi quanh điểm dẫn (độ mịn tính theo khoảng cách tới người HOẶC điểm dẫn).
+    const centers: [number, number][] = [[ctx, ctz]];
+    if (ltx !== ctx || ltz !== ctz) centers.push([ltx, ltz]);
+    for (const [cx, cz] of centers) {
+      for (let ring = 0; ring <= R && budget > 0; ring++) {
+        for (let dz = -ring; dz <= ring && budget > 0; dz++) {
+          for (let dx = -ring; dx <= ring && budget > 0; dx++) {
+            if (Math.max(Math.abs(dx), Math.abs(dz)) !== ring) continue;
+            const tx = cx + dx;
+            const tz = cz + dz;
+            if (this.ensureTile(tx, tz, Math.min(ring, Math.max(Math.abs(tx - ctx), Math.abs(tz - ctz))))) {
               budget--;
               pending++;
-              continue;
             }
-          }
-          const wantFar = ring > VEG_NEAR_R;
-          if (ring <= this.vegFarR && t.vegFar !== wantFar) {
-            const geo = buildVegetation(tx, tz, wantFar);
-            if (t.veg) {
-              this.group.remove(t.veg);
-              t.veg.geometry.dispose();
-              t.veg = null;
-            }
-            if (geo) {
-              t.veg = new THREE.Mesh(geo, this.vegMaterial);
-              t.veg.castShadow = this.shadows && !wantFar;
-              this.group.add(t.veg);
-            }
-            t.vegFar = wantFar;
-            budget--;
-            pending++;
           }
         }
       }
