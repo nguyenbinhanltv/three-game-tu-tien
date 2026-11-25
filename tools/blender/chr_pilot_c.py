@@ -10,6 +10,7 @@
 import json
 import math
 import os
+import re
 import sys
 
 import bmesh
@@ -32,6 +33,7 @@ REPORT = opt('--report')
 SKIN_R = float(opt('--skin-r', 0.02))  # m, model cao 1,7
 COVER = float(opt('--cover', 0.08))
 SKIN_COL = float(opt('--skin-col', 0.12))  # khoảng cách RGB (0-1) tới màu da thân nền
+TEMPLATE = opt('--template')  # UAL1_Standard.glb: đặt lại góc nghỉ cục bộ của xương = template sau khi xuất (như chr_v3) để clip UAL phát trực tiếp trong game
 BASE_TRIS = int(opt('--base-tris', 0))  # >0: giảm mặt thân nền về cỡ này trước khi mask (đầu giữ nguyên bằng nhóm đỉnh Head); LOD0 cả hai lưới còn ≤ 110k
 HEAD_Z = float(opt('--head-z', 1.38))  # m: trên mức này (đầu/cổ) luôn giữ thân nền
 if not (BASE and CLOTH and OUT):
@@ -83,42 +85,55 @@ def decimate_body(o, target):
     return sum(len(p.vertices) - 2 for p in o.data.polygons)
 
 
-def match_arms(arm, mesh, ref_arm, ref_mesh):
-    """Khớp tư thế tay: xoay chuỗi tay của THÂN NỀN quanh vai sao cho hướng vai→cổ tay trùng với bản rig của lớp đồ (tay thân nền dang rộng/cao hơn tay áo B' ~7°), nướng vào lưới và làm tư thế nghỉ."""
+ARM_RE = re.compile(r'^(upperarm|lowerarm|hand|thumb|index|middle|ring|pinky)(_|$).*_([lr])$')  # chuỗi tay Mannequin (cả xoắn, ngón), không gồm đòn gánh
+
+
+def match_arms(arm, mesh, ref_mesh):
+    """Khớp tư thế tay thân nền theo lớp đồ bằng SỐ HỌC (không qua pose/modifier: bộ nhập GLB của Blender "đoán bind pose" làm modifier nướng bị nhân đôi):
+    mỗi bên, xoay quanh khớp vai (đầu `upperarm_<l|r>`) sao cho hướng vai→đầu bàn tay/tay áo xa nhất (theo x) của THÂN NỀN trùng với của LỚP ĐỒ.
+    Đỉnh dịch theo tổng trọng số chuỗi tay (v' = v + w·(R(v−vai)+vai−v)); xương chuỗi tay xoay cùng (edit mode), nên bộ xương vẫn khớp lưới."""
     from mathutils import Matrix
-    bpy.context.view_layer.objects.active = arm
-    bpy.ops.object.mode_set(mode='POSE')
+    Mw, Mi = arm.matrix_world, arm.matrix_world.inverted()
     rep = {}
+    P = np.array([mesh.matrix_world @ v.co for v in mesh.data.vertices], float).reshape(-1, 3)
+    Pc = np.array([ref_mesh.matrix_world @ v.co for v in ref_mesh.data.vertices], float).reshape(-1, 3)
+    gname = {g.index: g.name for g in mesh.vertex_groups}
+    plans = []
     for sd in 'lr':
-        up = arm.pose.bones.get(f'upperarm_{sd}')
-        hd = arm.data.bones.get(f'hand_{sd}')
-        r_up, r_hd = ref_arm.data.bones.get(f'upperarm_{sd}'), ref_arm.data.bones.get(f'hand_{sd}')
-        if not (up and hd and r_up and r_hd):
+        ub = arm.data.bones.get(f'upperarm_{sd}')
+        if ub is None:
             continue
-        sh = arm.matrix_world @ arm.data.bones[f'upperarm_{sd}'].head_local
-        # Đích theo LƯỚI (không theo xương của bản rig đồ: xương tay B' là ước lượng): đầu bàn tay/tay áo xa nhất theo x ở mỗi lưới.
-        sx = 1.0 if sh.x > 0 else -1.0  # phía của xương (xương `_l` có thể nằm ở -x tùy bộ xương)
-        Pb = np.array([arm_mesh_w for arm_mesh_w in (mesh.matrix_world @ v.co for v in mesh.data.vertices)], float).reshape(-1, 3)
-        Pc = np.array([ref_mesh.matrix_world @ v.co for v in ref_mesh.data.vertices], float).reshape(-1, 3)
-        tb = Pb[sx * Pb[:, 0] > (sx * Pb[:, 0]).max() - 0.02 * 1.7].mean(axis=0)
+        sh = np.array(Mw @ ub.head_local)
+        sx = 1.0 if sh[0] > 0 else -1.0
+        tb = P[sx * P[:, 0] > (sx * P[:, 0]).max() - 0.02 * 1.7].mean(axis=0)
         tc = Pc[sx * Pc[:, 0] > (sx * Pc[:, 0]).max() - 0.02 * 1.7].mean(axis=0)
-        va = Vector(tb) - sh
-        vr = Vector(tc) - sh
-        q = va.rotation_difference(vr)
+        q = Vector(tb - sh).rotation_difference(Vector(tc - sh))
+        R = np.array(q.to_matrix())
         rep[sd] = round(math.degrees(q.angle), 2)
-        # `pose.matrix` ở hệ ARMATURE, còn sh/q ở hệ thế giới (armature nhập từ GLB có thể bị xoay): đổi sang hệ armature bằng M⁻¹·Rw·M.
-        Mw = arm.matrix_world
-        Rw = Matrix.Translation(sh) @ q.to_matrix().to_4x4() @ Matrix.Translation(-sh)
-        up.matrix = Mw.inverted() @ Rw @ Mw @ up.matrix
-        bpy.context.view_layer.update()
-    bpy.ops.object.mode_set(mode='OBJECT')
-    mod = mesh.modifiers.new('Armature', 'ARMATURE')
-    mod.object = arm
-    bpy.context.view_layer.objects.active = mesh
-    bpy.ops.object.modifier_apply(modifier=mod.name)
+        w = np.zeros(len(P))
+        for vi, v in enumerate(mesh.data.vertices):
+            for ge in v.groups:
+                m = ARM_RE.match(gname.get(ge.group, ''))
+                if m and m.group(3) == sd:
+                    w[vi] += ge.weight
+        plans.append((sd, sh, R, np.clip(w, 0, 1)))
+    newP = P.copy()
+    for sd, sh, R, w in plans:
+        rot = (P - sh) @ R.T + sh
+        newP += w[:, None] * (rot - P)
+    Mi3 = np.array(mesh.matrix_world.inverted())
+    for vi, v in enumerate(mesh.data.vertices):
+        v.co = Vector(np.array(mesh.matrix_world.inverted() @ Vector(newP[vi])))
+    mesh.data.update()
     bpy.context.view_layer.objects.active = arm
-    bpy.ops.object.mode_set(mode='POSE')
-    bpy.ops.pose.armature_apply(selected=False)
+    bpy.ops.object.mode_set(mode='EDIT')
+    for sd, sh, R, w in plans:
+        for eb in arm.data.edit_bones:
+            m = ARM_RE.match(eb.name)
+            if m and m.group(3) == sd:
+                for attr in ('head', 'tail'):
+                    pw = np.array(Mw @ getattr(eb, attr))
+                    setattr(eb, attr, Mi @ Vector(R @ (pw - sh) + sh))
     bpy.ops.object.mode_set(mode='OBJECT')
     return rep
 
@@ -172,7 +187,7 @@ REP['bone_dev_cm'] = {'common': len(common), 'max': round(max(dev.values()), 2),
 log(f'xương chung {len(common)}, lệch đầu xương max {REP["bone_dev_cm"]["max"]} cm, trung bình {REP["bone_dev_cm"]["mean"]} cm')
 
 if '--no-match-arms' not in argv:
-    REP['match_arms_deg'] = match_arms(b_arm, b_mesh, c_arm, c_mesh)
+    REP['match_arms_deg'] = match_arms(b_arm, b_mesh, c_mesh)
     log(f'khớp tư thế tay thân nền theo lớp đồ: xoay {REP["match_arms_deg"]} độ')
 REP['base_decimate'] = {'before': sum(len(p.vertices) - 2 for p in b_mesh.data.polygons), 'after': decimate_body(b_mesh, BASE_TRIS)}
 VB, VC = world_verts(b_mesh), world_verts(c_mesh)
@@ -317,7 +332,34 @@ bpy.ops.object.select_all(action='DESELECT')
 for o in (b_arm, b_mesh, c_mesh):
     o.select_set(True)
 os.makedirs(os.path.dirname(OUT) or '.', exist_ok=True)
-bpy.ops.export_scene.gltf(filepath=OUT, export_format='GLB', use_selection=True, export_skins=True, export_apply=False)
+_gx = dict(filepath=OUT, export_format='GLB', export_yup=True, export_skins=True, export_animations=False, export_extras=True, export_image_format='AUTO', use_selection=True)
+if any('DtlAlpha' in o.data.color_attributes for o in (b_mesh, c_mesh)):  # alpha đỉnh của C2 (voan trong suốt) xuất làm COLOR_0
+    _gx.update(export_vertex_color='NAME', export_vertex_color_name='DtlAlpha')
+b_arm.name = os.path.splitext(os.path.basename(OUT))[0] + '_rig'
+bpy.ops.export_scene.gltf(**_gx)
+if TEMPLATE and os.path.isfile(TEMPLATE):
+    import struct
+
+    def read_glb(path):
+        raw = open(path, 'rb').read()
+        jl = struct.unpack('<I', raw[12:16])[0]
+        return raw, json.loads(raw[20:20 + jl]), jl
+
+    _, tj, _ = read_glb(TEMPLATE)
+    trot = {n['name']: n.get('rotation', [0, 0, 0, 1]) for n in tj['nodes'] if 'name' in n}
+    raw, gj, jl = read_glb(OUT)
+    npatched = 0
+    for nd in gj['nodes']:
+        nm = nd.get('name')
+        if nm in trot and nm not in ('root', 'Armature'):
+            nd['rotation'] = [float(x) for x in trot[nm]]
+            npatched += 1
+    jb = json.dumps(gj, separators=(',', ':')).encode('utf8')
+    jb += b' ' * ((4 - len(jb) % 4) % 4)
+    rest = raw[20 + jl:]
+    open(OUT, 'wb').write(b'glTF' + struct.pack('<II', 2, 12 + 8 + len(jb) + len(rest)) + struct.pack('<I', len(jb)) + b'JSON' + jb + rest)
+    REP['rest_patched_nodes'] = npatched
+    log(f'đặt lại góc nghỉ {npatched} nút xương = template UAL')
 if REPORT:
     json.dump(REP, open(REPORT, 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
 log(f'xong → {OUT}')
