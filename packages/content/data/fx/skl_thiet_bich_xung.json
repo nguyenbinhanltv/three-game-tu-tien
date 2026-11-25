@@ -113,7 +113,7 @@
   {
    "type": "flash",
    "t": 0.24,
-   "amount": 0.08,
+   "amount": 0.06,
    "tier": 0
   },
   {
@@ -135,7 +135,7 @@
   {
    "type": "mesh",
    "t": 0,
-   "dur": 0.15,
+   "dur": 0.08,
    "at": "self",
    "sweep": 0,
    "erodeFrom": 0.3,
@@ -152,8 +152,8 @@
     1,
     0
    ],
-   "scale": 1.28,
-   "scaleTo": 1.6
+   "scale": 0.68,
+   "scaleTo": 0.85
   },
   {
    "type": "mesh",
@@ -164,7 +164,7 @@
    "erodeFrom": 0.3,
    "ragged": 0.5,
    "tone": "body",
-   "alpha": 0.95,
+   "alpha": 0.71,
    "tier": 0,
    "seed": 1001,
    "shape": "sprite",
@@ -175,8 +175,8 @@
     1.1,
     2.8
    ],
-   "scale": 3.67,
-   "scaleTo": 4.48,
+   "scale": 3.12,
+   "scaleTo": 3.81,
    "align": "aim"
   },
   {
@@ -188,7 +188,7 @@
    "erodeFrom": 0.4,
    "ragged": 0.5,
    "tone": "body",
-   "alpha": 0.8,
+   "alpha": 0.6,
    "tier": 0,
    "seed": 1002,
    "shape": "sprite",
@@ -199,14 +199,14 @@
     0.5,
     3.2
    ],
-   "scale": 5.6,
-   "scaleTo": 5.6,
+   "scale": 4.76,
+   "scaleTo": 4.76,
    "align": "aim"
   },
   {
    "type": "mesh",
    "t": 0.03,
-   "dur": 0.12,
+   "dur": 0.08,
    "at": "ahead",
    "sweep": 0,
    "erodeFrom": 0.3,
@@ -223,8 +223,8 @@
     1.1,
     6.2
    ],
-   "scale": 1.44,
-   "scaleTo": 1.8
+   "scale": 0.68,
+   "scaleTo": 0.85
   },
   {
    "type": "decal",
@@ -269,7 +269,7 @@
    "erodeFrom": 0.2,
    "ragged": 0.5,
    "tone": "body",
-   "alpha": 0.75,
+   "alpha": 0.56,
    "tier": 0,
    "seed": 1004,
    "shape": "sprite",
@@ -280,8 +280,8 @@
     1.1,
     5
    ],
-   "scale": 2.4,
-   "scaleTo": 2.4,
+   "scale": 2.04,
+   "scaleTo": 2.04,
    "move": {
     "to": "ahead",
     "offset": [

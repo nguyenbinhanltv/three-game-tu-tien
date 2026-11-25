@@ -24,20 +24,25 @@ const mesh = (o) => ({
 /** Hệ số cỡ theo chiêu (chỉnh sau khi đo `pnpm shots vfxlab --clean`: chiêu thường phủ ≤ 0,2, chiêu cuối ≤ 0,35). */
 let K = 1;
 const SCALE = {
-  skl_thiet_bich_xung: 0.8,
+  skl_thiet_bich_xung: 0.68,
   skl_tran_son_an: 0.65,
   skl_kim_cuong_bat_hoai: 1,
   skl_thiet_quyen_chan_dia: 0.8,
   skl_kim_chung_tran: 1,
   skl_son_nhac_hoa_than: 0.92,
-  skl_dich_son_xung: 0.75,
+  skl_dich_son_xung: 0.55,
   skl_anh_thiet_than: 1,
   skl_thuan_di_ho_the: 0.82,
   skl_thien_kim_phap_tuong: 0.68,
 };
 /** Hệ số alpha thân theo chiêu (không áp cho chớp `hp_flash`). */
 let A = 1;
-const ALPHA = {};
+const ALPHA = {
+  skl_thiet_bich_xung: 0.75,
+  skl_dich_son_xung: 0.65,
+};
+/** Trần chớp toàn màn hình (sự kiện `flash`) cho chiêu hay cháy trắng: giữ cảm giác trúng nhưng không tẩy trắng khung. */
+const FLASH_CAP = { skl_thiet_bich_xung: 0.06, skl_dich_son_xung: 0.06 };
 /** Sprite vẽ tay (billboard). `size` mét (ô vuông), `off` offset tâm. */
 const sprite = (name, o) => {
   const { size, sizeTo, off = [0, 0, 0], ...rest } = o;
@@ -114,10 +119,10 @@ const ground = (at, off, size, t = 0.02, o = {}) =>
 const SPEC = {
   // Thiết Bích Xung (lướt, mọi mốc ≥ 0): mũi giáp vàng hình nêm lao ngang, hai rãnh đất cày bốc bụi phía sau, tới nơi bật cú va nhọn.
   skl_thiet_bich_xung: () => [
-    flash('self', [0, 1.0, 0], 1.6, 0, { dur: 0.15 }),
+    flash('self', [0, 1.0, 0], 1, 0, { dur: 0.08 }),
     strike('hp_wedge', { size: 5.6, at: 'ahead', off: [0, 1.1, 2.8], dur: 0.5, align: 'aim', erodeFrom: 0.3 }),
     sprite('hp_furrows', { t: 0.02, dur: 0.7, at: 'ahead', off: [0, 0.5, 3.2], size: 7, alpha: 0.8, align: 'aim', erodeFrom: 0.4 }),
-    flash('ahead', [0, 1.1, 6.2], 1.8, 0.03, { dur: 0.12 }),
+    flash('ahead', [0, 1.1, 6.2], 1, 0.03, { dur: 0.08 }),
     scorch('ahead', [0, 0.02, 2.2], 3.2, 0, 1.4),
     scorch('ahead', [0, 0.02, 5], 3.4, 0.03, 1.4),
     after('ahead', [0, 1.1, 5], 3, 0.2, 1),
@@ -186,10 +191,10 @@ const SPEC = {
   ],
   // Dịch Sơn Xung (lướt, mọi mốc ≥ 0): sóng đất đá hình tường nghiêng hất ra xa, tảng đá lăn theo hướng húc.
   skl_dich_son_xung: () => [
-    flash('self', [0, 1.0, 0], 1.4, 0, { dur: 0.12 }),
+    flash('self', [0, 1.0, 0], 0.9, 0, { dur: 0.08 }),
     strike('hp_earthwave', { size: 7, at: 'ahead', off: [0, 1.2, 3.8], dur: 0.6, align: 'aim', erodeFrom: 0.3, unless: 'pull' }),
     sprite('hp_rubble', { t: 0.04, dur: 0.6, at: 'ahead', off: [0, 1.4, 5], size: 4.6, alpha: 0.85, align: 'aim', erodeFrom: 0.3 }),
-    flash('ahead', [0, 1.2, 7], 1.8, 0.03, { dur: 0.12 }),
+    flash('ahead', [0, 1.2, 7], 1, 0.03, { dur: 0.08 }),
     scorch('ahead', [0, 0.02, 3], 3.4, 0, 1.4),
     scorch('ahead', [0, 0.02, 6], 3.6, 0.03, 1.4),
     after('ahead', [0, 1.1, 6], 3, 0.22, 1),
@@ -295,6 +300,7 @@ for (const id of ids) {
       !(e.type === 'decal' && e.tex === 'scorch' && e.alpha === 0.78) &&
       !(e.type === 'particles' && e.tier === 1 && e.tone === 'rim' && e.kind === 'spark'),
   );
+  for (const e of t.events) if (e.type === 'flash' && FLASH_CAP[id] !== undefined) e.amount = Math.min(e.amount, FLASH_CAP[id]);
   const evs = SPEC[id]().flat();
   if (t.trigger === 'fx') for (const e of evs) e.t = Math.max(0, e.t);
   t.events.push(...evs);

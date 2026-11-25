@@ -115,7 +115,7 @@
   {
    "type": "flash",
    "t": 0.24,
-   "amount": 0.1,
+   "amount": 0.06,
    "tier": 0
   },
   {
@@ -137,7 +137,7 @@
   {
    "type": "mesh",
    "t": 0,
-   "dur": 0.12,
+   "dur": 0.08,
    "at": "self",
    "sweep": 0,
    "erodeFrom": 0.3,
@@ -154,8 +154,8 @@
     1,
     0
    ],
-   "scale": 1.05,
-   "scaleTo": 1.31
+   "scale": 0.5,
+   "scaleTo": 0.62
   },
   {
    "type": "mesh",
@@ -166,7 +166,7 @@
    "erodeFrom": 0.3,
    "ragged": 0.5,
    "tone": "body",
-   "alpha": 0.95,
+   "alpha": 0.62,
    "tier": 0,
    "seed": 1001,
    "shape": "sprite",
@@ -177,8 +177,8 @@
     1.2,
     3.8
    ],
-   "scale": 4.31,
-   "scaleTo": 5.25,
+   "scale": 3.16,
+   "scaleTo": 3.85,
    "align": "aim",
    "unless": "pull"
   },
@@ -191,7 +191,7 @@
    "erodeFrom": 0.3,
    "ragged": 0.5,
    "tone": "body",
-   "alpha": 0.85,
+   "alpha": 0.55,
    "tier": 0,
    "seed": 1002,
    "shape": "sprite",
@@ -202,14 +202,14 @@
     1.4,
     5
    ],
-   "scale": 3.45,
-   "scaleTo": 3.45,
+   "scale": 2.53,
+   "scaleTo": 2.53,
    "align": "aim"
   },
   {
    "type": "mesh",
    "t": 0.03,
-   "dur": 0.12,
+   "dur": 0.08,
    "at": "ahead",
    "sweep": 0,
    "erodeFrom": 0.3,
@@ -226,8 +226,8 @@
     1.2,
     7
    ],
-   "scale": 1.35,
-   "scaleTo": 1.69
+   "scale": 0.55,
+   "scaleTo": 0.69
   },
   {
    "type": "decal",
@@ -272,7 +272,7 @@
    "erodeFrom": 0.2,
    "ragged": 0.5,
    "tone": "body",
-   "alpha": 0.75,
+   "alpha": 0.49,
    "tier": 0,
    "seed": 1004,
    "shape": "sprite",
@@ -283,8 +283,8 @@
     1.1,
     6
    ],
-   "scale": 2.25,
-   "scaleTo": 2.25,
+   "scale": 1.65,
+   "scaleTo": 1.65,
    "move": {
     "to": "ahead",
     "offset": [
@@ -326,8 +326,8 @@
      1.4,
      7
     ],
-    "scale": 1.2,
-    "scaleTo": 1.5
+    "scale": 0.88,
+    "scaleTo": 1.1
    }
   ],
   "pull": [
@@ -340,7 +340,7 @@
     "erodeFrom": 0.3,
     "ragged": 0.5,
     "tone": "body",
-    "alpha": 0.85,
+    "alpha": 0.55,
     "tier": 0,
     "seed": 1006,
     "shape": "sprite",
@@ -351,8 +351,8 @@
      1.2,
      6
     ],
-    "scale": 3,
-    "scaleTo": 3,
+    "scale": 2.2,
+    "scaleTo": 2.2,
     "align": "aim",
     "move": {
      "to": "ahead",
@@ -373,7 +373,7 @@
     "erodeFrom": 0.3,
     "ragged": 0.5,
     "tone": "body",
-    "alpha": 0.6,
+    "alpha": 0.39,
     "tier": 0,
     "seed": 1007,
     "shape": "sprite",
@@ -384,8 +384,8 @@
      0.8,
      5
     ],
-    "scale": 2.55,
-    "scaleTo": 2.55,
+    "scale": 1.87,
+    "scaleTo": 1.87,
     "align": "aim"
    }
   ]
