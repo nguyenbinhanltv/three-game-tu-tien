@@ -15,11 +15,13 @@ LIFT = 0.35
 
 # Sprite xương trắng (`cot_*`) và nước (`thuy_*`) sáng/đặc hơn đá và lửa tím: giảm độ đậm sprite theo bảng màu để không phủ dày (độ phủ ≤ ~0,2).
 GAIN = {'mon_kim': 0.5, 'mon_thuy': 0.5}
+# Tinh anh trần độ phủ 0,2 (boss lớn 0,35): thu sprite của hai tinh anh thổ có dải dài.
+GAIN_MON = {'elite_hoi_giac_cu_thu': 0.6, 'elite_thach_tuong_dai_tuong': 0.6}
 _write = write
 
 
 def write(name, events, pal):  # noqa: F811
-    g = GAIN.get(pal)
+    g = GAIN.get(pal) or next((v for k, v in GAIN_MON.items() if k in name), None)
     if g:
         for e in events:
             if e.get('type') == 'mesh' and 'alpha' in e:
@@ -91,7 +93,7 @@ def warn_strip_soft(delay, length, width, spark=14):
     ]
 
 
-def slam_boom(B, move, r, theme, seed):
+def slam_boom(B, move, r, theme, seed, ground=False):
     pal, sp_, dec = THEMES[theme]
     mul = clip(r / 4)
     # Vùng lớn (r ≥ 8): sprite phẳng/nền co lại để độ phủ không vượt trần (chant r16 từng phủ ~0,46): đường kính sprite tối đa ~20 m, nền mờ hơn.
@@ -116,15 +118,21 @@ def slam_boom(B, move, r, theme, seed):
         for e in ev:
             if e.get('sprite') == sp_['spikes']:
                 e['alpha'] = 0.6
+    if ground:
+        # Thân boss rất lớn che vùng nổ: lớp nổ chính là decal đất vẽ ĐÈ (top), sprite chỉ điểm nhấn.
+        ev[0] = decal(dec, 0, 4, 1.6, 'body', 0.55, 0.02, top=True, untilDelay=False, lift=LIFT)
+        for e in ev:
+            if e.get('type') == 'mesh':
+                e['alpha'] = round(e['alpha'] * 0.6, 2)
     write(f'mon_boom_circle__{B}__{move}', ev, pal)
 
 
-def circle(B, move, r, delay, theme, seed, cast=False):
+def circle(B, move, r, delay, theme, seed, cast=False, ground=False):
     pal, _, _ = THEMES[theme]
     if cast:
         write('mon_cast__' + B, [decal('rune', 0, r, 3.6, 'accent', 0.3, 0.35, ink=True, untilDelay=False, at='self')], pal)  # viền niệm mảnh, mờ
     write(f'mon_warn__{B}__{move}', warn_circle_soft(delay, r), pal)
-    slam_boom(B, move, r, theme, seed)
+    slam_boom(B, move, r, theme, seed, ground)
 
 
 def cone(B, move, r, half, delay, theme, seed):
@@ -194,7 +202,7 @@ line(B, 'line', 24, 4, 1.4, 'kim', 5220)
 
 # ================= Xích Tàn Cự Khôi (thổ) =================
 B = 'boss_xich_tan_cu_khoi'
-circle(B, 'slam', 5, 1.4, 'tho', 5300)
+circle(B, 'slam', 5, 1.4, 'tho', 5300, ground=True)
 
 # ================= Từ Nhân Ma Tướng (hỏa ám) =================
 B = 'boss_tu_nhan_ma_tuong'
