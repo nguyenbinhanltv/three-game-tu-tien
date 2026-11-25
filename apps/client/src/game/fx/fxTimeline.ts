@@ -58,7 +58,7 @@ import type { Vfx } from './vfx';
 import { presentDt } from './vfxParts/common';
 
 /** Kiểu tô sprite theo tiền tố tên (`fxA.x`, xem `spriteNodes` ở render/vfx/stylized.ts). */
-const SPRITE_STYLE: Record<string, number> = {
+export const SPRITE_STYLE: Record<string, number> = {
   loi_: 1,
   kiem_: 2,
   hp_: 3,
@@ -71,6 +71,7 @@ const SPRITE_STYLE: Record<string, number> = {
   lua_: 8,
   ham_: 8,
   dao_: 9,
+  cth_: 11,
   dan_: 10,
   // A6: gương/bóng ngọc lam (kiểu kiếm teal), nét cọ mực `mac_` (nguyệt, bạc), đồng đỉnh + cát (vàng đất hue 46–50), hai mặt/ngà/mây (màu thật). `tuq_` (tím Tử Quang) KHÔNG khai: kiểu 0
   // (bảng tím theo độ sáng) bỏ quầng teal do nền chroma để lại ở mép sương.
@@ -587,6 +588,7 @@ export class FxRunner {
             | 'sprite_kiem'
             | 'sprite_hp'
             | 'sprite_dao'
+            | 'sprite_cth'
             | 'sprite_hai'
             | 'sprite_tinh'
             | 'sprite_lam'
@@ -793,7 +795,7 @@ export class FxRunner {
     m.fxA.z = ev.seed ?? 0;
     // Sprite: `fxA.x` chọn kiểu tô theo tiền tố tên: 0 = âm hồn tím mực, 1 = lôi (viền mực chàm, lõi trắng xanh), 2 = kiếm (viền mực lam lục, thân xanh ngọc, viền bạc),
     // 3 = hộ pháp (vàng đất), 4 = thủy (chàm → xanh biển → bọt trắng), 5 = nguyệt (thép sẫm → bạc → trắng), 6 = xương cot_ (bảng kim lạnh),
-    // 7 = đất/đá/độc tho_/doc_ (bảng nâu, giữ phần ngả lục), 8 = sét tím tim_ (nguyên màu).
+    // 7 = đất/đá/độc tho_/doc_ (bảng nâu, giữ phần ngả lục), 8 = sét tím tim_ (nguyên màu), 9 = đao dao_ (than thép), 10 = đan dan_ (lục), 11 = cổ thần cth_ (nâu sẫm + hổ phách).
     if (isSprite) {
       const sn = ev.sprite ?? '';
       m.fxA.x = SPRITE_STYLE[sn.slice(0, sn.indexOf('_') + 1)] ?? 0;

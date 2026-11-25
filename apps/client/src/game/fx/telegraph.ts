@@ -16,10 +16,10 @@ import type { Vfx } from './vfx';
 
 const _p = new THREE.Vector3();
 
-export function telegraph(v: Vfx, m: HazardMsg, boss = false, danger: 0 | 1 | 2 = boss ? 2 : 1, top = false, tint?: number): void {
+export function telegraph(v: Vfx, m: HazardMsg, boss = false, danger: 0 | 1 | 2 = boss ? 2 : 1, top = false): void {
   if (!m.sh || !(m.r > 0) || !(m.delay > 0)) return;
   const style = hazardStyleDanger(m.kind, danger);
-  const light = tint ?? (m.hot && m.kind === 'lightning' ? 0xff9a5a : style.color);
+  const light = m.hot && m.kind === 'lightning' ? 0xff9a5a : style.color;
   const yaw = m.yaw ?? 0;
   const fx = Math.sin(yaw);
   const fz = Math.cos(yaw);

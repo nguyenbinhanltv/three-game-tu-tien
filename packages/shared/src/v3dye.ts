@@ -60,8 +60,6 @@ export const V3_DYE_REF: Readonly<Record<string, V3DyeRef>> = {
   chr_v3_de_tu: chroma('#435466', zone('#2c2f38', 0.11)),
   chr_v3_dan_tam: chroma('#41574b', zone('#272d27', 0.09), zone('#dec399', 0.14)),
   // Lạc Kiếm: sau bảng màu `v3Palette` lớp lam nằm quanh #3B6584, lớp ngà quanh #E4DEC8 (lót), viền bạc xám.
-  chr_v3_lac_kiem: chroma('#3B6584', zone('#E4DEC8', 0.12), zone('#8e8b88', 0.08)),
-  chr_v3b_lac_kiem: chroma('#3B6584', zone('#E4DEC8', 0.12), zone('#8e8b88', 0.08)),
   chr_v3b2_lac_kiem: chroma('#3B6584', zone('#E4DEC8', 0.12), zone('#8e8b88', 0.08)),
   chr_v3b3_lac_kiem: chroma('#3B6584', zone('#E4DEC8', 0.12), zone('#8e8b88', 0.08)),
   chr_v3_huyen_giap: neutral('#363435', zone('#5f4f42', 0.11), zone('#b8975f', 0.14)),

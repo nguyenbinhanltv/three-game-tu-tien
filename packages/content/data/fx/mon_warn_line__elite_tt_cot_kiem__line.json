@@ -1,0 +1,64 @@
+{
+ "skill": "mon_warn_line__elite_tt_cot_kiem__line",
+ "palette": "mon_kim",
+ "events": [
+  {
+   "type": "decal",
+   "tex": "warn_crack",
+   "t": 0,
+   "r": 1,
+   "dur": 2,
+   "at": "area",
+   "grow": 0.04,
+   "tone": "accent",
+   "alpha": 0.3,
+   "tier": 0,
+   "from": "start",
+   "top": true,
+   "untilDelay": true,
+   "strip": [
+    12,
+    3
+   ]
+  },
+  {
+   "type": "decal",
+   "tex": "warn_crack",
+   "t": 0,
+   "r": 1,
+   "dur": 2,
+   "at": "area",
+   "grow": 1.2,
+   "tone": "accent",
+   "alpha": 0.22,
+   "tier": 0,
+   "from": "start",
+   "top": true,
+   "untilDelay": true,
+   "strip": [
+    12,
+    3
+   ],
+   "growUntilDelay": true
+  },
+  {
+   "type": "particles",
+   "kind": "spark",
+   "t": 0,
+   "n": 14,
+   "speed": 2.2,
+   "spread": 0.4,
+   "life": 1.2,
+   "size": 0.1,
+   "at": "area",
+   "tone": "accent",
+   "tier": 1,
+   "inward": true,
+   "offset": [
+    0,
+    0.3,
+    3.5999999999999996
+   ]
+  }
+ ]
+}

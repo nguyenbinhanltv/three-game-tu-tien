@@ -163,6 +163,7 @@ export class Vfx {
       'sprite_kiem',
       'sprite_hp',
       'sprite_dao',
+      'sprite_cth',
       'sprite_hai',
       'sprite_tinh',
       'sprite_lam',

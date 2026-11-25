@@ -1,0 +1,44 @@
+{
+  "skillId": "skl_co_than_nhat_kich",
+  "idea": "Cổ Thần Nhất Kích: chiêu cuối. Một CÁNH TAY ĐÁ KHỔNG LỒ của cổ thần (cẳng tay thô bằng bazan sẫm kéo dài từ mép trên khung xuống, kết thúc bằng nắm đấm phiến đá phẳng) bổ thẳng từ trời xuống mục tiêu; điểm trúng vỡ thành hố lõm tròn với các đường đứt gãy địa chất tỏa ra như vỉa, ánh hổ phách chỉ lộ nhỏ qua khe nứt. KHÔNG phải chùm mảnh pha lê (đó là Tinh Bạo). Màu: TỐI: lõi nâu umber gần đen (#2A1D12) ở tâm, thân NÂU ĐẤT SẪM đá cổ (#5A4128, KHÔNG cát vàng, KHÔNG be/tan sáng) chiếm phần lớn, viền xương nhạt kem (#EDE3BD) mỏng, HỔ PHÁCH (#E0BC40) chỉ là mạch sáng nhỏ trong khe nứt/vân đá; nhìn tổng thể TỐI, NẶNG và THÔ như đá bazan nguyên thủy (độ chói thấp, tương phản mạnh với nền đá sáng), KHÔNG vàng kim sáng (Hộ pháp), KHÔNG xanh lục (Đan sư), KHÔNG bạc thép (Đao tu), KHÔNG đỏ/cam, KHÔNG tím, KHÔNG teal, KHÔNG xanh lam.",
+  "element": "tho",
+  "path": "co_than",
+  "shapeLang": [
+    "line",
+    "ring"
+  ],
+  "timing": {
+    "anticipationMs": 300,
+    "impactMs": 80,
+    "lingerMs": 600
+  },
+  "footprint": {
+    "lengthM": 9,
+    "widthM": 9,
+    "heightM": 2
+  },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": {
+    "drawCalls": 12,
+    "particles": 267,
+    "screenCover": 0.34,
+    "overdraw": 6
+  },
+  "textures": [
+    {
+      "id": "proc:spark_burst",
+      "kind": "flipbook"
+    },
+    {
+      "id": "proc:dust_kick",
+      "kind": "flipbook"
+    }
+  ],
+  "silhouette": "cánh tay đá bazan khổng lồ từ trời bổ xuống, hố lõm đường đứt gãy tỏa vỉa",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles"
+  ]
+}
