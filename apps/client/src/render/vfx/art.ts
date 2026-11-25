@@ -105,16 +105,29 @@ export function preloadSpritesForPath(pathId: string | undefined): void {
 }
 let keepGroup: SpriteGroup | null = null;
 
+let tinyCanvas: HTMLCanvasElement | null = null;
+/**
+ * Giải phóng nhóm: huỷ lần nạp dở, `dispose` texture GPU và thay ảnh bằng canvas 1×1 (KHÔNG để `image = null`: texture đã từng nạp mà không có ảnh làm `Textures.updateTexture`
+ * của WebGPU ném lỗi → mất khung hình/màn đen; đã gặp ở phòng thử `--reload`). Lần dùng kế `useSpriteGroup` nạp lại ảnh thật.
+ */
+function releaseGroup(st: GroupState): void {
+  st.token++;
+  st.tex.dispose();
+  if (typeof document !== 'undefined') {
+    tinyCanvas ??= Object.assign(document.createElement('canvas'), { width: 1, height: 1 });
+    st.tex.image = tinyCanvas;
+    st.tex.needsUpdate = true;
+  }
+  st.state = 0;
+}
+
 /** Giải phóng nhóm rỗi quá `SPRITE_IDLE_MS` khi đang giữ quá `SPRITE_MAX_RESIDENT` nhóm (trừ nhóm của người chơi). Gọi định kỳ. */
 export function sweepSpriteGroups(now = performance.now()): void {
   const loaded = [...groupState.entries()].filter(([, st]) => st.state !== 0);
   if (loaded.length <= SPRITE_MAX_RESIDENT) return;
   const idle = loaded.filter(([g, st]) => g !== keepGroup && now - st.last > SPRITE_IDLE_MS).sort((a, b) => a[1].last - b[1].last);
   for (const [, st] of idle.slice(0, loaded.length - SPRITE_MAX_RESIDENT)) {
-    st.token++; // huỷ lần nạp đang dở
-    st.tex.dispose();
-    st.tex.image = undefined as unknown as HTMLImageElement;
-    st.state = 0;
+    releaseGroup(st);
   }
 }
 
@@ -123,10 +136,7 @@ export function evictSpriteGroups(): SpriteGroup[] {
   const out: SpriteGroup[] = [];
   for (const [g, st] of groupState) {
     if (st.state === 0) continue;
-    st.token++;
-    st.tex.dispose();
-    st.tex.image = undefined as unknown as HTMLImageElement;
-    st.state = 0;
+    releaseGroup(st);
     out.push(g);
   }
   return out;
