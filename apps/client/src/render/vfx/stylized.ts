@@ -614,10 +614,10 @@ export function spriteNodes(U: FxUniforms): { color: N; opacity: N } {
   // Kiểu vẽ tay của tinh anh A3 (`fxA.x` = 5 xương `cot_`, 6 đất-đá-độc `tho_`/`doc_`, 7 sét tím `tim_`). Bụi/đất nửa trong suốt trên nền chroma bị khử viền thành hồng, nên xương và đất
   // tô theo bảng độ sáng (ngà / nâu) thay vì lấy màu gốc; riêng phần ngả lục (ngọc, độc: g > r) giữ màu Codex vẽ. Sét tím giữ nguyên màu.
   const boneRamp = mix(
-    mix(vec3(0.1, 0.09, 0.08), vec3(0.62, 0.58, 0.5), smoothstep(0.05, 0.55, spLum)),
-    vec3(0.96, 0.93, 0.84),
-    smoothstep(0.5, 0.95, spLum),
-  );
+    mix(vec3(0.03, 0.035, 0.05), vec3(0.58, 0.62, 0.7), smoothstep(0.05, 0.5, spLum)),
+    vec3(0.95, 0.97, 1.0),
+    smoothstep(0.45, 0.92, spLum),
+  ); // xương ngả kim lạnh: lõi gần đen thép, thân xám xanh, viền trắng lạnh
   const earthRamp = mix(
     mix(vec3(0.06, 0.04, 0.025), vec3(0.4, 0.27, 0.16), smoothstep(0.05, 0.55, spLum)),
     vec3(0.8, 0.68, 0.5),
