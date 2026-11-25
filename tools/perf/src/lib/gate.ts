@@ -107,7 +107,8 @@ export interface Finding {
     | 'lỗi console'
     | 'thiếu điểm'
     | 'baseline khác backend'
-    | 'baseline lỗi thời';
+    | 'baseline lỗi thời'
+    | 'không điểm nào khớp preset';
 }
 
 export interface GateOptions {
@@ -213,6 +214,17 @@ export function gate(run: IsoRun, baseIn: Baseline | null, opts: GateOptions = {
       }
     }
   }
+  // Lọc preset không khớp điểm nào (ví dụ baseline Vừa nhưng quên `--presets medium`) thì cổng không xét gì: KHÔNG được báo ĐẠT im lặng.
+  if (seen.size === 0)
+    out.push({
+      severity: 'fail',
+      id: '(cổng)',
+      preset: [...presets].join(','),
+      metric: `--presets ${[...presets].join(',')} (lần chạy có: ${[...new Set(run.points.map((p) => p.preset))].join(',') || 'không điểm nào'})`,
+      value: 0,
+      limit: 0,
+      why: 'không điểm nào khớp preset',
+    });
   // Chỉ báo thiếu điểm của mục tiêu mà lần chạy CÓ đo (chạy `--only` một vài bản đồ không bị báo thiếu các bản đồ còn lại).
   const ranTargets = new Set(run.points.map((p) => `${p.preset}|${p.target}`));
   for (const b of base?.points ?? []) {
@@ -260,4 +272,11 @@ export function findingsToMarkdown(f: Finding[], run: IsoRun, base: Baseline | n
     L.push('');
   }
   return L.join('\n');
+}
+
+/** Preset mặc định của cổng: người dùng chỉ định thì theo đó; không thì các preset CÓ trong baseline (nếu có), không thì `high`. */
+export function defaultPresets(explicit: string | undefined, base: { points: { preset: string }[] } | null): string[] {
+  if (explicit) return explicit.split(',').filter(Boolean);
+  const inBase = [...new Set((base?.points ?? []).map((q) => q.preset))];
+  return inBase.length ? inBase : ['high'];
 }
