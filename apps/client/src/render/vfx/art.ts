@@ -88,6 +88,8 @@ export function useSpriteGroup(g: SpriteGroup, now = performance.now()): void {
   img.crossOrigin = ASSET_CROSS_ORIGIN ?? null;
   img.onload = () => {
     if (st.token !== token) return; // đã bị giải phóng trong lúc nạp
+    // Đổi từ canvas 1×1 sang ảnh thật: `dispose` trước để WebGPU bỏ texture GPU kích thước cũ rồi dựng lại đúng cỡ (nếu không: copy vượt biên 1×1).
+    st.tex.dispose();
     st.tex.image = img;
     st.tex.needsUpdate = true;
     st.state = 2;
@@ -114,7 +116,10 @@ function releaseGroup(st: GroupState): void {
   st.token++;
   st.tex.dispose();
   if (typeof document !== 'undefined') {
-    tinyCanvas ??= Object.assign(document.createElement('canvas'), { width: 1, height: 1 });
+    if (!tinyCanvas) {
+      tinyCanvas = Object.assign(document.createElement('canvas'), { width: 1, height: 1 });
+      tinyCanvas.getContext('2d'); // WebGPU `copyExternalImageToTexture` không nhận canvas chưa có ngữ cảnh vẽ
+    }
     st.tex.image = tinyCanvas;
     st.tex.needsUpdate = true;
   }
