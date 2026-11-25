@@ -10,6 +10,7 @@ import { Breakables, BREAKABLES_BY_LEVEL } from '../world/breakables';
 import { Grass } from '../world/grass';
 import { PaintedGameField } from '../world/paintedField';
 import { FarBackdrop } from '../../render/painted/farBackdrop';
+import { PAINTED_THEMES, paintedFarOn } from '../../render/painted/theme';
 import { isoYawFor } from '../camera/iso';
 import { applyAtmosphere, createLanternHalos, setHeightFog, tuneAtmosphere } from '../../render/atmosphere';
 import { buildRiftVeil } from '../../render/riftVeil';
@@ -639,10 +640,14 @@ export function buildLevelB(eng: Game, id: string, q: (typeof QUALITY)[string]):
   eng.grass.mesh.visible = F.grass;
   eng.scene.add(eng.grass.mesh);
   // Họa Cảnh P3: vùng xa nướng một lần (núi, đồi rừng, dải mây chân núi) vẽ lên bầu trời; chỉ khi `?far=1` (chân trời Vân Lam hiện bị địa hình che: nướng mà không thấy thì phí 2,3 s CPU + bộ nhớ)
-  if (FLAGS.style === 'painted' && FLAGS.far && levelId() === 'van_lam' && isWebGPU(eng.renderer)) {
+  if (paintedFarOn(levelId()) && isWebGPU(eng.renderer)) {
     // hướng thung lũng = hướng camera chéo nhìn (núi lớn nằm phía trước); nắng chiều theo LIGHT.sunDir (xz)
     const yaw = isoYawFor(levelId());
-    const far = new FarBackdrop(eng.renderer as THREE.WebGPURenderer, { hero: [Math.sin(yaw), -Math.cos(yaw)], side: [0.7168, -0.1073] });
+    const far = new FarBackdrop(eng.renderer as THREE.WebGPURenderer, {
+      hero: [Math.sin(yaw), -Math.cos(yaw)],
+      side: [0.7168, -0.1073],
+      tone: PAINTED_THEMES[levelId()]?.far,
+    });
     far.mesh.onBeforeRender = (_r, _s, camera) => far.follow(camera);
     eng.farBackdrop = far;
     eng.scene.add(far.mesh);

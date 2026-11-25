@@ -3,6 +3,7 @@ import { diffuseColor, dot, faceDirection, float, materialEmissive, mix, normalW
 import { FLAGS } from '../../base/flags';
 import { LIGHT } from './fieldShared';
 import type { N } from './lab/field';
+import { themeU } from './theme';
 
 /**
  * Họa Cảnh P6: cây và nhà (vật thể tĩnh của thế giới) tô theo kiểu painted-valley, thay đèn PBR: mỗi mặt chỉ có hai tông, sáng (ngả ấm) và
@@ -45,7 +46,11 @@ export function paintedProp<M extends THREE.MeshStandardNodeMaterial>(m: M): M {
   const prev = m.emissiveNode as THREE.Node | null;
   const glow: THREE.Node = prev ?? (m.emissiveMap || m.emissive.getHex() !== 0 ? materialEmissive : vec3(0));
   // đá tông môn: albedo đã làm phẳng (cộng phần chênh vào phát sáng, vì màu ra = diffuseColor + emissive)
-  const albedo: N = FLATTEN_NAME.test(m.name) ? flattenStone(diffuseColor.rgb) : diffuseColor.rgb;
+  const base: N = FLATTEN_NAME.test(m.name) ? flattenStone(diffuseColor.rgb) : diffuseColor.rgb;
+  // bảng theo level (theme.ts): đổi tông theo độ chói sang cặp đá của level (propMix = 0 ở Vân Lam, giữ nguyên)
+  const ink: N = dot(base, vec3(0.2126, 0.7152, 0.0722));
+  const themed: N = mix(vec3(themeU.rShade), vec3(themeU.rLit), smoothstep(0.04, 0.4, ink));
+  const albedo: N = mix(base, themed, themeU.propMix);
   m.emissiveNode = albedo.mul(tint).sub(diffuseColor.rgb).add(glow);
   m.needsUpdate = true;
   return m;
