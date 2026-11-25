@@ -7,6 +7,7 @@ import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { ROOT } from '../config.js';
+import { at } from '@dtl/shared';
 
 export const PUBLIC_DIR = path.join(ROOT, 'apps/client/public');
 export const CACHE_DIR = path.join(ROOT, '.asset-cache');
@@ -104,7 +105,7 @@ export async function pool<T>(items: T[], n: number, fn: (x: T) => Promise<void>
   let i = 0;
   await Promise.all(
     Array.from({ length: Math.min(n, items.length) }, async () => {
-      while (i < items.length) await fn(items[i++]);
+      while (i < items.length) await fn(at(items, i++, 'items'));
     }),
   );
 }
