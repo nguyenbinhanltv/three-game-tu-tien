@@ -211,6 +211,23 @@
    "tier": 0
   },
   {
+   "type": "decal",
+   "tex": "scorch",
+   "t": -0.1,
+   "r": 2.72,
+   "dur": 2.4,
+   "at": "self",
+   "offset": [
+    0,
+    -1.05,
+    0
+   ],
+   "grow": 0.1,
+   "tone": "shadow",
+   "alpha": 0.78,
+   "tier": 0
+  },
+  {
    "type": "mesh",
    "t": 0.25,
    "dur": 0.6,
