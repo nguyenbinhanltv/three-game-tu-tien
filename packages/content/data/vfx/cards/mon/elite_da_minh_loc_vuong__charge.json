@@ -1,0 +1,34 @@
+{
+  "monId": "elite_da_minh_loc_vuong",
+  "move": "charge",
+  "idea": "Dạ Minh Lộc Vương dùng chiêu charge: vạch báo là dải dài 14 m rộng 2 m ĐỎ chuẩn kẻ địch (viền sáng + tô mờ lấp dần) theo nhịp 1 s; nổ ra sóng xanh, bọt trắng, tia nước (không đỏ/cam).",
+  "element": "thuy",
+  "palette": {
+    "core": "0a2a55",
+    "body": "3a8cf0",
+    "rim": "d6f1ff",
+    "accent": "ff1f3d"
+  },
+  "shapeLang": [
+    "spike",
+    "beam"
+  ],
+  "zone": {
+    "shape": "rect",
+    "r": 14,
+    "at": "forward",
+    "w": 2
+  },
+  "timing": {
+    "anticipationMs": 1000,
+    "impactMs": 140,
+    "lingerMs": 800
+  },
+  "readability": "Vạch báo đỏ chuẩn kẻ địch đúng dải dài 14 m rộng 2 m đọc rõ trên nền sáng; thân hiệu ứng sóng xanh, bọt trắng, tia nước, không che người chơi.",
+  "budget": {
+    "drawCalls": 10,
+    "particles": 300,
+    "screenCover": 0.2,
+    "overdraw": 5
+  }
+}

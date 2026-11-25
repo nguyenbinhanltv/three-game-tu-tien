@@ -1,0 +1,298 @@
+{
+ "skill": "mon_boom_line__boss_tu_nhan_ma_tuong__sweep",
+ "palette": "mon_hoa_am",
+ "events": [
+  {
+   "type": "decal",
+   "tex": "bolt_scorch",
+   "t": 0,
+   "r": 1,
+   "dur": 2.2,
+   "at": "area",
+   "grow": 0.06,
+   "tone": "core",
+   "alpha": 0.35,
+   "tier": 0,
+   "from": "start",
+   "strip": [
+    20,
+    3.5
+   ],
+   "lift": 0.35
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.0,
+   "dur": 1.0,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.7,
+   "seed": 5418,
+   "tier": 0,
+   "sprite": "lua_scar",
+   "scale": 1.82,
+   "scaleTo": 1.82,
+   "offset": [
+    0.0,
+    0.18,
+    1.44
+   ],
+   "erodeFrom": 0.5,
+   "sweep": 0,
+   "ragged": 0.5,
+   "billboard": false,
+   "rot": [
+    -90,
+    0,
+    0
+   ]
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.02,
+   "dur": 1.0,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.7,
+   "seed": 5419,
+   "tier": 0,
+   "sprite": "lua_scar",
+   "scale": 1.82,
+   "scaleTo": 1.82,
+   "offset": [
+    0.0,
+    0.18,
+    4.0
+   ],
+   "erodeFrom": 0.5,
+   "sweep": 0,
+   "ragged": 0.5,
+   "billboard": false,
+   "rot": [
+    -90,
+    0,
+    0
+   ]
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.04,
+   "dur": 1.0,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.7,
+   "seed": 5420,
+   "tier": 0,
+   "sprite": "lua_scar",
+   "scale": 1.82,
+   "scaleTo": 1.82,
+   "offset": [
+    0.0,
+    0.18,
+    6.56
+   ],
+   "erodeFrom": 0.5,
+   "sweep": 0,
+   "ragged": 0.5,
+   "billboard": false,
+   "rot": [
+    -90,
+    0,
+    0
+   ]
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.0,
+   "dur": 0.9,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.9,
+   "seed": 5410,
+   "tier": 0,
+   "sprite": "lua_lick",
+   "scale": 1.8,
+   "scaleTo": 1.8,
+   "offset": [
+    -0.24,
+    0.32,
+    0.8
+   ],
+   "erodeFrom": 0.5,
+   "sweep": 0,
+   "ragged": 0.5,
+   "aim": true,
+   "move": {
+    "to": "area",
+    "offset": [
+     -0.24,
+     0.32,
+     6.4
+    ],
+    "ease": "out"
+   }
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.04,
+   "dur": 0.9,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.9,
+   "seed": 5411,
+   "tier": 0,
+   "sprite": "lua_lick",
+   "scale": 1.8,
+   "scaleTo": 1.8,
+   "offset": [
+    0.24,
+    0.32,
+    0.8
+   ],
+   "erodeFrom": 0.5,
+   "sweep": 0,
+   "ragged": 0.5,
+   "aim": true,
+   "move": {
+    "to": "area",
+    "offset": [
+     0.24,
+     0.32,
+     5.6
+    ],
+    "ease": "out"
+   }
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.01,
+   "dur": 0.9,
+   "at": "area",
+   "tone": "body",
+   "alpha": 1.0,
+   "seed": 5414,
+   "tier": 0,
+   "sprite": "lua_plume",
+   "scale": 0.8,
+   "scaleTo": 0.8,
+   "offset": [
+    -0.77,
+    0.64,
+    1.76
+   ],
+   "erodeFrom": 0.45,
+   "sweep": 0,
+   "ragged": 0.5
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.035,
+   "dur": 0.9,
+   "at": "area",
+   "tone": "body",
+   "alpha": 1.0,
+   "seed": 5415,
+   "tier": 0,
+   "sprite": "lua_plume",
+   "scale": 0.8,
+   "scaleTo": 0.8,
+   "offset": [
+    0.77,
+    0.64,
+    3.36
+   ],
+   "erodeFrom": 0.45,
+   "sweep": 0,
+   "ragged": 0.5
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.060000000000000005,
+   "dur": 0.9,
+   "at": "area",
+   "tone": "body",
+   "alpha": 1.0,
+   "seed": 5416,
+   "tier": 0,
+   "sprite": "lua_plume",
+   "scale": 0.8,
+   "scaleTo": 0.8,
+   "offset": [
+    -0.77,
+    0.64,
+    4.96
+   ],
+   "erodeFrom": 0.45,
+   "sweep": 0,
+   "ragged": 0.5
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.085,
+   "dur": 0.9,
+   "at": "area",
+   "tone": "body",
+   "alpha": 1.0,
+   "seed": 5417,
+   "tier": 0,
+   "sprite": "lua_plume",
+   "scale": 0.8,
+   "scaleTo": 0.8,
+   "offset": [
+    0.77,
+    0.64,
+    6.56
+   ],
+   "erodeFrom": 0.45,
+   "sweep": 0,
+   "ragged": 0.5
+  },
+  {
+   "type": "particles",
+   "kind": "shard",
+   "t": 0,
+   "n": 26,
+   "speed": 7,
+   "spread": 0.4,
+   "life": 1.0,
+   "size": 0.1,
+   "at": "area",
+   "tone": "rim",
+   "tier": 0,
+   "offset": [
+    0,
+    0.16,
+    2.4
+   ],
+   "grav": 7
+  },
+  {
+   "type": "particles",
+   "kind": "dust",
+   "t": 0,
+   "n": 18,
+   "speed": 4,
+   "spread": 0.5,
+   "life": 1.2,
+   "size": 0.22,
+   "at": "area",
+   "tone": "body",
+   "tier": 1,
+   "offset": [
+    0,
+    0.12,
+    2.4
+   ],
+   "grav": 0.8
+  }
+ ]
+}

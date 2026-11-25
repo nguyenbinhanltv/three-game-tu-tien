@@ -1,6 +1,6 @@
 # Lò xo vạt Lạc Kiếm v3b2 (cải tiến lò xo sau khi bỏ hướng nướng vải #241)
 
-`?chr=v3` nay dùng `chr_v3b2_lac_kiem_nam|nu` (cùng model Tripo v3b); `?v3model=b` về v3b để so (asset v3b không đổi byte), `?v3model=a` về v3. Mọi thay đổi ở client chỉ áp cho asset `chr_v3b2_*` (`isSpring2`), v3/v3b chạy y như cũ.
+`?chr=v3` nay dùng `chr_v3b2_lac_kiem_nam|nu` (cùng model Tripo v3b); (các bản v3/v3b cũ và cờ `?v3model=a|b` đã gỡ ở A2; còn `?v3model=b2`). Mọi thay đổi ở client chỉ áp cho asset `chr_v3b2_*` (`isSpring2`), v3/v3b chạy y như cũ.
 
 ## Đã đổi
 - **Asset**: vạt 12 chuỗi lò xo (v3b: 8; `tools/blender/skins/v3_lac_kiem_springs2.json`), phần trọng số chuyển sang lò xo `share` 0,8 (v3b: 0,35), nên va chạm viên nang chi phối phần lớn vạt. 123 xương (v3b: 115), GLB 3.585 KB nam / 3.429 KB nữ (v3b: 3.498 / 3.346).

@@ -26,15 +26,25 @@ export const SPRITE_GROUPS = {
   loi: { file: 'hoa-truc/vfx_sprites_loi.147ce2e73d.webp', cols: 4, rows: 4 },
   kiem: { file: 'hoa-truc/vfx_sprites_kiem.22301e4193.webp', cols: 4, rows: 4 },
   hp: { file: 'hoa-truc/vfx_sprites_hp.dc9596e2f9.webp', cols: 4, rows: 4 },
+  dao: { file: 'hoa-truc/vfx_sprites_dao.5a78c4fab5.webp', cols: 4, rows: 4 },
   // Vân Hải (A2): nước `thuy_*` + trăng `nguyet_*`; tinh anh chương 2–3 (A3): xương `cot_*`, đá `tho_*`, đất-độc `doc_*`, sét tím `tim_*`. Gom theo kiểu quái, không theo hướng tu.
   hai: { file: 'hoa-truc/vfx_sprites_hai.c8709e04fc.webp', cols: 4, rows: 4 },
   tinh: { file: 'hoa-truc/vfx_sprites_tinh.2c4a99f7e9.webp', cols: 4, rows: 6 },
   // Tinh anh Vân Lam (A4): lửa ma ám tím `lua_*` + đá khe hổ phách `ham_*`.
   lam: { file: 'hoa-truc/vfx_sprites_lam.0c7b3f53ef.webp', cols: 4, rows: 3 },
+  // Đan sư (24 sprite `dan_*`: lò đan, khói, lửa thuốc lục, sen, lá, hạc, đan khổng lồ). Tên file sẽ đổi theo hash khi đóng atlas.
+  dan: { file: 'hoa-truc/vfx_sprites_dan.04e3c91a7f.webp', cols: 4, rows: 6 },
 } as const;
 export type SpriteGroup = keyof typeof SPRITE_GROUPS;
 /** Hướng tu (`PATHS[].id`) → nhóm atlas của nó. Thêm một dòng khi thêm hướng mới. */
-export const PATH_SPRITE_GROUP: Record<string, SpriteGroup> = { hon_tu: 'hon', loi_tu: 'loi', kiem_tu: 'kiem', the_tu: 'hp' };
+export const PATH_SPRITE_GROUP: Record<string, SpriteGroup> = {
+  hon_tu: 'hon',
+  loi_tu: 'loi',
+  kiem_tu: 'kiem',
+  the_tu: 'hp',
+  dao_tu: 'dao',
+  dan_su: 'dan',
+};
 /** Số nhóm tối đa giữ trong GPU cùng lúc (không tính nhóm của người chơi) và thời gian rỗi (ms) trước khi một nhóm bị giải phóng. */
 export const SPRITE_MAX_RESIDENT = 3;
 export const SPRITE_IDLE_MS = 90_000;

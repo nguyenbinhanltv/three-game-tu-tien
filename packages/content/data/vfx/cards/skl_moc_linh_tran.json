@@ -1,6 +1,6 @@
 {
   "skillId": "skl_moc_linh_tran",
-  "idea": "Mộc Linh Trận: Ấn xuống đất mở linh trận lá ngọc: trong 8 giây hồi 6% khí huyết mỗi giây cho đạo hữu trong 8 mét, đồng thời gieo độc lên quái trong trận.",
+  "idea": "Mộc Linh Trận: tám chiếc lá ngọc lớn trong mờ dựng đứng thành vòng như bông sen đang nở quanh vùng 8 m, gân lá phát sáng xanh ngọc, dây leo mảnh nối các lá; lá khép mở nhẹ theo nhịp hồi; không phải vòng rune phẳng. Màu: lõi lục thẫm gần đen (hue 135–150°), thân XANH LÁ CÂY / ngọc bích ngả lục (hue 135–155°, ÍT lam, KHÔNG teal hay ngọc lam hue 170–200° vì đó là Kiếm tu), viền lục nhạt vàng, điểm vàng nhạt F2D86B tách rõ và khói mực lục thẫm; đan hỏa là LỬA THUỐC LỤC lõi vàng nhạt (đọc là lửa lò đan, không phải kiếm khí), KHÔNG đỏ, KHÔNG cam.",
   "element": "moc",
   "path": "dan_su",
   "shapeLang": [
@@ -26,10 +26,11 @@
     "screenCover": 0.2,
     "overdraw": 4
   },
-  "textures": [
-    {
-      "id": "proc:spark_burst",
-      "kind": "flipbook"
-    }
-  ]
+  "textures": [],
+  "silhouette": "tám lá ngọc lớn dựng đứng thành vòng như bông sen nở, gân lá sáng, dây leo nối các lá",
+  "materials": [
+    "sprite",
+    "particles"
+  ],
+  "standard": 2
 }

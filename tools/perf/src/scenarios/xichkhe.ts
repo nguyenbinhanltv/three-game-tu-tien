@@ -9,6 +9,7 @@ import { sleep } from '../lib/devserver';
 import { cam, enterLevel, gm, hideUi, perfSample, skipCutscene, tp, waitLevel } from '../lib/game';
 import type { Scenario } from '../lib/scenario';
 import { snap, writeJson } from '../lib/shot';
+import { at } from '@dtl/shared';
 
 const ID = 'xich_tan_khich';
 
@@ -17,8 +18,8 @@ export default {
   desc: 'Xích Tẫn Khích: 6 điểm ảnh cố định + video đi một lượt (duyệt mỹ thuật phó bản)',
   usage: '--out <thư mục tuyệt đối> [--video 1] [--perf 1] [--renderer webgpu|webgl2] [--preset low|medium|high] [--query a=b]',
   async run(r) {
-    const dg = LEVELS[ID].dungeon!;
-    const home = LEVELS[dg.returnLevel];
+    const dg = at(LEVELS, ID, 'LEVELS').dungeon!;
+    const home = at(LEVELS, dg.returnLevel, 'LEVELS');
     const portal = home.portals!.find((p) => p.to === ID)!;
     const c = dg.center;
     const dir = path.join(r.out, 'video');
