@@ -57,6 +57,11 @@ jobs:
       - name: Khôi phục file git theo dõi trong public
         run: git checkout -- apps/client/public
 
+      # `restore-keys: assets-r2-` có thể khôi phục cache của NHÁNH KHÁC (file nhị phân mà sổ khóa của nhánh này không có) → assets:validate báo
+      # "có trên đĩa nhưng chưa vào sổ khóa". Xóa nhị phân ngoài sổ khóa khỏi thư mục cục bộ trước khi kéo (không đụng R2).
+      - name: Dọn nhị phân cache ngoài sổ khóa
+        run: pnpm assets:prune --apply
+
       - name: Kéo asset từ R2 (chỉ file thiếu, kiểm sha256)
         run: pnpm assets:pull
         env:

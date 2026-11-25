@@ -1,0 +1,64 @@
+{
+ "skill": "mon_warn_line__boss_van_hai_kinh_vuong__line",
+ "palette": "mon_boss_thuy",
+ "events": [
+  {
+   "type": "decal",
+   "tex": "warn_crack",
+   "t": 0,
+   "r": 1,
+   "dur": 2,
+   "at": "area",
+   "grow": 0.04,
+   "tone": "accent",
+   "alpha": 0.9,
+   "tier": 0,
+   "from": "start",
+   "top": true,
+   "untilDelay": true,
+   "strip": [
+    40,
+    6
+   ]
+  },
+  {
+   "type": "decal",
+   "tex": "warn_crack",
+   "t": 0,
+   "r": 1,
+   "dur": 2,
+   "at": "area",
+   "grow": 2.0,
+   "tone": "accent",
+   "alpha": 0.95,
+   "tier": 0,
+   "from": "start",
+   "top": true,
+   "untilDelay": true,
+   "strip": [
+    40,
+    6
+   ],
+   "growUntilDelay": true
+  },
+  {
+   "type": "particles",
+   "kind": "spark",
+   "t": 0,
+   "n": 30,
+   "speed": 2.2,
+   "spread": 0.4,
+   "life": 1.2,
+   "size": 0.1,
+   "at": "area",
+   "tone": "accent",
+   "tier": 1,
+   "inward": true,
+   "offset": [
+    0,
+    0.3,
+    12.0
+   ]
+  }
+ ]
+}

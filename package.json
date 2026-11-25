@@ -41,6 +41,7 @@
     "assets:lock": "pnpm --filter @dtl/asset-pipeline run lock",
     "assets:push": "pnpm --filter @dtl/asset-pipeline run push",
     "assets:pull": "pnpm --filter @dtl/asset-pipeline run pull",
+    "assets:prune": "pnpm --filter @dtl/asset-pipeline run prune",
     "assets:gc": "pnpm --filter @dtl/asset-pipeline run gc",
     "assets:impostor": "pnpm --filter @dtl/asset-pipeline run impostor",
     "audio:build": "node tools/audio/build.mjs",

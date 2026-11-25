@@ -136,3 +136,21 @@ def warn_strip(delay, length, width, spark=20):
 def cast_ring(boss, r, pal):
     # Lúc niệm (MonFx.cast): viền đỏ MỎNG + triện mờ trong suốt thời gian niệm, rồi vạch báo tô đậm ở `delay` cuối. 1 decal (trần DECAL_MAX).
     write('mon_cast__' + boss, [decal('rune', 0, r, 3.6, 'accent', 0.75, 0.35, ink=True, untilDelay=False, at='self')], pal)
+
+
+def sp(name, t, dur, size, x=0.0, y=0.0, z=0.0, k=1.0, alpha=0.95, erode=0.35, flat=False, aim=False, to=None, size_to=None, seed=0, tone='body'):
+    """Một sprite: `size` = cạnh ô vuông bằng mét thật (scale của mesh là NỬA cạnh vì ô rộng 2 đơn vị); `k` = hệ số mul của vùng để chia ngược. `to` = (x, z) đích trượt tới (mét thật)."""
+    e = mesh('sprite', t, dur, tone, alpha, seed, sprite=name, scale=round(size / 2 / k, 3), scaleTo=round((size_to or size) / 2 / k, 3),
+             offset=[round(x / k, 3), round(y / k, 3), round(z / k, 3)], erodeFrom=erode, sweep=0, ragged=0.5, tier=0)
+    if flat:
+        e['billboard'] = False
+        e['rot'] = [-90, 0, 0]
+    if aim:
+        e['aim'] = True
+    if to is not None:
+        e['move'] = {'to': 'area', 'offset': [round(to[0] / k, 3), round(y / k, 3), round(to[1] / k, 3)], 'ease': 'out'}
+    return e
+
+
+def ring_pts(n, rad, a0=0.3):
+    return [(math.cos(a0 + i / n * math.tau) * rad, math.sin(a0 + i / n * math.tau) * rad) for i in range(n)]
