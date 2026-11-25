@@ -49,7 +49,9 @@ interface TileRec {
 const terrainLog = logger('terrain');
 /** Số việc tối đa gửi worker cùng lúc (giữ tuyến ưu tiên: ô gần gửi trước) và số kết quả áp vào cảnh mỗi khung. */
 const MAX_INFLIGHT = 3;
-const APPLY_PER_FRAME = 2;
+const APPLY_PER_FRAME = 1;
+/** Cách tối thiểu giữa hai lần áp kết quả (khung): ô mới đẩy GPU lúc vẽ khung đầu, dồn vài ô vào một khung làm khung dài. */
+const APPLY_GAP = 3;
 interface Job {
   t: TileRec;
   kind: 'tile' | 'veg';
@@ -208,6 +210,8 @@ export class Terrain {
   }
 
   // ----- worker dựng ô (B3) -----
+  private frameNo = 0;
+  private lastApply = 0;
   private workerTried = false;
   private worker: Worker | null = null;
   private workerReady = false;
@@ -257,8 +261,10 @@ export class Terrain {
     this.worker!.postMessage(m);
   }
 
-  private applyResults(max: number): void {
-    for (let n = 0; n < max && this.results.length > 0; ) {
+  /** Áp tối đa `max` kết quả vào cảnh; trả về true nếu đã đổi mesh nào. */
+  private applyResults(max: number): boolean {
+    let n = 0;
+    for (; n < max && this.results.length > 0; ) {
       const r = this.results.shift()!;
       if (r.type !== 'tile' && r.type !== 'veg') continue;
       const job = this.jobs.get(r.id);
@@ -278,6 +284,7 @@ export class Terrain {
       }
       n++;
     }
+    return n > 0;
   }
 
   /** Gọi mỗi khung hình. Dựng tối đa `budget` ô mỗi lần để không giật. */
@@ -289,8 +296,9 @@ export class Terrain {
       this.startWorker();
     }
     this.async = this.worker !== null && this.workerReady && budget <= 1;
+    this.frameNo++;
     if (this.async) {
-      this.applyResults(APPLY_PER_FRAME);
+      if (this.frameNo - this.lastApply >= APPLY_GAP && this.applyResults(APPLY_PER_FRAME)) this.lastApply = this.frameNo;
       budget = MAX_INFLIGHT;
     }
     const now = performance.now();

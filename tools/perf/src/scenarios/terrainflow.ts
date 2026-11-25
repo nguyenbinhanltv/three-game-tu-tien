@@ -1,21 +1,25 @@
 // B3 (kế hoạch hiệu năng bản đồ): ngự kiếm thẳng qua bản đồ một tuyến cố định (giữ W), đo khung dài (>33 ms), p95 CPU khung và thời gian
 // `Terrain.update` mỗi lần gọi. Chạy cùng kịch bản trước/sau để so; số ghi vào `terrainflow.json`.
-//   pnpm shots terrainflow --out <thư mục> [--level van_lam] [--secs 20] [--views 1280x720] [--from 700,2048] [--query k=v]
+//   pnpm shots terrainflow --out <thư mục> [--level van_lam|van_hai|cuu_kieu] [--lv cấp GM] [--secs 20] [--views 1280x720] [--from 700,2048] [--query k=v]
 import { opt } from '../lib/env';
 import { sleep } from '../lib/devserver';
 import { enterLevel, gm, tp } from '../lib/game';
 import type { Scenario } from '../lib/scenario';
 import { writeJson } from '../lib/shot';
+import { terrainOf } from '@dtl/shared';
+import { requireLevel } from '../lib/levelpoints';
 
 export default {
   name: 'terrainflow',
   desc: 'Ngự kiếm thẳng qua bản đồ (giữ W): số khung >33 ms, p95 khung, thời gian Terrain.update (B3 nạp ô địa hình)',
-  usage: '[--level van_lam] [--secs 20] [--views 1280x720] [--from x,z] [--query k=v]',
+  usage: '[--level van_lam|van_hai|cuu_kieu] [--lv cấp GM] [--secs 20] [--views 1280x720] [--from x,z] [--query k=v]',
   async run(r) {
     const level = opt('--level', 'van_lam');
     const secs = Number(opt('--secs', '20'));
     const [vw, vh] = opt('--views', '1280x720').split('x').map(Number) as [number, number];
-    const [fx, fz] = opt('--from', '700,2048').split(',').map(Number) as [number, number];
+    // Level khác Vân Lam: xuất phát ở giữa mép nam vùng chơi, bay thẳng về phía bắc (z giảm) như tuyến Vân Lam.
+    const b = level === 'van_lam' ? null : terrainOf(requireLevel(level)).playBounds;
+    const [fx, fz] = (opt('--from', '') || (b ? `${(b.x0 + b.x1) / 2},${b.z1 - 40}` : '700,2048')).split(',').map(Number) as [number, number];
     const { page } = await r.open({
       name: 'TerrainFlow',
       quality: 'high',
@@ -24,7 +28,7 @@ export default {
       extra: opt('--query', ''),
       seenIntro: true,
     });
-    await gm(page, 'level 15');
+    await gm(page, `level ${opt('--lv', level === 'cuu_kieu' ? '46' : level === 'van_hai' ? '24' : '15')}`);
     await gm(page, 'god on');
     await enterLevel(page, level);
     await tp(page, fx, fz);
