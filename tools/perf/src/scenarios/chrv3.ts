@@ -120,7 +120,11 @@ export default {
             viewport: [640, 400],
             quality: 'medium',
             look: { g },
-            query: { ...(QUERY[v] ?? {}), ...(process.env.JOG ? { jog: process.env.JOG } : {}) },
+            query: {
+              ...(QUERY[v] ?? {}),
+              ...(process.env.JOG ? { jog: process.env.JOG } : {}),
+              ...(process.env.PSTRIDE ? { pstride: process.env.PSTRIDE } : {}),
+            },
             hide: 'hud',
             warnings: /models|chr_v3|clip/,
           });
@@ -169,7 +173,10 @@ export default {
             return { frames: w.samples.length, runSpeedMean: run.reduce((a, b) => a + b, 0) / Math.max(1, run.length), slideMedian: q(w.samples, 0.5), slideP90: q(w.samples, 0.9) };
           })()`)) as unknown;
           fs.writeFileSync(
-            path.join(r.out, `slide-${tag}${process.env.JOG ? '-jog' + process.env.JOG : ''}.json`),
+            path.join(
+              r.out,
+              `slide-${tag}${process.env.JOG ? '-jog' + process.env.JOG : ''}${process.env.PSTRIDE ? '-ps' + process.env.PSTRIDE : ''}.json`,
+            ),
             JSON.stringify(res, null, 1),
           );
           console.log(`[shots:chrv3] slide ${tag}: ${JSON.stringify(res)}`);

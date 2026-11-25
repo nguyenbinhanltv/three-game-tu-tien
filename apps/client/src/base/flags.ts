@@ -28,6 +28,8 @@ interface Flags {
   thanPhap: boolean;
   /** `?ploop=0` (cùng `?thanphap=1`) giữ vòng chạy UAL thay vì clip Patch, để so trước/sau. */
   patchLoop: boolean;
+  /** `?pstride=<k>` nhân độ dài chu kỳ chạy Patch (hiệu chỉnh trượt chân, mặc định 1). */
+  pStride: number;
   /** `?vfxwarm=0` tắt biên dịch trước VFX (chẩn đoán). */
   vfxWarm: boolean;
   /** `?aura=0` tắt hào quang cảnh giới (so số đo trước/sau, RFX-1). */
@@ -159,6 +161,7 @@ export const FLAG_DOCS: Readonly<Record<string, { scope: 'user' | 'diag' | 'test
   batch: { scope: 'diag', doc: '=0: tắt gộp draw call VFX' },
   vfxlab: { scope: 'test', doc: '=1 (dev): phòng thử VFX, gắn window.__vfxlab; dùng với pnpm shots vfxlab' },
   animlab: { scope: 'test', doc: '=1 (dev): phòng thử animation Thân Pháp, gắn window.__animlab; dùng với pnpm shots animlab' },
+  pstride: { scope: 'test', doc: '=<k> (cùng ?thanphap=1): nhân độ dài chu kỳ chạy Patch để quét trượt chân (mặc định 1)' },
   ploop: { scope: 'test', doc: '=0 (cùng ?thanphap=1): giữ vòng chạy UAL thay vì clip Patch PM_Run/PM_Sprint, để so trước/sau' },
   thanphap: {
     scope: 'diag',
@@ -254,6 +257,7 @@ export function readFlags(search: string): Flags {
     animLab: q.get('animlab') === '1',
     thanPhap: q.get('thanphap') === '1',
     patchLoop: !off(q.get('ploop')),
+    pStride: Number(q.get('pstride')) > 0 ? Number(q.get('pstride')) : 1,
     vfxWarm: !off(q.get('vfxwarm')),
     aura: !off(q.get('aura')),
     auraGround: !off(q.get('auraground')),

@@ -40,7 +40,7 @@ const run = (m: MannequinCharacter, a: AnimState, sec: number) => {
   for (let i = 0; i < Math.round(sec * 60); i++) m.update(1 / 60, a);
 };
 const priv = (m: MannequinCharacter) =>
-  m as unknown as { base: THREE.AnimationAction | null; companions: THREE.AnimationAction[]; patchLoop: boolean };
+  m as unknown as { base: THREE.AnimationAction | null; companions: THREE.AnimationAction[]; locoTable: { jog: { clip: string } } };
 const withFlags = (patch: boolean, loop: boolean, fn: () => void) => {
   const was = [ANIM_FX.patch, ANIM_FX.patchLoop];
   ANIM_FX.patch = patch;
@@ -57,7 +57,7 @@ describe('MannequinCharacter: vòng chạy bằng clip Patch', () => {
     withFlags(true, true, () => {
       const m = fake([...UAL, ...PM, 'PM_Run_To_Idle']);
       run(m, anim({ speed: 5.4 }), 0.5);
-      expect(priv(m).patchLoop).toBe(true);
+      expect(priv(m).locoTable.jog.clip).toBe('PM_Run');
       expect(priv(m).base?.getClip().name).toBe('PM_Run');
       const names = priv(m).companions.map((c) => c.getClip().name);
       expect(names).toContain('PM_Sprint');
@@ -70,13 +70,13 @@ describe('MannequinCharacter: vòng chạy bằng clip Patch', () => {
     withFlags(true, false, () => {
       const m = fake([...UAL, ...PM]);
       run(m, anim({ speed: 5.4 }), 0.5);
-      expect(priv(m).patchLoop).toBe(false);
+      expect(priv(m).locoTable.jog.clip).toBe('Jog_Fwd_Loop');
       expect(priv(m).base?.getClip().name).toBe('Jog_Fwd_Loop');
     });
     withFlags(true, true, () => {
       const m = fake([...UAL, 'PM_Run']); // thiếu PM_Sprint
       run(m, anim({ speed: 5.4 }), 0.5);
-      expect(priv(m).patchLoop).toBe(false);
+      expect(priv(m).locoTable.jog.clip).toBe('Jog_Fwd_Loop');
       expect(priv(m).base?.getClip().name).toBe('Jog_Fwd_Loop');
     });
   });

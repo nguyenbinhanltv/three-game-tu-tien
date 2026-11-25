@@ -24,6 +24,16 @@ export const PATCH_LOCO = {
 /** Bảng đầy đủ cho `locoMix`/`locoClipName`: đi bộ UAL, chạy/chạy nhanh Patch. */
 export const PATCH_TABLE: LocoTable = { walk: LOCO.walk, ...PATCH_LOCO };
 
+/** Bảng Patch với độ dài chu kỳ nhân `k` (hiệu chỉnh/quét trượt chân: `?pstride=<k>`); k = 1 trả về `PATCH_TABLE`. */
+export function scaledTable(k: number): LocoTable {
+  if (k === 1 || !(k > 0)) return PATCH_TABLE;
+  return {
+    walk: LOCO.walk,
+    jog: { ...PATCH_LOCO.jog, stride: PATCH_LOCO.jog.stride * k },
+    sprint: { ...PATCH_LOCO.sprint, stride: PATCH_LOCO.sprint.stride * k },
+  };
+}
+
 /**
  * Độ lệch pha (phần chu kỳ cộng vào pha chung trước khi đọc clip): đo bước chân trụ (chân trái chạm đất) bằng `patchLoop.test.ts`:
  * `Jog_Fwd_Loop` chạm ở 0,150 chu kỳ, `PM_Run` ở 0,121, `PM_Sprint` ở 0,125 ⇒ lệch -0,029 và -0,025 (cộng 1 để dương).
