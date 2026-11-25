@@ -1,0 +1,33 @@
+{
+  "monId": "boss_tam_thu_nguc_khuyen",
+  "move": "chant",
+  "idea": "Tam Thủ Ngục Khuyển niệm chú: vạch báo là vòng ĐỎ tròn bán kính 14 m (viền sáng + tô mờ lấp dần) tô dần theo nhịp 0,9 s; nổ ra thân lửa ma ám tím lõi đen, viền trắng-tím, khói tím (không đỏ/cam).",
+  "element": "hoa",
+  "palette": {
+    "core": "140a1e",
+    "body": "6a3fa0",
+    "rim": "f0d8ff",
+    "accent": "ff1f3d"
+  },
+  "shapeLang": [
+    "cloud",
+    "burst"
+  ],
+  "zone": {
+    "shape": "circle",
+    "r": 14,
+    "at": "self"
+  },
+  "timing": {
+    "anticipationMs": 900,
+    "impactMs": 140,
+    "lingerMs": 800
+  },
+  "readability": "Vạch báo đỏ chuẩn kẻ địch đúng vòng tròn bán kính 14 m đọc rõ trên nền sáng; thân lửa ma ám tím lõi đen, viền trắng-tím, khói tím (không đỏ/cam).",
+  "budget": {
+    "drawCalls": 10,
+    "particles": 300,
+    "screenCover": 0.2,
+    "overdraw": 5
+  }
+}

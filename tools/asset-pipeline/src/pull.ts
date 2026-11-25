@@ -8,6 +8,7 @@ import path from 'node:path';
 import { assetBase } from './r2/env.js';
 import { CACHE_DIR, type Lock, PUBLIC_DIR, pool, readLock, sha256File } from './r2/lock.js';
 import { placeFromStore, putInStore, storeDir, verifyInStore } from './r2/store.js';
+import { at } from '@dtl/shared';
 
 export interface PullOptions {
   base?: string;
@@ -61,7 +62,7 @@ export async function pull(opts: PullOptions = {}): Promise<PullReport> {
   };
   const todo: string[] = [];
   await pool(keys, 8, async (key) => {
-    const e = lock.files[key];
+    const e = at(lock.files, key, 'lock.files');
     for (const dir of [publicDir, cacheDir]) {
       const f = path.join(dir, key);
       // File hardlink với kho (nlink>1) luôn băm lại: ghi đè tại chỗ sẽ làm hỏng cả bản trong kho.
@@ -76,7 +77,7 @@ export async function pull(opts: PullOptions = {}): Promise<PullReport> {
 
   let done = 0;
   await pool(todo, 6, async (key) => {
-    const e = lock.files[key];
+    const e = at(lock.files, key, 'lock.files');
     const dest = path.join(publicDir, key);
     const tmp = `${dest}.part`;
     try {

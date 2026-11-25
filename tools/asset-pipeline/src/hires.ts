@@ -18,6 +18,7 @@ import { DEFAULTS, ROOT, createIO, findMeta, loadBudgets, rel, textureLimit, typ
 import { encodeArgs, findToktx, fitWithin } from './ktx.js';
 import { imageSize } from './stats.js';
 import type { HiresEntry, Manifest, ManifestEntry } from './optimize.js';
+import { at } from '@dtl/shared';
 
 /**
  * Lớp ngân sách được làm bậc cao (quái, tinh anh, boss). KHÔNG gồm nhân vật `player*`: texture nhân vật trong GLB đã bị chỉnh sau khi nhập
@@ -125,7 +126,7 @@ export async function buildHires(entry: ManifestEntry, toktx: string, outDir: st
     const bnames = [...built.keys()];
     const snames = [...source.keys()];
     for (const [i, [mat, bslots]] of [...built].entries()) {
-      const sslots = source.get(mat) ?? (bnames.length === snames.length ? source.get(snames[i]) : undefined);
+      const sslots = source.get(mat) ?? (bnames.length === snames.length ? source.get(at(snames, i, 'snames')) : undefined);
       if (!sslots) continue;
       for (const b of bslots) {
         const s = sslots.find((x) => x.slot === b.slot);

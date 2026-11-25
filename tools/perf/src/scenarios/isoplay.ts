@@ -80,7 +80,7 @@ export default {
                       parent?: { name?: string };
                     };
                     if (!m.isMesh || !m.visible) return;
-                    const d = Math.hypot(m.position.x - px, m.position.z - pz);
+                    const d = Math.hypot(m.position.x - (px ?? 0), m.position.z - (pz ?? 0));
                     if (d < 40)
                       out.push({
                         n: m.name || m.parent?.name || '?',

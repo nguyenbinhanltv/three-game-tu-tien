@@ -1,6 +1,6 @@
 {
   "skillId": "skl_duoc_vu",
-  "idea": "Dược Vũ: Tay áo vung lên, mưa lá rơi hồi tổng cộng 25% khí huyết tối đa trong 4 giây cho ngươi và đạo hữu trong 10 mét.",
+  "idea": "Dược Vũ: tay áo vung lên rải một cơn mưa lá thuốc (lá bạc hà, lá ngải, lá bạch quả) rơi chậm quanh người tu và đạo hữu, mỗi lá lóe điểm vàng nhạt khi chạm người; đường vung tay để lại một dải sương thuốc cong. Màu: lõi lục thẫm gần đen (hue 135–150°), thân XANH LÁ CÂY / ngọc bích ngả lục (hue 135–155°, ÍT lam, KHÔNG teal hay ngọc lam hue 170–200° vì đó là Kiếm tu), viền lục nhạt vàng, điểm vàng nhạt F2D86B tách rõ và khói mực lục thẫm; đan hỏa là LỬA THUỐC LỤC lõi vàng nhạt (đọc là lửa lò đan, không phải kiếm khí), KHÔNG đỏ, KHÔNG cam.",
   "element": "moc",
   "path": "dan_su",
   "shapeLang": [
@@ -26,14 +26,11 @@
     "screenCover": 0.2,
     "overdraw": 4
   },
-  "textures": [
-    {
-      "id": "proc:ink_smoke",
-      "kind": "flipbook"
-    },
-    {
-      "id": "proc:spark_burst",
-      "kind": "flipbook"
-    }
-  ]
+  "textures": [],
+  "silhouette": "dải sương thuốc cong từ tay áo rải mưa lá thuốc nhiều loại lá",
+  "materials": [
+    "sprite",
+    "particles"
+  ],
+  "standard": 2
 }

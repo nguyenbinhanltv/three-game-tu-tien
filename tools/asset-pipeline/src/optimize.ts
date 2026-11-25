@@ -50,6 +50,7 @@ import {
   rel,
 } from './config.js';
 import { TOKTX_HELP, compressTexturesKTX2, findToktx, toktxVersion } from './ktx.js';
+import { at } from '@dtl/shared';
 import {
   type Dims,
   type TextureInfo,
@@ -147,7 +148,7 @@ export function readManifest(outDir: string): Manifest {
 
 function sortedManifest(m: Manifest): Manifest {
   const assets: Record<string, ManifestEntry> = {};
-  for (const id of Object.keys(m.assets).sort()) assets[id] = m.assets[id];
+  for (const id of Object.keys(m.assets).sort()) assets[id] = at(m.assets, id, 'm.assets');
   return { version: 1, pipeline: PIPELINE_VERSION, assets };
 }
 
@@ -425,8 +426,8 @@ export async function optimizeAsset(
   const lods: ManifestLod[] = [{ level: 0, triangles: lod0 }];
   const targets = lod0 > 0 ? lodTargets(lod0, spec) : [];
   for (let i = 0; i < targets.length; i++) {
-    const got = await addLod(doc, i + 1, targets[i], PROTECT_BONES[cls] ?? []);
-    if (got > targets[i] * 1.1) warn(`${id}: LOD${i + 1} chỉ giảm được còn ${got} tam giác (đích ${targets[i]})`);
+    const got = await addLod(doc, i + 1, at(targets, i, 'targets'), PROTECT_BONES[cls] ?? []);
+    if (got > at(targets, i, 'targets') * 1.1) warn(`${id}: LOD${i + 1} chỉ giảm được còn ${got} tam giác (đích ${targets[i]})`);
     lods.push({ level: i + 1, triangles: got, target: targets[i] });
   }
 
@@ -538,7 +539,7 @@ export async function optimize(opts: OptimizeOptions = {}): Promise<OptimizeRepo
   const keep = new Set(Object.values(manifest.assets).map((e) => e.file));
   for (const f of fs.readdirSync(outDir)) {
     const m = HASHED_FILE.exec(f);
-    if (m && manifest.assets[m[1]] && !keep.has(f)) {
+    if (m && manifest.assets[at(m, 1, 'm')] && !keep.has(f)) {
       fs.rmSync(path.join(outDir, f));
       log(`[optimize] xóa bản cũ ${f}`);
     }

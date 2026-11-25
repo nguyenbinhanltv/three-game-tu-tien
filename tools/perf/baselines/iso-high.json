@@ -1,0 +1,1083 @@
+{
+ "version": 1,
+ "date": "2026-11-25-08-04",
+ "note": "main d29c528de, RTX 3060 Ti, WebGPU 1280x720, preset Cao. Số đếm (draw call/tam giác/texture/heap) là chuẩn; ms CPU đo khi máy có tải song song nên chỉ tham khảo. do_kiep_bac_hoang không đo được (issue #668). 1 lỗi console đã biết: mergeGeometries Đoạn Mạch (sửa ở #667). CHỈ so với lần chạy cùng backend/viewport (WebGPU 1280x720).",
+ "backend": "WebGPU",
+ "viewport": "1280x720",
+ "errors": [
+  "high: THREE.BufferGeometryUtils: .mergeGeometries() failed with geometry at index 1. Make sure all geometries have the same number of attributes."
+ ],
+ "points": [
+  {
+   "id": "van_lam/san",
+   "preset": "high",
+   "dc": 74,
+   "tris": 354286,
+   "texMB": 93.6,
+   "heapMB": 367.2,
+   "cpu95": 2.4
+  },
+  {
+   "id": "van_lam/cong",
+   "preset": "high",
+   "dc": 76,
+   "tris": 376890,
+   "texMB": 94,
+   "heapMB": 381,
+   "cpu95": 2.2
+  },
+  {
+   "id": "van_lam/rung",
+   "preset": "high",
+   "dc": 68,
+   "tris": 357238,
+   "texMB": 94,
+   "heapMB": 167.8,
+   "cpu95": 2.5
+  },
+  {
+   "id": "van_lam/ho",
+   "preset": "high",
+   "dc": 96,
+   "tris": 247128,
+   "texMB": 94,
+   "heapMB": 199.7,
+   "cpu95": 3.6
+  },
+  {
+   "id": "van_lam/danh_dong",
+   "preset": "high",
+   "dc": 130,
+   "tris": 349188,
+   "texMB": 94,
+   "heapMB": 207.9,
+   "cpu95": 3.9
+  },
+  {
+   "id": "doan_mach/poi_mach_tinh_tru",
+   "preset": "high",
+   "dc": 53,
+   "tris": 456769,
+   "texMB": 98,
+   "heapMB": 224.5,
+   "cpu95": 2.1
+  },
+  {
+   "id": "doan_mach/poi_cau_da_gay",
+   "preset": "high",
+   "dc": 54,
+   "tris": 448303,
+   "texMB": 98,
+   "heapMB": 254,
+   "cpu95": 2.4
+  },
+  {
+   "id": "doan_mach/poi_ho_sa_lun",
+   "preset": "high",
+   "dc": 52,
+   "tris": 447365,
+   "texMB": 98,
+   "heapMB": 283.3,
+   "cpu95": 2.1
+  },
+  {
+   "id": "doan_mach/poi_cong_mo",
+   "preset": "high",
+   "dc": 53,
+   "tris": 456557,
+   "texMB": 98,
+   "heapMB": 172.2,
+   "cpu95": 2.5
+  },
+  {
+   "id": "doan_mach/danh_dong",
+   "preset": "high",
+   "dc": 159,
+   "tris": 481351,
+   "texMB": 98,
+   "heapMB": 184.4,
+   "cpu95": 4.5
+  },
+  {
+   "id": "van_hai/poi_phu_dao_dinh",
+   "preset": "high",
+   "dc": 90,
+   "tris": 753517,
+   "texMB": 95.7,
+   "heapMB": 206.4,
+   "cpu95": 3.3
+  },
+  {
+   "id": "van_hai/poi_cau_xich_may",
+   "preset": "high",
+   "dc": 88,
+   "tris": 574717,
+   "texMB": 95.7,
+   "heapMB": 208.4,
+   "cpu95": 3.7
+  },
+  {
+   "id": "van_hai/poi_kinh_ho_dai",
+   "preset": "high",
+   "dc": 88,
+   "tris": 748773,
+   "texMB": 95.7,
+   "heapMB": 171.5,
+   "cpu95": 6
+  },
+  {
+   "id": "van_hai/poi_dinh_sam",
+   "preset": "high",
+   "dc": 88,
+   "tris": 758739,
+   "texMB": 95.7,
+   "heapMB": 195.6,
+   "cpu95": 2.8
+  },
+  {
+   "id": "van_hai/danh_dong",
+   "preset": "high",
+   "dc": 150,
+   "tris": 785471,
+   "texMB": 95.7,
+   "heapMB": 234.4,
+   "cpu95": 5
+  },
+  {
+   "id": "thien_khuyet/poi_hang_tru_khac_van",
+   "preset": "high",
+   "dc": 57,
+   "tris": 346545,
+   "texMB": 94.2,
+   "heapMB": 315.1,
+   "cpu95": 2.4
+  },
+  {
+   "id": "thien_khuyet/poi_tinh_bai_dai",
+   "preset": "high",
+   "dc": 57,
+   "tris": 340951,
+   "texMB": 94.2,
+   "heapMB": 179.4,
+   "cpu95": 2.5
+  },
+  {
+   "id": "thien_khuyet/poi_kho_giao",
+   "preset": "high",
+   "dc": 57,
+   "tris": 328673,
+   "texMB": 94.2,
+   "heapMB": 193.8,
+   "cpu95": 2.4
+  },
+  {
+   "id": "thien_khuyet/poi_cong_than_tang_dien",
+   "preset": "high",
+   "dc": 57,
+   "tris": 339875,
+   "texMB": 94.2,
+   "heapMB": 176.9,
+   "cpu95": 2.4
+  },
+  {
+   "id": "thien_khuyet/danh_dong",
+   "preset": "high",
+   "dc": 139,
+   "tris": 343779,
+   "texMB": 94.2,
+   "heapMB": 194.3,
+   "cpu95": 3.4
+  },
+  {
+   "id": "bac_hoang/poi_diet_mach_khau",
+   "preset": "high",
+   "dc": 68,
+   "tris": 353863,
+   "texMB": 94.2,
+   "heapMB": 252.3,
+   "cpu95": 2.7
+  },
+  {
+   "id": "bac_hoang/poi_tan_mach_nhan",
+   "preset": "high",
+   "dc": 67,
+   "tris": 341443,
+   "texMB": 94.2,
+   "heapMB": 303.3,
+   "cpu95": 2.5
+  },
+  {
+   "id": "bac_hoang/poi_gioi_khich",
+   "preset": "high",
+   "dc": 71,
+   "tris": 373073,
+   "texMB": 94.2,
+   "heapMB": 196.7,
+   "cpu95": 2.9
+  },
+  {
+   "id": "bac_hoang/poi_cong_xich_tan_khich",
+   "preset": "high",
+   "dc": 70,
+   "tris": 345431,
+   "texMB": 94.2,
+   "heapMB": 232.5,
+   "cpu95": 2.6
+  },
+  {
+   "id": "bac_hoang/danh_dong",
+   "preset": "high",
+   "dc": 148,
+   "tris": 96041,
+   "texMB": 94.2,
+   "heapMB": 194,
+   "cpu95": 3.8
+  },
+  {
+   "id": "van_dinh/poi_cong_gioi_dai",
+   "preset": "high",
+   "dc": 42,
+   "tris": 66453,
+   "texMB": 94.2,
+   "heapMB": 265.6,
+   "cpu95": 2.1
+  },
+  {
+   "id": "van_dinh/poi_ho_guong_nuoc",
+   "preset": "high",
+   "dc": 42,
+   "tris": 73291,
+   "texMB": 94.2,
+   "heapMB": 289.6,
+   "cpu95": 1.8
+  },
+  {
+   "id": "van_dinh/poi_goc_re_co",
+   "preset": "high",
+   "dc": 42,
+   "tris": 77081,
+   "texMB": 94.2,
+   "heapMB": 306.8,
+   "cpu95": 2.1
+  },
+  {
+   "id": "van_dinh/poi_dinh_vo_danh",
+   "preset": "high",
+   "dc": 47,
+   "tris": 71083,
+   "texMB": 94.2,
+   "heapMB": 199,
+   "cpu95": 2.2
+  },
+  {
+   "id": "van_dinh/danh_dong",
+   "preset": "high",
+   "dc": 143,
+   "tris": 99879,
+   "texMB": 94.2,
+   "heapMB": 240.7,
+   "cpu95": 3.1
+  },
+  {
+   "id": "cuu_kieu/poi_kieu_dau_cong",
+   "preset": "high",
+   "dc": 51,
+   "tris": 991975,
+   "texMB": 94.2,
+   "heapMB": 195.8,
+   "cpu95": 1.8
+  },
+  {
+   "id": "cuu_kieu/poi_may_dai",
+   "preset": "high",
+   "dc": 47,
+   "tris": 971887,
+   "texMB": 94.2,
+   "heapMB": 248.5,
+   "cpu95": 1.8
+  },
+  {
+   "id": "cuu_kieu/poi_bia_lo_chinh",
+   "preset": "high",
+   "dc": 45,
+   "tris": 976567,
+   "texMB": 94.2,
+   "heapMB": 193.3,
+   "cpu95": 2.1
+  },
+  {
+   "id": "cuu_kieu/poi_bac_cuoi_dai",
+   "preset": "high",
+   "dc": 50,
+   "tris": 1023025,
+   "texMB": 94.2,
+   "heapMB": 212.1,
+   "cpu95": 2.3
+  },
+  {
+   "id": "cuu_kieu/danh_dong",
+   "preset": "high",
+   "dc": 154,
+   "tris": 987183,
+   "texMB": 94.2,
+   "heapMB": 214,
+   "cpu95": 4.2
+  },
+  {
+   "id": "kiem_trung/vao",
+   "preset": "high",
+   "dc": 51,
+   "tris": 238293,
+   "texMB": 100.9,
+   "heapMB": 334.9,
+   "cpu95": 2
+  },
+  {
+   "id": "kiem_trung/giua",
+   "preset": "high",
+   "dc": 72,
+   "tris": 270205,
+   "texMB": 100.9,
+   "heapMB": 355,
+   "cpu95": 2.4
+  },
+  {
+   "id": "kiem_trung/tay",
+   "preset": "high",
+   "dc": 76,
+   "tris": 243149,
+   "texMB": 100.9,
+   "heapMB": 220,
+   "cpu95": 2.4
+  },
+  {
+   "id": "kiem_trung/dong",
+   "preset": "high",
+   "dc": 82,
+   "tris": 269623,
+   "texMB": 100.9,
+   "heapMB": 244.1,
+   "cpu95": 2.2
+  },
+  {
+   "id": "kiem_trung/danh_dong",
+   "preset": "high",
+   "dc": 122,
+   "tris": 278009,
+   "texMB": 100.9,
+   "heapMB": 239.5,
+   "cpu95": 2.9
+  },
+  {
+   "id": "gioi_tri/vao",
+   "preset": "high",
+   "dc": 36,
+   "tris": 73561,
+   "texMB": 94.2,
+   "heapMB": 328.3,
+   "cpu95": 1.7
+  },
+  {
+   "id": "gioi_tri/giua",
+   "preset": "high",
+   "dc": 62,
+   "tris": 85821,
+   "texMB": 94.2,
+   "heapMB": 349.3,
+   "cpu95": 2.1
+  },
+  {
+   "id": "gioi_tri/tay",
+   "preset": "high",
+   "dc": 63,
+   "tris": 85261,
+   "texMB": 94.2,
+   "heapMB": 215.4,
+   "cpu95": 2.4
+  },
+  {
+   "id": "gioi_tri/dong",
+   "preset": "high",
+   "dc": 56,
+   "tris": 84713,
+   "texMB": 94.2,
+   "heapMB": 258,
+   "cpu95": 2
+  },
+  {
+   "id": "gioi_tri/danh_dong",
+   "preset": "high",
+   "dc": 159,
+   "tris": 100451,
+   "texMB": 94.2,
+   "heapMB": 280,
+   "cpu95": 2.8
+  },
+  {
+   "id": "phuc_mach/vao",
+   "preset": "high",
+   "dc": 53,
+   "tris": 129077,
+   "texMB": 100.9,
+   "heapMB": 304.7,
+   "cpu95": 1.7
+  },
+  {
+   "id": "phuc_mach/giua",
+   "preset": "high",
+   "dc": 56,
+   "tris": 130271,
+   "texMB": 100.9,
+   "heapMB": 328.5,
+   "cpu95": 1.6
+  },
+  {
+   "id": "phuc_mach/tay",
+   "preset": "high",
+   "dc": 52,
+   "tris": 120303,
+   "texMB": 100.9,
+   "heapMB": 348.7,
+   "cpu95": 1.8
+  },
+  {
+   "id": "phuc_mach/dong",
+   "preset": "high",
+   "dc": 61,
+   "tris": 130379,
+   "texMB": 100.9,
+   "heapMB": 234.4,
+   "cpu95": 1.8
+  },
+  {
+   "id": "phuc_mach/danh_dong",
+   "preset": "high",
+   "dc": 157,
+   "tris": 144209,
+   "texMB": 100.9,
+   "heapMB": 269,
+   "cpu95": 3.2
+  },
+  {
+   "id": "kinh_nguyet/vao",
+   "preset": "high",
+   "dc": 65,
+   "tris": 181891,
+   "texMB": 96.4,
+   "heapMB": 365,
+   "cpu95": 2.3
+  },
+  {
+   "id": "kinh_nguyet/giua",
+   "preset": "high",
+   "dc": 90,
+   "tris": 184101,
+   "texMB": 96.4,
+   "heapMB": 405.4,
+   "cpu95": 2.4
+  },
+  {
+   "id": "kinh_nguyet/tay",
+   "preset": "high",
+   "dc": 86,
+   "tris": 176703,
+   "texMB": 96.4,
+   "heapMB": 238.2,
+   "cpu95": 2.6
+  },
+  {
+   "id": "kinh_nguyet/dong",
+   "preset": "high",
+   "dc": 82,
+   "tris": 190559,
+   "texMB": 96.4,
+   "heapMB": 246.7,
+   "cpu95": 2.1
+  },
+  {
+   "id": "kinh_nguyet/danh_dong",
+   "preset": "high",
+   "dc": 231,
+   "tris": 199465,
+   "texMB": 96.4,
+   "heapMB": 234.2,
+   "cpu95": 4.3
+  },
+  {
+   "id": "than_tang/vao",
+   "preset": "high",
+   "dc": 46,
+   "tris": 123195,
+   "texMB": 94.8,
+   "heapMB": 437.7,
+   "cpu95": 1.8
+  },
+  {
+   "id": "than_tang/giua",
+   "preset": "high",
+   "dc": 70,
+   "tris": 125843,
+   "texMB": 94.8,
+   "heapMB": 275.1,
+   "cpu95": 2
+  },
+  {
+   "id": "than_tang/tay",
+   "preset": "high",
+   "dc": 70,
+   "tris": 116047,
+   "texMB": 94.8,
+   "heapMB": 257.8,
+   "cpu95": 1.9
+  },
+  {
+   "id": "than_tang/dong",
+   "preset": "high",
+   "dc": 61,
+   "tris": 125797,
+   "texMB": 94.8,
+   "heapMB": 284.9,
+   "cpu95": 1.8
+  },
+  {
+   "id": "than_tang/danh_dong",
+   "preset": "high",
+   "dc": 152,
+   "tris": 135177,
+   "texMB": 94.8,
+   "heapMB": 280.8,
+   "cpu95": 2.8
+  },
+  {
+   "id": "xich_tan_khich/vao",
+   "preset": "high",
+   "dc": 43,
+   "tris": 97209,
+   "texMB": 94.8,
+   "heapMB": 263.5,
+   "cpu95": 1.7
+  },
+  {
+   "id": "xich_tan_khich/giua",
+   "preset": "high",
+   "dc": 69,
+   "tris": 106025,
+   "texMB": 94.8,
+   "heapMB": 297.4,
+   "cpu95": 1.9
+  },
+  {
+   "id": "xich_tan_khich/tay",
+   "preset": "high",
+   "dc": 70,
+   "tris": 95677,
+   "texMB": 94.8,
+   "heapMB": 278.2,
+   "cpu95": 2
+  },
+  {
+   "id": "xich_tan_khich/dong",
+   "preset": "high",
+   "dc": 56,
+   "tris": 94077,
+   "texMB": 94.8,
+   "heapMB": 263,
+   "cpu95": 1.8
+  },
+  {
+   "id": "xich_tan_khich/danh_dong",
+   "preset": "high",
+   "dc": 160,
+   "tris": 113121,
+   "texMB": 94.8,
+   "heapMB": 290.5,
+   "cpu95": 2.9
+  },
+  {
+   "id": "kim_da_cung/vao",
+   "preset": "high",
+   "dc": 48,
+   "tris": 110705,
+   "texMB": 94.8,
+   "heapMB": 255.9,
+   "cpu95": 2
+  },
+  {
+   "id": "kim_da_cung/giua",
+   "preset": "high",
+   "dc": 77,
+   "tris": 124121,
+   "texMB": 94.8,
+   "heapMB": 282.6,
+   "cpu95": 2.1
+  },
+  {
+   "id": "kim_da_cung/tay",
+   "preset": "high",
+   "dc": 84,
+   "tris": 114787,
+   "texMB": 94.8,
+   "heapMB": 256.5,
+   "cpu95": 2.1
+  },
+  {
+   "id": "kim_da_cung/dong",
+   "preset": "high",
+   "dc": 65,
+   "tris": 118665,
+   "texMB": 94.8,
+   "heapMB": 294.5,
+   "cpu95": 1.9
+  },
+  {
+   "id": "kim_da_cung/danh_dong",
+   "preset": "high",
+   "dc": 170,
+   "tris": 138351,
+   "texMB": 94.8,
+   "heapMB": 325.7,
+   "cpu95": 2.7
+  },
+  {
+   "id": "luyen_than/vao",
+   "preset": "high",
+   "dc": 54,
+   "tris": 144229,
+   "texMB": 101.5,
+   "heapMB": 304.4,
+   "cpu95": 1.5
+  },
+  {
+   "id": "luyen_than/giua",
+   "preset": "high",
+   "dc": 71,
+   "tris": 154205,
+   "texMB": 101.5,
+   "heapMB": 347.3,
+   "cpu95": 1.7
+  },
+  {
+   "id": "luyen_than/tay",
+   "preset": "high",
+   "dc": 75,
+   "tris": 141937,
+   "texMB": 101.5,
+   "heapMB": 358.4,
+   "cpu95": 2
+  },
+  {
+   "id": "luyen_than/dong",
+   "preset": "high",
+   "dc": 58,
+   "tris": 150615,
+   "texMB": 101.5,
+   "heapMB": 398.5,
+   "cpu95": 1.8
+  },
+  {
+   "id": "luyen_than/danh_dong",
+   "preset": "high",
+   "dc": 151,
+   "tris": 165149,
+   "texMB": 101.5,
+   "heapMB": 434.1,
+   "cpu95": 3
+  },
+  {
+   "id": "kieu_1/vao",
+   "preset": "high",
+   "dc": 33,
+   "tris": 60857,
+   "texMB": 94.8,
+   "heapMB": 427.6,
+   "cpu95": 1.2
+  },
+  {
+   "id": "kieu_1/giua",
+   "preset": "high",
+   "dc": 50,
+   "tris": 69729,
+   "texMB": 94.8,
+   "heapMB": 285.8,
+   "cpu95": 1.4
+  },
+  {
+   "id": "kieu_1/tay",
+   "preset": "high",
+   "dc": 58,
+   "tris": 73605,
+   "texMB": 94.8,
+   "heapMB": 279.9,
+   "cpu95": 1.5
+  },
+  {
+   "id": "kieu_1/dong",
+   "preset": "high",
+   "dc": 36,
+   "tris": 55669,
+   "texMB": 94.8,
+   "heapMB": 273,
+   "cpu95": 1.7
+  },
+  {
+   "id": "kieu_2/vao",
+   "preset": "high",
+   "dc": 50,
+   "tris": 63235,
+   "texMB": 94.8,
+   "heapMB": 415.5,
+   "cpu95": 1.3
+  },
+  {
+   "id": "kieu_2/giua",
+   "preset": "high",
+   "dc": 50,
+   "tris": 73327,
+   "texMB": 94.8,
+   "heapMB": 305,
+   "cpu95": 1.3
+  },
+  {
+   "id": "kieu_2/tay",
+   "preset": "high",
+   "dc": 50,
+   "tris": 74475,
+   "texMB": 94.8,
+   "heapMB": 313.6,
+   "cpu95": 1.4
+  },
+  {
+   "id": "kieu_2/dong",
+   "preset": "high",
+   "dc": 41,
+   "tris": 55871,
+   "texMB": 94.8,
+   "heapMB": 299.4,
+   "cpu95": 1.2
+  },
+  {
+   "id": "kieu_3/vao",
+   "preset": "high",
+   "dc": 42,
+   "tris": 62881,
+   "texMB": 94.8,
+   "heapMB": 313,
+   "cpu95": 1.5
+  },
+  {
+   "id": "kieu_3/giua",
+   "preset": "high",
+   "dc": 42,
+   "tris": 71433,
+   "texMB": 94.8,
+   "heapMB": 340.7,
+   "cpu95": 1.5
+  },
+  {
+   "id": "kieu_3/tay",
+   "preset": "high",
+   "dc": 37,
+   "tris": 62181,
+   "texMB": 94.8,
+   "heapMB": 301.1,
+   "cpu95": 1.2
+  },
+  {
+   "id": "kieu_3/dong",
+   "preset": "high",
+   "dc": 69,
+   "tris": 1000607,
+   "texMB": 94.8,
+   "heapMB": 331.7,
+   "cpu95": 1.7
+  },
+  {
+   "id": "kieu_4/vao",
+   "preset": "high",
+   "dc": 36,
+   "tris": 71017,
+   "texMB": 94.8,
+   "heapMB": 385.3,
+   "cpu95": 1.2
+  },
+  {
+   "id": "kieu_4/giua",
+   "preset": "high",
+   "dc": 36,
+   "tris": 66857,
+   "texMB": 94.8,
+   "heapMB": 422,
+   "cpu95": 1.3
+  },
+  {
+   "id": "kieu_4/tay",
+   "preset": "high",
+   "dc": 37,
+   "tris": 71329,
+   "texMB": 94.8,
+   "heapMB": 425.1,
+   "cpu95": 1.3
+  },
+  {
+   "id": "kieu_4/dong",
+   "preset": "high",
+   "dc": 35,
+   "tris": 56103,
+   "texMB": 94.8,
+   "heapMB": 313.1,
+   "cpu95": 1.2
+  },
+  {
+   "id": "kieu_5/vao",
+   "preset": "high",
+   "dc": 44,
+   "tris": 60039,
+   "texMB": 94.8,
+   "heapMB": 452.8,
+   "cpu95": 1.6
+  },
+  {
+   "id": "kieu_5/giua",
+   "preset": "high",
+   "dc": 55,
+   "tris": 75161,
+   "texMB": 94.8,
+   "heapMB": 299,
+   "cpu95": 1.6
+  },
+  {
+   "id": "kieu_5/tay",
+   "preset": "high",
+   "dc": 55,
+   "tris": 73439,
+   "texMB": 94.8,
+   "heapMB": 338.2,
+   "cpu95": 1.5
+  },
+  {
+   "id": "kieu_5/dong",
+   "preset": "high",
+   "dc": 40,
+   "tris": 64323,
+   "texMB": 94.8,
+   "heapMB": 285.3,
+   "cpu95": 1.4
+  },
+  {
+   "id": "kieu_6/vao",
+   "preset": "high",
+   "dc": 36,
+   "tris": 71543,
+   "texMB": 94.8,
+   "heapMB": 332.7,
+   "cpu95": 1.6
+  },
+  {
+   "id": "kieu_6/giua",
+   "preset": "high",
+   "dc": 49,
+   "tris": 62039,
+   "texMB": 94.8,
+   "heapMB": 357.9,
+   "cpu95": 1.5
+  },
+  {
+   "id": "kieu_6/tay",
+   "preset": "high",
+   "dc": 53,
+   "tris": 75337,
+   "texMB": 94.8,
+   "heapMB": 290.1,
+   "cpu95": 1.8
+  },
+  {
+   "id": "kieu_6/dong",
+   "preset": "high",
+   "dc": 38,
+   "tris": 49489,
+   "texMB": 94.8,
+   "heapMB": 326.5,
+   "cpu95": 1.4
+  },
+  {
+   "id": "kieu_7/vao",
+   "preset": "high",
+   "dc": 45,
+   "tris": 58727,
+   "texMB": 94.8,
+   "heapMB": 398.3,
+   "cpu95": 2
+  },
+  {
+   "id": "kieu_7/giua",
+   "preset": "high",
+   "dc": 76,
+   "tris": 1007603,
+   "texMB": 94.8,
+   "heapMB": 360.5,
+   "cpu95": 4.2
+  },
+  {
+   "id": "kieu_7/tay",
+   "preset": "high",
+   "dc": 50,
+   "tris": 997591,
+   "texMB": 94.8,
+   "heapMB": 385.4,
+   "cpu95": 1.7
+  },
+  {
+   "id": "kieu_7/dong",
+   "preset": "high",
+   "dc": 46,
+   "tris": 976467,
+   "texMB": 94.8,
+   "heapMB": 427.2,
+   "cpu95": 1.7
+  },
+  {
+   "id": "kieu_8/vao",
+   "preset": "high",
+   "dc": 49,
+   "tris": 63641,
+   "texMB": 94.8,
+   "heapMB": 401.8,
+   "cpu95": 1.5
+  },
+  {
+   "id": "kieu_8/giua",
+   "preset": "high",
+   "dc": 38,
+   "tris": 69295,
+   "texMB": 94.8,
+   "heapMB": 342.1,
+   "cpu95": 1.3
+  },
+  {
+   "id": "kieu_8/tay",
+   "preset": "high",
+   "dc": 77,
+   "tris": 1004839,
+   "texMB": 94.8,
+   "heapMB": 418.1,
+   "cpu95": 1.9
+  },
+  {
+   "id": "kieu_8/dong",
+   "preset": "high",
+   "dc": 48,
+   "tris": 977577,
+   "texMB": 94.8,
+   "heapMB": 440.8,
+   "cpu95": 1.6
+  },
+  {
+   "id": "kieu_9/vao",
+   "preset": "high",
+   "dc": 48,
+   "tris": 61581,
+   "texMB": 94.8,
+   "heapMB": 347.8,
+   "cpu95": 1.4
+  },
+  {
+   "id": "kieu_9/giua",
+   "preset": "high",
+   "dc": 41,
+   "tris": 70263,
+   "texMB": 94.8,
+   "heapMB": 365.7,
+   "cpu95": 1.3
+  },
+  {
+   "id": "kieu_9/tay",
+   "preset": "high",
+   "dc": 77,
+   "tris": 1004023,
+   "texMB": 94.8,
+   "heapMB": 423.3,
+   "cpu95": 1.8
+  },
+  {
+   "id": "kieu_9/dong",
+   "preset": "high",
+   "dc": 48,
+   "tris": 975813,
+   "texMB": 94.8,
+   "heapMB": 459.7,
+   "cpu95": 1.6
+  },
+  {
+   "id": "do_kiep/vao",
+   "preset": "high",
+   "dc": 72,
+   "tris": 108223,
+   "texMB": 96.1,
+   "heapMB": 347.9,
+   "cpu95": 1.8
+  },
+  {
+   "id": "do_kiep/giua",
+   "preset": "high",
+   "dc": 72,
+   "tris": 106079,
+   "texMB": 96.1,
+   "heapMB": 368.2,
+   "cpu95": 1.8
+  },
+  {
+   "id": "do_kiep/tay",
+   "preset": "high",
+   "dc": 69,
+   "tris": 99165,
+   "texMB": 96.1,
+   "heapMB": 402.1,
+   "cpu95": 2.2
+  },
+  {
+   "id": "do_kiep/dong",
+   "preset": "high",
+   "dc": 83,
+   "tris": 108899,
+   "texMB": 96.1,
+   "heapMB": 352,
+   "cpu95": 1.9
+  },
+  {
+   "id": "do_kiep_bac_hoang/vao",
+   "preset": "high",
+   "dc": 49,
+   "tris": 199029,
+   "texMB": 94.8,
+   "heapMB": 497.1,
+   "cpu95": 1.6
+  },
+  {
+   "id": "do_kiep_bac_hoang/giua",
+   "preset": "high",
+   "dc": 49,
+   "tris": 207475,
+   "texMB": 94.8,
+   "heapMB": 517.1,
+   "cpu95": 1.7
+  },
+  {
+   "id": "do_kiep_bac_hoang/tay",
+   "preset": "high",
+   "dc": 49,
+   "tris": 216333,
+   "texMB": 94.8,
+   "heapMB": 365.5,
+   "cpu95": 1.5
+  },
+  {
+   "id": "do_kiep_bac_hoang/dong",
+   "preset": "high",
+   "dc": 62,
+   "tris": 221031,
+   "texMB": 94.8,
+   "heapMB": 389.5,
+   "cpu95": 2
+  }
+ ]
+}

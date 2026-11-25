@@ -16,6 +16,7 @@ import { cam, gm } from '../lib/game';
 import type { Scenario } from '../lib/scenario';
 import { sheet } from '../lib/shot';
 import { SKILL } from '@dtl/content';
+import { at as checkedAt } from '@dtl/shared';
 
 declare global {
   interface Window {
@@ -131,7 +132,7 @@ type Rec = { frames: Frame[]; t0: number; hits: number[] };
 const SAMPLER = `(() => { const g = window.__game; const o = (window.__vfxPerf = { dc: [], tri: [], ms: [], live: [] }); let last = performance.now(); (function t() { const i = g.info(); const n = performance.now(); o.dc.push(i.drawCalls); o.tri.push(i.triangles); o.ms.push(n - last); o.live.push(g.vfx.pool.live); last = n; requestAnimationFrame(t); })(); })()`;
 const q = (a: number[], f: number) => [...a].sort((x, y) => x - y)[Math.floor((a.length - 1) * f)] ?? 0;
 const perfLine = (p: Record<string, number[]>) =>
-  `draw p50/p95/max ${q(p.dc, 0.5)}/${q(p.dc, 0.95)}/${Math.max(...p.dc)}, tam giác p50/max ${q(p.tri, 0.5)}/${Math.max(...p.tri)}, khung ms p50/p95/p99 ${q(p.ms, 0.5).toFixed(1)}/${q(p.ms, 0.95).toFixed(1)}/${q(p.ms, 0.99).toFixed(1)}, lưới FX sống p50/max ${q(p.live, 0.5)}/${Math.max(...p.live)}`;
+  `draw p50/p95/max ${q(checkedAt(p, 'dc', 'p'), 0.5)}/${q(checkedAt(p, 'dc', 'p'), 0.95)}/${Math.max(...checkedAt(p, 'dc', 'p'))}, tam giác p50/max ${q(checkedAt(p, 'tri', 'p'), 0.5)}/${Math.max(...checkedAt(p, 'tri', 'p'))}, khung ms p50/p95/p99 ${q(checkedAt(p, 'ms', 'p'), 0.5).toFixed(1)}/${q(checkedAt(p, 'ms', 'p'), 0.95).toFixed(1)}/${q(checkedAt(p, 'ms', 'p'), 0.99).toFixed(1)}, lưới FX sống p50/max ${q(checkedAt(p, 'live', 'p'), 0.5)}/${Math.max(...checkedAt(p, 'live', 'p'))}`;
 
 function ffmpegPath(): string {
   if (env('FFMPEG')) return env('FFMPEG');
@@ -291,12 +292,16 @@ function encodeWebm(r: Rec, file: string): boolean {
   if (r.frames.length < 3) return false;
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'vfxv-'));
   // Chọn khung gần nhất cho từng nhịp 1/FPS để video đều (screencast chỉ gửi khi màn hình đổi).
-  const start = Math.max(r.t0, r.frames[0].at);
-  const n = Math.max(2, Math.floor(((r.frames[r.frames.length - 1].at - start) / 1000) * FPS));
+  const start = Math.max(r.t0, checkedAt(r.frames, 0, 'r.frames').at);
+  const n = Math.max(2, Math.floor(((checkedAt(r.frames, r.frames.length - 1, 'r.frames').at - start) / 1000) * FPS));
   for (let i = 0, j = 0; i < n; i++) {
     const t = start + (i * 1000) / FPS;
-    while (j + 1 < r.frames.length && Math.abs(r.frames[j + 1].at - t) <= Math.abs(r.frames[j].at - t)) j++;
-    fs.writeFileSync(path.join(dir, `f${String(i).padStart(5, '0')}.jpg`), Buffer.from(r.frames[j].data, 'base64'));
+    while (
+      j + 1 < r.frames.length &&
+      Math.abs(checkedAt(r.frames, j + 1, 'r.frames').at - t) <= Math.abs(checkedAt(r.frames, j, 'r.frames').at - t)
+    )
+      j++;
+    fs.writeFileSync(path.join(dir, `f${String(i).padStart(5, '0')}.jpg`), Buffer.from(checkedAt(r.frames, j, 'r.frames').data, 'base64'));
   }
   const ff = spawnSync(
     ffmpegPath(),
@@ -393,7 +398,7 @@ export default {
         await gm(page, 'level ' + LEVEL, 1600);
         await gm(page, 'god on', 1600);
         await method('lac_kiem_quyet');
-        await gm(page, `tp ${SPOTS[spot++ % SPOTS.length].join(' ')}`, 1600);
+        await gm(page, `tp ${checkedAt(SPOTS, spot++ % SPOTS.length, 'SPOTS').join(' ')}`, 1600);
         // Chờ model người chơi v3 (mặc định từ N-7) nạp xong để động tác đủ.
         await page.waitForFunction(() => window.__game!.ents?.players.get(window.__game!.sid)?.model?.v3 === true, undefined, {
           timeout: 60_000,

@@ -90,14 +90,33 @@ async function run(r: Run, mon: string, moves: string[], sizes: string[], at: nu
     for (const tag of sizes) {
       const [w, h] = UI_SIZES[tag] ?? UI_SIZES['1080p']!;
       await page.setViewportSize({ width: w, height: h });
-      await page.evaluate(() => window.__vfxlab!.pause(true));
-      await sleep(500);
-      await page.evaluate('window.__game.clearTarget()'); // không vòng chọn mục tiêu dưới chân boss (đỏ, dễ lẫn với vạch báo)
-      await frame(page);
-      const baseBuf = await snap(page, outDir, `base-${tag}.jpg`, { wait: 0 });
-      const b0 = await page.evaluate(() => window.__vfxlab!.budget());
+      // Tạm dừng, bỏ vòng chọn mục tiêu (đỏ, dễ lẫn với vạch báo), chụp ảnh nền và lấy ngân sách nền của CẢNH HIỆN TẠI.
+      const settle = async () => {
+        await page.evaluate(() => window.__vfxlab!.pause(true));
+        await sleep(500);
+        await page.evaluate('window.__game.clearTarget()');
+        await frame(page);
+        return {
+          baseBuf: await snap(page, outDir, `base-${tag}.jpg`, { wait: 0 }),
+          b0: await page.evaluate(() => window.__vfxlab!.budget()),
+        };
+      };
+      let { baseBuf, b0 } = await settle();
       // `--control`: KHÔNG ra chiêu, chỉ trôi thời gian như khi đo: `pixelCover` lúc này là độ LỆCH NỀN thuần (ánh sáng/hậu kỳ/động vật nền), trừ nó khỏi số đo thật.
-      const ok = process.argv.includes('--control') || (await page.evaluate((a) => window.__vfxlab!.castMon(a[0]!, a[1]!), [mon, mv]));
+      const cast = () => page.evaluate((a) => window.__vfxlab!.castMon(a[0]!, a[1]!), [mon, mv]);
+      let ok = process.argv.includes('--control') || (await cast());
+      if (!ok) {
+        // Chạy nối nhiều chiêu: boss thật có thể đã chết/dời sau chiêu trước nên `castMon` không thấy quái. Bỏ tạm dừng để cảnh dựng lại như lúc đầu (gọi quái, nạp model,
+        // FX/AI ổn định), rồi tạm dừng và CHỤP LẠI nền + ngân sách nền (nền cũ không có boss/đã lệch camera làm phồng số phủ) trước khi ra chiêu lần hai.
+        await page.evaluate(() => window.__vfxlab!.pause(false));
+        await gm(page, 'spawn clear', 1400);
+        await gm(page, `spawn ${mon} 1`, 2500);
+        await gm(page, 'tp 2048 2078', 1800);
+        await sleep(9000);
+        await gm(page, 'cd', 1300);
+        ({ baseBuf, b0 } = await settle());
+        ok = await cast();
+      }
       if (!ok) throw new Error(`castMon(${mon}, ${mv}) thất bại (quái không có chiêu này hoặc chưa spawn)`);
       const files: Buffer[] = [];
       const rows: Record<string, unknown>[] = [];

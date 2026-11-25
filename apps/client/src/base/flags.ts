@@ -44,7 +44,7 @@ interface Flags {
   fxq: string | null;
   /** `?chr=v1` quay về nhân vật cũ (N-7: mặc định là v3 Mannequin; `v1` giữ một bản làm dự phòng, `v3` = mặc định). */
   chr: 'v1' | 'v3' | null;
-  /** `?v3model=a|b|b2` chọn bản Lạc Kiếm cũ để so ảnh (mặc định v3b3 = v3b2 + tua/dải đai lò xo). */
+  /** `?v3model=b2` chọn bản Lạc Kiếm v3b2 (không tua) để so ảnh (mặc định v3b3 = v3b2 + tua/dải đai lò xo). */
   v3Model: string | null;
   /** `?jog=<số>` ép tốc độ clip chạy v3 (chụp). */
   jog: number;
@@ -174,7 +174,7 @@ export const FLAG_DOCS: Readonly<Record<string, { scope: 'user' | 'diag' | 'test
   mood: { scope: 'diag', doc: 'dawn|day|dusk|night' },
   fxq: { scope: 'diag', doc: 'low|medium|high' },
   chr: { scope: 'user', doc: '=v1 quay về nhân vật cũ (dự phòng một bản sau N-7, model gốc không áo mô-đun); mặc định v3' },
-  v3model: { scope: 'test', doc: '=a v3 cũ; =b v3b; =b2 v3b2 (không tua); mặc định v3b3' },
+  v3model: { scope: 'test', doc: '=b2 v3b2 (không tua); mặc định v3b3' },
   jog: { scope: 'test', doc: 'tốc độ clip chạy v3' },
   proplod0: { scope: 'test', doc: 'hệ số ngưỡng LOD0 của prop (mặc định 0,7)' },
   shadowhz: { scope: 'test', doc: 'tần suất vẽ lại bản đồ bóng tối đa (Hz, 0 = mỗi khung, mặc định 50)' },

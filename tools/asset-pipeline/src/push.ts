@@ -11,6 +11,7 @@ import { ROOT } from './config.js';
 import { cacheControl, contentType, makeClient } from './r2/client.js';
 import { loadR2Env } from './r2/env.js';
 import { BINARY_EXT, isHashedName, localPath, type Lock, pool, readLock, scanLock, writeLock } from './r2/lock.js';
+import { at } from '@dtl/shared';
 
 export interface PushOptions {
   dry?: boolean;
@@ -166,12 +167,12 @@ export async function push(opts: PushOptions = {}): Promise<PushReport> {
   if (conflicts.length && !opts.dry) throw new PushConflictError(conflicts);
   if (opts.dry) {
     report.uploaded = todo;
-    report.uploadedBytes = todo.reduce((n, k) => n + lock.files[k].bytes, 0);
+    report.uploadedBytes = todo.reduce((n, k) => n + at(lock.files, k, 'lock.files').bytes, 0);
     return report;
   }
   let done = 0;
   await pool(todo, 6, async (key) => {
-    const e = lock.files[key];
+    const e = at(lock.files, key, 'lock.files');
     const file = localPath(key)!;
     try {
       await s3.send(

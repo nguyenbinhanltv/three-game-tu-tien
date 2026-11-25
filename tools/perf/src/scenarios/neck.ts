@@ -6,6 +6,7 @@ import { env, list, opt } from '../lib/env';
 import { sleep } from '../lib/devserver';
 import { cam, gm } from '../lib/game';
 import type { Scenario } from '../lib/scenario';
+import { at } from '@dtl/shared';
 
 const GM: Record<string, string> = {
   tinh_khuyet: 'set set_tinh_khuyet',
@@ -26,7 +27,9 @@ export default {
   async run(r) {
     const tagP = opt('--tag', env('NECK_TAG', 'sau'));
     for (const sg of list('--sets', 'tinh_khuyet:m,than_tang:f')) {
-      const [s, g] = sg.split(':');
+      const parts = sg.split(':');
+      const s = at(parts, 0, 'sets');
+      const g = at(parts, 1, 'sets');
       const tag = `${tagP}-${s}-${g === 'm' ? 'nam' : 'nu'}`;
       const { ctx, page } = await r.open({
         name: `N${g}${s}`,
@@ -39,7 +42,7 @@ export default {
       });
       await gm(page, 'level 12', 1500);
       await gm(page, 'god on', 1200);
-      await gm(page, GM[s], 1500);
+      await gm(page, at(GM, s, 'GM'), 1500);
       await gm(page, 'killall', 800);
       await gm(page, 'tp 2048 2088', 1500);
       await page.waitForFunction(() => !!window.__game!.ents?.players.get(window.__game!.sid)?.model?.v3, undefined, {
