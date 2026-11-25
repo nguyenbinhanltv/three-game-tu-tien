@@ -668,13 +668,8 @@ export function applyGroundShader(mat: THREE.MeshStandardNodeMaterial, tex: Grou
         float(1).sub(smoothstep(SUOI.flatR, SUOI.outerR * 0.75, distance(positionWorld.xz, vec2(SUOI.x, SUOI.z)))),
       ),
     });
-    const pavLit = paintedColor('paving', 0);
-    const pavShade = paintedColor('paving', 1);
-    const pavTone = mix(
-      vec3(pavShade.r, pavShade.g, pavShade.b),
-      vec3(pavLit.r, pavLit.g, pavLit.b),
-      smoothstep(0.14, 0.26, dot(col.rgb, vec3(0.299, 0.587, 0.114))),
-    );
+    // cặp đá lát theo level (theme.ts `paving`; mặc định = cặp `paving` chung, Vân Lam giữ nguyên)
+    const pavTone = mix(vec3(themeU.pShade), vec3(themeU.pLit), smoothstep(0.14, 0.26, dot(col.rgb, vec3(0.299, 0.587, 0.114))));
     // bảng theo level (theme.ts): đổi tông đất vẽ sang hai màu của level, giữ nét cọ; `themeU.on` = 0 (Vân Lam) giữ nguyên
     const ink: Node = dot(painted, vec3(0.299, 0.587, 0.114));
     // mảng sáng/tối vài chục mét (như mảng lớn của painted-valley) nhân vào độ chói để tuyết/đất không thành một màu phẳng
