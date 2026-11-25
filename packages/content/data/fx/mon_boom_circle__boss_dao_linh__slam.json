@@ -40,7 +40,7 @@
    "alpha": 0.9,
    "seed": 8200,
    "tier": 0,
-   "sprite": "dao_arcs",
+   "sprite": "mac_arcs",
    "scale": 4.0,
    "scaleTo": 4.0,
    "offset": [
@@ -68,7 +68,7 @@
    "alpha": 0.6,
    "seed": 8201,
    "tier": 0,
-   "sprite": "dao_blot",
+   "sprite": "mac_blot",
    "scale": 4.0,
    "scaleTo": 4.0,
    "offset": [
@@ -96,7 +96,7 @@
    "alpha": 0.95,
    "seed": 8220,
    "tier": 0,
-   "sprite": "dao_drops",
+   "sprite": "mac_drops",
    "scale": 1.36,
    "scaleTo": 1.36,
    "offset": [
@@ -118,7 +118,7 @@
    "alpha": 0.95,
    "seed": 8221,
    "tier": 0,
-   "sprite": "dao_drops",
+   "sprite": "mac_drops",
    "scale": 1.36,
    "scaleTo": 1.36,
    "offset": [
@@ -140,7 +140,7 @@
    "alpha": 0.95,
    "seed": 8222,
    "tier": 0,
-   "sprite": "dao_drops",
+   "sprite": "mac_drops",
    "scale": 1.36,
    "scaleTo": 1.36,
    "offset": [
@@ -162,7 +162,7 @@
    "alpha": 0.95,
    "seed": 8223,
    "tier": 0,
-   "sprite": "dao_drops",
+   "sprite": "mac_drops",
    "scale": 1.36,
    "scaleTo": 1.36,
    "offset": [
@@ -184,7 +184,7 @@
    "alpha": 0.95,
    "seed": 8224,
    "tier": 0,
-   "sprite": "dao_stroke",
+   "sprite": "mac_stroke",
    "scale": 1.6,
    "scaleTo": 1.6,
    "offset": [
@@ -206,7 +206,7 @@
    "alpha": 0.95,
    "seed": 8225,
    "tier": 0,
-   "sprite": "dao_stroke",
+   "sprite": "mac_stroke",
    "scale": 1.6,
    "scaleTo": 1.6,
    "offset": [
@@ -228,7 +228,7 @@
    "alpha": 0.95,
    "seed": 8226,
    "tier": 0,
-   "sprite": "dao_stroke",
+   "sprite": "mac_stroke",
    "scale": 1.6,
    "scaleTo": 1.6,
    "offset": [

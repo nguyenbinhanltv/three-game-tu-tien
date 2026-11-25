@@ -190,11 +190,11 @@ line_boom(B, 'line', P, 22, 4, 'jade_crack', [('kieu_ridge', 12.0, 0.95), ('kieu
 # ================= Đạo Linh (thủy; nét cọ bạc) — thân lớn: lớp nổ chính là decal đất top =================
 B, P = 'boss_dao_linh', PA
 write(f'mon_warn__{B}__slam', warn_circle(1.3, 35, -50), P)
-circle_boom(B, 'slam', P, 5, 'scorch', [('dao_arcs', 1.0, 0.9), ('dao_blot', 1.0, 0.6)], [('dao_drops', 3.4, 4, 0.5, 1.4), ('dao_stroke', 4.0, 3, 0.4, 1.6)], 8200, topbase=True)
+circle_boom(B, 'slam', P, 5, 'scorch', [('mac_arcs', 1.0, 0.9), ('mac_blot', 1.0, 0.6)], [('mac_drops', 3.4, 4, 0.5, 1.4), ('mac_stroke', 4.0, 3, 0.4, 1.6)], 8200, topbase=True)
 write(f'mon_warn_cone__{B}__sweep', warn_fan(1.3, 45), P)
-cone_boom(B, 'sweep', P, 14, 45, 'scorch', [('dao_stroke', 9.5, 0.95), ('dao_stroke', 8.5, 0.8)], [('dao_drops', 3.4, 3), ('dao_blot', 3.6, 2)], 8300, topbase=True)
+cone_boom(B, 'sweep', P, 14, 45, 'scorch', [('mac_stroke', 9.5, 0.95), ('mac_stroke', 8.5, 0.8)], [('mac_drops', 3.4, 3), ('mac_blot', 3.6, 2)], 8300, topbase=True)
 write(f'mon_warn_line__{B}__line', warn_strip(1.3, 22, 4, spark=28), P)
-line_boom(B, 'line', P, 22, 4, 'scorch', [('dao_stroke', 12.0, 0.95), ('dao_stroke', 11.0, 0.85), ('dao_blot', 6.0, 0.7)], [('dao_drops', 3.2, 4)], 8400, topbase=True)
+line_boom(B, 'line', P, 22, 4, 'scorch', [('mac_stroke', 12.0, 0.95), ('mac_stroke', 11.0, 0.85), ('mac_blot', 6.0, 0.7)], [('mac_drops', 3.2, 4)], 8400, topbase=True)
 
 # ================= Lộ Linh (kim; cầu ánh sáng) — thân scale 3,8 che vùng: lớp nổ chính là decal đất top =================
 B, P = 'boss_lo_linh', PL

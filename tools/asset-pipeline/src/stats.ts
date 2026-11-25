@@ -5,6 +5,7 @@
 
 import { listTextureSlots } from '@gltf-transform/functions';
 import { Document, ImageUtils, Node, Primitive, type mat4, type vec3, type vec4 } from '@gltf-transform/core';
+import { at as checkedAt } from '@dtl/shared';
 
 export interface Dims {
   width: number;
@@ -129,7 +130,7 @@ function mul(a: ArrayLike<number>, b: ArrayLike<number>): number[] {
   for (let c = 0; c < 4; c++)
     for (let r = 0; r < 4; r++) {
       let s = 0;
-      for (let k = 0; k < 4; k++) s += a[k * 4 + r] * b[c * 4 + k];
+      for (let k = 0; k < 4; k++) s += checkedAt(a, k * 4 + r, 'a') * checkedAt(b, c * 4 + k, 'b');
       o[c * 4 + r] = s;
     }
   return o;
@@ -137,9 +138,18 @@ function mul(a: ArrayLike<number>, b: ArrayLike<number>): number[] {
 
 function apply(m: ArrayLike<number>, p: ArrayLike<number>): [number, number, number] {
   return [
-    m[0] * p[0] + m[4] * p[1] + m[8] * p[2] + m[12],
-    m[1] * p[0] + m[5] * p[1] + m[9] * p[2] + m[13],
-    m[2] * p[0] + m[6] * p[1] + m[10] * p[2] + m[14],
+    checkedAt(m, 0, 'm') * checkedAt(p, 0, 'p') +
+      checkedAt(m, 4, 'm') * checkedAt(p, 1, 'p') +
+      checkedAt(m, 8, 'm') * checkedAt(p, 2, 'p') +
+      checkedAt(m, 12, 'm'),
+    checkedAt(m, 1, 'm') * checkedAt(p, 0, 'p') +
+      checkedAt(m, 5, 'm') * checkedAt(p, 1, 'p') +
+      checkedAt(m, 9, 'm') * checkedAt(p, 2, 'p') +
+      checkedAt(m, 13, 'm'),
+    checkedAt(m, 2, 'm') * checkedAt(p, 0, 'p') +
+      checkedAt(m, 6, 'm') * checkedAt(p, 1, 'p') +
+      checkedAt(m, 10, 'm') * checkedAt(p, 2, 'p') +
+      checkedAt(m, 14, 'm'),
   ];
 }
 
@@ -152,18 +162,18 @@ function sample(times: ArrayLike<number>, values: Float32Array | number[], strid
   const cubic = interp === 'CUBICSPLINE';
   const at = (i: number) => {
     const base = cubic ? (i * 3 + 1) * stride : i * stride;
-    return Array.from({ length: stride }, (_, k) => values[base + k]);
+    return Array.from({ length: stride }, (_, k) => checkedAt(values, base + k, 'values'));
   };
   if (n === 0) return [];
-  if (t <= times[0]) return at(0);
-  if (t >= times[n - 1]) return at(n - 1);
+  if (t <= checkedAt(times, 0, 'times')) return at(0);
+  if (t >= checkedAt(times, n - 1, 'times')) return at(n - 1);
   let i = 0;
-  while (i < n - 2 && times[i + 1] < t) i++;
+  while (i < n - 2 && checkedAt(times, i + 1, 'times') < t) i++;
   if (interp === 'STEP') return at(i);
   const a = at(i);
   const b = at(i + 1);
-  const f = (t - times[i]) / (times[i + 1] - times[i] || 1);
-  const out = a.map((v, k) => v + (b[k] - v) * f);
+  const f = (t - checkedAt(times, i, 'times')) / (checkedAt(times, i + 1, 'times') - checkedAt(times, i, 'times') || 1);
+  const out = a.map((v, k) => v + (checkedAt(b, k, 'b') - v) * f);
   if (stride === 4) {
     const len = Math.hypot(...out) || 1;
     return out.map((v) => v / len);
@@ -173,7 +183,7 @@ function sample(times: ArrayLike<number>, values: Float32Array | number[], strid
 
 /** Đặt TRS các node theo animation tại thời điểm t (giây). Trả về hàm khôi phục. */
 function poseAt(doc: Document, animIndex: number, t: number): () => void {
-  const anim = doc.getRoot().listAnimations()[animIndex];
+  const anim = checkedAt(doc.getRoot().listAnimations(), animIndex, 'animations');
   const saved = new Map<Node, TRS>();
   for (const ch of anim.listChannels()) {
     const node = ch.getTargetNode();
@@ -202,7 +212,7 @@ function poseAt(doc: Document, animIndex: number, t: number): () => void {
 function animRange(doc: Document, animIndex: number): [number, number] {
   let lo = Infinity;
   let hi = -Infinity;
-  for (const s of doc.getRoot().listAnimations()[animIndex].listSamplers()) {
+  for (const s of checkedAt(doc.getRoot().listAnimations(), animIndex, 'bảng').listSamplers()) {
     const input = s.getInput();
     if (!input || input.getCount() === 0) continue;
     lo = Math.min(lo, input.getScalar(0));
@@ -220,8 +230,8 @@ export function measureCurrentPose(doc: Document, level = 0): Dims | null {
   const w: number[] = [];
   const grow = (v: ArrayLike<number>) => {
     for (let k = 0; k < 3; k++) {
-      if (v[k] < lo[k]) lo[k] = v[k];
-      if (v[k] > hi[k]) hi[k] = v[k];
+      if (checkedAt(v, k, 'v') < checkedAt(lo, k, 'lo')) lo[k] = checkedAt(v, k, 'v');
+      if (checkedAt(v, k, 'v') > checkedAt(hi, k, 'hi')) hi[k] = checkedAt(v, k, 'v');
     }
   };
   for (const node of sceneNodes(doc)) {
@@ -248,15 +258,15 @@ export function measureCurrentPose(doc: Document, level = 0): Dims | null {
         if (jointMats && joints && weights) {
           joints.getElement(i, j);
           weights.getElement(i, w);
-          const acc = [0, 0, 0];
+          const acc: [number, number, number] = [0, 0, 0];
           let wsum = 0;
           for (let k = 0; k < 4; k++) {
             if (!w[k]) continue;
-            const q = apply(jointMats[j[k]], p);
-            acc[0] += q[0] * w[k];
-            acc[1] += q[1] * w[k];
-            acc[2] += q[2] * w[k];
-            wsum += w[k];
+            const q = apply(checkedAt(jointMats, checkedAt(j, k, 'j'), 'jointMats'), p);
+            acc[0] += q[0] * checkedAt(w, k, 'w');
+            acc[1] += q[1] * checkedAt(w, k, 'w');
+            acc[2] += q[2] * checkedAt(w, k, 'w');
+            wsum += checkedAt(w, k, 'w');
           }
           grow(wsum > 0 ? acc.map((v) => v / wsum) : apply(world, p));
         } else {
@@ -267,7 +277,12 @@ export function measureCurrentPose(doc: Document, level = 0): Dims | null {
   }
   if (!Number.isFinite(lo[0])) return null;
   const r = (x: number) => Math.round(x * 1e4) / 1e4;
-  return { width: r(hi[0] - lo[0]), height: r(hi[1] - lo[1]), depth: r(hi[2] - lo[2]), minY: r(lo[1]) };
+  return {
+    width: r(checkedAt(hi, 0, 'hi') - checkedAt(lo, 0, 'lo')),
+    height: r(checkedAt(hi, 1, 'hi') - checkedAt(lo, 1, 'lo')),
+    depth: r(checkedAt(hi, 2, 'hi') - checkedAt(lo, 2, 'lo')),
+    minY: r(checkedAt(lo, 1, 'lo')),
+  };
 }
 
 /**

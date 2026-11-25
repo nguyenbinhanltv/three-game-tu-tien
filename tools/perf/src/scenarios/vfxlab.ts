@@ -1,7 +1,7 @@
 // Phòng thử VFX (V-P0): chụp một chiêu ở 0 / +30 / +150 / +400 ms sau khung trúng đòn, 720p + 1080p cùng góc camera chéo, dừng thời gian
 // bằng `window.__vfxlab` để các khung đúng từng mili giây; đo ngân sách (draw call, hạt, phủ màn hình, overdraw), so với thẻ chiêu
 // (`packages/content/data/vfx/cards/<id>.json`) và (tùy chọn) đặt ảnh concept cạnh khung +30 ms.
-// Dùng: pnpm shots vfxlab --skill <id> --out <thư mục tuyệt đối> [--dummies 1..5] [--mon <id quái>] [--concept <ảnh>] [--sizes 720p,1080p] [--at 0,30,150,400] [--clean] [--reload] [--maskcmp]
+// Dùng: pnpm shots vfxlab --skill <id> --out <thư mục tuyệt đối> [--dummies 1..5] [--mon <id quái>] [--concept <ảnh>] [--sizes 720p,1080p] [--at 0,30,150,400] [--clean] [--reload] [--maskcmp] [--fxcover]
 import fs from 'node:fs';
 import path from 'node:path';
 import sharp from 'sharp';
@@ -164,12 +164,26 @@ async function run(r: Run, skills: string[], sizes: string[], at: number[]): Pro
         }
         const raw = await page.evaluate(() => window.__vfxlab!.budget());
         const b = { ...raw, particles: Math.max(0, raw.particles - b0.particles), drawCalls: Math.max(0, raw.drawCalls - b0.drawCalls) };
-        const cover = await coverage(base, buf);
+        let cover = await coverage(base, buf);
+        let fxCover: number | undefined;
+        if (process.argv.includes('--fxcover')) {
+          // Độ phủ CHỈ của hiệu ứng: cùng khung tạm dừng, ẩn nhóm VFX (`eng.vfx.group`) rồi chụp lại; chênh giữa hai ảnh = phần VFX, không lẫn đổi tư thế nhân vật/hình nộm.
+          const setVis = (on: boolean) =>
+            page.evaluate((v) => ((window.__game as unknown as { vfx: { group: { visible: boolean } } }).vfx.group.visible = v), on);
+          await setVis(false);
+          await frame(page);
+          const bare = await snap(page, outDir, `${skill}-${tag}-${ms >= 0 ? '+' : ''}${ms}ms-novfx.jpg`, { wait: 0 });
+          await setVis(true);
+          await frame(page);
+          fxCover = await coverage(bare, buf);
+          cover = fxCover;
+        }
         const ink = await inkMetrics(base, buf);
         rows.push({
           ms,
           ...b,
           pixelCover: Number(cover.toFixed(3)),
+          ...(fxCover !== undefined ? { fxCover: Number(fxCover.toFixed(3)) } : {}),
           darkShare: Number(ink.darkShare.toFixed(3)),
           redShare: Number(ink.redShare.toFixed(3)),
         });
