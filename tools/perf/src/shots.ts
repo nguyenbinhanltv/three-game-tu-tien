@@ -21,6 +21,7 @@ import paintedvista from './scenarios/paintedvista';
 import tieucanh from './scenarios/tieucanh';
 import thienkhuyet from './scenarios/thienkhuyet';
 import bachoang from './scenarios/bachoang';
+import lvlchain from './scenarios/lvlchain';
 import vandinh from './scenarios/vandinh';
 import cuukieu from './scenarios/cuukieu';
 import isoquest from './scenarios/isoquest';
@@ -90,6 +91,7 @@ const SCENARIOS: Scenario[] = [
   collwalk,
   thienkhuyet,
   bachoang,
+  lvlchain,
   vandinh,
   cuukieu,
   kieu,

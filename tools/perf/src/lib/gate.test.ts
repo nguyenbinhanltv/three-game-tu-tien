@@ -28,6 +28,7 @@ const pt = (
   byCat: bucketGroups([]),
   topGroups: [],
 });
+/** Lần chạy giả LẬP đã chờ nạp xong (có `method`), như `perf:iso` hiện tại. */
 const run = (points: IsoPoint[], errors: string[] = []): IsoRun => ({
   version: 1,
   date: 'd',
@@ -35,6 +36,7 @@ const run = (points: IsoPoint[], errors: string[] = []): IsoRun => ({
   backend: 'WebGPU',
   viewport: '1280x720',
   quick: false,
+  method: 'settled-v1',
   devBytesMB: null,
   points,
   errors,
@@ -130,6 +132,32 @@ describe('gate', () => {
   });
 });
 
+describe('method chép từ lần chạy', () => {
+  it('toBaseline của lần chạy không có method KHÔNG ra baseline settled-v1', () => {
+    const old = { ...run([pt('a/x', 'map')]), method: undefined };
+    expect(old.method).toBeUndefined();
+    const b = toBaseline(old);
+    expect(b.method).toBeUndefined();
+    expect(failed(gate(run([pt('a/x', 'map')]), b))).toBe(true); // baseline không nhãn bị từ chối
+  });
+  it('lần chạy có method thì baseline mang đúng nhãn đó', () => {
+    const r = { ...run([pt('a/x', 'map')]), method: 'settled-v1' };
+    const b = toBaseline(r);
+    expect(b.method).toBe('settled-v1');
+    expect(failed(gate(r, b))).toBe(false);
+  });
+});
+
+describe('baseline lỗi thời', () => {
+  it('baseline không có method (đo non) bị chặn, không so số', () => {
+    const base = toBaseline(run([pt('a/x', 'map')]));
+    delete base.method;
+    const f = gate(run([pt('a/x', 'map')]), base);
+    expect(f).toHaveLength(1);
+    expect(f[0]).toMatchObject({ why: 'baseline lỗi thời', severity: 'fail' });
+  });
+});
+
 describe('baseline khác backend', () => {
   const webgl = (points: IsoPoint[]): IsoRun => ({ ...run(points), backend: 'WebGL2' });
 
@@ -163,6 +191,15 @@ describe('baseline khác backend', () => {
     delete base.backend;
     delete base.viewport;
     expect(failed(gate(webgl([pt('a/x', 'map')]), base))).toBe(false);
+  });
+});
+
+describe('tách texture tài sản và đích vẽ', () => {
+  it('toBaseline chép phần tài sản/đích vẽ khi có; kết quả cũ không có thì bỏ qua', () => {
+    const p = { ...pt('a/x', 'map', { tex: 300 }), textureAssetMB: 120, textureRtMB: 180 };
+    const b = toBaseline(run([p, pt('a/y', 'map')]));
+    expect(b.points[0]).toMatchObject({ texMB: 300, texAssetMB: 120, texRtMB: 180 });
+    expect(b.points[1]).not.toHaveProperty('texAssetMB');
   });
 });
 
