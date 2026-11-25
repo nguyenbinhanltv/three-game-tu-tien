@@ -9,11 +9,14 @@ import type { Page } from 'playwright';
 import { createDevServer, ROOT, sleep } from './lib/devserver';
 import { opt, ports } from './lib/env';
 import { launchChrome } from './lib/browser';
+import { at } from '@dtl/shared';
 
 const CYCLES = Number(opt('--cycles', '5'));
 const RENDERERS = opt('--renderers', 'webgpu,webgl2').split(',');
 const OUT = opt('--out', '');
-const [VW, VH] = opt('--size', '1280x720').split('x').map(Number);
+const SIZE = opt('--size', '1280x720').split('x').map(Number);
+const VW = SIZE[0] ?? 1280;
+const VH = SIZE[1] ?? 720;
 const { port: PORT, clientPort: CLIENT_PORT } = ports(2618, 5218);
 const dev = createDevServer({ port: PORT, clientPort: CLIENT_PORT, tag: 'levels', command: 'pnpm bench:levels' });
 
@@ -147,7 +150,8 @@ async function main(): Promise<void> {
       console.log(`\n[${renderer}]`);
       console.table(snaps);
       const vl = snaps.filter((s) => s.level === 'van_lam');
-      const grow = (k: 'geometries' | 'textures' | 'sceneObjects' | 'heapMB') => vl[vl.length - 1][k] - vl[1 < vl.length ? 1 : 0][k];
+      const grow = (k: 'geometries' | 'textures' | 'sceneObjects' | 'heapMB') =>
+        at(vl, vl.length - 1, 'vl')[k] - at(vl, 1 < vl.length ? 1 : 0, 'vl')[k];
       console.log(
         `[${renderer}] Vân Lam từ vòng 1 → vòng ${CYCLES}: geometry ${grow('geometries') >= 0 ? '+' : ''}${grow('geometries')}, texture ${grow('textures') >= 0 ? '+' : ''}${grow('textures')}, đối tượng cảnh ${grow('sceneObjects') >= 0 ? '+' : ''}${grow('sceneObjects')}, heap ${grow('heapMB') >= 0 ? '+' : ''}${grow('heapMB')} MB`,
       );
