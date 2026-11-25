@@ -34,7 +34,9 @@ export default {
     });
     await gm(page, `level ${opt('--lv', level === 'cuu_kieu' ? '46' : level === 'van_hai' ? '24' : '15')}`);
     await gm(page, 'god on');
+    const tLoad = Date.now();
     await enterLevel(page, level);
+    const loadMs = Date.now() - tLoad;
     await tp(page, fx, fz);
     await gm(page, 'killall', 1200);
     await sleep(4000); // ô quanh điểm xuất phát nạp xong
@@ -152,12 +154,12 @@ export default {
         updP95: q(tf.upd, 0.95),
         updMax: q(tf.upd, 1),
         updOver4: tf.upd.filter((x) => x > 4).length,
-        trace: (w.__tf_trace as unknown[]).slice(0, 30),
+        trace: (w.__tf_trace as unknown[]).slice(0, 60),
         from: tf.p0,
         to: { x: Math.round(w.__game.renderPos.x), z: Math.round(w.__game.renderPos.z) },
       };
     });
     console.log('[terrainflow]', JSON.stringify(res));
-    writeJson(r.out, 'terrainflow.json', { level, secs, view: [vw, vh], ...res });
+    writeJson(r.out, 'terrainflow.json', { level, secs, view: [vw, vh], loadMs, ...res });
   },
 } satisfies Scenario;
