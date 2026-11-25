@@ -115,8 +115,8 @@ export function mapDecalNodes(U: FxUniforms): { color: N; opacity: N } {
     max(smoothstep(half.sub(0.12), half.sub(0.03), ang), smoothstep(0.88, 0.97, r)).mul(fan),
     max(smoothstep(0.84, 0.97, abs(p.x)), smoothstep(0.94, 0.99, along)).mul(strip),
   ).mul(mask);
-  // Vạch báo THEO MÀU HỆ (A4: tím-hồng, hổ phách): vân Codex của `warn_crack` nung sẵn đỏ nên khi màu bảng màu không đỏ/cam (g/r hoặc b/r ≥ 0,6) thì tô lại vân bằng độ sáng × màu bảng màu.
-  const nonRed = max(step(0.6, U.color.g.div(U.color.r.max(1e-3))), step(0.6, U.color.b.div(U.color.r.max(1e-3)))).mul(
+  // Vạch báo THEO MÀU HỆ (A4: tím-hồng, hổ phách): vân Codex của `warn_crack` nung sẵn đỏ nên khi màu bảng màu không đỏ/cam (g/r hoặc b/r ≥ 0,42 trong không gian tuyến tính: hổ phách ~0,5) thì tô lại vân bằng độ sáng × màu bảng màu.
+  const nonRed = max(step(0.42, U.color.g.div(U.color.r.max(1e-3))), step(0.42, U.color.b.div(U.color.r.max(1e-3)))).mul(
     float(1).sub(step(0.5, idx)),
   );
   const warnLum = s.r.mul(0.3).add(s.g.mul(0.59)).add(s.b.mul(0.11));

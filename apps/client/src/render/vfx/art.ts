@@ -30,7 +30,7 @@ export const SPRITE_GROUPS = {
   hai: { file: 'hoa-truc/vfx_sprites_hai.c8709e04fc.webp', cols: 4, rows: 4 },
   tinh: { file: 'hoa-truc/vfx_sprites_tinh.2c4a99f7e9.webp', cols: 4, rows: 6 },
   // Tinh anh Vân Lam (A4): lửa ma ám tím `lua_*` + đá khe hổ phách `ham_*`.
-  lam: { file: 'hoa-truc/vfx_sprites_lam.bd61f69a94.webp', cols: 4, rows: 3 },
+  lam: { file: 'hoa-truc/vfx_sprites_lam.0c7b3f53ef.webp', cols: 4, rows: 3 },
 } as const;
 export type SpriteGroup = keyof typeof SPRITE_GROUPS;
 /** Hướng tu (`PATHS[].id`) → nhóm atlas của nó. Thêm một dòng khi thêm hướng mới. */

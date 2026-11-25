@@ -31,9 +31,12 @@ const sheets = argv
   .filter((a, i) => argv[i - 1] === '--sheet')
   .map((v) => {
     const parts = v.split(':');
+    // Hậu tố `:warm` (sprite ấm: hổ phách, vàng, nâu, đỏ): giữ kênh lục thật thay vì ép g < min(r,b) (ép làm hổ phách thành đỏ). Mặc định (không `:warm`) vẫn ép cho sprite tím/lam.
+    const warm = parts[parts.length - 1] === 'warm';
+    if (warm) parts.pop();
     const r = Number(parts.pop());
     const c = Number(parts.pop());
-    return { file: parts.join(':'), cols: c, rows: r };
+    return { file: parts.join(':'), cols: c, rows: r, warm };
   });
 // `--patch <ô>=<bảng.png>:<cột>:<hàng>:<số cột>:<số hàng>`: THAY một ô của atlas gốc (xóa ô cũ) bằng sprite ở (cột, hàng) của bảng mới; cần `--base`.
 const patches = argv
@@ -87,7 +90,8 @@ async function packSheet(sh) {
     const un = (v, key) => (a > 0.02 ? Math.min(255, Math.max(0, (v - k * key) / a)) : 0);
     const rr = un(r, 0);
     const bb = un(b, 0);
-    const gg = Math.min(un(g, 255), Math.min(rr, bb) * 0.92); // sprite tím/lam, không có xanh lục: ép g dưới min(r,b) để hết viền teal
+    // sprite tím/lam, không có xanh lục: ép g dưới min(r,b) để hết viền teal; sprite ấm (`:warm`): chỉ chặn g không vượt kênh trội (r hoặc b) để hết viền lục mà giữ hổ phách
+    const gg = Math.min(un(g, 255), sh.warm ? Math.max(rr, bb) * 0.82 : Math.min(rr, bb) * 0.92);
     rgba[i * 4] = rr;
     rgba[i * 4 + 1] = gg;
     rgba[i * 4 + 2] = bb;
