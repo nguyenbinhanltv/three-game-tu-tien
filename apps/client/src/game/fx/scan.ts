@@ -2,6 +2,7 @@
 // tinh anh, thủ lĩnh, điểm hái, người chơi và điểm đáng chú ý lộ ra (tối đa `MAX_BEAMS`, hiện tới hết `ttl`). Chỉ là lớp
 // trình diễn: kết quả quét do server quyết định (`SpiritScanMsg`). Vật phát sáng dùng cộng sáng với độ đục thấp, không lóa cảnh.
 
+import { markVfxMask } from '../../render/post';
 import * as THREE from 'three/webgpu';
 import type { SpiritKind } from '@dtl/shared';
 import { groundAt } from '../../base/levelCtx';
@@ -24,8 +25,8 @@ const BEAM_H = 46;
 const WAVE_MS = 1100;
 const BEAM_ALPHA = 0.5;
 
-const additive = (color: number, opacity: number) =>
-  new THREE.MeshBasicMaterial({
+const additive = (color: number, opacity: number): THREE.MeshBasicMaterial => {
+  const m = new THREE.MeshBasicMaterial({
     color,
     transparent: true,
     opacity,
@@ -34,6 +35,9 @@ const additive = (color: number, opacity: number) =>
     side: THREE.DoubleSide,
     fog: false,
   });
+  markVfxMask(m);
+  return m;
+};
 
 export class SpiritVis {
   private group = new THREE.Group();
