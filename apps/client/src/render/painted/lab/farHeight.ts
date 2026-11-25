@@ -1,23 +1,4 @@
-import {
-  Fn,
-  uniform,
-  abs,
-  clamp,
-  dot,
-  exp,
-  float,
-  floor,
-  fract,
-  length,
-  max,
-  pow,
-  select,
-  smoothstep,
-  sqrt,
-  step,
-  vec2,
-  vec3,
-} from 'three/tsl';
+import { Fn, abs, clamp, dot, exp, float, floor, fract, length, max, pow, select, smoothstep, sqrt, step, vec2, vec3 } from 'three/tsl';
 import type { N } from './field';
 
 /**
