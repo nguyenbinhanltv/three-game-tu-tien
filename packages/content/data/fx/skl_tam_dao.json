@@ -98,8 +98,31 @@
     0.25,
     0.8
    ],
-   "scale": 3.4,
-   "scaleTo": 3.4
+   "scale": 5,
+   "scaleTo": 5
+  },
+  {
+   "type": "mesh",
+   "t": 0.03,
+   "dur": 0.9,
+   "at": "self",
+   "sweep": 0,
+   "erodeFrom": 0.4,
+   "ragged": 0.5,
+   "tone": "body",
+   "alpha": 0.7,
+   "tier": 0,
+   "seed": 1002,
+   "shape": "sprite",
+   "sprite": "dao_shadow",
+   "billboard": true,
+   "offset": [
+    0,
+    0.25,
+    0.8
+   ],
+   "scale": 3.6,
+   "scaleTo": 3.6
   },
   {
    "type": "mesh",
@@ -112,7 +135,7 @@
    "tone": "body",
    "alpha": 0.95,
    "tier": 0,
-   "seed": 1002,
+   "seed": 1003,
    "shape": "sprite",
    "sprite": "dao_planted",
    "billboard": true,
@@ -135,7 +158,7 @@
    "tone": "body",
    "alpha": 0.9,
    "tier": 0,
-   "seed": 1003,
+   "seed": 1004,
    "shape": "sprite",
    "sprite": "dao_flash",
    "billboard": true,
@@ -151,7 +174,24 @@
    "type": "decal",
    "tex": "scorch",
    "t": -0.05,
-   "r": 2.6,
+   "r": 3.4,
+   "dur": 2.4,
+   "at": "self",
+   "offset": [
+    0,
+    -1.05,
+    0.8
+   ],
+   "grow": 0.1,
+   "tone": "shadow",
+   "alpha": 0.78,
+   "tier": 0
+  },
+  {
+   "type": "decal",
+   "tex": "scorch",
+   "t": 0,
+   "r": 2.4,
    "dur": 2.4,
    "at": "self",
    "offset": [
@@ -175,7 +215,7 @@
    "tone": "body",
    "alpha": 0.75,
    "tier": 0,
-   "seed": 1004,
+   "seed": 1005,
    "shape": "sprite",
    "sprite": "dao_dust",
    "billboard": true,

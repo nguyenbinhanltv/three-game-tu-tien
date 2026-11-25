@@ -32,7 +32,7 @@ const SCALE = {
   skl_liet_dia_tram: 0.95,
   skl_thuan_dao_tram: 1,
   skl_huyet_chien_the: 1,
-  skl_doan_thien_dao: 0.58,
+  skl_doan_thien_dao: 0.42,
 };
 /** Hệ số alpha thân theo chiêu (không áp cho chớp `dao_flash`). */
 let A = 1;
@@ -182,10 +182,12 @@ const SPEC = {
   skl_tam_dao: () => [
     ...[gather('dao_planted', { size: 2.4, off: [0, 1.4, 0.8], rest: { at: 'self' } })],
     pullIn('self', [0, 1.2, 0.8], -0.24),
-    shade('self', [0, 0.25, 0.8], 3.4, 0),
+    shade('self', [0, 0.25, 0.8], 5, 0),
+    shade('self', [0, 0.25, 0.8], 3.6, 0.03),
     strike('dao_planted', { size: 4.2, at: 'self', off: [0, 1.8, 0.9], dur: 1.6, erodeFrom: 0.55 }),
     flash('self', [0, 1.4, 0.8], 1.6, 0.03, { dur: 0.12 }),
-    scorch('self', [0, -1.05, 0.8], 2.6, -0.05, 2.4),
+    scorch('self', [0, -1.05, 0.8], 3.4, -0.05, 2.4),
+    scorch('self', [0, -1.05, 0.8], 2.4, 0, 2.4),
     after('self', [0, 1.2, 0.8], 2.6, 0.25, 1),
   ],
   // Đoạn Lưu: chém đứt dòng chảy — vết chém thẳng đứng mảnh, hai dải lụa khí thép bị tách đôi chảy lệch về hai phía.
