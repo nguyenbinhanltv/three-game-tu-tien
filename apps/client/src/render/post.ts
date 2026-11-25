@@ -3,6 +3,7 @@ import {
   clamp,
   float,
   fract,
+  max,
   length,
   luminance,
   mix,
@@ -28,7 +29,7 @@ import { gaussianBlur } from 'three/addons/tsl/display/GaussianBlurNode.js';
 import type { Node } from 'three/webgpu';
 import { getCloudNoise } from './noiseTex';
 import { FLAGS } from '../base/flags';
-import { paintedOutput } from './painted/frame';
+import { paintedOutput, vfxMaskOn } from './painted/frame';
 import { BLOOM, GRAIN, VIGNETTE, type GradingPreset } from './grading';
 
 /**
@@ -115,7 +116,11 @@ type WithMrt = { mrtNode: Node | null };
 
 function attachBloom(m: THREE.Material, strength: number): void {
   const s = Math.min(strength, BLOOM.maxHdr) / BLOOM_RANGE;
-  (m as unknown as WithMrt).mrtNode = mrt({ bloom: vec4(output.rgb.mul(s), output.a) });
+  // Họa Cảnh: đích này chỉ là MẶT NẠ VFX cho Kuwahara (không có bloom): ghi độ phủ (alpha) của vật liệu, bất kể màu/hệ số bloom
+  const painted = FLAGS.style === 'painted';
+  (m as unknown as WithMrt).mrtNode = mrt({
+    bloom: painted ? vec4(output.a, output.a, output.a, output.a) : vec4(output.rgb.mul(s), output.a),
+  });
   m.needsUpdate = true;
 }
 
@@ -139,6 +144,14 @@ export function markBloom(material: THREE.Material, strength = 1): void {
   if (!bloomMaterials.has(material)) material.addEventListener('dispose', () => bloomMaterials.delete(material));
   bloomMaterials.set(material, strength);
   if (bloomActive) attachBloom(material, strength);
+}
+
+/**
+ * Đánh dấu vật liệu VFX/hiệu ứng vào mặt nạ của Họa Cảnh (Kuwahara không nhòe chúng) dù nó không phát quang (bloom = 0). Không làm gì ở chế độ
+ * mặc định: không đổi đích MRT hay chi phí của pipeline thường.
+ */
+export function markVfxMask(material: THREE.Material): void {
+  if (FLAGS.style === 'painted') markBloom(material, 0);
 }
 
 // ---------- pipeline ----------
@@ -244,13 +257,21 @@ export class PostPipeline {
     this.scenePass = scenePass;
     if (FLAGS.style === 'painted') {
       // Họa Cảnh: pass cuối của painted-valley (Kuwahara, vignette, đường cong họa sĩ, sRGB); không ACES, chỉnh màu, hạt phim, bloom, AO, FXAA
-      setBloomActive(false);
+      // P5: VFX/linh quang đánh dấu bằng markBloom ghi vào đích MRT `bloom` (không có bloom thật): đó là mặt nạ để Kuwahara không nhòe chúng
+      setBloomActive(true);
+      scenePass.setMRT(mrt({ output, bloom: vec4(0, 0, 0, output.a) }));
+      scenePass.getTexture('bloom').type = THREE.UnsignedByteType;
+      const vfxTex = scenePass.getTextureNode('bloom');
+      (window as unknown as { __vfxMask?: (on: boolean) => void }).__vfxMask = (on) => {
+        vfxMaskOn.value = on ? 1 : 0;
+      };
       const fromCenterP = screenUV.sub(0.5);
       this.post.outputNode = paintedOutput(scenePass, {
         paint: FLAGS.paint ?? 3,
         exposure: 1,
         vignette: 0.14,
         // phản hồi chiến đấu giữ nguyên (hit/flash/impact/punch/pulse/mực chết); quang sai màu khi trúng đòn lấy mẫu lệch R/B của ảnh gốc
+        mask: (uv) => max(max(vfxTex.sample(uv).r, vfxTex.sample(uv).g), vfxTex.sample(uv).b),
         aberration: postParams.hit.mul(0.012),
         overlay: (g) => feedbackLayers(g, fromCenterP),
       });

@@ -2,13 +2,14 @@
 // linh tuyến nối về thân xác đang ngồi đả tọa, mờ đi), vệt bay về nơi an toàn khi tử vong, nháy thuấn di.
 // Chỉ là lớp trình diễn; luật do server giữ (`soul.ts`). Theo art bible v3: tông trầm, cộng sáng độ đục thấp, không lóa che nhân vật.
 
+import { markVfxMask } from '../../render/post';
 import * as THREE from 'three/webgpu';
 import { SOUL_RANGE } from '@dtl/shared';
 import { groundAt } from '../../base/levelCtx';
 import type { CharacterView } from '../character/view';
 
-const additive = (color: number, opacity: number) =>
-  new THREE.MeshBasicMaterial({
+const additive = (color: number, opacity: number): THREE.MeshBasicMaterial => {
+  const m = new THREE.MeshBasicMaterial({
     color,
     transparent: true,
     opacity,
@@ -17,6 +18,9 @@ const additive = (color: number, opacity: number) =>
     side: THREE.DoubleSide,
     fog: false,
   });
+  markVfxMask(m);
+  return m;
+};
 
 const SOUL_COLOR = 0xcfe6dc;
 const FIG_ALPHA = 0.45;
