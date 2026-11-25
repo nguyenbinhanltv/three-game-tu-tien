@@ -32,6 +32,9 @@ import vanhai from './scenarios/vanhai';
 import map from './scenarios/map';
 import mons from './scenarios/mons';
 import camiso from './scenarios/camiso';
+import densefly from './scenarios/densefly';
+import densep00 from './scenarios/densep00';
+import densefade from './scenarios/densefade';
 import vista from './scenarios/vista';
 import terrainflow from './scenarios/terrainflow';
 import points from './scenarios/points';
@@ -81,6 +84,9 @@ import collscan from './scenarios/collscan';
 
 const SCENARIOS: Scenario[] = [
   camiso,
+  densefly,
+  densep00,
+  densefade,
   vista,
   terrainflow,
   points,
