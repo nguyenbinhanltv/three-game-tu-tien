@@ -1,4 +1,5 @@
 import * as THREE from 'three/webgpu';
+import { markCpuFreed, neutralizeFreedTexture } from './texFreed';
 
 /** Chỉ số lớp trong texture mảng; khớp thứ tự LAYERS ở tools/asset-pipeline/src/terrain-textures.ts. */
 export const GROUND_LAYER = { grass: 0, dirt: 1, forest: 2, rock: 3, cliff: 4, sand: 5, paving: 6, gravel: 7 } as const;
@@ -95,6 +96,7 @@ function arrayTexture(data: Uint8Array, size: number, layers: number, srgb: bool
   // Sau khi đã tải lên GPU thì bỏ mảng nguồn khỏi heap JS (mảng màu 2K ~134 MB): three chỉ cần `image.data` lúc upload.
   t.onUpdate = () => {
     (t.image as { data: unknown }).data = null;
+    markCpuFreed(t);
     t.onUpdate = null;
   };
   t.needsUpdate = true;
@@ -156,6 +158,8 @@ export async function loadGroundTextures(
       };
     },
     dispose() {
+      neutralizeFreedTexture(tex);
+      neutralizeFreedTexture(nor);
       tex.dispose();
       nor.dispose();
       cur.dispose();
