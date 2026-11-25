@@ -32,6 +32,7 @@ import map from './scenarios/map';
 import mons from './scenarios/mons';
 import camiso from './scenarios/camiso';
 import vista from './scenarios/vista';
+import terrainflow from './scenarios/terrainflow';
 import points from './scenarios/points';
 import propstc from './scenarios/propstc';
 import huyenkiep from './scenarios/huyenkiep';
@@ -80,6 +81,7 @@ import collscan from './scenarios/collscan';
 const SCENARIOS: Scenario[] = [
   camiso,
   vista,
+  terrainflow,
   points,
   collscan,
   propstc,
