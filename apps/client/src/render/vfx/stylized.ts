@@ -29,7 +29,7 @@ import {
 } from 'three/tsl';
 import { hash21, vnoise, type FxUniforms, type N } from './common';
 import { cardTexture } from './cards';
-import { artAtlas, ART_COUNT, spriteAtlas, SPRITE_COLS, SPRITE_ROWS } from './art';
+import { artAtlas, ART_COUNT, spriteAtlas, SPRITE_GROUPS, type SpriteGroup } from './art';
 
 /**
  * Thư viện shader TSL "vẽ tay, 2D trong 3D" (VFX-V0). Mọi hiệu ứng chiêu mới ghép từ các mảnh này:
@@ -552,14 +552,20 @@ export function artNodes(U: FxUniforms): { color: N; opacity: N } {
  * `fxA` = (-, tan 0..1,1, seed, ô sprite 0..15). Giữ màu vẽ tay (tím/lam) nhưng kéo lõi tối xuống theo độ sáng để đọc được trên nền đá trắng;
  * phần sáng nhất của tranh + mép đang tan ăn mòn có ánh viền lạnh theo màu viền của nhánh (`fxB.xyz`).
  */
-export function spriteNodes(U: FxUniforms): { color: N; opacity: N } {
+export function spriteNodesFor(group: SpriteGroup) {
+  return (U: FxUniforms): { color: N; opacity: N } => spriteNodesImpl(U, group);
+}
+export const spriteNodes = spriteNodesFor('hon');
+function spriteNodesImpl(U: FxUniforms, group: SpriteGroup): { color: N; opacity: N } {
+  const SPRITE_COLS = SPRITE_GROUPS[group].cols;
+  const SPRITE_ROWS = SPRITE_GROUPS[group].rows;
   const q = uv();
   const idx = U.a.w;
   const one = float(1);
   const sk = idx;
   const sCol = sk.sub(floor(sk.div(SPRITE_COLS)).mul(SPRITE_COLS));
   const sRow = floor(sk.div(SPRITE_COLS));
-  const ts = texture(spriteAtlas(), vec2(q.x.add(sCol).div(SPRITE_COLS), q.y.add(float(SPRITE_ROWS - 1).sub(sRow)).div(SPRITE_ROWS)));
+  const ts = texture(spriteAtlas(group), vec2(q.x.add(sCol).div(SPRITE_COLS), q.y.add(float(SPRITE_ROWS - 1).sub(sRow)).div(SPRITE_ROWS)));
   const spLum = dot(ts.rgb, vec3(0.3, 0.59, 0.11));
   // Bảng tím âm hồn (hue ~270–285°, tuyến tính): lõi mực tối gần đen tím → thân tím đậm → viền tím nhạt/trắng lạnh. Giữ quan hệ với màu của sự kiện
   // (`tone`): màu nhánh sáng hơn (tone `rim`: lớp điểm nhấn ngắn) thì ramp sáng dần về viền; tone `body` giữ ramp tối.

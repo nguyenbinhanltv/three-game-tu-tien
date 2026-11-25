@@ -4,11 +4,12 @@
 // vfx.ts) vẫn phát theo S.FX như cũ, phần này thêm nhịp và vệt kiếm lên trên và chạy theo ngân sách mỗi chiêu.
 
 import * as THREE from 'three/webgpu';
-import { FX_TIMELINE, SKILL } from '@dtl/content';
+import { FX_TIMELINE, SKILL, pathOf } from '@dtl/content';
 import { PF_DEAD, skillTiming } from '@dtl/shared';
 import type { SkillDef } from '@dtl/shared';
 import type { FxMesh } from '../../render/materials/vfx';
 import { SIGIL_CIRCLE } from '../../render/vfx/sigil';
+import { preloadSpritesForPath, sweepSpriteGroups } from '../../render/vfx/art';
 import { BladeRibbon, bladeVisible, bladeWindow } from '../../render/vfx/bladeTrail';
 import type { InkTiming } from '../../render/vfx/ink';
 import {
@@ -132,6 +133,8 @@ export class SkillFx {
   private aura: FxMesh | null = null;
   private combatUntil = 0;
   private clock = 0;
+  private spriteMethod: string | undefined = undefined;
+  private spriteSweep = 0;
   /** Bộ chạy dòng thời gian hiệu ứng (VFX-V0). */
   readonly runner: FxRunner;
   /** Nhật ký dev (chỉ khi `import.meta.env.DEV`). */
@@ -360,6 +363,16 @@ export class SkillFx {
   /** Mỗi khung: lấy mẫu vệt kiếm, linh quang hộ thể. */
   update(dt: number, mineScale = 1): void {
     this.clock += dt;
+    // Atlas sprite theo hướng tu: nạp sẵn nhóm của người chơi (khi đổi công pháp) và giải phóng nhóm rỗi mỗi ~5 s.
+    const mm = this.env.myMethod();
+    if (mm !== this.spriteMethod) {
+      this.spriteMethod = mm;
+      preloadSpritesForPath(pathOf(mm)?.id);
+    }
+    if (this.clock - this.spriteSweep > 5) {
+      this.spriteSweep = this.clock;
+      sweepSpriteGroups();
+    }
     for (let i = this.pending.length - 1; i >= 0; i--) {
       const p = this.pending[i]!;
       const a0 = this.env.player(p.sid);

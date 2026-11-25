@@ -9,7 +9,7 @@ import { mapDecalNodes, mapFlipNodes } from '../vfx/forgeTex';
 import { beamNodes } from '../vfx/loot';
 import { sigilNodes } from '../vfx/sigil';
 import { slashNodes } from '../vfx/slash';
-import { artNodes, burstNodes, cardNodes, crystalNodes, decalNodes, spriteNodes, toonNodes } from '../vfx/stylized';
+import { artNodes, burstNodes, cardNodes, crystalNodes, decalNodes, spriteNodesFor, toonNodes } from '../vfx/stylized';
 import { trailNodes } from '../vfx/trail';
 import { FLAGS } from '../../base/flags';
 
@@ -75,7 +75,11 @@ export type FxKind =
   | 'decalTop'
   | 'card'
   | 'art'
+  /** Sprite vẽ tay, MỘT kind cho mỗi nhóm atlas hướng tu (`render/vfx/art.ts` `SPRITE_GROUPS`): `sprite` = hồn, `sprite_loi`, `sprite_kiem`, `sprite_hp`. */
   | 'sprite'
+  | 'sprite_loi'
+  | 'sprite_kiem'
+  | 'sprite_hp'
   | 'wind'
   | 'flip'
   /** Decal từ trên bằng texture Codex (`forgeTex.ts`; vân nứt vạch báo, băng nứt). */
@@ -108,6 +112,9 @@ const SPEC: Record<FxKind, { blending: THREE.Blending; boost: number; bloom: num
   card: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.25, fog: false },
   art: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.3, fog: false },
   sprite: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.2, fog: false },
+  sprite_loi: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.2, fog: false },
+  sprite_kiem: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.2, fog: false },
+  sprite_hp: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.2, fog: false },
   wind: { blending: THREE.AdditiveBlending, boost: 1.0, bloom: 0.2, fog: false },
   flip: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.25, fog: false },
   mapDecal: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.1, fog: false },
@@ -132,7 +139,10 @@ const BUILDERS: Partial<Record<FxKind, (u: FxUniforms) => { color: unknown; opac
   decalTop: decalNodes,
   card: cardNodes,
   art: artNodes,
-  sprite: spriteNodes,
+  sprite: spriteNodesFor('hon'),
+  sprite_loi: spriteNodesFor('loi'),
+  sprite_kiem: spriteNodesFor('kiem'),
+  sprite_hp: spriteNodesFor('hp'),
   wind: windNodes,
   flip: flipNodes,
   mapDecal: mapDecalNodes,
