@@ -58,6 +58,8 @@ C2_CFG = None
 if C2_ON and SPRINGS:
     C2_CFG = SPRINGS  # cấu hình khối "c2" nằm trong file springs của bộ
 WINGS = opt('--wings')  # cánh (DV-2 đợt 4): JSON {parent, region:{min,max} (nửa +X, tọa độ lưới NGUỒN), chains:[{name, pts:[[x,y,z]…]}]}, tự lấy đối xứng nửa -X
+BASE_W = opt('--base-weights')  # PILOT B: GLB thân nền MakeHuman (tools/blender/chr_pilot_base.py) làm NGUỒN TRỌNG SỐ cho phần bó sát; thân nền KHÔNG vào game
+BASE_R = float(opt('--base-radius', 0.03))  # m (model cao 1,7): đỉnh cách mặt thân nền đã khớp không quá bán kính này thì chép trọng số từ thân nền
 NO_EXPORT = '--no-export' in argv
 BIND = opt('--bind')  # quái dị vực (DV-2 đợt 2): JSON {binds:[{box:{min,max}, bone|blend:[[z,bone],[z,bone]]|drop:[xương…]}]} ép vùng cứng (vũ khí, khiên, áo choàng) theo một xương, tọa độ lưới NGUỒN
 KEEP = '--keep-original' in argv  # NV3-B: LOD0 = lưới/UV/texture/pháp tuyến GỐC giữ nguyên 100% (không hàn đỉnh, không decimate, không resize texture); Blender chỉ thêm xương + trọng số
@@ -559,6 +561,88 @@ if use_src:
                 tgt = 'Head' if 'hair' in cn or 'head' in cn else ('spine_03' if 'sword' in cn else 'pelvis')
             if tgt in IDX:
                 W[vi, IDX[tgt]] += ge.weight
+
+
+if BASE_W:
+    # PILOT B: khớp thân nền MakeHuman vào nhân vật bằng LBS theo xương (mỗi xương Mixamo của thân nền: quay trục về trục xương Mannequin F, co dọc trục theo độ dài đoạn F,
+    # co ngang theo tỉ lệ chiều cao, tịnh tiến về đầu F), rồi với mỗi đỉnh nhân vật đủ gần mặt thân nền thì chép trọng số nội suy theo tam giác gần nhất.
+    # Lưới nhân vật KHÔNG đổi; vùng xa thân (voan, vạt, gấu, tóc) vẫn theo luật cũ (khoảng cách / trọng số riêng). Thân nền bị xóa sau khi chép (không vào game).
+    _bf = set(bpy.data.objects)
+    bpy.ops.import_scene.gltf(filepath=BASE_W)
+    _nw = [o for o in bpy.data.objects if o not in _bf]
+    b_arm = next(o for o in _nw if o.type == 'ARMATURE')
+    b_mesh = max((o for o in _nw if o.type == 'MESH' and o.name != 'Icosphere'), key=lambda o: len(o.data.vertices))  # bỏ hình xương (Icosphere) của gltf-import
+    bw_ = b_mesh.matrix_world
+    BV = np.array([bw_ @ v.co for v in b_mesh.data.vertices], float).reshape(-1, 3)
+    b_mesh.data.calc_loop_triangles()
+    BT = [tuple(t.vertices) for t in b_mesh.data.loop_triangles]
+    bgn = {g.index: g.name for g in b_mesh.vertex_groups}
+    bone_of = {}
+    for bb in b_arm.data.bones:
+        tgt_n = mix_to_man(clean_name(bb.name))
+        if tgt_n in IDX and tgt_n in F_HEAD and tgt_n in F_TAIL:
+            bone_of[bb.name] = (tgt_n, np3(b_arm.matrix_world @ bb.head_local), np3(b_arm.matrix_world @ bb.tail_local))
+    base_h = float(BV[:, 2].max() - BV[:, 2].min())
+    k_lat = float(V[:, 2].max() - V[:, 2].min()) / max(base_h, 1e-6)
+    BW = np.zeros((len(BV), len(DEF)), float)
+    BP = np.zeros((len(BV), 3), float)
+    for vi, v in enumerate(b_mesh.data.vertices):
+        tw = 0.0
+        acc = np.zeros(3)
+        for ge in v.groups:
+            nm = bgn.get(ge.group)
+            if nm not in bone_of:
+                continue
+            tgt_n, bh, bt = bone_of[nm]
+            fh, ft = F_HEAD[tgt_n], F_TAIL[tgt_n]
+            ax_b, ax_f = bt - bh, ft - fh
+            lb, lf = float(np.linalg.norm(ax_b)), float(np.linalg.norm(ax_f))
+            if lb < 1e-6 or lf < 1e-6:
+                continue
+            rq = Vector(ax_b).rotation_difference(Vector(ax_f))
+            u = np.array(rq @ Vector(BV[vi] - bh), float)
+            ua = ax_f / lf
+            along = float(u @ ua)
+            lat = u - ua * along
+            acc += ge.weight * (fh + ua * (along * lf / lb) + lat * k_lat)
+            BW[vi, IDX[tgt_n]] += ge.weight
+            tw += ge.weight
+        BP[vi] = acc / tw if tw > 1e-9 else BV[vi]
+        if tw > 1e-9:
+            BW[vi] /= tw
+    for o in _nw:
+        bpy.data.objects.remove(o, do_unlink=True)
+    bvh_b = BVHTree.FromPolygons([tuple(p_) for p_ in BP.tolist()], BT)
+    rad = BASE_R * float(V[:, 2].max() - V[:, 2].min()) / 1.7
+    n_cov = 0
+    dists = []
+    near_all = []
+    for vi in range(NV):
+        loc, nrm, fi, dd = bvh_b.find_nearest(Vector(V[vi]), 0.25)
+        if fi is None:
+            continue
+        near_all.append(dd)
+        if dd > rad:
+            continue
+        ia, ib, ic = BT[fi]
+        pa, pb, pc = BP[ia], BP[ib], BP[ic]
+        v0, v1, v2 = pb - pa, pc - pa, np.array(loc, float) - pa
+        d00, d01, d11, d20, d21 = v0 @ v0, v0 @ v1, v1 @ v1, v2 @ v0, v2 @ v1
+        den = max(d00 * d11 - d01 * d01, 1e-12)
+        b1 = (d11 * d20 - d01 * d21) / den
+        b2 = (d00 * d21 - d01 * d20) / den
+        bc = np.clip([1 - b1 - b2, b1, b2], 0, 1)
+        bc /= max(bc.sum(), 1e-9)
+        row = bc[0] * BW[ia] + bc[1] * BW[ib] + bc[2] * BW[ic]
+        if row.sum() > 1e-6:
+            W[vi] = row / row.sum()
+            n_cov += 1
+            dists.append(dd)
+    if dists:
+        REP['base_fit'] = {'covered': n_cov, 'verts': NV, 'cover_pct': round(100.0 * n_cov / NV, 1), 'radius_m': round(rad, 4),
+                           'dist_cm_p50': round(float(np.percentile(dists, 50)) * 100, 2), 'dist_cm_p95': round(float(np.percentile(dists, 95)) * 100, 2),
+                           'base_h': round(base_h, 3), 'char_h': round(float(V[:, 2].max() - V[:, 2].min()), 3), 'k_lat': round(k_lat, 3)}
+    log(f'thân nền: chép trọng số {n_cov}/{NV} đỉnh ({100.0 * n_cov / NV:.1f}%), cách mặt thân nền p50 {REP.get("base_fit", {}).get("dist_cm_p50")} cm, p95 {REP.get("base_fit", {}).get("dist_cm_p95")} cm')
 
 
 def seg_dist(P, a, b):

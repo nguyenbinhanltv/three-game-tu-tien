@@ -215,3 +215,11 @@ Sửa: khóa `c2.torsoTop: "spine"` (ống dừng ở giữa `spine_03`) trong `
 ### Sửa cổ đợt 2 (21/11): kinh_quang nữ, luu_ly nam+nữ, phuc_mach nữ
 
 Cùng nguyên nhân ống thân C2 (xem trên); phát hiện khi kiểm 16 model còn lại. `c2.torsoTop: "spine"` thêm cho `luu_ly` (cả hai giới), và theo giới `c2.nu` cho `kinh_quang`, `phuc_mach`. 12 model còn lại cổ sạch, không đổi. rigstretch: Idle 0,17–0,43%, p99 tối đa 2,21–2,92. Lưu ý khi chụp nhiều bộ liên tiếp bằng `pnpm shots neck`: người chơi lần trước còn trên server vài chục giây nên nhân vật chồng nhau; kịch bản nghỉ `NECK_GAP` (mặc định 30 giây) giữa các lần.
+
+## Pilot thân nền làm nguồn trọng số (biến thể B, 25/11, nháp)
+Giả thuyết: một thân nền MakeHuman (CC0) rig + trọng số chuẩn dùng lại làm NGUỒN trọng số cho phần bó sát của mọi bộ v3 nguyên khối; phần rời (voan, vạt, gấu, tóc) giữ luật cũ. Thân nền KHÔNG vào game.
+- `tools/blender/chr_pilot_base.py -- nu <ra.glb>`: dựng thân nền nữ từ MPFB2 (CC0 1.0, xem `assets/LICENSES.md` dòng chr_v2), bộ xương Mixamo + trọng số MakeHuman (giảm còn ~14k tam giác, hạ tay chữ A).
+- `chr_v3.py --base-weights <thân nền.glb> [--base-radius 0.03]`: khớp thân nền vào xương Mannequin F của nhân vật (LBS theo xương: quay về trục, co dọc trục, co ngang theo chiều cao), đỉnh nhân vật cách mặt thân nền ≤ bán kính thì chép trọng số nội suy theo tam giác gần nhất; ghi `base_fit` vào báo cáo. Lưới/UV/texture không đổi.
+- Số đo lần đầu (Tinh Khuyết nữ, `--base-radius 0,03`): chép 13.091/62.782 đỉnh (20,9%; chỉ phần bó sát), cách mặt thân nền p50 1,32 cm, p95 2,79 cm; tam giác 99.438 và số xương không đổi (một lưới, một draw call như hiện nay).
+- Chưa có số `rigstretch` 15 clip so với bản hiện tại (cần lượt trình duyệt).
+
