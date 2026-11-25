@@ -1,6 +1,6 @@
 // Bài kiểm tra bảo mật: Tổ đội, tỉ thí, pháp bảo phụ và đan (P3-8, P3-9) (R-7, tách từ security-check.ts).
 import { type Room } from 'colyseus.js';
-import { applyInvMsg, C, type InvMsg, type InvSlot, S } from '@dtl/shared';
+import { applyInvMsg, at, C, type InvMsg, type InvSlot, S } from '@dtl/shared';
 import { W, check, health, join, type Ctx, type P, type CharV, waitUntil } from './lib';
 
 export async function runParty(_ctx: Ctx): Promise<void> {
@@ -67,16 +67,16 @@ export async function runParty(_ctx: Ctx): Promise<void> {
     // c. Mời, nhận lời → tổ đội; mời dồn dập bị chặn.
     a.room.send(C.PARTY, { a: 'inv', n: B });
     await W(500);
-    check('lời mời tổ đội tới đúng người', inviteB.length === 1 && inviteB[0].kind === 'party');
+    check('lời mời tổ đội tới đúng người', inviteB.length === 1 && inviteB[0]?.kind === 'party');
     a.room.send(C.PARTY, { a: 'inv', n: Cn });
     await W(500);
     check('mời liên tục trong 2 giây bị chặn', sysA.includes('party.invite_rate'));
-    b.room.send(C.PARTY, { a: 'acc', id: inviteB[0].id });
+    b.room.send(C.PARTY, { a: 'acc', id: at(inviteB, 0, 'inviteB').id });
     await W(700);
     check('nhận lời mời hợp lệ: cả hai cùng thấy tổ đội 2 người', partyA?.members.length === 2 && partyB?.members.length === 2);
     // d. Người không phải trưởng nhóm không đổi được chia đồ/đuổi.
     b.room.send(C.PARTY, { a: 'loot', m: 'free' });
-    b.room.send(C.PARTY, { a: 'kick', id: inviteB[0].id });
+    b.room.send(C.PARTY, { a: 'kick', id: at(inviteB, 0, 'inviteB').id });
     await W(500);
     check(
       'thành viên thường không đổi được chia đồ hay đuổi trưởng nhóm',
@@ -120,7 +120,7 @@ export async function runParty(_ctx: Ctx): Promise<void> {
     check('lời thách đấu tới đúng người', duelInvB.length === 1);
     const xp0 = ca?.xp ?? 0;
     const gold0 = ca?.gold ?? 0;
-    b.room.send(C.DUEL, { a: 'acc', id: duelInvB[0].id });
+    b.room.send(C.DUEL, { a: 'acc', id: at(duelInvB, 0, 'duelInvB').id });
     await W(500);
     check('chấp nhận thì vào đếm ngược', duelA?.phase === 'count');
     const hpBefore = pb().hp;
