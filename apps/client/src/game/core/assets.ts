@@ -9,6 +9,7 @@ import basisJsUrl from 'three/addons/libs/basis/basis_transcoder.js?url';
 import basisWasmUrl from 'three/addons/libs/basis/basis_transcoder.wasm?url';
 import { logger } from '../../base/log';
 import { FLAGS } from '../../base/flags';
+import { markCpuFreed, neutralizeFreedTexture } from '../../base/texFreed';
 import { ASSET_BASE } from '../../base/assetBase';
 
 const assetLog = logger('asset');
@@ -199,32 +200,12 @@ export function freeTexturesAfterUpload(root: THREE.Object3D): number {
 }
 
 function freeCpuCopy(t: THREE.Texture): void {
-  t.userData.dtlFreed = true;
+  markCpuFreed(t);
   const c = t as THREE.CompressedTexture;
   if (c.isCompressedTexture) {
     for (const m of c.mipmaps ?? []) (m as { data: unknown }).data = null;
   } else if ((t as THREE.DataTexture).isDataTexture) {
     (t.image as { data: unknown }).data = null;
-  }
-}
-
-/** Định dạng nén khối 4×4 chiếm 8 byte (DXT1, ETC1/ETC2 RGB); mọi định dạng nén khác (BC7, ASTC, ETC2 RGBA…) 16 byte. */
-const BLOCK8 = new Set<number>([THREE.RGB_S3TC_DXT1_Format, THREE.RGBA_S3TC_DXT1_Format, THREE.RGB_ETC1_Format, THREE.RGB_ETC2_Format]);
-
-/**
- * Texture đã bỏ bản CPU (`freeTexturesAfterUpload`) mà sắp `dispose`: three cache `NodeBuilderState` theo khóa chương trình giữa các vật liệu, nên bind group của
- * một vật liệu level khác còn giữ tham chiếu texture cũ một khung và nạp lại nó với dữ liệu rỗng (`writeTexture` lỗi → màn đen cả phiên, gặp khi vào bac_hoang từ level khác).
- * Thay bằng texture 4×4 hợp lệ để lần nạp lại vô hại (vài chục byte); texture còn dữ liệu CPU không cần.
- */
-export function neutralizeFreedTexture(t: THREE.Texture): void {
-  if (!t.userData.dtlFreed) return;
-  const c = t as THREE.CompressedTexture;
-  if (c.isCompressedTexture) {
-    const bytes = BLOCK8.has(c.format) ? 8 : 16;
-    c.mipmaps = [{ data: new Uint8Array(bytes), width: 4, height: 4 }] as unknown as typeof c.mipmaps;
-    c.image = { width: 4, height: 4 } as typeof c.image;
-  } else if ((t as THREE.DataTexture).isDataTexture) {
-    (t as THREE.DataTexture).image = { data: new Uint8Array(4), width: 1, height: 1 };
   }
 }
 
