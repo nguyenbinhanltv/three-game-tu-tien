@@ -359,8 +359,19 @@ export class KinhNguyetArt {
       const frustum = new THREE.Frustum();
       let sweepAt = 0;
       const due = reflectionThrottle(opts.reflectEvery ?? 1);
+      const camSig = new Array<number>(18).fill(0);
       base.updateBefore = (frame: Parameters<typeof before>[0]) => {
-        if (!due()) return; // khung giữa: dùng lại texture phản chiếu khung trước
+        // Chỉ bỏ khung khi camera ĐỨNG YÊN (ma trận thế giới + 2 phần tử chiếu không đổi): camera chéo đi theo người chơi nên bỏ khung lúc di chuyển
+        // làm phản chiếu lệch một khung rồi giật lại (rung 30 Hz).
+        const camNow = (frame as { camera?: THREE.Camera } | undefined)?.camera;
+        if (camNow) {
+          const w = camNow.matrixWorld.elements;
+          const p = camNow.projectionMatrix.elements;
+          camSig[0] = p[0]!;
+          camSig[1] = p[5]!;
+          for (let k = 0; k < 16; k++) camSig[2 + k] = w[k]!;
+        }
+        if (!due(camNow ? camSig : undefined)) return; // khung giữa (camera đứng yên): dùng lại texture phản chiếu khung trước
         const scene = this.group.parent;
         const now = performance.now();
         if (now >= sweepAt) {
