@@ -626,9 +626,9 @@ function spriteNodesImpl(U: FxUniforms, group: SpriteGroup): { color: N; opacity
   );
   // Kiểu "đao" (`fxA.x` = 9): lõi than thép tối (xám đen), thân thép xám lạnh, viền bạc sáng; điểm đồng nhỏ của tranh gốc không được giữ (chỉ bạc/than) để tách khỏi vàng đất Hộ pháp.
   const dCore = vec3(0.008, 0.01, 0.014);
-  const dBody = vec3(0.2, 0.25, 0.31);
-  const dRim = vec3(0.78, 0.84, 0.92);
-  const dWhite = vec3(0.96, 0.98, 1.0);
+  const dBody = vec3(0.24, 0.26, 0.28);
+  const dRim = vec3(0.84, 0.86, 0.88);
+  const dWhite = vec3(0.97, 0.97, 0.96);
   const dT = smoothstep(0.1, 0.78, spLum.sqrt());
   const dRamp = mix(mix(mix(dCore, dBody, smoothstep(0.04, 0.42, dT)), dRim, smoothstep(0.4, 0.78, dT)), dWhite, smoothstep(0.88, 1.0, dT));
   // Kiểu vẽ tay của tinh anh A3 (`fxA.x` = 6 xương `cot_`, 7 đất-đá-độc `tho_`/`doc_`, 8 sét tím `tim_`). Bụi/đất nửa trong suốt trên nền chroma bị khử viền thành hồng, nên xương và đất

@@ -26,13 +26,13 @@ const SCALE = {
   skl_pha_phong_tien: 1,
   skl_bao_nhan: 1,
   skl_tram_son_dao: 0.9,
-  skl_hoanh_dao: 1,
+  skl_hoanh_dao: 0.8,
   skl_tam_dao: 1,
   skl_doan_luu: 1,
-  skl_liet_dia_tram: 1,
+  skl_liet_dia_tram: 0.95,
   skl_thuan_dao_tram: 1,
   skl_huyet_chien_the: 1,
-  skl_doan_thien_dao: 0.85,
+  skl_doan_thien_dao: 0.58,
 };
 /** Hệ số alpha thân theo chiêu (không áp cho chớp `dao_flash`). */
 let A = 1;
