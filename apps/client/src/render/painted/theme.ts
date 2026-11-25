@@ -45,8 +45,8 @@ export const PAINTED_THEMES: Record<string, PaintedTheme> = {
     mistK: 0.6,
     far: [0xdce6f6, 0x5c6896],
     propMix: 0.85,
-    nightContrast: 2.1,
-    nightTint: [0.34, 0.48, 0.85],
+    nightContrast: 1.35,
+    nightTint: [0.3, 0.42, 0.72],
     nightLift: 1.4,
   },
   // Thiên Lộ Giới / Cửu Kiều (TN-7): cao nguyên đá rêu trên biển mây, bình minh vàng hồng; đất rêu xanh lam, đá xám ấm, sương hồng nhạt ở rìa
