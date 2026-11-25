@@ -116,6 +116,8 @@ export interface IsoRun {
   backend: string;
   viewport: string;
   quick: boolean;
+  /** Có mô phỏng máy yếu (`--cpu-throttle`, `--igpu`): số ms là ƯỚC LƯỢNG, không phải máy thật. */
+  emulation?: { cpuThrottle: number; igpu: boolean };
   /** Byte đã giải nén từ Vite dev server tới lúc vào game (+6 s stream); KHÔNG phải tải lần đầu của bản build, không so với ngân sách 30 MB (dùng `pnpm bench:load`). */
   devBytesMB: number | null;
   points: IsoPoint[];
@@ -172,6 +174,10 @@ const fmt = (n: number): string => (n >= 10_000 ? `${(n / 1000).toFixed(0)}k` : 
 export function toMarkdown(run: IsoRun, deltas: Delta[] = []): string {
   const L: string[] = [];
   L.push(`# perf:iso ${run.date}`, '', `GPU: ${run.adapter || '?'} · ${run.backend} · ${run.viewport}${run.quick ? ' · --quick' : ''}`);
+  if (run.emulation)
+    L.push(
+      `**MÔ PHỎNG máy yếu**: CPU chậm ${run.emulation.cpuThrottle}×${run.emulation.igpu ? ', ép GPU tiết kiệm điện (iGPU)' : ''}. Số ms là ƯỚC LƯỢNG, không phải máy thật.`,
+    );
   if (run.devBytesMB !== null)
     L.push(
       `Byte đã giải nén từ dev server tới lúc vào game: ${run.devBytesMB} MB (không phải tải lần đầu của bản build; đo cái đó bằng \`pnpm bench:load\`)`,
