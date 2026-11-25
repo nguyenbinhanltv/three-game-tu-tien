@@ -39,6 +39,12 @@ interface Manifest {
  */
 export const GROUND_ALBEDO_MAX = 1536;
 
+/**
+ * B9 (Cực cao ≤ 512 MB): cạnh tối đa của mảng pháp tuyến/độ nhám mặt đất (8 lớp RGBA8 + mip). 1024 → 768: 45 → 25 MB (−20 MB); ô lặp 6 m → 7,8 mm/texel, vẫn nhỏ hơn điểm ảnh 1080p (~11–14 mm).
+ * Bộ 1024² (pháp tuyến 512) không đổi.
+ */
+export const GROUND_NORMAL_MAX = 768;
+
 async function decode(url: string, size: number): Promise<Uint8ClampedArray> {
   const res = await fetch(url);
   if (!res.ok) throw new Error(`${url}: ${res.status}`);
@@ -130,7 +136,7 @@ export async function loadGroundTextures(
   const manifest = (await (await fetch(`${base}${set}/manifest.json`)).json()) as Manifest;
   const size = Math.min(manifest.size, GROUND_ALBEDO_MAX);
   // Pháp tuyến/độ nhám tải ở nửa độ phân giải (chi tiết vi mô mềm hơn chút, đổi lấy ~32 MB VRAM: ngân sách texture 512 MB).
-  const nsize = manifest.size >> 1;
+  const nsize = Math.min(manifest.size >> 1, GROUND_NORMAL_MAX);
   const layerBytes = size * size * 4;
   const nLayerBytes = nsize * nsize * 4;
   const albedo = new Uint8Array(layerBytes * manifest.layers.length);
