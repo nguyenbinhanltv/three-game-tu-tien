@@ -1,0 +1,58 @@
+{
+ "skill": "mon_warn__boss_tam_thu_nguc_khuyen__chant",
+ "palette": "mon_hoa_am",
+ "events": [
+  {
+   "type": "decal",
+   "tex": "warn_crack",
+   "t": 0,
+   "r": 4,
+   "dur": 2,
+   "at": "area",
+   "grow": 0.04,
+   "tone": "accent",
+   "alpha": 0.16,
+   "tier": 0,
+   "from": "start",
+   "top": true,
+   "yaw": -50,
+   "untilDelay": true
+  },
+  {
+   "type": "decal",
+   "tex": "warn_crack",
+   "t": 0,
+   "r": 4,
+   "dur": 2,
+   "at": "area",
+   "grow": 0.9,
+   "tone": "accent",
+   "alpha": 0.08,
+   "tier": 0,
+   "from": "start",
+   "top": true,
+   "yaw": 35,
+   "untilDelay": true,
+   "growUntilDelay": true
+  },
+  {
+   "type": "particles",
+   "kind": "spark",
+   "t": 0,
+   "n": 12,
+   "speed": 1.7,
+   "spread": 1,
+   "life": 0.9,
+   "size": 0.09,
+   "at": "area",
+   "tone": "accent",
+   "tier": 1,
+   "inward": true,
+   "offset": [
+    0,
+    0.2,
+    0
+   ]
+  }
+ ]
+}
