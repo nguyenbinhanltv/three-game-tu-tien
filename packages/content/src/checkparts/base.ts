@@ -48,7 +48,7 @@ import {
   METHOD_SKILLS,
   SKILL,
 } from '../index';
-import { HK_MECHANICS, SUY_MECHANICS } from '@dtl/shared';
+import { checkFxCover, fxCoverEstimate, HK_MECHANICS, SUY_MECHANICS } from '@dtl/shared';
 import { PATH } from '../index';
 
 import { err, errors } from './errors';
@@ -166,6 +166,22 @@ for (const f of FX_TIMELINES) for (const m of validateFxTimeline(f, (id) => SKIL
       const card = JSON.parse(fs.readFileSync(new URL(f, dir), 'utf8')) as MonVfxCard;
       if (f !== `${card.monId}__${card.move}.json`) err(`vfxcard mon ${f}: tên file phải là ${card.monId}__${card.move}.json`);
       for (const m of validateMonVfxCard(card, { move: moveOf, exists: (id) => MONSTER.has(id) })) err(m);
+    }
+  }
+}
+// B10: ước lượng TĨNH độ phủ màn + overdraw của timeline vùng nổ (`mon_boom_*`) so với trần của thẻ (ước lượng thô, xem shared/fxcover.ts; `pixelCover` đo trên ảnh mới là số thật).
+{
+  const dir = new URL('../../data/vfx/cards/mon/', import.meta.url);
+  const byKey = new Map(MON_FX_TIMELINES.map((t) => [t.skill, t]));
+  if (fs.existsSync(dir)) {
+    for (const f of fs.readdirSync(dir).filter((n) => n.endsWith('.json'))) {
+      const card = JSON.parse(fs.readFileSync(new URL(f, dir), 'utf8')) as MonVfxCard;
+      const sh = card.zone.shape === 'circle' ? 'circle' : card.zone.shape === 'cone' ? 'cone' : 'line';
+      const tl = byKey.get(`mon_boom_${sh}__${card.monId}__${card.move}`);
+      if (!tl) continue;
+      const mul = Math.min(4, Math.max(0.5, card.zone.r / (sh === 'circle' ? 4 : 8)));
+      const est = fxCoverEstimate(tl.events, { mul });
+      for (const m of checkFxCover(`fx ${tl.skill}`, est, card.budget)) err(m);
     }
   }
 }

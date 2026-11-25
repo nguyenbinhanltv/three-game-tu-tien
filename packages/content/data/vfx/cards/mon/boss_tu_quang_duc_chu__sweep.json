@@ -1,0 +1,34 @@
+{
+  "monId": "boss_tu_quang_duc_chu",
+  "move": "sweep",
+  "idea": "Tử Quang Dực Chủ vỗ cánh tím quét quạt 16 m nửa góc 25°: vạch báo ĐỎ; nổ ra cánh tím (không ngả hồng-đỏ) khổng lồ quét qua, lông cánh tách rơi và tan thành tàn quang.",
+  "element": "thuy",
+  "palette": {
+    "core": "160d28",
+    "body": "6b3fa0",
+    "rim": "e2d4f7",
+    "accent": "ff1f3d"
+  },
+  "shapeLang": [
+    "arc",
+    "line"
+  ],
+  "zone": {
+    "shape": "cone",
+    "r": 16,
+    "w": 25,
+    "at": "forward"
+  },
+  "timing": {
+    "anticipationMs": 1400,
+    "impactMs": 140,
+    "lingerMs": 800
+  },
+  "readability": "Vạch báo ĐỎ đặc đúng vùng quạt dài 16 m, nửa góc 25°, đọc rõ trên nền đá sáng cả ngày lẫn đêm, ngoài vùng hoàn toàn sạch; thân hiệu ứng nổ màu hệ (tím (không ngả hồng-đỏ)), tuyệt đối không đỏ/cam, không che người chơi.",
+  "budget": {
+    "drawCalls": 8,
+    "particles": 300,
+    "screenCover": 0.3,
+    "overdraw": 5
+  }
+}

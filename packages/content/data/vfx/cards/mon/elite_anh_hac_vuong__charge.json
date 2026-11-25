@@ -1,0 +1,34 @@
+{
+  "monId": "elite_anh_hac_vuong",
+  "move": "charge",
+  "idea": "Ảnh Hạc Vương lao lướt dọc đường 14 m, rộng 3 m (vạch báo ĐỎ); để lại vệt bóng hạc lướt qua, lông bóng rơi và tan.",
+  "element": "thuy",
+  "palette": {
+    "core": "140f28",
+    "body": "3f8f9a",
+    "rim": "d9f6f2",
+    "accent": "ff1f3d"
+  },
+  "shapeLang": [
+    "line",
+    "cloud"
+  ],
+  "zone": {
+    "shape": "rect",
+    "r": 14,
+    "w": 3,
+    "at": "forward"
+  },
+  "timing": {
+    "anticipationMs": 1000,
+    "impactMs": 130,
+    "lingerMs": 700
+  },
+  "readability": "Vạch báo ĐỎ đặc đúng vùng dài 14 m, rộng 3 m, đọc rõ trên nền đá sáng cả ngày lẫn đêm, ngoài vùng hoàn toàn sạch; thân hiệu ứng nổ màu hệ (ngọc lam), tuyệt đối không đỏ/cam, không che người chơi.",
+  "budget": {
+    "drawCalls": 7,
+    "particles": 220,
+    "screenCover": 0.2,
+    "overdraw": 4
+  }
+}

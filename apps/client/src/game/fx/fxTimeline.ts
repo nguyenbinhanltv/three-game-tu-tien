@@ -73,6 +73,15 @@ export const SPRITE_STYLE: Record<string, number> = {
   dao_: 9,
   cth_: 11,
   dan_: 10,
+  // A6: gương/bóng ngọc lam (kiểu kiếm teal), nét cọ mực `mac_` (nguyệt, bạc), đồng đỉnh + cát (vàng đất hue 46–50), hai mặt/ngà/mây (màu thật). `tuq_` (tím Tử Quang) KHÔNG khai: kiểu 0
+  // (bảng tím theo độ sáng) bỏ quầng teal do nền chroma để lại ở mép sương.
+  guong_: 2,
+  mac_: 5,
+  dong_: 3,
+  phu_: 8,
+  kieu_: 8,
+  sa_: 3,
+  may_: 8,
 };
 
 export interface FxTarget {
@@ -583,7 +592,10 @@ export class FxRunner {
             | 'sprite_hai'
             | 'sprite_tinh'
             | 'sprite_lam'
-            | 'sprite_dan')
+            | 'sprite_dan'
+            | 'sprite_guong'
+            | 'sprite_dong'
+            | 'sprite_kieu')
       : kind0;
     const isSprite = cell !== null;
     if (cell) useSpriteGroup(cell.group);

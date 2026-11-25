@@ -1,0 +1,236 @@
+{
+ "skill": "mon_boom_line__boss_ve_kieu__line",
+ "palette": "mon_a6_ve",
+ "events": [
+  {
+   "type": "decal",
+   "tex": "jade_crack",
+   "t": 0,
+   "r": 1,
+   "dur": 2.6,
+   "at": "area",
+   "grow": 0.1,
+   "tone": "core",
+   "alpha": 0.22,
+   "tier": 0,
+   "from": "start",
+   "strip": [
+    18,
+    3.5
+   ],
+   "lift": 0.35
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.0,
+   "dur": 0.8,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.95,
+   "seed": 7900,
+   "tier": 0,
+   "sprite": "kieu_vein",
+   "scale": 2.25,
+   "scaleTo": 2.25,
+   "offset": [
+    -0.311,
+    0.444,
+    0.8
+   ],
+   "erodeFrom": 0.45,
+   "sweep": 0,
+   "ragged": 0.5,
+   "aim": true,
+   "move": {
+    "to": "area",
+    "offset": [
+     -0.311,
+     0.444,
+     6.88
+    ],
+    "ease": "out"
+   }
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.05,
+   "dur": 0.8,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.85,
+   "seed": 7901,
+   "tier": 0,
+   "sprite": "kieu_ridge",
+   "scale": 2.045,
+   "scaleTo": 2.045,
+   "offset": [
+    0.311,
+    0.444,
+    0.8
+   ],
+   "erodeFrom": 0.45,
+   "sweep": 0,
+   "ragged": 0.5,
+   "aim": true,
+   "move": {
+    "to": "area",
+    "offset": [
+     0.311,
+     0.444,
+     6.32
+    ],
+    "ease": "out"
+   }
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.08,
+   "dur": 0.7,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.95,
+   "seed": 7920,
+   "tier": 0,
+   "sprite": "kieu_chunks",
+   "scale": 0.654,
+   "scaleTo": 0.654,
+   "offset": [
+    -0.529,
+    0.622,
+    2.0
+   ],
+   "erodeFrom": 0.4,
+   "sweep": 0,
+   "ragged": 0.5
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.13,
+   "dur": 0.7,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.95,
+   "seed": 7921,
+   "tier": 0,
+   "sprite": "kieu_chunks",
+   "scale": 0.654,
+   "scaleTo": 0.654,
+   "offset": [
+    0.529,
+    0.622,
+    4.0
+   ],
+   "erodeFrom": 0.4,
+   "sweep": 0,
+   "ragged": 0.5
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.18,
+   "dur": 0.7,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.95,
+   "seed": 7922,
+   "tier": 0,
+   "sprite": "kieu_chunks",
+   "scale": 0.654,
+   "scaleTo": 0.654,
+   "offset": [
+    -0.529,
+    0.622,
+    6.0
+   ],
+   "erodeFrom": 0.4,
+   "sweep": 0,
+   "ragged": 0.5
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.18,
+   "dur": 0.7,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.95,
+   "seed": 7924,
+   "tier": 0,
+   "sprite": "kieu_dust",
+   "scale": 0.614,
+   "scaleTo": 0.614,
+   "offset": [
+    0.529,
+    0.622,
+    2.667
+   ],
+   "erodeFrom": 0.4,
+   "sweep": 0,
+   "ragged": 0.5
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.23000000000000004,
+   "dur": 0.7,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.95,
+   "seed": 7925,
+   "tier": 0,
+   "sprite": "kieu_dust",
+   "scale": 0.614,
+   "scaleTo": 0.614,
+   "offset": [
+    -0.529,
+    0.622,
+    5.333
+   ],
+   "erodeFrom": 0.4,
+   "sweep": 0,
+   "ragged": 0.5
+  },
+  {
+   "type": "particles",
+   "kind": "shard",
+   "t": 0,
+   "n": 40,
+   "speed": 8,
+   "spread": 0.5,
+   "life": 0.8,
+   "size": 0.1,
+   "at": "area",
+   "tone": "rim",
+   "tier": 0,
+   "offset": [
+    0,
+    0.17777777777777778,
+    2.8
+   ],
+   "grav": 9
+  },
+  {
+   "type": "particles",
+   "kind": "spark",
+   "t": 0,
+   "n": 26,
+   "speed": 5,
+   "spread": 0.5,
+   "life": 0.9,
+   "size": 0.08,
+   "at": "area",
+   "tone": "body",
+   "tier": 0,
+   "offset": [
+    0,
+    0.13333333333333333,
+    2.4
+   ],
+   "grav": 1.5
+  }
+ ]
+}
