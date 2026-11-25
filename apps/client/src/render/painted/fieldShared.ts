@@ -36,15 +36,6 @@ export const GAME_RINGS: Ring[] = RINGS.filter((r) => r.name === 'mid' || r.name
   r.name === 'mid' ? { ...r, cell: 0.16, tile: 9.6, tiles: 5, width: 3 } : { ...r, cell: 0.75, tile: 25.6, tiles: 4, width: 13 },
 );
 
-/**
- * Vòng lá theo preset: Cao/Cực cao dùng `GAME_RINGS`; Vừa còn 3×3 ô ở mỗi vòng (mỗi ô là một draw call: 41 → 18) để painted không đẩy draw call
- * lên quá xa mặc định. Mật độ lá giữ nguyên, chỉ thu hẹp vùng phủ (mid ±14 m, wide ±38 m thay vì ±24/±51). Chưa đo bằng ảnh: cần xem mép cỏ ở Vừa.
- */
-export function gameRingsFor(base: 'low' | 'medium' | 'high'): Ring[] {
-  if (base !== 'medium') return GAME_RINGS;
-  return GAME_RINGS.map((r) => ({ ...r, tiles: 3 }));
-}
-
 let singleton: RefField | null = null;
 let latData: { heights: Float32Array; map: Uint8Array; slope: Uint8Array } | null = null;
 let latTex: { tHeight: THREE.DataTexture; tMap: THREE.DataTexture; tSlope: THREE.DataTexture } | null = null;
