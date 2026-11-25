@@ -176,7 +176,7 @@ const KIT = {
   band: '#5a3328',
   wood: '#6c4c33',
   straw: '#c9b27a',
-  stone: '#8a948f',
+  stone: '#7b857f',
   stoneDark: '#5f6a66',
   moss: '#74904c',
 } as const;
@@ -249,7 +249,7 @@ function rockGeometry(): THREE.BufferGeometry {
     const up = Math.min(1, Math.max(0, (n.getY(i) - 0.45) / 0.4));
     c.copy(stone)
       .lerp(dark, Math.min(1, Math.max(0, (0.15 - a.getY(i)) / 0.3)))
-      .lerp(moss, up * 0.7);
+      .lerp(moss, up * 0.4);
     col.set([c.r, c.g, c.b], i * 3);
   }
   g.setAttribute('color', new THREE.BufferAttribute(col, 3));
