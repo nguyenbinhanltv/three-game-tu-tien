@@ -1,3 +1,4 @@
+import { paintedProp } from '../../render/painted/props';
 import * as THREE from 'three/webgpu';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { type AssetCache, type AssetHandle } from '../core/assets';
@@ -55,7 +56,7 @@ export class GlbScatter {
     }
     this.handles.push(handle);
     const root = handle.scene;
-    const owned = adoptGltfMaterials(root, withSightFade);
+    const owned = adoptGltfMaterials(root, (m) => paintedProp(withSightFade(m)));
     this.mats.push(...owned);
     root.updateMatrixWorld(true);
     // Prop của kit có node anh em `<tên>_lod1/_lod2` (`userData.lod = k`) trong cùng file: chỉ lấy LOD0, nếu không các mảnh chồng nhau (z-fight) và tam giác nhân ~1,6.

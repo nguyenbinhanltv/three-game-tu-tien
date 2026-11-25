@@ -39,7 +39,7 @@ export class PaintedGameField implements GrassLayer {
   constructor() {
     this.mesh.name = 'env-grass-painted';
     this.mesh.visible = false;
-    Object.assign(FLOWER_RING, { tiles: 3, cell: 0.55 });
+    Object.assign(FLOWER_RING, { tiles: 3, cell: 0.7 });
     const groundAt = (x: number, z: number): number => heightAt(x, z);
     this.blades = createBlades(this.F, { height: HEIGHT, seed: SEED, density: 1, rings: GAME_RINGS }, groundAt);
     this.blades.init();

@@ -7,11 +7,14 @@ import { gm, perfSample, tp } from '../lib/game';
 import type { Scenario } from '../lib/scenario';
 import { snap, writeJson } from '../lib/shot';
 
-/** Điểm đứng ở Thung Lũng Thanh Phong (VALLEY 2048,2460; thế giới, mét). */
+/** Điểm đứng (thế giới, mét): Thung Lũng Thanh Phong (VALLEY 2048,2460), suối, rừng (FOREST 2450,2110), sơn môn (SECT 2048,2048). */
 export const POINTS: { name: string; x: number; z: number }[] = [
   { name: 'thunglung', x: 2048, z: 2420 },
   { name: 'giua', x: 2110, z: 2490 },
   { name: 'suoi', x: 2390, z: 2440 },
+  // có cây và nhà (kiểm P6): rìa rừng Thanh Mộc và sân sơn môn Lạc Kiếm Tông
+  { name: 'rung', x: 2450, z: 2150 },
+  { name: 'sonmon', x: 2048, z: 2120 },
 ];
 
 const SIZES: Record<string, [number, number]> = { '720p': [1280, 720], '1080p': [1920, 1080] };
