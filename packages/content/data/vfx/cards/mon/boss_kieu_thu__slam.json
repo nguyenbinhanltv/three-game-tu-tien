@@ -1,13 +1,13 @@
 {
   "monId": "boss_kieu_thu",
   "move": "slam",
-  "idea": "Pha 2: Kiều Thủ dậm kiếm xuống: nứt tỏa tia từ tâm bán kính 5 m (vạch báo vàng ngà nhạt), rồi mặt cầu vỡ thành mảnh đá trắng bay lên, khe sáng lộ ra.",
+  "idea": "Pha 2: Kiều Thủ dậm kiếm xuống: nứt tỏa tia từ tâm bán kính 5 m (vạch báo ĐỎ), rồi mặt cầu vỡ thành mảnh đá trắng bay lên, khe sáng lộ ra.",
   "element": "kim",
   "palette": {
     "core": "2a2a28",
     "body": "cfc8b0",
     "rim": "fffaf0",
-    "accent": "f0dc9a"
+    "accent": "ff1f3d"
   },
   "shapeLang": [
     "ring",
@@ -23,7 +23,7 @@
     "impactMs": 130,
     "lingerMs": 900
   },
-  "readability": "Đĩa nứt tỏa tia đúng 5 m, mảnh đá trắng viền sẫm, khe sáng vàng ngà.",
+  "readability": "Vạch báo ĐỎ đặc đúng vùng tròn bán kính 5 m, đọc rõ trên nền đá sáng cả ngày lẫn đêm, ngoài vùng hoàn toàn sạch; thân hiệu ứng nổ màu hệ (ngà trắng và vàng nhạt (không cam)), tuyệt đối không đỏ/cam, không che người chơi.",
   "budget": {
     "drawCalls": 8,
     "particles": 300,

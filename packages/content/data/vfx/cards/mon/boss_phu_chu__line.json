@@ -1,13 +1,13 @@
 {
   "monId": "boss_phu_chu",
   "move": "line",
-  "idea": "Phủ Chủ mở cửa hai mặt dọc đường 22 m: vạch báo vàng nhạt trên nền lam xám chia đôi theo chiều dọc, nửa sáng nửa tối; nổ ra khung cửa hai mặt bật lên liên tiếp, bụi động phủ tung.",
+  "idea": "Phủ Chủ mở cửa hai mặt dọc đường 22 m: vạch báo ĐỎ chia đôi theo chiều dọc; nổ ra khung cửa hai mặt (nửa sáng vàng nhạt, nửa lam xám sẫm) hai mặt bật lên liên tiếp, bụi động phủ tung.",
   "element": "tho",
   "palette": {
     "core": "131b2a",
     "body": "4a6a8c",
     "rim": "dfe8f2",
-    "accent": "e9d58a"
+    "accent": "ff1f3d"
   },
   "shapeLang": [
     "line",
@@ -24,7 +24,7 @@
     "impactMs": 150,
     "lingerMs": 800
   },
-  "readability": "Dải 22×4 m chia đôi dọc rõ ràng (một nửa sáng vàng nhạt, một nửa lam xám sẫm), khung cửa cao thấp vừa, không che mục tiêu.",
+  "readability": "Vạch báo ĐỎ đặc đúng vùng dài 22 m, rộng 4 m, đọc rõ trên nền đá sáng cả ngày lẫn đêm, ngoài vùng hoàn toàn sạch; thân hiệu ứng nổ màu hệ (lam xám và vàng nhạt), tuyệt đối không đỏ/cam, không che người chơi.",
   "budget": {
     "drawCalls": 8,
     "particles": 300,

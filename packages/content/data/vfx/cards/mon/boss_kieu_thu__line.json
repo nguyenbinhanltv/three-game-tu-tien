@@ -1,13 +1,13 @@
 {
   "monId": "boss_kieu_thu",
   "move": "line",
-  "idea": "Kiều Thủ chém thanh kiếm không lưỡi xuống mặt cầu: một vết nứt thẳng 22 m phát sáng chạy dọc mặt cầu đá (vạch báo vàng ngà nhạt, rộng 4 m); nổ ra khe nứt sáng, mảnh đá trắng văng lên.",
+  "idea": "Kiều Thủ chém thanh kiếm không lưỡi xuống mặt cầu: một vết nứt thẳng 22 m phát sáng chạy dọc mặt cầu đá (vạch báo ĐỎ); nổ ra khe nứt sáng, mảnh đá trắng văng lên.",
   "element": "kim",
   "palette": {
     "core": "2a2a28",
     "body": "cfc8b0",
     "rim": "fffaf0",
-    "accent": "f0dc9a"
+    "accent": "ff1f3d"
   },
   "shapeLang": [
     "line",
@@ -24,7 +24,7 @@
     "impactMs": 150,
     "lingerMs": 900
   },
-  "readability": "Dải vàng ngà đúng 22×4 m, khe nứt sáng trắng, mảnh đá trắng viền sẫm; không cam.",
+  "readability": "Vạch báo ĐỎ đặc đúng vùng dài 22 m, rộng 4 m, đọc rõ trên nền đá sáng cả ngày lẫn đêm, ngoài vùng hoàn toàn sạch; thân hiệu ứng nổ màu hệ (ngà trắng và vàng nhạt (không cam)), tuyệt đối không đỏ/cam, không che người chơi.",
   "budget": {
     "drawCalls": 8,
     "particles": 300,

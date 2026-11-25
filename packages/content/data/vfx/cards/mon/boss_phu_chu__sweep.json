@@ -1,13 +1,13 @@
 {
   "monId": "boss_phu_chu",
   "move": "sweep",
-  "idea": "Pha 3: Phủ Chủ quét cánh cửa hai mặt: quạt 14 m nửa góc 45° (vạch báo vàng nhạt), cánh cửa nửa sáng nửa tối quét qua, bụi động phủ cuộn theo.",
+  "idea": "Pha 3: Phủ Chủ quét cánh cửa hai mặt: quạt 14 m nửa góc 45° (vạch báo ĐỎ), cánh cửa nửa sáng nửa tối quét qua, bụi động phủ cuộn theo.",
   "element": "tho",
   "palette": {
     "core": "131b2a",
     "body": "4a6a8c",
     "rim": "dfe8f2",
-    "accent": "e9d58a"
+    "accent": "ff1f3d"
   },
   "shapeLang": [
     "arc",
@@ -24,7 +24,7 @@
     "impactMs": 140,
     "lingerMs": 800
   },
-  "readability": "Quạt rõ rìa, cánh cửa hai tông sáng/tối đọc được; chỗ an toàn sạch.",
+  "readability": "Vạch báo ĐỎ đặc đúng vùng quạt dài 14 m, nửa góc 45°, đọc rõ trên nền đá sáng cả ngày lẫn đêm, ngoài vùng hoàn toàn sạch; thân hiệu ứng nổ màu hệ (lam xám và vàng nhạt), tuyệt đối không đỏ/cam, không che người chơi.",
   "budget": {
     "drawCalls": 8,
     "particles": 300,

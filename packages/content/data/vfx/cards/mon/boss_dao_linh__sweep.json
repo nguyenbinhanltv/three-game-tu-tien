@@ -1,13 +1,13 @@
 {
   "monId": "boss_dao_linh",
   "move": "sweep",
-  "idea": "Pha 3: Đạo Linh quét nét cọ lớn: quạt 14 m nửa góc 45° (vạch báo bạc lam nhạt), nét cọ bạc quét qua, mực bạc bắn thành chấm.",
+  "idea": "Pha 3: Đạo Linh quét nét cọ lớn: quạt 14 m nửa góc 45° (vạch báo ĐỎ), nét cọ bạc quét qua, mực bạc bắn thành chấm.",
   "element": "thuy",
   "palette": {
     "core": "161c2a",
     "body": "8e98b8",
     "rim": "f2f6fa",
-    "accent": "9fc4f0"
+    "accent": "ff1f3d"
   },
   "shapeLang": [
     "arc",
@@ -24,7 +24,7 @@
     "impactMs": 140,
     "lingerMs": 800
   },
-  "readability": "Quạt bạc lam rõ rìa, nét cọ mực viền đậm; chỗ an toàn sạch.",
+  "readability": "Vạch báo ĐỎ đặc đúng vùng quạt dài 14 m, nửa góc 45°, đọc rõ trên nền đá sáng cả ngày lẫn đêm, ngoài vùng hoàn toàn sạch; thân hiệu ứng nổ màu hệ (bạc và lam nhạt), tuyệt đối không đỏ/cam, không che người chơi.",
   "budget": {
     "drawCalls": 8,
     "particles": 300,

@@ -1,13 +1,13 @@
 {
   "monId": "boss_dao_linh",
   "move": "line",
-  "idea": "Đạo Linh quét một nét cọ đạo bạc dọc đường 22 m, rộng 4 m (vạch báo bạc lam nhạt); nổ ra vệt mực bạc đổi sắc dần, bắn ra vài giọt mực rồi nhạt đi.",
+  "idea": "Đạo Linh quét một nét cọ đạo bạc dọc đường 22 m, rộng 4 m (vạch báo ĐỎ); nổ ra vệt mực bạc đổi sắc dần, bắn ra vài giọt mực rồi nhạt đi.",
   "element": "thuy",
   "palette": {
     "core": "161c2a",
     "body": "8e98b8",
     "rim": "f2f6fa",
-    "accent": "9fc4f0"
+    "accent": "ff1f3d"
   },
   "shapeLang": [
     "line",
@@ -24,7 +24,7 @@
     "impactMs": 150,
     "lingerMs": 800
   },
-  "readability": "Dải bạc lam nhạt đúng 22×4 m, vệt mực bạc viền đậm; không đỏ.",
+  "readability": "Vạch báo ĐỎ đặc đúng vùng dài 22 m, rộng 4 m, đọc rõ trên nền đá sáng cả ngày lẫn đêm, ngoài vùng hoàn toàn sạch; thân hiệu ứng nổ màu hệ (bạc và lam nhạt), tuyệt đối không đỏ/cam, không che người chơi.",
   "budget": {
     "drawCalls": 8,
     "particles": 300,

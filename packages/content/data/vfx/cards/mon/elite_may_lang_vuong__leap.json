@@ -1,13 +1,13 @@
 {
   "monId": "elite_may_lang_vuong",
   "move": "leap",
-  "idea": "Mây Lang Vương đáp xuống: vòng mây phồng nổ bán kính 5 m (vạch báo trắng lục nhạt), bông mây bắn ra rồi tan.",
+  "idea": "Mây Lang Vương đáp xuống: vòng mây phồng nổ bán kính 5 m (vạch báo ĐỎ), bông mây bắn ra rồi tan.",
   "element": "thuy",
   "palette": {
     "core": "17222a",
     "body": "9fc4c0",
     "rim": "f6fbfa",
-    "accent": "8fd8b4"
+    "accent": "ff1f3d"
   },
   "shapeLang": [
     "ring",
@@ -23,7 +23,7 @@
     "impactMs": 130,
     "lingerMs": 700
   },
-  "readability": "Vòng trắng lục 5 m, bông mây có viền đậm để đọc nền sáng; phủ nhỏ.",
+  "readability": "Vạch báo ĐỎ đặc đúng vùng tròn bán kính 5 m, đọc rõ trên nền đá sáng cả ngày lẫn đêm, ngoài vùng hoàn toàn sạch; thân hiệu ứng nổ màu hệ (trắng và lục nhạt), tuyệt đối không đỏ/cam, không che người chơi.",
   "budget": {
     "drawCalls": 7,
     "particles": 220,

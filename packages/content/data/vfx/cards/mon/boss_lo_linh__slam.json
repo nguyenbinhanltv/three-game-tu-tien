@@ -1,13 +1,13 @@
 {
   "monId": "boss_lo_linh",
   "move": "slam",
-  "idea": "Pha 1: mặt cầu lật mặt dưới chân người chơi: vòng sáng bán kính 5 m (vạch báo vàng sáng nhạt) lật một nửa rồi nổ, mảnh cầu sáng bay lên.",
+  "idea": "Pha 1: mặt cầu lật mặt dưới chân người chơi: vòng sáng bán kính 5 m (vạch báo ĐỎ) lật một nửa rồi nổ, mảnh cầu sáng bay lên.",
   "element": "kim",
   "palette": {
     "core": "241f12",
     "body": "c2b27a",
     "rim": "fff6d0",
-    "accent": "f2e48a"
+    "accent": "ff1f3d"
   },
   "shapeLang": [
     "ring",
@@ -23,7 +23,7 @@
     "impactMs": 130,
     "lingerMs": 900
   },
-  "readability": "Vòng sáng 5 m, nửa lật nửa phẳng đọc rõ, mảnh cầu viền sáng.",
+  "readability": "Vạch báo ĐỎ đặc đúng vùng tròn bán kính 5 m, đọc rõ trên nền đá sáng cả ngày lẫn đêm, ngoài vùng hoàn toàn sạch; thân hiệu ứng nổ màu hệ (vàng sáng và ngà (không cam)), tuyệt đối không đỏ/cam, không che người chơi.",
   "budget": {
     "drawCalls": 8,
     "particles": 300,

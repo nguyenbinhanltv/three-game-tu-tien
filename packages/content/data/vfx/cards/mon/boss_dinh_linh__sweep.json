@@ -1,13 +1,13 @@
 {
   "monId": "boss_dinh_linh",
   "move": "sweep",
-  "idea": "Pha 3: Đỉnh Linh quét cả cánh tay đồng: sóng nhiệt đồng quạt 14 m nửa góc 45° (vạch báo vàng đồng nhạt), mảnh giáp đồng văng ra theo hình quạt, sóng nhiệt làm méo nền.",
+  "idea": "Pha 3: Đỉnh Linh quét cả cánh tay đồng: sóng nhiệt đồng quạt 14 m nửa góc 45° (vạch báo ĐỎ), mảnh giáp đồng văng ra theo hình quạt, sóng nhiệt làm méo nền.",
   "element": "kim",
   "palette": {
     "core": "1c150a",
-    "body": "a98a38",
+    "body": "a99a3c",
     "rim": "f3e8bd",
-    "accent": "e6d27a"
+    "accent": "ff1f3d"
   },
   "shapeLang": [
     "arc",
@@ -24,7 +24,7 @@
     "impactMs": 140,
     "lingerMs": 900
   },
-  "readability": "Quạt vàng đồng rõ rìa, mảnh giáp sẫm viền sáng; sóng nhiệt là vệt mờ, không che nhân vật.",
+  "readability": "Vạch báo ĐỎ đặc đúng vùng quạt dài 14 m, nửa góc 45°, đọc rõ trên nền đá sáng cả ngày lẫn đêm, ngoài vùng hoàn toàn sạch; thân hiệu ứng nổ màu hệ (vàng đồng và ngà (không cam)), tuyệt đối không đỏ/cam, không che người chơi.",
   "budget": {
     "drawCalls": 8,
     "particles": 300,

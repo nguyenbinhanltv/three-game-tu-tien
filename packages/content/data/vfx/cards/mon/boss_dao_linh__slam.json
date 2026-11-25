@@ -1,13 +1,13 @@
 {
   "monId": "boss_dao_linh",
   "move": "slam",
-  "idea": "Pha 2: Đạo Linh nện xuống: vòng \"đạo\" bán kính 5 m (vạch báo bạc lam nhạt) vỡ thành ba mảnh ba sắc nhạt (kim, thủy, mộc) bật lên, tan thành mực bạc.",
+  "idea": "Pha 2: Đạo Linh nện xuống: vòng \"đạo\" bán kính 5 m (vạch báo ĐỎ) vỡ thành ba mảnh ba sắc nhạt (kim, thủy, mộc) bật lên, tan thành mực bạc.",
   "element": "thuy",
   "palette": {
     "core": "161c2a",
     "body": "8e98b8",
     "rim": "f2f6fa",
-    "accent": "9fc4f0"
+    "accent": "ff1f3d"
   },
   "shapeLang": [
     "ring",
@@ -23,7 +23,7 @@
     "impactMs": 130,
     "lingerMs": 800
   },
-  "readability": "Vòng bạc lam 5 m chia ba cung rõ, ba sắc nhạt khác nhau, không đỏ/cam.",
+  "readability": "Vạch báo ĐỎ đặc đúng vùng tròn bán kính 5 m, đọc rõ trên nền đá sáng cả ngày lẫn đêm, ngoài vùng hoàn toàn sạch; thân hiệu ứng nổ màu hệ (bạc và lam nhạt), tuyệt đối không đỏ/cam, không che người chơi.",
   "budget": {
     "drawCalls": 8,
     "particles": 300,

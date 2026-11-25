@@ -1,13 +1,13 @@
 {
   "monId": "elite_lo_thach_tuong",
   "move": "leap",
-  "idea": "Lộ Thạch Tướng nhảy đáp xuống: mỗi bước là một tiếng chuông trầm, vòng sóng chuông bán kính 5,5 m nổ từ điểm đáp (vạch báo vàng đá nhạt), bụi đá bắn nhẹ.",
+  "idea": "Lộ Thạch Tướng nhảy đáp xuống: mỗi bước là một tiếng chuông trầm, vòng sóng chuông bán kính 5,5 m nổ từ điểm đáp (vạch báo ĐỎ), bụi đá bắn nhẹ.",
   "element": "tho",
   "palette": {
     "core": "1b1a15",
     "body": "9a9a8c",
     "rim": "f4eed8",
-    "accent": "e8d089"
+    "accent": "ff1f3d"
   },
   "shapeLang": [
     "ring",
@@ -23,7 +23,7 @@
     "impactMs": 130,
     "lingerMs": 700
   },
-  "readability": "Vòng vàng đá 5,5 m, sóng chuông là vòng mảnh, bụi mỏng; không cam.",
+  "readability": "Vạch báo ĐỎ đặc đúng vùng tròn bán kính 5,5 m, đọc rõ trên nền đá sáng cả ngày lẫn đêm, ngoài vùng hoàn toàn sạch; thân hiệu ứng nổ màu hệ (xám đá và vàng đá nhạt), tuyệt đối không đỏ/cam, không che người chơi.",
   "budget": {
     "drawCalls": 7,
     "particles": 220,

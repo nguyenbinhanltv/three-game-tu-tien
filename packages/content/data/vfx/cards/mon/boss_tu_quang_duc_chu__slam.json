@@ -1,13 +1,13 @@
 {
   "monId": "boss_tu_quang_duc_chu",
   "move": "slam",
-  "idea": "Pha 2: tàn quang rơi như mưa xuống bán kính 4 m (vạch báo tím nhạt): nhiều đốm quang rơi đồng loạt rồi bùng thành vết đốt tròn, khói tím mỏng bốc lên.",
+  "idea": "Pha 2: tàn quang rơi như mưa xuống bán kính 4 m (vạch báo ĐỎ): nhiều đốm quang rơi đồng loạt rồi bùng thành vết đốt tròn, khói tím mỏng bốc lên.",
   "element": "thuy",
   "palette": {
     "core": "160d28",
     "body": "6b3fa0",
     "rim": "e2d4f7",
-    "accent": "a97ae8"
+    "accent": "ff1f3d"
   },
   "shapeLang": [
     "ring",
@@ -23,7 +23,7 @@
     "impactMs": 130,
     "lingerMs": 800
   },
-  "readability": "Đĩa tím nhạt 4 m, đốm quang rơi từ trên, vết đốt sẫm viền tím; không ngả đỏ.",
+  "readability": "Vạch báo ĐỎ đặc đúng vùng tròn bán kính 4 m, đọc rõ trên nền đá sáng cả ngày lẫn đêm, ngoài vùng hoàn toàn sạch; thân hiệu ứng nổ màu hệ (tím (không ngả hồng-đỏ)), tuyệt đối không đỏ/cam, không che người chơi.",
   "budget": {
     "drawCalls": 8,
     "particles": 300,

@@ -1,13 +1,13 @@
 {
   "monId": "elite_hu_anh_nhan",
   "move": "line",
-  "idea": "Hư Ảnh Nhân giơ tay phóng tia gương ngắn dọc đường 10 m, rộng 4 m (vạch báo bạc lam nhạt); nổ ra tia phản chiếu, vài mảnh gương nhỏ rơi.",
+  "idea": "Hư Ảnh Nhân giơ tay phóng tia gương ngắn dọc đường 10 m, rộng 4 m (vạch báo ĐỎ); nổ ra tia phản chiếu, vài mảnh gương nhỏ rơi.",
   "element": "kim",
   "palette": {
     "core": "16132a",
     "body": "55507a",
     "rim": "dde3ee",
-    "accent": "9cc0e6"
+    "accent": "ff1f3d"
   },
   "shapeLang": [
     "line",
@@ -24,7 +24,7 @@
     "impactMs": 140,
     "lingerMs": 700
   },
-  "readability": "Dải bạc lam 10×4 m, mảnh gương nhỏ viền sáng; phủ nhỏ, không che người.",
+  "readability": "Vạch báo ĐỎ đặc đúng vùng dài 10 m, rộng 4 m, đọc rõ trên nền đá sáng cả ngày lẫn đêm, ngoài vùng hoàn toàn sạch; thân hiệu ứng nổ màu hệ (bạc lam), tuyệt đối không đỏ/cam, không che người chơi.",
   "budget": {
     "drawCalls": 7,
     "particles": 220,

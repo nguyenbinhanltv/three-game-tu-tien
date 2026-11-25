@@ -1,13 +1,13 @@
 {
   "monId": "boss_hu_anh_chu",
   "move": "slam",
-  "idea": "Pha 2: Hư Ảnh Chủ nện xuống dưới chân người chơi: gương tròn bán kính 4,5 m nứt dần từ tâm (vạch báo ngọc lam), rồi vỡ tung thành mảnh gương xoáy lên, một cái bóng người thoáng hiện trong những mảnh.",
+  "idea": "Pha 2: Hư Ảnh Chủ nện xuống dưới chân người chơi: gương tròn bán kính 4,5 m nứt dần từ tâm (vạch báo ĐỎ), rồi vỡ tung thành mảnh gương xoáy lên, một cái bóng người thoáng hiện trong những mảnh.",
   "element": "thuy",
   "palette": {
     "core": "140f28",
     "body": "3f8f9a",
     "rim": "d9f6f2",
-    "accent": "7fe3d8"
+    "accent": "ff1f3d"
   },
   "shapeLang": [
     "ring",
@@ -23,7 +23,7 @@
     "impactMs": 130,
     "lingerMs": 800
   },
-  "readability": "Đĩa gương ngọc tròn đúng 4,5 m, nứt hình mạng nhện rõ từ tâm; mảnh vỡ cao vừa phải, không che mục tiêu.",
+  "readability": "Vạch báo ĐỎ đặc đúng vùng tròn bán kính 4,5 m, đọc rõ trên nền đá sáng cả ngày lẫn đêm, ngoài vùng hoàn toàn sạch; thân hiệu ứng nổ màu hệ (ngọc lam và bạc (gương)), tuyệt đối không đỏ/cam, không che người chơi.",
   "budget": {
     "drawCalls": 8,
     "particles": 300,

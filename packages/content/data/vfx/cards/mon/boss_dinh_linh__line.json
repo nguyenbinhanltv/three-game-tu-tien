@@ -1,13 +1,13 @@
 {
   "monId": "boss_dinh_linh",
   "move": "line",
-  "idea": "Đỉnh Linh phun một rãnh đồng nóng chảy dọc đường 22 m: vạch báo VÀNG ĐỒNG nhạt (không cam) dài 4 m; nổ ra rãnh đồng lỏng sáng trắng-vàng chạy dọc, giọt đồng bắn lên rồi nguội thành vảy sẫm.",
+  "idea": "Đỉnh Linh phun một rãnh đồng nóng chảy dọc đường 22 m: vạch báo ĐỎ dài 4 m; nổ ra rãnh đồng lỏng sáng trắng-vàng đồng (không cam) chạy dọc, giọt đồng bắn lên rồi nguội thành vảy sẫm.",
   "element": "kim",
   "palette": {
     "core": "1c150a",
-    "body": "a98a38",
+    "body": "a99a3c",
     "rim": "f3e8bd",
-    "accent": "e6d27a"
+    "accent": "ff1f3d"
   },
   "shapeLang": [
     "line",
@@ -24,7 +24,7 @@
     "impactMs": 150,
     "lingerMs": 900
   },
-  "readability": "Dải vàng đồng nhạt đúng 22×4 m, lõi đồng lỏng trắng-vàng, vảy nguội nâu sẫm; tuyệt đối không cam/đỏ.",
+  "readability": "Vạch báo ĐỎ đặc đúng vùng dài 22 m, rộng 4 m, đọc rõ trên nền đá sáng cả ngày lẫn đêm, ngoài vùng hoàn toàn sạch; thân hiệu ứng nổ màu hệ (vàng đồng và ngà (không cam)), tuyệt đối không đỏ/cam, không che người chơi.",
   "budget": {
     "drawCalls": 8,
     "particles": 300,

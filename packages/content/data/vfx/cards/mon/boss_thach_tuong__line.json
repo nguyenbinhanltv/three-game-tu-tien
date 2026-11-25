@@ -1,13 +1,13 @@
 {
   "monId": "boss_thach_tuong",
   "move": "line",
-  "idea": "Thạch Tượng đập tay xuống đất: một luống đá trồi nứt dọc đường 22 m (vạch báo vàng đá nhạt, rộng 4 m); nổ ra hàng khối đá trồi lên liên tiếp theo luống, khe vàng sáng giữa các khối.",
+  "idea": "Thạch Tượng đập tay xuống đất: một luống đá trồi nứt dọc đường 22 m (vạch báo ĐỎ); nổ ra hàng khối đá trồi lên liên tiếp theo luống, khe vàng sáng giữa các khối.",
   "element": "tho",
   "palette": {
     "core": "1e1c16",
     "body": "a29d8c",
     "rim": "f4eed8",
-    "accent": "e8d089"
+    "accent": "ff1f3d"
   },
   "shapeLang": [
     "line",
@@ -24,7 +24,7 @@
     "impactMs": 150,
     "lingerMs": 900
   },
-  "readability": "Dải vàng đá 22×4 m, khối đá thấp nối nhau, khe vàng sáng; chỗ an toàn ngoài luống sạch.",
+  "readability": "Vạch báo ĐỎ đặc đúng vùng dài 22 m, rộng 4 m, đọc rõ trên nền đá sáng cả ngày lẫn đêm, ngoài vùng hoàn toàn sạch; thân hiệu ứng nổ màu hệ (xám đá và vàng đá nhạt), tuyệt đối không đỏ/cam, không che người chơi.",
   "budget": {
     "drawCalls": 8,
     "particles": 300,

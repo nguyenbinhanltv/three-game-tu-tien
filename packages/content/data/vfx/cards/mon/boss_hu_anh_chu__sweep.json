@@ -1,13 +1,13 @@
 {
   "monId": "boss_hu_anh_chu",
   "move": "sweep",
-  "idea": "Pha 3: Hư Ảnh Chủ vung tay quét quạt 14 m, nửa góc 45°: dải bóng nhiều bàn tay nối đuôi nhau quét qua (vạch báo ngọc lam), bàn tay bóng tách thành lông bóng rơi, tan nhanh.",
+  "idea": "Pha 3: Hư Ảnh Chủ vung tay quét quạt 14 m, nửa góc 45°: dải bóng nhiều bàn tay nối đuôi nhau quét qua (vạch báo ĐỎ), bàn tay bóng tách thành lông bóng rơi, tan nhanh.",
   "element": "thuy",
   "palette": {
     "core": "140f28",
     "body": "3f8f9a",
     "rim": "d9f6f2",
-    "accent": "7fe3d8"
+    "accent": "ff1f3d"
   },
   "shapeLang": [
     "arc",
@@ -24,7 +24,7 @@
     "impactMs": 140,
     "lingerMs": 800
   },
-  "readability": "Quạt ngọc lam rõ rìa, bàn tay bóng sẫm có viền sáng; chỗ an toàn (ngoài quạt) hoàn toàn sạch.",
+  "readability": "Vạch báo ĐỎ đặc đúng vùng quạt dài 14 m, nửa góc 45°, đọc rõ trên nền đá sáng cả ngày lẫn đêm, ngoài vùng hoàn toàn sạch; thân hiệu ứng nổ màu hệ (ngọc lam và bạc (gương)), tuyệt đối không đỏ/cam, không che người chơi.",
   "budget": {
     "drawCalls": 8,
     "particles": 300,

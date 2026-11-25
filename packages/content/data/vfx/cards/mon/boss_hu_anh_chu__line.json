@@ -1,13 +1,13 @@
 {
   "monId": "boss_hu_anh_chu",
   "move": "line",
-  "idea": "Hư Ảnh Chủ giơ tay, một dải mặt gương dựng thẳng dọc đường 20 m: vạch báo ngọc lam nhạt dài 4 m; nổ ra tia phản chiếu, mảnh gương nhọn bay dọc theo đường, bóng người thoáng trong mảnh, tan như hơi nước trên mặt hồ.",
+  "idea": "Hư Ảnh Chủ giơ tay, một dải mặt gương dựng thẳng dọc đường 20 m: vạch báo ĐỎ dài 4 m; nổ ra tia phản chiếu, mảnh gương nhọn bay dọc theo đường, bóng người thoáng trong mảnh, tan như hơi nước trên mặt hồ.",
   "element": "thuy",
   "palette": {
     "core": "140f28",
     "body": "3f8f9a",
     "rim": "d9f6f2",
-    "accent": "7fe3d8"
+    "accent": "ff1f3d"
   },
   "shapeLang": [
     "line",
@@ -24,7 +24,7 @@
     "impactMs": 150,
     "lingerMs": 800
   },
-  "readability": "Dải ngọc lam đặc đúng 20×4 m, mảnh gương trắng bạc viền đậm không lẫn nền đá sáng; không che người chơi đứng ngoài dải.",
+  "readability": "Vạch báo ĐỎ đặc đúng vùng dài 20 m, rộng 4 m, đọc rõ trên nền đá sáng cả ngày lẫn đêm, ngoài vùng hoàn toàn sạch; thân hiệu ứng nổ màu hệ (ngọc lam và bạc (gương)), tuyệt đối không đỏ/cam, không che người chơi.",
   "budget": {
     "drawCalls": 8,
     "particles": 300,

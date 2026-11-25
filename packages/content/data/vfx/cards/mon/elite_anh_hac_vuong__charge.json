@@ -1,13 +1,13 @@
 {
   "monId": "elite_anh_hac_vuong",
   "move": "charge",
-  "idea": "Ảnh Hạc Vương lao lướt dọc đường 14 m, rộng 3 m (vạch báo ngọc lam nhạt); để lại vệt bóng hạc lướt qua, lông bóng rơi và tan.",
+  "idea": "Ảnh Hạc Vương lao lướt dọc đường 14 m, rộng 3 m (vạch báo ĐỎ); để lại vệt bóng hạc lướt qua, lông bóng rơi và tan.",
   "element": "thuy",
   "palette": {
     "core": "140f28",
     "body": "3f8f9a",
     "rim": "d9f6f2",
-    "accent": "7fe3d8"
+    "accent": "ff1f3d"
   },
   "shapeLang": [
     "line",
@@ -24,7 +24,7 @@
     "impactMs": 130,
     "lingerMs": 700
   },
-  "readability": "Dải ngọc lam 14×3 m, vệt bóng hạc sẫm viền ngọc; phủ nhỏ.",
+  "readability": "Vạch báo ĐỎ đặc đúng vùng dài 14 m, rộng 3 m, đọc rõ trên nền đá sáng cả ngày lẫn đêm, ngoài vùng hoàn toàn sạch; thân hiệu ứng nổ màu hệ (ngọc lam), tuyệt đối không đỏ/cam, không che người chơi.",
   "budget": {
     "drawCalls": 7,
     "particles": 220,

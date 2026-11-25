@@ -1,13 +1,13 @@
 {
   "monId": "boss_dinh_linh",
   "move": "slam",
-  "idea": "Pha 2: Đỉnh Linh giáng xuống như cả chiếc đỉnh đồng: vòng văn khắc đỉnh bán kính 5 m nứt phát sáng (vạch báo vàng đồng), rồi cột đồng lỏng trồi lên và sóng chuông ngân lan ra.",
+  "idea": "Pha 2: Đỉnh Linh giáng xuống như cả chiếc đỉnh đồng: vòng văn khắc đỉnh bán kính 5 m nứt phát sáng (vạch báo ĐỎ), rồi cột đồng lỏng trồi lên và sóng chuông ngân lan ra.",
   "element": "kim",
   "palette": {
     "core": "1c150a",
-    "body": "a98a38",
+    "body": "a99a3c",
     "rim": "f3e8bd",
-    "accent": "e6d27a"
+    "accent": "ff1f3d"
   },
   "shapeLang": [
     "ring",
@@ -23,7 +23,7 @@
     "impactMs": 130,
     "lingerMs": 900
   },
-  "readability": "Vòng văn khắc vàng đồng đúng 5 m, cột đồng thấp và đặc, sóng chuông là vòng mảnh trắng-ngà; không cam.",
+  "readability": "Vạch báo ĐỎ đặc đúng vùng tròn bán kính 5 m, đọc rõ trên nền đá sáng cả ngày lẫn đêm, ngoài vùng hoàn toàn sạch; thân hiệu ứng nổ màu hệ (vàng đồng và ngà (không cam)), tuyệt đối không đỏ/cam, không che người chơi.",
   "budget": {
     "drawCalls": 8,
     "particles": 300,

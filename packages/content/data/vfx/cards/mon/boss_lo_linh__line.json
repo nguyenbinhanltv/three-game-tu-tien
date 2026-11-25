@@ -1,13 +1,13 @@
 {
   "monId": "boss_lo_linh",
   "move": "line",
-  "idea": "Lộ Linh trải một cầu ánh sáng thẳng dọc đường 22 m, rộng 4 m (vạch báo vàng sáng nhạt, không cam); nổ ra tấm sáng lát trên đường, mép sáng trắng, hạt sáng bay lên rồi tắt.",
+  "idea": "Lộ Linh trải một cầu ánh sáng thẳng dọc đường 22 m, rộng 4 m (vạch báo ĐỎ); nổ ra tấm sáng lát trên đường, mép sáng trắng, hạt sáng bay lên rồi tắt.",
   "element": "kim",
   "palette": {
     "core": "241f12",
     "body": "c2b27a",
     "rim": "fff6d0",
-    "accent": "f2e48a"
+    "accent": "ff1f3d"
   },
   "shapeLang": [
     "line",
@@ -24,7 +24,7 @@
     "impactMs": 150,
     "lingerMs": 900
   },
-  "readability": "Dải vàng sáng nhạt đúng 22×4 m, tấm sáng lát đặc viền trắng; không cam/đỏ.",
+  "readability": "Vạch báo ĐỎ đặc đúng vùng dài 22 m, rộng 4 m, đọc rõ trên nền đá sáng cả ngày lẫn đêm, ngoài vùng hoàn toàn sạch; thân hiệu ứng nổ màu hệ (vàng sáng và ngà (không cam)), tuyệt đối không đỏ/cam, không che người chơi.",
   "budget": {
     "drawCalls": 8,
     "particles": 300,

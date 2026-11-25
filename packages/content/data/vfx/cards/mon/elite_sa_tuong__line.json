@@ -1,13 +1,13 @@
 {
   "monId": "elite_sa_tuong",
   "move": "line",
-  "idea": "Sa Tướng quét một cồn cát sóng dọc đường 11 m, rộng 4 m (vạch báo cát vàng nhạt); cồn cát nổi lên thành sóng chạy dọc rồi vỡ thành bụi.",
+  "idea": "Sa Tướng quét một cồn cát sóng dọc đường 11 m, rộng 4 m (vạch báo ĐỎ); cồn cát nổi lên thành sóng chạy dọc rồi vỡ thành bụi.",
   "element": "tho",
   "palette": {
     "core": "231e12",
     "body": "c9b878",
     "rim": "fff3cf",
-    "accent": "ead78e"
+    "accent": "ff1f3d"
   },
   "shapeLang": [
     "line",
@@ -24,7 +24,7 @@
     "impactMs": 140,
     "lingerMs": 700
   },
-  "readability": "Dải cát vàng nhạt 11×4 m, sóng cát thấp; phủ nhỏ.",
+  "readability": "Vạch báo ĐỎ đặc đúng vùng dài 11 m, rộng 4 m, đọc rõ trên nền đá sáng cả ngày lẫn đêm, ngoài vùng hoàn toàn sạch; thân hiệu ứng nổ màu hệ (cát vàng nhạt (không cam)), tuyệt đối không đỏ/cam, không che người chơi.",
   "budget": {
     "drawCalls": 7,
     "particles": 220,

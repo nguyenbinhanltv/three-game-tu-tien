@@ -1,13 +1,13 @@
 {
   "monId": "boss_ve_kieu",
   "move": "line",
-  "idea": "Vệ Kiều (người canh cầu hai mặt) phóng một tia đá hai mặt dọc cầu 18 m, rộng 3,5 m: vạch báo lục ngọc nhạt, nửa sáng nửa xám; nổ ra tia đá chia đôi sáng/xám, khe lục lộ ra.",
+  "idea": "Vệ Kiều (người canh cầu hai mặt) phóng một tia đá hai mặt dọc cầu 18 m, rộng 3,5 m: vạch báo ĐỎ; nổ ra tia đá chia đôi sáng/xám, khe lục lộ ra.",
   "element": "tho",
   "palette": {
     "core": "1f2a26",
     "body": "8aa59a",
     "rim": "f0f6f3",
-    "accent": "8fd3a8"
+    "accent": "ff1f3d"
   },
   "shapeLang": [
     "line",
@@ -24,7 +24,7 @@
     "impactMs": 150,
     "lingerMs": 800
   },
-  "readability": "Dải lục ngọc nhạt đúng 18×3,5 m chia đôi sáng/xám; mảnh đá sẫm viền sáng.",
+  "readability": "Vạch báo ĐỎ đặc đúng vùng dài 18 m, rộng 3,5 m, đọc rõ trên nền đá sáng cả ngày lẫn đêm, ngoài vùng hoàn toàn sạch; thân hiệu ứng nổ màu hệ (lục ngọc và xám trắng), tuyệt đối không đỏ/cam, không che người chơi.",
   "budget": {
     "drawCalls": 8,
     "particles": 300,
