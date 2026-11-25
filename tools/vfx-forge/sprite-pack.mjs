@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Họa Pháp Lô 2: tách nền xanh chroma của bảng sprite Codex (`forge sprites`) và xếp thành atlas WebP trong suốt cho `FX_SPRITES` (packages/shared/src/fxtimeline.ts).
-// Dùng: node tools/vfx-forge/sprite-pack.mjs <bảng.png> | --sheet <bảng.png>:<cột>:<hàng> ... [--cols 4] [--base <atlas.webp> nối thêm vào atlas có sẵn] [--patch <ô>=<bảng.png>:<cột>:<hàng>:<số cột>:<số hàng> thay một ô] [--cell 512] [--out <đường dẫn>; mặc định public/hoa-truc/vfx_sprites.<hash10>.webp] [--preview <png>]
+// Dùng: node tools/vfx-forge/sprite-pack.mjs <bảng.png> | --sheet <bảng.png>:<cột>:<hàng> ... [--cols 8: số cột của atlas, khớp SPRITE_COLS] [--base <atlas.webp> nối thêm vào atlas có sẵn] [--patch <ô>=<bảng.png>:<cột>:<hàng>:<số cột>:<số hàng> thay một ô] [--cell 512] [--out <đường dẫn>; mặc định public/hoa-truc/vfx_sprites.<hash10>.webp] [--preview <png>]
 // Mỗi ô lưới đều (cols × rows) của bảng: tìm khung bao của phần không phải nền, cắt, thu vừa ô (chừa lề), xếp vào atlas. alpha = 1 − (g − max(r,b))/255; khử viền xanh bằng cách trừ phần nền.
 import { createHash } from 'node:crypto';
 import fs from 'node:fs';
@@ -17,7 +17,8 @@ const flag = (n, d) => {
   return i >= 0 ? argv[i + 1] : d;
 };
 if (!input) throw new Error('dùng: sprite-pack.mjs <bảng.png> [--cols 4] [--rows 2] [--cell 512] [--out <webp>]');
-const cols = Number(flag('--cols', 4));
+// Số cột của ATLAS (mặc định 8: cạnh atlas ≤ 8192 px = `maxTextureDimension2D` mặc định của WebGPU, khớp `SPRITE_COLS` ở render/vfx/art.ts). Cũng là số cột mặc định khi truyền một bảng trần.
+const cols = Number(flag('--cols', 8));
 const rows = Number(flag('--rows', 2));
 const cell = Number(flag('--cell', 512));
 // Mặc định ghi ra `apps/client/public/hoa-truc/vfx_sprites.<hash10>.webp` (hash10 = 10 ký tự đầu của sha256 nội dung): R2 bất biến, không bao giờ đè tên cũ.
