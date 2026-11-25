@@ -2,6 +2,7 @@
 // Chỉ là lớp trình diễn phía client (server không biết): không đổi hướng, không đổi luật chơi, camera chiến đấu khóa góc không bị đụng
 // (đáp xuống/ra khỏi điểm thì mượt về 52°). Tắt bằng `?vista=0`.
 
+import { FLAGS } from '../../base/flags';
 import { ISO_FOV, ISO_PITCH, ISO_FAR } from './iso';
 
 /** Một điểm ngắm cảnh: đứng trong `r` mét (mặt phẳng) thì camera mở tầm nhìn, trừ khi người chơi đã bấm thoát. */
@@ -31,6 +32,12 @@ export const VISTA = {
   /** Thời gian vào/ra (giây) cho độ mượt: ~ 1/rate. */
   rate: 1.6,
 } as const;
+
+/**
+ * Họa Cảnh + vùng xa (`?style=painted&far=1`): camera gần ngang tầm mắt và cao hơn để chân trời và dải núi nướng (8–18° ngẩng) vào khung; mép trên
+ * khung ngẩng 20° − pitch. Mặc định (không cờ) giữ `VISTA`.
+ */
+export const VISTA_FAR = { pitch: (5 * Math.PI) / 180, liftY: 9 } as const;
 
 /** Điểm ngắm cảnh chứa (x, z) ở level này, hoặc null. */
 export function spotAt(level: string, x: number, z: number, spots: readonly VistaSpot[] = VISTA_SPOTS): VistaSpot | null {
@@ -96,11 +103,12 @@ export interface VistaView {
 /** Nội suy các thông số camera theo `amount` (0..1). `amount = 0` trả đúng giá trị camera chéo gốc. */
 export function vistaView(amount: number): VistaView {
   const a = Math.max(0, Math.min(1, amount));
+  const far = FLAGS.style === 'painted' && FLAGS.far;
   return {
-    pitch: ISO_PITCH + (VISTA.pitch - ISO_PITCH) * a,
+    pitch: ISO_PITCH + (far ? VISTA_FAR.pitch - ISO_PITCH : VISTA.pitch - ISO_PITCH) * a,
     distMul: 1 + (VISTA.distMul - 1) * a,
     fov: ISO_FOV + VISTA.fovAdd * a,
     far: ISO_FAR + (VISTA.far - ISO_FAR) * a,
-    lift: VISTA.liftY * a,
+    lift: (far ? VISTA_FAR.liftY : VISTA.liftY) * a,
   };
 }

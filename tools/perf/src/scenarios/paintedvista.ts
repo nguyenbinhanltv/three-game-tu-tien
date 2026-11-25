@@ -28,7 +28,7 @@ export default {
           name: `PV${style[0]}${view[0]}`,
           quality: opt('--preset', 'high'),
           viewport: VIEWS[view]!,
-          query: { mood: 'day', quiet: 1, style: style === 'painted' ? 'painted' : undefined },
+          query: { mood: 'day', quiet: 1, style: style === 'painted' ? 'painted' : undefined, far: style === 'painted' ? 1 : undefined },
           seenIntro: true,
           warnings: true,
         });
