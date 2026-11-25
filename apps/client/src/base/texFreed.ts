@@ -14,6 +14,7 @@ export function markCpuFreed(t: THREE.Texture): void {
  */
 export function neutralizeFreedTexture(t: THREE.Texture): void {
   if (!t.userData.dtlFreed) return;
+  t.name = `dtl-neutral:${t.name}`; // nhãn GPU: lỗi 'Destroyed texture … used in a submit' sẽ nêu tên, phân biệt với texture 1×1 mặc định của three
   const c = t as THREE.CompressedTexture;
   const d = t as THREE.DataArrayTexture;
   if (c.isCompressedTexture) {

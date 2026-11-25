@@ -52,6 +52,14 @@ describe('neutralizeFreedTexture', () => {
     expect(t.image.width).toBe(1);
   });
 
+  it('gắn nhãn dtl-neutral để lỗi GPU truy được nguồn', () => {
+    const t = new THREE.DataTexture(null as unknown as Uint8Array, 8, 8);
+    t.name = 'prop_x_color';
+    markCpuFreed(t);
+    neutralizeFreedTexture(t);
+    expect(t.name).toBe('dtl-neutral:prop_x_color');
+  });
+
   it('texture chưa bỏ bản CPU: giữ nguyên', () => {
     const data = new Uint8Array(64);
     const t = new THREE.DataTexture(data, 4, 4);
