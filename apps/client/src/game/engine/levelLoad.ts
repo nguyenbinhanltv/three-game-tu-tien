@@ -337,7 +337,8 @@ export function buildLevelA(eng: Game, id: string, q: (typeof QUALITY)[string]):
       d.userData.op = g.opacity ?? 0.55;
       if (flat && !g.flat) {
         // Iso: đĩa dựng đứng đổi sang nằm phẳng thì mờ và nhỏ (như vòng cổng phẳng trong hang), không thành mảng sáng chói phủ góc màn hình.
-        d.userData.op = Math.min(d.userData.op as number, ISO_GATE_OPACITY);
+        // Họa Cảnh: nền sáng pastel làm vòng mờ mất, nâng độ đậm (không bloom nên không có quầng bù)
+        d.userData.op = Math.min(d.userData.op as number, FLAGS.style === 'painted' ? ISO_GATE_OPACITY * 1.7 : ISO_GATE_OPACITY);
         d.scale.multiplyScalar(ISO_GATE_SCALE);
         d.userData.isoFlat = true; // không đánh dấu bloom: bloom làm đĩa chói thành mảng trắng
       }
