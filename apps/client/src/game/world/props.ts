@@ -355,6 +355,7 @@ export class PropLayer {
   private readonly pv = new THREE.Matrix4();
   private readonly sph = new THREE.Sphere();
   private readonly lastView = new Float32Array(16);
+  private readonly lastProj = new Float32Array(2);
   /** Khung nhìn dùng cho lần chọn cây trước (null = không cắt). */
   private viewCulled = false;
   /** Số cây 3D được chép vào pool ở lần chọn gần nhất (đo hiệu quả cắt). */
@@ -522,6 +523,11 @@ export class PropLayer {
     // Camera xoay/đổi FOV (cắt cảnh, rung) thì chọn lại; tịnh tiến đã có ngưỡng 2 m bên dưới.
     if (view && !viewMoved)
       for (const i of [0, 1, 2, 4, 5, 6, 8, 9, 10]) if (Math.abs(view[i]! - this.lastView[i]!) > 1e-3) viewMoved = true;
+    // FOV/zoom chỉ đổi ma trận chiếu (không đổi matrixWorld): so thêm các phần tử tỉ lệ x/y (0, 5).
+    if (camera && !viewMoved) {
+      const pe = camera.projectionMatrix.elements;
+      if (Math.abs(pe[0]! - this.lastProj[0]!) > 1e-4 || Math.abs(pe[5]! - this.lastProj[1]!) > 1e-4) viewMoved = true;
+    }
     if (this.poolReady && !viewMoved && Math.hypot(camX - this.lastX, camZ - this.lastZ) < 2 && scale === this.lastScale)
       return this.lastVis;
     if (camera) {
@@ -529,6 +535,8 @@ export class PropLayer {
       this.pv.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
       this.frustum.setFromProjectionMatrix(this.pv, camera.coordinateSystem);
       this.lastView.set(camera.matrixWorld.elements);
+      this.lastProj[0] = camera.projectionMatrix.elements[0]!;
+      this.lastProj[1] = camera.projectionMatrix.elements[5]!;
     }
     this.viewCulled = !!camera;
     const margin = this.shadows ? VIEW_MARGIN_SHADOW : VIEW_MARGIN;

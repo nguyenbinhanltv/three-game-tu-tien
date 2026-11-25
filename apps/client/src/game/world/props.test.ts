@@ -1,5 +1,5 @@
 import * as THREE from 'three/webgpu';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { allProps } from './propScatter';
 import { bakeGeometry, PropLayer, treeInView } from './props';
 
@@ -72,5 +72,33 @@ describe('prop layer (P2-A4)', () => {
     // lề lớn hơn (có bóng) giữ thêm cây sát khung
     const near = treeInView(fr, sp, 100 + 45, 0, 100, 1, 10);
     expect(treeInView(fr, sp, 100 + 45, 0, 100, 1, 32) || !near).toBe(true);
+  });
+
+  it('đổi FOV (chỉ đổi projectionMatrix, camera đứng yên) thì lần update kế chọn lại cây, không để hở mép khung', async () => {
+    // ImpostorLayer nạp atlas bằng TextureLoader (cần DOM): giả `document` tối thiểu, ảnh không bao giờ tải xong.
+    vi.stubGlobal('document', { createElementNS: () => ({ addEventListener() {}, removeEventListener() {}, style: {} }) });
+    const scene = new THREE.Group();
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(new Int16Array([0, 0, 0, 32767, 0, 0, 0, 32767, 0]), 3, true));
+    geo.setAttribute('color', new THREE.BufferAttribute(new Float32Array(9).fill(1), 3));
+    scene.add(new THREE.Mesh(geo, new THREE.MeshStandardMaterial()));
+    const cache = { acquire: async () => ({ id: 'prop_co_thu', scene, animations: [], release: () => {} }) };
+    // Cây lệch ngang ~38 m so với trục nhìn, cách camera ~60 m.
+    const layer = new PropLayer(cache as never, [{ id: 'prop_co_thu', x: 38, y: 0, z: 0, yaw: 0, s: 1 }]);
+    const cam = new THREE.PerspectiveCamera(8, 16 / 9, 0.5, 600);
+    cam.position.set(0, 0, 60);
+    cam.lookAt(0, 0, 0);
+    cam.updateMatrixWorld();
+    for (let i = 0; i < 4; i++) {
+      layer.update(1, 0, 60, cam);
+      await new Promise((r) => setTimeout(r, 20));
+    }
+    expect(layer.treesDrawn).toBe(0); // FOV hẹp: cây ngoài khung
+    cam.fov = 60;
+    cam.updateProjectionMatrix();
+    layer.update(1, 0, 60, cam); // camera không dịch, chỉ FOV đổi
+    expect(layer.treesDrawn).toBe(1);
+    layer.dispose();
+    vi.unstubAllGlobals();
   });
 });
