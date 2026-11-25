@@ -1,9 +1,11 @@
 import {
   abs,
+  clamp,
   dot,
   exp,
   float,
   fract,
+  max,
   mix,
   screenCoordinate,
   screenSize,
@@ -33,6 +35,8 @@ export interface PaintedOutputOpts {
   exposure: number;
   vignette: number;
   /** Độ lệch quang sai màu (UV, 0 = không): R/B lấy mẫu lệch hướng ra mép (trúng đòn). */
+  /** Mặt nạ 0..1 tại một điểm UV (VFX/linh quang cần giữ nguyên, không nhòe); có thì Kuwahara bỏ qua chỗ đó và 2 điểm ảnh quanh nó. */
+  mask?: (uv: N) => N;
   aberration?: N;
   /** Lớp phủ ở không gian hiển thị (sau sRGB): chớp, viền trúng đòn, khung va chạm… */
   overlay?: (rgb: N) => N;
@@ -112,7 +116,14 @@ export function paintedOutput(scenePass: N, o: PaintedOutputOpts): N {
     const wide: N = rWide >= 2 ? kuwahara(uv, 2) : kuwahara(uv, 1);
     const one: N = kuwahara(uv, 1);
     const painted: N = select(done, c0.rgb, select(useOne, one, wide));
-    c = mix(painted, c0.rgb, smoothstep(1.3, 2.2, hiLum));
+    let keep: N = smoothstep(1.3, 2.2, hiLum);
+    if (o.mask) {
+      // mặt nạ mở rộng 2 điểm ảnh (cửa sổ Kuwahara) để mép VFX không bị trộn với nền
+      const mk = (du: number, dv: number): N => o.mask!(uv.add(vec2(du, dv).mul(texel)));
+      const m: N = max(max(max(mk(0, 0), mk(2, 0)), max(mk(-2, 0), mk(0, 2))), mk(0, -2));
+      keep = max(keep, clamp(m.mul(6), 0, 1));
+    }
+    c = mix(painted, c0.rgb, keep);
   } else {
     c = c0.rgb;
   }

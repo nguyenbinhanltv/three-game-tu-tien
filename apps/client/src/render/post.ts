@@ -3,6 +3,7 @@ import {
   clamp,
   float,
   fract,
+  max,
   length,
   luminance,
   mix,
@@ -244,13 +245,18 @@ export class PostPipeline {
     this.scenePass = scenePass;
     if (FLAGS.style === 'painted') {
       // Họa Cảnh: pass cuối của painted-valley (Kuwahara, vignette, đường cong họa sĩ, sRGB); không ACES, chỉnh màu, hạt phim, bloom, AO, FXAA
-      setBloomActive(false);
+      // P5: VFX/linh quang đánh dấu bằng markBloom ghi vào đích MRT `bloom` (không có bloom thật): đó là mặt nạ để Kuwahara không nhòe chúng
+      setBloomActive(true);
+      scenePass.setMRT(mrt({ output, bloom: vec4(0, 0, 0, output.a) }));
+      scenePass.getTexture('bloom').type = THREE.UnsignedByteType;
+      const vfxTex = scenePass.getTextureNode('bloom');
       const fromCenterP = screenUV.sub(0.5);
       this.post.outputNode = paintedOutput(scenePass, {
         paint: FLAGS.paint ?? 3,
         exposure: 1,
         vignette: 0.14,
         // phản hồi chiến đấu giữ nguyên (hit/flash/impact/punch/pulse/mực chết); quang sai màu khi trúng đòn lấy mẫu lệch R/B của ảnh gốc
+        mask: (uv) => max(max(vfxTex.sample(uv).r, vfxTex.sample(uv).g), vfxTex.sample(uv).b),
         aberration: postParams.hit.mul(0.012),
         overlay: (g) => feedbackLayers(g, fromCenterP),
       });
