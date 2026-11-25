@@ -299,7 +299,9 @@ export class Breakables {
     for (const [kind, list] of byKind) {
       const geo = kindGeometry(kind);
       this.geos.push(geo);
-      const mesh = new THREE.InstancedMesh(geo, this.kitMat, list.length);
+      // WebGPU không vẽ InstancedMesh chỉ có 1 instance (xem `props.ts`, `lacKiemBirds.ts`): sức chứa tối thiểu 2, ô thừa co về 0
+      const mesh = new THREE.InstancedMesh(geo, this.kitMat, Math.max(2, list.length));
+      for (let i = list.length; i < mesh.count; i++) mesh.setMatrixAt(i, _m.makeScale(1e-4, 1e-4, 1e-4));
       mesh.name = `breakables-${kind}`;
       mesh.castShadow = true;
       mesh.frustumCulled = false;

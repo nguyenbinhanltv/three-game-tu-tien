@@ -138,4 +138,15 @@ describe('vật vỡ: chi phí vẽ (đếm offline, tất định)', () => {
     expect(new THREE.Vector3().setFromMatrixPosition(m).toArray()).toEqual([5, 2, 7]);
     b.dispose();
   });
+  it('loại chỉ có 1 vật vẫn dùng InstancedMesh ≥ 2 ô (WebGPU không vẽ 1 instance), ô thừa co về 0', () => {
+    const b = new Breakables([{ id: 'one', kind: 'dummy', x: 2048, z: 2048, yaw: 0 }]);
+    const mesh = b.group.children.find((c) => c.name === 'breakables-dummy') as THREE.InstancedMesh;
+    expect(mesh.count).toBeGreaterThanOrEqual(2);
+    const m = new THREE.Matrix4();
+    mesh.getMatrixAt(1, m);
+    expect(new THREE.Vector3().setFromMatrixScale(m).x).toBeLessThan(0.01);
+    mesh.getMatrixAt(0, m);
+    expect(new THREE.Vector3().setFromMatrixScale(m).x).toBeCloseTo(1, 5);
+    b.dispose();
+  });
 });
