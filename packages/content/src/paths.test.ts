@@ -20,7 +20,7 @@ const LEGACY = {
     art: 'ho_phap',
     dao: 'ho',
     tint: 'ffde96',
-    palette: { core: '5a2d0b', body: 'e39a2c', rim: 'fff0c2', accent: 'ffd25a', shadow: '2a1708' },
+    palette: { core: '3b3210', body: 'd9b83a', rim: 'fff1b8', accent: 'ffe27a', shadow: '1f1b0a' },
     hit: { sfx: 'impact', gain: 0.2, rate: 1 },
   },
   thanh_moc_dan_kinh: {

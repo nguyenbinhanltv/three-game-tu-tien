@@ -8,6 +8,9 @@ import { shapeGeometry, shapeKind } from './fxShapes';
 describe('sprite vẽ tay (Họa Pháp Lô 2)', () => {
   it('mọi sprite có một ô trong atlas, không trùng tên', () => {
     expect(FX_SPRITES.length).toBeLessThanOrEqual(SPRITE_COLS * SPRITE_ROWS);
+    // WebGPU mặc định chỉ cho cạnh texture ≤ 8192 px (quá thì mất thiết bị GPU, màn đen): atlas ô 512 px không được vượt.
+    expect(SPRITE_COLS * 512).toBeLessThanOrEqual(8192);
+    expect(SPRITE_ROWS * 512).toBeLessThanOrEqual(8192);
     expect(new Set(FX_SPRITES).size).toBe(FX_SPRITES.length);
   });
 

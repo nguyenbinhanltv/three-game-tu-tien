@@ -592,7 +592,16 @@ export function spriteNodes(U: FxUniforms): { color: N; opacity: N } {
   const kWhite = vec3(0.8, 0.98, 0.92);
   const kT = smoothstep(0.1, 0.78, spLum.sqrt());
   const kRamp = mix(mix(mix(kCore, kBody, smoothstep(0.04, 0.4, kT)), kRim, smoothstep(0.4, 0.8, kT)), kWhite, smoothstep(0.9, 1.0, kT));
-  const spStyled = mix(mix(spLift, lRamp, step(0.5, U.a.x).mul(float(1).sub(step(1.5, U.a.x)))), kRamp, step(1.5, U.a.x));
+  // Kiểu "hộ pháp" (`fxA.x` = 3): viền mực nâu olive sẫm, thân VÀNG ĐẤT/ochre ấm (hue ~46–50°), viền kem vàng; không ánh bạc kim loại (tách khỏi Đao tu thép bạc), không đỏ/cam.
+  const hCore = vec3(0.04, 0.03, 0.005);
+  const hBody = vec3(0.62, 0.42, 0.045);
+  const hRim = vec3(0.9, 0.74, 0.3);
+  const hWhite = vec3(1.0, 0.9, 0.55);
+  const hT = smoothstep(0.1, 0.78, spLum.sqrt());
+  const hRamp = mix(mix(mix(hCore, hBody, smoothstep(0.04, 0.4, hT)), hRim, smoothstep(0.4, 0.8, hT)), hWhite, smoothstep(0.9, 1.0, hT));
+  const isLoi = step(0.5, U.a.x).mul(float(1).sub(step(1.5, U.a.x)));
+  const isKiem = step(1.5, U.a.x).mul(float(1).sub(step(2.5, U.a.x)));
+  const spStyled = mix(mix(mix(spLift, lRamp, isLoi), kRamp, isKiem), hRamp, step(2.5, U.a.x));
   // Tan như khói mỏng dần: nhiễu thấp tần + mép mỏng (tranh sáng/trong) tan trước, ngưỡng rộng nên không ra đường cắt răng cưa.
   const spE = vnoise(q.mul(vec2(5, 7)).add(U.a.z.mul(7)))
     .mul(0.55)

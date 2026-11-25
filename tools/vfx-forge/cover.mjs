@@ -25,10 +25,11 @@ const FILL = {};
   const atlas = `apps/client/public/${fs.readFileSync('apps/client/src/render/vfx/art.ts', 'utf8').match(/SPRITE_ATLAS_FILE = '([^']+)'/)[1]}`;
   if (fs.existsSync(atlas)) {
     const { data, info } = await sharp(atlas).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
-    const cell = info.width / 4;
+    const cols = Number(fs.readFileSync('apps/client/src/render/vfx/art.ts', 'utf8').match(/SPRITE_COLS = (\d+)/)[1]);
+    const cell = info.width / cols;
     NAMES.forEach((n, i) => {
-      const cx = (i % 4) * cell;
-      const cy = Math.floor(i / 4) * cell;
+      const cx = (i % cols) * cell;
+      const cy = Math.floor(i / cols) * cell;
       let c = 0;
       let tot = 0;
       for (let y = 0; y < cell; y += 2)
