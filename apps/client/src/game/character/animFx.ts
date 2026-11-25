@@ -30,7 +30,7 @@ export interface AnimFxFlags {
   patch: boolean;
   /** Vòng chạy/chạy nhanh bằng clip Patch (`PM_Run`/`PM_Sprint`) thay UAL (`patchLoop.ts`); cần `patch` bật. `?ploop=0` tắt riêng để so. */
   patchLoop: boolean;
-  /** Gradient lò xo "ghim gốc, thả ngọn" (`PIN_GRADIENT`): độ cứng/cản/góc đổi dần từ gốc chuỗi `dtl_o_*` tới ngọn, không thêm xương. Mặc định TẮT (chờ A/B animlab); đọc lúc dựng nhân vật. */
+  /** Gradient lò xo "ghim gốc, thả ngọn" (`PIN_GRADIENT`): độ cứng/cản/góc đổi dần từ gốc chuỗi `dtl_o_*` tới ngọn, không thêm xương. Mặc định TẮT; bật bằng `?pin=1` (cần có từ lúc nạp trang vì đọc lúc dựng nhân vật; so A/B: `pnpm shots animlab --query pin=1`). */
   pin: boolean;
 }
 
@@ -48,7 +48,7 @@ export const ANIM_FX: AnimFxFlags = {
   ragdoll: FLAGS.thanPhap,
   patch: FLAGS.thanPhap,
   patchLoop: FLAGS.thanPhap && FLAGS.patchLoop,
-  pin: false,
+  pin: typeof location !== 'undefined' && new URLSearchParams(location.search).get('pin') === '1',
 };
 
 /**
