@@ -1,0 +1,274 @@
+{
+ "skill": "mon_boom_circle__boss_van_hai_kinh_vuong__chant",
+ "palette": "mon_boss_thuy",
+ "events": [
+  {
+   "type": "decal",
+   "tex": "scorch",
+   "t": 0,
+   "r": 4,
+   "dur": 2.8,
+   "at": "area",
+   "grow": 0.03,
+   "tone": "core",
+   "alpha": 0.95,
+   "tier": 0,
+   "from": "start",
+   "lift": 0.35
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.0,
+   "dur": 1.1,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.8,
+   "seed": 1400,
+   "tier": 0,
+   "sprite": "thuy_whirl",
+   "scale": 4.0,
+   "scaleTo": 4.0,
+   "offset": [
+    0.0,
+    0.4,
+    0.0
+   ],
+   "erodeFrom": 0.4,
+   "sweep": 0,
+   "ragged": 0.5,
+   "billboard": false,
+   "rot": [
+    -90,
+    0,
+    0
+   ]
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.04,
+   "dur": 0.95,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.7,
+   "seed": 1401,
+   "tier": 0,
+   "sprite": "thuy_foam_ring",
+   "scale": 4.2,
+   "scaleTo": 4.2,
+   "offset": [
+    0.0,
+    0.45,
+    0.0
+   ],
+   "erodeFrom": 0.35,
+   "sweep": 0,
+   "ragged": 0.5,
+   "billboard": false,
+   "rot": [
+    -90,
+    0,
+    0
+   ]
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.02,
+   "dur": 0.55,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.75,
+   "seed": 1402,
+   "tier": 0,
+   "sprite": "thuy_spray",
+   "scale": 2.7,
+   "scaleTo": 2.7,
+   "offset": [
+    0.0,
+    0.5,
+    0.0
+   ],
+   "erodeFrom": 0.15,
+   "sweep": 0,
+   "ragged": 0.5,
+   "billboard": false,
+   "rot": [
+    -90,
+    0,
+    0
+   ]
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.03,
+   "dur": 0.85,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.9,
+   "seed": 1403,
+   "tier": 0,
+   "sprite": "thuy_spout",
+   "scale": 1.4,
+   "scaleTo": 1.4,
+   "offset": [
+    0.0,
+    1.35,
+    0.0
+   ],
+   "erodeFrom": 0.4,
+   "sweep": 0,
+   "ragged": 0.5
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.02,
+   "dur": 0.65,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.9,
+   "seed": 1404,
+   "tier": 0,
+   "sprite": "thuy_jet",
+   "scale": 0.95,
+   "scaleTo": 0.95,
+   "offset": [
+    2.579,
+    0.95,
+    0.798
+   ],
+   "erodeFrom": 0.3,
+   "sweep": 0,
+   "ragged": 0.5
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.05,
+   "dur": 0.65,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.9,
+   "seed": 1405,
+   "tier": 0,
+   "sprite": "thuy_jet",
+   "scale": 0.95,
+   "scaleTo": 0.95,
+   "offset": [
+    0.038,
+    0.95,
+    2.7
+   ],
+   "erodeFrom": 0.3,
+   "sweep": 0,
+   "ragged": 0.5
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.08,
+   "dur": 0.65,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.9,
+   "seed": 1406,
+   "tier": 0,
+   "sprite": "thuy_jet",
+   "scale": 0.95,
+   "scaleTo": 0.95,
+   "offset": [
+    -2.556,
+    0.95,
+    0.871
+   ],
+   "erodeFrom": 0.3,
+   "sweep": 0,
+   "ragged": 0.5
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.11,
+   "dur": 0.65,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.9,
+   "seed": 1407,
+   "tier": 0,
+   "sprite": "thuy_jet",
+   "scale": 0.95,
+   "scaleTo": 0.95,
+   "offset": [
+    -1.618,
+    0.95,
+    -2.162
+   ],
+   "erodeFrom": 0.3,
+   "sweep": 0,
+   "ragged": 0.5
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.13999999999999999,
+   "dur": 0.65,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.9,
+   "seed": 1408,
+   "tier": 0,
+   "sprite": "thuy_jet",
+   "scale": 0.95,
+   "scaleTo": 0.95,
+   "offset": [
+    1.556,
+    0.95,
+    -2.207
+   ],
+   "erodeFrom": 0.3,
+   "sweep": 0,
+   "ragged": 0.5
+  },
+  {
+   "type": "particles",
+   "kind": "dust",
+   "t": 0,
+   "n": 44,
+   "speed": 4,
+   "spread": 1,
+   "life": 1.0,
+   "size": 0.26,
+   "at": "area",
+   "tone": "rim",
+   "tier": 1,
+   "offset": [
+    0,
+    0.3,
+    0
+   ],
+   "grav": 0.8
+  },
+  {
+   "type": "particles",
+   "kind": "shard",
+   "t": 0,
+   "n": 36,
+   "speed": 5,
+   "spread": 1,
+   "life": 0.9,
+   "size": 0.1,
+   "at": "area",
+   "tone": "body",
+   "tier": 0,
+   "offset": [
+    0,
+    0.3,
+    0
+   ],
+   "grav": 8
+  }
+ ]
+}

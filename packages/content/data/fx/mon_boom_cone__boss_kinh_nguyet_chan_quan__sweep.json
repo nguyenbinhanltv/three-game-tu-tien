@@ -1,0 +1,285 @@
+{
+ "skill": "mon_boom_cone__boss_kinh_nguyet_chan_quan__sweep",
+ "palette": "mon_boss_kim",
+ "events": [
+  {
+   "type": "decal",
+   "tex": "steel_crack",
+   "t": 0,
+   "r": 8,
+   "dur": 2.2,
+   "at": "area",
+   "grow": 0.04,
+   "tone": "core",
+   "alpha": 0.85,
+   "tier": 0,
+   "from": "start",
+   "sector": 35,
+   "lift": 0.35
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.0,
+   "dur": 0.85,
+   "at": "area",
+   "tone": "body",
+   "alpha": 1.0,
+   "seed": 1600,
+   "tier": 0,
+   "sprite": "nguyet_blade",
+   "scale": 2.571,
+   "scaleTo": 2.571,
+   "offset": [
+    0.0,
+    0.457,
+    1.429
+   ],
+   "erodeFrom": 0.4,
+   "sweep": 0,
+   "ragged": 0.5,
+   "aim": true,
+   "move": {
+    "to": "area",
+    "offset": [
+     0.0,
+     0.457,
+     6.571
+    ],
+    "ease": "out"
+   }
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.06,
+   "dur": 0.85,
+   "at": "area",
+   "tone": "body",
+   "alpha": 1.0,
+   "seed": 1601,
+   "tier": 0,
+   "sprite": "nguyet_blade",
+   "scale": 2.857,
+   "scaleTo": 2.857,
+   "offset": [
+    0.0,
+    0.457,
+    1.429
+   ],
+   "erodeFrom": 0.4,
+   "sweep": 0,
+   "ragged": 0.5,
+   "aim": true,
+   "move": {
+    "to": "area",
+    "offset": [
+     0.0,
+     0.457,
+     6.571
+    ],
+    "ease": "out"
+   }
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.12,
+   "dur": 0.85,
+   "at": "area",
+   "tone": "body",
+   "alpha": 1.0,
+   "seed": 1602,
+   "tier": 0,
+   "sprite": "nguyet_blade",
+   "scale": 3.143,
+   "scaleTo": 3.143,
+   "offset": [
+    0.0,
+    0.457,
+    1.429
+   ],
+   "erodeFrom": 0.4,
+   "sweep": 0,
+   "ragged": 0.5,
+   "aim": true,
+   "move": {
+    "to": "area",
+    "offset": [
+     0.0,
+     0.457,
+     6.571
+    ],
+    "ease": "out"
+   }
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.03,
+   "dur": 0.8,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.95,
+   "seed": 1610,
+   "tier": 0,
+   "sprite": "nguyet_slash",
+   "scale": 3.143,
+   "scaleTo": 3.143,
+   "offset": [
+    0.0,
+    0.343,
+    1.143
+   ],
+   "erodeFrom": 0.4,
+   "sweep": 0,
+   "ragged": 0.5,
+   "aim": true,
+   "move": {
+    "to": "area",
+    "offset": [
+     0.0,
+     0.343,
+     6.857
+    ],
+    "ease": "out"
+   }
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.09,
+   "dur": 0.8,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.95,
+   "seed": 1611,
+   "tier": 0,
+   "sprite": "nguyet_slash",
+   "scale": 3.143,
+   "scaleTo": 3.143,
+   "offset": [
+    0.0,
+    0.343,
+    1.143
+   ],
+   "erodeFrom": 0.4,
+   "sweep": 0,
+   "ragged": 0.5,
+   "aim": true,
+   "move": {
+    "to": "area",
+    "offset": [
+     0.0,
+     0.343,
+     6.857
+    ],
+    "ease": "out"
+   }
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.05,
+   "dur": 0.8,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.95,
+   "seed": 1620,
+   "tier": 0,
+   "sprite": "nguyet_shards",
+   "scale": 0.971,
+   "scaleTo": 0.971,
+   "offset": [
+    -2.571,
+    0.629,
+    5.429
+   ],
+   "erodeFrom": 0.4,
+   "sweep": 0,
+   "ragged": 0.5
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.08,
+   "dur": 0.8,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.95,
+   "seed": 1621,
+   "tier": 0,
+   "sprite": "nguyet_shards",
+   "scale": 0.971,
+   "scaleTo": 0.971,
+   "offset": [
+    0.0,
+    0.629,
+    6.571
+   ],
+   "erodeFrom": 0.4,
+   "sweep": 0,
+   "ragged": 0.5
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.11,
+   "dur": 0.8,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.95,
+   "seed": 1622,
+   "tier": 0,
+   "sprite": "nguyet_shards",
+   "scale": 0.971,
+   "scaleTo": 0.971,
+   "offset": [
+    2.571,
+    0.629,
+    5.429
+   ],
+   "erodeFrom": 0.4,
+   "sweep": 0,
+   "ragged": 0.5
+  },
+  {
+   "type": "particles",
+   "kind": "shard",
+   "t": 0,
+   "n": 34,
+   "speed": 8,
+   "spread": 0.4,
+   "life": 0.7,
+   "size": 0.1,
+   "at": "area",
+   "tone": "rim",
+   "tier": 0,
+   "offset": [
+    0,
+    0.2857142857142857,
+    0.4571428571428572
+   ],
+   "grav": 4
+  },
+  {
+   "type": "particles",
+   "kind": "spark",
+   "t": 0.04,
+   "n": 24,
+   "speed": 4,
+   "spread": 0.7,
+   "life": 0.8,
+   "size": 0.08,
+   "at": "area",
+   "tone": "rim",
+   "tier": 0,
+   "offset": [
+    0,
+    0.17142857142857143,
+    2.2857142857142856
+   ],
+   "grav": 1.5
+  }
+ ]
+}

@@ -57,6 +57,19 @@ import { densitySize } from '../../render/vfx/particles';
 import type { Vfx } from './vfx';
 import { presentDt } from './vfxParts/common';
 
+/** Kiểu tô sprite theo tiền tố tên (`fxA.x`, xem `spriteNodes` ở render/vfx/stylized.ts). */
+const SPRITE_STYLE: Record<string, number> = {
+  loi_: 1,
+  kiem_: 2,
+  hp_: 3,
+  thuy_: 4,
+  nguyet_: 5,
+  cot_: 6,
+  tho_: 7,
+  doc_: 7,
+  tim_: 8,
+};
+
 export interface FxTarget {
   /** Chân mục tiêu (y = mặt đất dưới chân). */
   x: number;
@@ -549,7 +562,11 @@ export class FxRunner {
     const kind0 = ev.shape === 'flip' && ev.flip && (FORGE_FLIPS as readonly string[]).includes(ev.flip) ? 'mapFlip' : shapeKind(ev.shape);
     // Sprite vẽ tay: mỗi nhóm atlas hướng tu một kind riêng (`sprite`, `sprite_loi`...); nạp atlas của nhóm khi lần đầu có chiêu của hướng đó hiện ra.
     const cell = kind0 === 'sprite' ? spriteCell(ev.sprite ?? 'hon_hand_claw') : null;
-    const kind = cell ? (cell.group === 'hon' ? 'sprite' : (`sprite_${cell.group}` as 'sprite_loi' | 'sprite_kiem' | 'sprite_hp')) : kind0;
+    const kind = cell
+      ? cell.group === 'hon'
+        ? 'sprite'
+        : (`sprite_${cell.group}` as 'sprite_loi' | 'sprite_kiem' | 'sprite_hp' | 'sprite_hai' | 'sprite_tinh')
+      : kind0;
     const isSprite = cell !== null;
     if (cell) useSpriteGroup(cell.group);
     const start = this.anchor(c, ev.at ?? 'self', ev.offset, yaw, tgt, new THREE.Vector3());
@@ -746,15 +763,13 @@ export class FxRunner {
                 ? 1
                 : 0;
     m.fxA.z = ev.seed ?? 0;
-    // Sprite: `fxA.x` chọn kiểu tô (0 = âm hồn tím mực, 1 = lôi: viền mực chàm, lõi trắng xanh, 2 = kiếm: viền mực lam lục, thân xanh ngọc, viền bạc, 3 = hộ pháp: viền mực nâu olive, thân vàng đất), theo tiền tố tên.
-    if (isSprite)
-      m.fxA.x = (ev.sprite ?? '').startsWith('hp_')
-        ? 3
-        : (ev.sprite ?? '').startsWith('kiem_')
-          ? 2
-          : (ev.sprite ?? '').startsWith('loi_')
-            ? 1
-            : 0;
+    // Sprite: `fxA.x` chọn kiểu tô theo tiền tố tên: 0 = âm hồn tím mực, 1 = lôi (viền mực chàm, lõi trắng xanh), 2 = kiếm (viền mực lam lục, thân xanh ngọc, viền bạc),
+    // 3 = hộ pháp (vàng đất), 4 = thủy (chàm → xanh biển → bọt trắng), 5 = nguyệt (thép sẫm → bạc → trắng), 6 = xương cot_ (bảng kim lạnh),
+    // 7 = đất/đá/độc tho_/doc_ (bảng nâu, giữ phần ngả lục), 8 = sét tím tim_ (nguyên màu).
+    if (isSprite) {
+      const sn = ev.sprite ?? '';
+      m.fxA.x = SPRITE_STYLE[sn.slice(0, sn.indexOf('_') + 1)] ?? 0;
+    }
   }
 
   // ---- hạt ----
