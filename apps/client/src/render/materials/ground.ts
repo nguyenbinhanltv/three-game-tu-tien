@@ -12,6 +12,7 @@ import {
   luminance,
   max,
   min,
+  distance,
   mix,
   normalGeometry,
   normalize,
@@ -28,7 +29,7 @@ import {
   vec3,
   vec4,
 } from 'three/tsl';
-import { WORLD_SIZE } from '@dtl/shared';
+import { SUOI, WORLD_SIZE } from '@dtl/shared';
 import { GROUND_LAYER as L, type GroundTextures } from '../../base/groundTextures';
 import { FLAGS } from '../../base/flags';
 import { isoTerrainDetail } from './isoDetail';
@@ -653,6 +654,12 @@ export function applyGroundShader(mat: THREE.MeshStandardNodeMaterial, tex: Grou
     const painted = groundColor(F, flatTextures(), positionWorld, nGeo, {
       m: vec4(0.25, float(1).sub(pathW), 0, 0.55),
       landNormal: nGeo,
+      // vùng suối nhiều hoa hơn: hệ số chấm hoa lên tới 2,4 trong bán kính phẳng của suối, tắt dần tới ~0,75 bán kính ngoài (toạ độ SUOI của Vân Lam; level khác ở xa nên không ảnh hưởng)
+      dab: mix(
+        float(1),
+        float(2.4),
+        float(1).sub(smoothstep(SUOI.flatR, SUOI.outerR * 0.75, distance(positionWorld.xz, vec2(SUOI.x, SUOI.z)))),
+      ),
     });
     mat.colorNode = col.mul(keep);
     mat.emissiveNode = painted.mul(grassW);

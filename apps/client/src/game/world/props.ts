@@ -10,7 +10,7 @@ import { ImpostorLayer } from './treeImpostor';
 import { withSightFade } from './occlusion';
 import { logger } from '../../base/log';
 import { TC_PROP_CFG } from './propTcCfg';
-import { bannerSway } from './bannerSway';
+import { bannerSway, lanternSway } from './bannerSway';
 import { propCrystal } from './propCrystal';
 
 const propsLog = logger('props');
@@ -33,6 +33,8 @@ interface PropCfg {
   shadow?: boolean;
   /** Vải đung đưa (PROP-1): xem `bannerSway`. */
   sway?: boolean;
+  /** Lồng đèn giấy lắc như con lắc (M4): xem `lanternSway`. */
+  lantern?: boolean;
   /** Tinh thể (PROP-1): xem `propCrystal`. */
   crystal?: boolean;
   /**
@@ -614,11 +616,13 @@ export class PropLayer {
         ? (m) => withSightFade(propCrystal(m)) // tinh thể cao (cột tà Dị Vực): vừa phát sáng vừa mờ khi che người
         : cfg?.tree || cfg?.sight
           ? withSightFade
-          : cfg?.sway
-            ? bannerSway
-            : cfg?.crystal
-              ? propCrystal
-              : undefined;
+          : cfg?.lantern
+            ? lanternSway
+            : cfg?.sway
+              ? bannerSway
+              : cfg?.crystal
+                ? propCrystal
+                : undefined;
     // Họa Cảnh: cây và nhà tô hai tông (render/painted/props.ts); mặc định giữ nguyên
     const mats = adoptGltfMaterials(handle.scene, FLAGS.style === 'painted' ? (m) => paintedProp(baseWrap ? baseWrap(m) : m) : baseWrap);
     handle.scene.updateMatrixWorld(true);

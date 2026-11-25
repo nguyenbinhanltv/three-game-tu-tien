@@ -69,6 +69,7 @@ import type { GodRays } from '../render/godRays';
 import type { CardForest } from './world/cardForest';
 import type { LacKiemGarden } from './world/lacKiemGarden';
 import type { LacKiemGround } from './world/lacKiemGround';
+import type { LacKiemBirds } from './world/lacKiemBirds';
 import type { LacKiemScenes } from './world/lacKiemScenes';
 import type { DoanMachArt } from './world/doanMachArt';
 import type { KiemTrungArt } from './world/kiemTrungArt';
@@ -283,6 +284,7 @@ export class Game {
   /** Tiểu cảnh Lạc Kiếm (Chân Cảnh M1+M2): cổng bài, ao sen, kiếm bia, lối men vách, cầu treo. */
   lacKiemScenes: LacKiemScenes | null = null;
   lacKiemGround: LacKiemGround | null = null;
+  lacKiemBirds: LacKiemBirds | null = null;
   /** Cây thẻ alpha thay cây Tripo ở Lạc Kiếm (MAP-1 bản B). */
   cardForest: CardForest | null = null;
   doanMachArt: DoanMachArt | null = null;

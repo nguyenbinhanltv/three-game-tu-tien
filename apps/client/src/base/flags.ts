@@ -102,6 +102,8 @@ interface Flags {
   tcProps: boolean;
   /** `?bf=0` tắt bướm trang trí (so ảnh, đo). */
   butterflies: boolean;
+  /** `?birds=0` tắt đàn chim lượn trên Lạc Kiếm (Chân Cảnh M4): ảnh đối chứng. */
+  birds: boolean;
   /** `?hero=0` tắt viền nhân vật (hero light, C1). */
   hero: boolean;
   /** `?brk=0` tắt vật thể vỡ (vò, bia, cọc). */
@@ -189,6 +191,7 @@ export const FLAG_DOCS: Readonly<Record<string, { scope: 'user' | 'diag' | 'test
   bhart: { scope: 'diag', doc: '=0 tắt mỹ thuật riêng Bắc Hoang' },
   tc: { scope: 'diag', doc: '=0 ẩn bộ prop Thiên Công Khai Vật (PROP-1, so ảnh/đo)' },
   bf: { scope: 'diag', doc: '=0 tắt bướm trang trí' },
+  birds: { scope: 'diag', doc: '=0 tắt đàn chim lượn trên Lạc Kiếm (Chân Cảnh M4)' },
   hero: { scope: 'diag', doc: '=0 tắt viền nhân vật (hero light)' },
   ground: { scope: 'diag', doc: '=0 tắt decal mặt đất kể chuyện Lạc Kiếm (Chân Cảnh M3)' },
   scenes: { scope: 'diag', doc: '=0 tắt HÌNH tiểu cảnh Lạc Kiếm (Chân Cảnh M1+M2); va chạm vật đặc vẫn còn (shared)' },
@@ -275,6 +278,7 @@ export function readFlags(search: string): Flags {
     cinematics: !off(q.get('cine')),
     tcProps: !off(q.get('tc')),
     butterflies: !off(q.get('bf')),
+    birds: !off(q.get('birds')),
     hero: !off(q.get('hero')),
     breakables: !off(q.get('brk')),
     scenes: !off(q.get('scenes')),

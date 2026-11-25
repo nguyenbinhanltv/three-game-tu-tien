@@ -175,6 +175,22 @@ export const FX_SPRITES = [
   'kiem_flash',
   'kiem_sparks',
   'kiem_slash',
+  'hp_wedge',
+  'hp_furrows',
+  'hp_seal',
+  'hp_fieldcracks',
+  'hp_crystal',
+  'hp_fist',
+  'hp_cracks',
+  'hp_bell',
+  'hp_peaks',
+  'hp_earthwave',
+  'hp_armor',
+  'hp_shield',
+  'hp_guardian',
+  'hp_flash',
+  'hp_dust',
+  'hp_rubble',
 ] as const;
 export type FxSprite = (typeof FX_SPRITES)[number];
 
