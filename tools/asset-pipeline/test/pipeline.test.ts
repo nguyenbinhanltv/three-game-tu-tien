@@ -12,8 +12,42 @@ import { hashName, optimize, readManifest } from '../src/optimize.js';
 import { countTriangles, isSkinned, lodCount, lodLevel, measurePoses } from '../src/stats.js';
 import { validate } from '../src/validate.js';
 
-const SECT = path.join(ROOT, 'apps/client/public/assets/sect.glb');
 const quiet = () => {};
+
+/**
+ * GLB kiến trúc tổng hợp, không xương, không ảnh (thay `sect.glb` 33 MB đã xóa khỏi repo, A2): lưới địa hình N×N ô (~7,2k tam giác > trần 5000 của test
+ * ngân sách), cao 0–6 m, đủ lớn để meshopt + quantize nhỏ hơn một nửa. Dựng bằng gltf-transform, không cần Blender.
+ */
+async function writeArchGlb(file: string): Promise<void> {
+  const N = 60;
+  const doc = new Document();
+  const buf = doc.createBuffer();
+  const pos = new Float32Array((N + 1) * (N + 1) * 3);
+  const nor = new Float32Array((N + 1) * (N + 1) * 3);
+  for (let j = 0; j <= N; j++)
+    for (let i = 0; i <= N; i++) {
+      const k = (j * (N + 1) + i) * 3;
+      pos.set([i * 0.5, 3 + 3 * Math.sin(i * 0.31) * Math.cos(j * 0.23), j * 0.5], k);
+      nor.set([0, 1, 0], k);
+    }
+  const idx = new Uint32Array(N * N * 6);
+  let n = 0;
+  for (let j = 0; j < N; j++)
+    for (let i = 0; i < N; i++) {
+      const a = j * (N + 1) + i;
+      idx.set([a, a + N + 1, a + 1, a + 1, a + N + 1, a + N + 2], n);
+      n += 6;
+    }
+  const prim = doc
+    .createPrimitive()
+    .setAttribute('POSITION', doc.createAccessor().setType('VEC3').setArray(pos).setBuffer(buf))
+    .setAttribute('NORMAL', doc.createAccessor().setType('VEC3').setArray(nor).setBuffer(buf))
+    .setIndices(doc.createAccessor().setType('SCALAR').setArray(idx).setBuffer(buf))
+    .setMaterial(doc.createMaterial('stone'));
+  const node = doc.createNode('arch').setMesh(doc.createMesh('arch').addPrimitive(prim));
+  doc.createScene('scene').addChild(node);
+  await (await createIO()).write(file, doc);
+}
 
 function tmp(name: string) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), `dtl-${name}-`));
@@ -51,9 +85,9 @@ describe('tiện ích', () => {
   });
 });
 
-describe('sect.glb (kiến trúc, không xương)', () => {
+describe('GLB kiến trúc tổng hợp (không xương)', () => {
   const t = tmp('sect');
-  beforeAll(() => fs.copyFileSync(SECT, path.join(t.raw, 'arch_sect.glb')));
+  beforeAll(() => writeArchGlb(path.join(t.raw, 'arch_sect.glb')));
   afterAll(() => fs.rmSync(t.dir, { recursive: true, force: true }));
 
   it('tối ưu: quantize + meshopt, nhỏ hơn, giữ kích thước, rồi dùng cache', async () => {
@@ -104,7 +138,7 @@ describe('sect.glb (kiến trúc, không xương)', () => {
 
   it('tên asset sai quy ước thì optimize báo lỗi', async () => {
     const t2 = tmp('badname');
-    fs.copyFileSync(SECT, path.join(t2.raw, 'Sect Đẹp.glb'));
+    await writeArchGlb(path.join(t2.raw, 'Sect Đẹp.glb'));
     const r = await optimize({ rawDir: t2.raw, outDir: t2.out, cacheFile: t2.cache, ktx: false, log: quiet });
     expect(r.failed[0]?.error).toMatch(/sai quy ước/);
     fs.rmSync(t2.dir, { recursive: true, force: true });

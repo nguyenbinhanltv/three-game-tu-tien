@@ -39,12 +39,10 @@ function propTcJobs() {
 
 /**
  * id: asset id (tên file trong assets/build/raw/).
- * legacy: bản chép thêm của GLB thô. Client đã nạp arch_sect qua manifest (M2-8); bản này chỉ còn làm đầu vào
- *         cho test pipeline (tools/asset-pipeline/test), bỏ khi test có fixture riêng.
  * source: đường dẫn tương đối trong DTL_ASSET_SOURCE, truyền cho script qua `--src`.
  */
 const procedural = [
-  { id: 'arch_sect', script: 'tools/blender/thien_cong_sect.py', legacy: 'apps/client/public/assets/sect.glb' },
+  { id: 'arch_sect', script: 'tools/blender/thien_cong_sect.py' },
   { id: 'arch_thien_khuyet', script: 'tools/blender/thien_khuyet_arch.py' },
   // PROP-1 "Thiên Công Khai Vật": mỗi nhóm một lần chạy Blender, ghi mọi món × 2 biến thể cạnh GLB đích (id đầu nhóm). Danh mục: prop_tc_items.json.
   ...propTcJobs(),
@@ -343,7 +341,7 @@ function v3SetEntries() {
   return out;
 }
 
-/** @typedef {{ id: string, script: string, args: string[], deps: string[], legacy?: string }} Job */
+/** @typedef {{ id: string, script: string, args: string[], deps: string[] }} Job */
 
 const argv = process.argv.slice(2);
 const only = argv.includes('--only') ? argv[argv.indexOf('--only') + 1] : null;
@@ -474,10 +472,6 @@ for (const job of pending) {
   if (status !== 0) {
     console.error(`[blender] lỗi khi chạy ${job.script} (${job.id})`);
     process.exit(status);
-  }
-  if (job.legacy) {
-    fs.copyFileSync(out(job.id), path.join(root, job.legacy));
-    console.log(`[blender] chép thêm → ${job.legacy} (đầu vào test pipeline)`);
   }
 }
 console.log('[blender] xong.');
