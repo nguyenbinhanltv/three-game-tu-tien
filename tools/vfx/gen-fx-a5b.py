@@ -120,6 +120,10 @@ def slam_boom(B, move, r, theme, seed, ground=False):
             if e.get('sprite') == sp_['crack']:
                 e['scale'] = round(e['scale'] * 0.45, 3)
                 e['scaleTo'] = round(e['scaleTo'] * 0.45, 3)
+        if theme == 'thuy':
+            # nước: tâm gần trong suốt (bỏ xoáy phẳng sáng ở lõi), nền decal mờ; giữ gai nước + sóng + hạt
+            ev = [e for e in ev if not (e.get('sprite') == sp_['crack'] and e.get('type') == 'mesh')]
+            ev[0]['alpha'] = round(ev[0]['alpha'] * 0.4, 2)
     if thin:
         ev = [e for e in ev if not (e.get('sprite') in (sp_['dust'], sp_['debris']) and e.get('type') == 'mesh')]
         for e in ev:
