@@ -15,6 +15,8 @@ import type { IsoRun } from './lib/isoreport';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
 const opt = (n: string, d = ''): string => optEnv(n, d);
+/** `pnpm --filter` đổi cwd sang tools/perf: phân giải đường dẫn tương đối theo thư mục người gọi (`INIT_CWD` do pnpm đặt). */
+const resolveArg = (...p: string[]): string => path.resolve(process.env.INIT_CWD ?? process.cwd(), ...p);
 const has = flag;
 /** Đối số vị trí đầu tiên không phải cờ hoặc giá trị của cờ. */
 const positional = (): string | undefined => {
@@ -29,7 +31,7 @@ const positional = (): string | undefined => {
   }
   return undefined;
 };
-const readRun = (f: string): IsoRun => JSON.parse(fs.readFileSync(path.resolve(f), 'utf8')) as IsoRun;
+const readRun = (f: string): IsoRun => JSON.parse(fs.readFileSync(resolveArg(f), 'utf8')) as IsoRun;
 
 function latestIso(dir: string): string {
   const files = fs.existsSync(dir)
@@ -68,18 +70,18 @@ if (has('--make-baseline')) {
     process.exit(2);
   }
   const b = toBaseline(run, opt('--note') || undefined);
-  fs.mkdirSync(path.dirname(path.resolve(out)), { recursive: true });
-  fs.writeFileSync(path.resolve(out), JSON.stringify(b, null, 1) + '\n');
+  fs.mkdirSync(path.dirname(resolveArg(out)), { recursive: true });
+  fs.writeFileSync(resolveArg(out), JSON.stringify(b, null, 1) + '\n');
   console.log(`[perf-gate] ghi baseline ${out}: ${b.points.length} dòng`);
   process.exit(0);
 }
 
 const baseFile = opt('--baseline');
 const base: Baseline | null =
-  baseFile && fs.existsSync(path.resolve(baseFile)) ? (JSON.parse(fs.readFileSync(path.resolve(baseFile), 'utf8')) as Baseline) : null;
+  baseFile && fs.existsSync(resolveArg(baseFile)) ? (JSON.parse(fs.readFileSync(resolveArg(baseFile), 'utf8')) as Baseline) : null;
 if (baseFile && !base) console.warn(`[perf-gate] không thấy baseline ${baseFile}: chỉ xét ngân sách vùng`);
 const findings = gate(run, base, { tol: Number(opt('--tol', '0.1')), presets: opt('--presets', 'high').split(',') });
 const md = findingsToMarkdown(findings, run, base);
 console.log(md);
-if (opt('--md')) fs.writeFileSync(path.resolve(opt('--md')), md);
+if (opt('--md')) fs.writeFileSync(resolveArg(opt('--md')), md);
 process.exit(failed(findings) ? 1 : 0);

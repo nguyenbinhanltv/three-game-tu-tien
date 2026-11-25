@@ -1,6 +1,6 @@
 # Baseline cổng đo bản đồ
 
-`iso-high.json` (chưa có: cần một lượt trình duyệt trên `main`) là baseline gọn của `pnpm perf:iso` ở preset Cao: một dòng mỗi (điểm đo, preset) với draw call/tam giác tối đa, texture MB, heap MB, CPU p95. `pnpm perf:gate` so mỗi PR với file này (xem `tools/perf/src/gate.ts`, `tools/perf/src/lib/gate.ts`).
+`iso-high.json` (sinh trên `main` 25/11, 119 dòng) là baseline gọn của `pnpm perf:iso` ở preset Cao: một dòng mỗi (điểm đo, preset) với draw call/tam giác tối đa, texture MB, heap MB, CPU p95. `pnpm perf:gate` so mỗi PR với file này (xem `tools/perf/src/gate.ts`, `tools/perf/src/lib/gate.ts`).
 
 Sinh/cập nhật (chỉ làm trên `main` sạch, sau khi một PR cải thiện đã merge, kèm `--note "main <sha>"`):
 

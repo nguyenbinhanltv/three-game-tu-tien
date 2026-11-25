@@ -107,6 +107,14 @@ describe('gate', () => {
     expect(failed(gate(run([pt('a/x', 'map', { heap: null })]), null))).toBe(false);
   });
 
+  it('lỗi console đã có trong baseline chỉ cảnh báo; lỗi mới vẫn chặn', () => {
+    const base = toBaseline(run([pt('a/x', 'map')], ['nợ cũ']));
+    expect(failed(gate(run([pt('a/x', 'map')], ['nợ cũ']), base))).toBe(false);
+    const f = gate(run([pt('a/x', 'map')], ['nợ cũ', 'lỗi mới']), base);
+    expect(failed(f)).toBe(true);
+    expect(f.filter((y) => y.severity === 'fail').map((y) => y.metric)).toEqual(['lỗi mới']);
+  });
+
   it('bảng markdown nêu kết quả', () => {
     const r = run([pt('phuc_mach/giua', 'dungeon', { dc: 200 })]);
     const f = gate(r, null);

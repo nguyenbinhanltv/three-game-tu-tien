@@ -50,6 +50,8 @@ export interface Baseline {
   version: 1;
   date: string;
   note?: string;
+  /** Lỗi console đã có sẵn lúc lập baseline (nợ đã biết): không chặn, chỉ cảnh báo; lỗi MỚI vẫn chặn. */
+  errors?: string[];
   points: BaselinePoint[];
 }
 
@@ -58,6 +60,7 @@ export function toBaseline(run: IsoRun, note?: string): Baseline {
     version: 1,
     date: run.date,
     ...(note ? { note } : {}),
+    errors: [...new Set(run.errors)].slice(0, 50),
     points: run.points.map((p) => ({
       id: p.id,
       preset: p.preset,
@@ -157,8 +160,18 @@ export function gate(run: IsoRun, base: Baseline | null, opts: GateOptions = {})
     if (presets.has(b.preset) && !seen.has(`${b.preset}|${b.id}`))
       out.push({ severity: 'warn', id: b.id, preset: b.preset, metric: 'điểm đo', value: 0, limit: 0, why: 'thiếu điểm' });
   }
-  for (const e of [...new Set(run.errors)].slice(0, 20))
-    out.push({ severity: 'fail', id: '(console)', preset: '-', metric: e.slice(0, 120), value: 0, limit: 0, why: 'lỗi console' });
+  const known = new Set(base?.errors ?? []);
+  for (const e of [...new Set(run.errors)].slice(0, 20)) {
+    out.push({
+      severity: known.has(e) ? 'warn' : 'fail',
+      id: '(console)',
+      preset: '-',
+      metric: e.slice(0, 120),
+      value: 0,
+      limit: 0,
+      why: 'lỗi console',
+    });
+  }
   return out;
 }
 
