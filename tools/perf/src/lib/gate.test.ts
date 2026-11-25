@@ -130,6 +130,17 @@ describe('gate', () => {
   });
 });
 
+describe('baseline lỗi thời', () => {
+  it('baseline không có method (đo non) bị chặn, không so số', () => {
+    const base = toBaseline(run([pt('a/x', 'map')]));
+    delete base.method;
+    const f = gate(run([pt('a/x', 'map')]), base);
+    expect(f).toHaveLength(1);
+    expect(f[0]).toMatchObject({ why: 'baseline lỗi thời', severity: 'fail' });
+    expect(toBaseline(run([])).method).toBe('settled-v1');
+  });
+});
+
 describe('baseline khác backend', () => {
   const webgl = (points: IsoPoint[]): IsoRun => ({ ...run(points), backend: 'WebGL2' });
 
