@@ -265,7 +265,15 @@ const VIEW_MARGIN_SHADOW = 32;
  * nên cây ngoài màn hình vẫn bị GPU xử lý đỉnh và vẫn tính vào số tam giác; camera chéo khóa góc chỉ thấy vài chục mét quanh
  * nhân vật mà ô cây 3D kéo tới ~250 m. Cắt ở đây trước khi chép ma trận vào pool.
  */
-export function treeInView(frustum: THREE.Frustum, sphere: THREE.Sphere, x: number, y: number, z: number, s: number, margin: number): boolean {
+export function treeInView(
+  frustum: THREE.Frustum,
+  sphere: THREE.Sphere,
+  x: number,
+  y: number,
+  z: number,
+  s: number,
+  margin: number,
+): boolean {
   sphere.center.set(x, y + TREE_R * 0.4 * s, z);
   sphere.radius = TREE_R * s + margin;
   return frustum.intersectsSphere(sphere);
@@ -512,8 +520,10 @@ export class PropLayer {
     const view = camera ? camera.matrixWorld.elements : null;
     let viewMoved = (view !== null) !== this.viewCulled;
     // Camera xoay/đổi FOV (cắt cảnh, rung) thì chọn lại; tịnh tiến đã có ngưỡng 2 m bên dưới.
-    if (view && !viewMoved) for (const i of [0, 1, 2, 4, 5, 6, 8, 9, 10]) if (Math.abs(view[i]! - this.lastView[i]!) > 1e-3) viewMoved = true;
-    if (this.poolReady && !viewMoved && Math.hypot(camX - this.lastX, camZ - this.lastZ) < 2 && scale === this.lastScale) return this.lastVis;
+    if (view && !viewMoved)
+      for (const i of [0, 1, 2, 4, 5, 6, 8, 9, 10]) if (Math.abs(view[i]! - this.lastView[i]!) > 1e-3) viewMoved = true;
+    if (this.poolReady && !viewMoved && Math.hypot(camX - this.lastX, camZ - this.lastZ) < 2 && scale === this.lastScale)
+      return this.lastVis;
     if (camera) {
       camera.updateMatrixWorld();
       this.pv.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
