@@ -7,7 +7,7 @@ import { LIGHT } from './fieldShared';
  * Họa Cảnh P6: cây và nhà (vật thể tĩnh của thế giới) tô theo kiểu painted-valley, thay đèn PBR: mỗi mặt chỉ có hai tông, sáng (ngả ấm) và
  * tối (ngả lam lạnh, ít bão hòa), nối bằng một bước ngắn theo hướng mặt so với nắng cố định của Họa Cảnh (cùng `LIGHT` với cỏ và đất, nên cả
  * cảnh một ánh sáng). Màu gốc (texture × màu đỉnh) giữ nguyên làm nền, nên không đổi asset. Không đèn, không sương của mood, không phản xạ.
- * Vật liệu có phát sáng (đèn lồng, tinh thể) giữ phần phát sáng của nó. Chỉ chạy khi `?style=painted`; mặc định trả lại đúng vật liệu đưa vào.
+ * Vật liệu có phát sáng (đèn lồng, tinh thể: cả `emissive`/`emissiveMap` lẫn `emissiveNode` do lớp bọc trước đặt) giữ phần phát sáng của nó. Chỉ chạy khi `?style=painted`; mặc định trả lại đúng vật liệu đưa vào.
  */
 const SUN = new THREE.Vector3(...LIGHT.sunDir).normalize();
 
@@ -26,7 +26,9 @@ export function paintedProp<M extends THREE.MeshStandardNodeMaterial>(m: M): M {
   const tint = mix(vec3(...SHADE_TINT), vec3(...LIT_TINT), lit);
   m.lights = false;
   // màu ra = diffuseColor + emissive; phần cộng thêm = màu gốc × (tông − 1) để tổng là màu gốc × tông
-  const glow = m.emissiveMap || m.emissive.getHex() !== 0 ? materialEmissive : vec3(0);
+  // giữ phần phát sáng đã có: node tùy biến do lớp bọc trước đặt (vd. `propCrystal`: lõi + viền tinh thể), nếu không thì phát sáng chuẩn của vật liệu
+  const prev = m.emissiveNode as THREE.Node | null;
+  const glow: THREE.Node = prev ?? (m.emissiveMap || m.emissive.getHex() !== 0 ? materialEmissive : vec3(0));
   m.emissiveNode = diffuseColor.rgb.mul(tint.sub(1)).add(glow);
   m.needsUpdate = true;
   return m;
