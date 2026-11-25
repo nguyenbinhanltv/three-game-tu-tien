@@ -1,6 +1,6 @@
 {
   "skillId": "skl_lo_hoa_hoi_nguyen",
-  "idea": "Lô Hỏa Hồi Nguyên: hơi ấm lò đan bốc lên từ dưới chân thành một cột khói thuốc tròn trịa như búp sen, vài đốm than xanh ngọc nhỏ lơ lửng, tỏa nhẹ ra đạo hữu quanh đó. Màu: lõi lục thẫm gần đen (hue 150–165°), thân xanh ngọc lục bão hòa, viền ngọc nhạt, vàng nhạt chỉ là điểm nhỏ; đan hỏa là LỬA XANH NGỌC lõi vàng nhạt, KHÔNG đỏ, KHÔNG cam.",
+  "idea": "Lô Hỏa Hồi Nguyên: hơi ấm lò đan bốc lên từ dưới chân thành một cột khói thuốc tròn trịa như búp sen, vài đốm than xanh ngọc nhỏ lơ lửng, tỏa nhẹ ra đạo hữu quanh đó. Màu: lõi lục thẫm gần đen (hue 135–150°), thân XANH LÁ CÂY / ngọc bích ngả lục (hue 135–155°, ÍT lam, KHÔNG teal hay ngọc lam hue 170–200° vì đó là Kiếm tu), viền lục nhạt vàng, điểm vàng nhạt F2D86B tách rõ và khói mực lục thẫm; đan hỏa là LỬA THUỐC LỤC lõi vàng nhạt (đọc là lửa lò đan, không phải kiếm khí), KHÔNG đỏ, KHÔNG cam.",
   "element": "moc",
   "path": "dan_su",
   "shapeLang": [

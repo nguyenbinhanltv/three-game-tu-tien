@@ -1,6 +1,6 @@
 {
   "skillId": "skl_hoi_xuan_quyet",
-  "idea": "Hồi Xuân Quyết: một cơn gió xuân xoắn mang cánh hoa và những sợi mưa mảnh quanh người tu và đạo hữu; với quái trong 10 m có những sợi dây leo độc xanh thẫm trườn lên chân (mộc độc), tối hơn và nhỏ hơn phần hồi máu. Màu: lõi lục thẫm gần đen (hue 150–165°), thân xanh ngọc lục bão hòa, viền ngọc nhạt, vàng nhạt chỉ là điểm nhỏ; đan hỏa là LỬA XANH NGỌC lõi vàng nhạt, KHÔNG đỏ, KHÔNG cam.",
+  "idea": "Hồi Xuân Quyết: một cơn gió xuân xoắn mang cánh hoa và những sợi mưa mảnh quanh người tu và đạo hữu; với quái trong 10 m có những sợi dây leo độc xanh thẫm trườn lên chân (mộc độc), tối hơn và nhỏ hơn phần hồi máu. Màu: lõi lục thẫm gần đen (hue 135–150°), thân XANH LÁ CÂY / ngọc bích ngả lục (hue 135–155°, ÍT lam, KHÔNG teal hay ngọc lam hue 170–200° vì đó là Kiếm tu), viền lục nhạt vàng, điểm vàng nhạt F2D86B tách rõ và khói mực lục thẫm; đan hỏa là LỬA THUỐC LỤC lõi vàng nhạt (đọc là lửa lò đan, không phải kiếm khí), KHÔNG đỏ, KHÔNG cam.",
   "element": "moc",
   "path": "dan_su",
   "shapeLang": [

@@ -1,6 +1,6 @@
 {
   "skillId": "skl_thien_dan_phap_gioi",
-  "idea": "Thiên Đan Pháp Giới (chiêu tối thượng): mở một khu vườn đan dược 14 m: những viên đan khổng lồ bóng ngọc lơ lửng xoay quanh như tinh tú, sương vàng nhạt trôi giữa các cây linh thảo mọc quanh mép vùng; ánh sáng dịu, đọc được cả ngày và đêm. Màu: lõi lục thẫm gần đen (hue 150–165°), thân xanh ngọc lục bão hòa, viền ngọc nhạt, vàng nhạt chỉ là điểm nhỏ; đan hỏa là LỬA XANH NGỌC lõi vàng nhạt, KHÔNG đỏ, KHÔNG cam.",
+  "idea": "Thiên Đan Pháp Giới (chiêu tối thượng): mở một khu vườn đan dược 14 m: những viên đan khổng lồ bóng ngọc lơ lửng xoay quanh như tinh tú, sương vàng nhạt trôi giữa các cây linh thảo mọc quanh mép vùng; ánh sáng dịu, đọc được cả ngày và đêm. Màu: lõi lục thẫm gần đen (hue 135–150°), thân XANH LÁ CÂY / ngọc bích ngả lục (hue 135–155°, ÍT lam, KHÔNG teal hay ngọc lam hue 170–200° vì đó là Kiếm tu), viền lục nhạt vàng, điểm vàng nhạt F2D86B tách rõ và khói mực lục thẫm; đan hỏa là LỬA THUỐC LỤC lõi vàng nhạt (đọc là lửa lò đan, không phải kiếm khí), KHÔNG đỏ, KHÔNG cam.",
   "element": "moc",
   "path": "dan_su",
   "shapeLang": [
