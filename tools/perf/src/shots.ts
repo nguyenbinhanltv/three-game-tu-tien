@@ -18,6 +18,7 @@ import dungeon from './scenarios/dungeon';
 import hires from './scenarios/hires';
 import lackiem from './scenarios/lackiem';
 import painted from './scenarios/painted';
+import paintedvista from './scenarios/paintedvista';
 import tieucanh from './scenarios/tieucanh';
 import thienkhuyet from './scenarios/thienkhuyet';
 import bachoang from './scenarios/bachoang';
@@ -86,6 +87,7 @@ const SCENARIOS: Scenario[] = [
   propstc,
   lackiem,
   painted,
+  paintedvista,
   tieucanh,
   collwalk,
   thienkhuyet,
