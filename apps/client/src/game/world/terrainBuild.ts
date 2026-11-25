@@ -1,4 +1,4 @@
-import * as THREE from 'three/webgpu';
+import * as THREE from 'three';
 import {
   fbm,
   featureWeight,
@@ -21,8 +21,8 @@ import { tkGroundColor } from './thienKhuyetArt';
 import { faceTint, vdGroundColor } from './vanDinhArt';
 import { bhGroundColor, riftPath, type RiftPt } from './bacHoangArt';
 import { xichCracks, xichGroundColor } from './xichArt';
-import { ktGroundColor } from './kiemTrungArt';
-import { pmGroundColor } from './phucMachArt';
+import { ktGroundColor } from './kiemTrungColor';
+import { pmGroundColor } from './phucMachColor';
 
 export const TILE = 256;
 export const NEAR_R = 3;

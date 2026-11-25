@@ -79,7 +79,6 @@ export class Terrain {
 
   constructor() {
     initTerrainBuild();
-    this.startWorker();
     const COARSE_N = this.COARSE_N;
     const g = buildTileGeometry(0, 0, this.size, COARSE_N, 0);
     this.coarseIndex = new THREE.BufferAttribute(new Uint16Array(COARSE_N * COARSE_N * 6), 1);
@@ -209,6 +208,7 @@ export class Terrain {
   }
 
   // ----- worker dựng ô (B3) -----
+  private workerTried = false;
   private worker: Worker | null = null;
   private workerReady = false;
   private async = false;
@@ -283,6 +283,11 @@ export class Terrain {
   /** Gọi mỗi khung hình. Dựng tối đa `budget` ô mỗi lần để không giật. */
   update(px: number, pz: number, budget = 1): void {
     // Khi đã vào game (budget 1) và worker sẵn sàng: dựng ngoài luồng chính; lúc nạp màn hình (budget lớn) vẫn dựng đồng bộ cho nhanh và chắc.
+    // Worker (tải thêm ~0,7 MB nén) chỉ khởi động sau khi màn hình nạp xong: không nằm trên đường găng của lần tải đầu.
+    if (budget <= 1 && this.ready && !this.workerTried) {
+      this.workerTried = true;
+      this.startWorker();
+    }
     this.async = this.worker !== null && this.workerReady && budget <= 1;
     if (this.async) {
       this.applyResults(APPLY_PER_FRAME);
