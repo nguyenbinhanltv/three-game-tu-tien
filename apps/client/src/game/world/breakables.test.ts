@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { BRIDGE_A, BRIDGE_B, SCENE_GLB, TC_GATE, TC_ORIGIN, TC_POND } from '@dtl/shared';
-import { BREAKABLES_BY_LEVEL, BREAK_KINDS, SHARD_LIFE, brokenBy, spawnShard, stepShard, type BreakableSpec } from './breakables';
+import { Breakables, BREAKABLES_BY_LEVEL, BREAK_KINDS, breakableTriangles, SHARD_LIFE, brokenBy, spawnShard, stepShard, type BreakableSpec } from './breakables';
 
 const specs: BreakableSpec[] = [
   { id: 'a', kind: 'jar', x: 0, z: 0, yaw: 0 },
@@ -79,5 +79,31 @@ describe('vật vỡ Lạc Kiếm: bố cục (M5)', () => {
     const cells = new Set(list.map((s) => `${Math.round((s.x - TC_ORIGIN.x) / 40)},${Math.round((s.z - TC_ORIGIN.z) / 40)}`));
     expect(cells.size).toBeGreaterThanOrEqual(5);
     expect(list.filter((s) => s.kind === 'rock').length).toBeGreaterThanOrEqual(3);
+  });
+});
+
+describe('vật vỡ: chi phí vẽ (đếm offline, tất định)', () => {
+  it('toàn bộ vật vỡ Lạc Kiếm chỉ tốn ≤ 4 draw call (mỗi loại một InstancedMesh) và ≤ 12k tam giác', () => {
+    const list = BREAKABLES_BY_LEVEL.van_lam!;
+    const b = new Breakables(list);
+    const kinds = new Set(list.map((s) => s.kind));
+    expect(b.meshCount).toBe(kinds.size);
+    expect(b.meshCount).toBeLessThanOrEqual(4);
+    let tris = 0;
+    for (const k of list) tris += breakableTriangles(k.kind);
+    console.log(`breakables: ${b.meshCount} draw, ${tris} tam giác, ${list.length} vật`);
+    expect(tris).toBeLessThanOrEqual(12000);
+    b.dispose();
+  });
+  it('vỡ rồi mọc lại vẫn đúng số lượng, không thêm mesh', () => {
+    const list = BREAKABLES_BY_LEVEL.van_lam!;
+    const b = new Breakables(list);
+    const n = b.meshCount;
+    const first = list[0]!;
+    expect(b.hit(first.x, first.z, 1, 'heavy')).toBeGreaterThan(0);
+    b.update(BREAK_KINDS.jar.respawn + 1);
+    expect(b.aliveCount).toBe(list.length);
+    expect(b.meshCount).toBe(n);
+    b.dispose();
   });
 });

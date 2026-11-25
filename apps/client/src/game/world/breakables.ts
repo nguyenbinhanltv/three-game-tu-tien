@@ -1,5 +1,5 @@
 import * as THREE from 'three/webgpu';
-import { tierRank, TC_ORIGIN, type HitTier } from '@dtl/shared';
+import { hash01, tierRank, TC_ORIGIN, type HitTier } from '@dtl/shared';
 import { heightAt } from '../../base/levelCtx';
 
 /**
@@ -32,7 +32,7 @@ export const BREAK_KINDS: Record<BreakKind, BreakKindDef> = {
   jar: { radius: 0.45, minTier: 'medium', respawn: 25, debris: 12, color: '#8a6a4a' },
   dummy: { radius: 0.6, minTier: 'medium', respawn: 30, debris: 16, color: '#6b4a30' },
   stake: { radius: 0.35, minTier: 'medium', respawn: 20, debris: 8, color: '#7a5a3a' },
-  rock: { radius: 0.5, minTier: 'medium', respawn: 30, debris: 10, color: '#7d7a72' },
+  rock: { radius: 0.5, minTier: 'medium', respawn: 30, debris: 10, color: '#8a948f' },
 };
 
 export interface BreakableSpec {
@@ -168,15 +168,92 @@ const _e = new THREE.Euler();
 const _p = new THREE.Vector3();
 const _s = new THREE.Vector3();
 const _c = new THREE.Color();
+const _up = new THREE.Vector3(0, 1, 0);
+
+/** Màu theo bộ kit Lạc Kiếm (`lacKiemScenes.ts` `C`): gỗ, đất nung, rơm, đá phiến, rêu. */
+const KIT = {
+  clay: '#9a6e4a',
+  band: '#5a3328',
+  wood: '#6c4c33',
+  straw: '#c9b27a',
+  stone: '#8a948f',
+  stoneDark: '#5f6a66',
+  moss: '#74904c',
+} as const;
 
 interface Item {
   spec: BreakableSpec;
-  group: THREE.Group;
+  /** InstancedMesh của loại vật và chỉ số ô trong đó. */
+  mesh: THREE.InstancedMesh;
+  slot: number;
   alive: boolean;
   /** Giây còn lại tới lúc mọc lại (khi đã vỡ). */
   respawnIn: number;
   /** Tiến độ phóng to sau khi mọc lại (0–1). */
   grow: number;
+}
+
+interface Part {
+  g: THREE.BufferGeometry;
+  color: THREE.Color;
+  pos?: [number, number, number];
+  rot?: [number, number, number];
+}
+
+/** Gộp nhiều hình (đã dời/xoay sẵn) thành một BufferGeometry không chỉ mục có màu đỉnh. */
+function merge(parts: Part[]): THREE.BufferGeometry {
+  const pos: number[] = [];
+  const col: number[] = [];
+  const m = new THREE.Matrix4();
+  const e = new THREE.Euler();
+  const v = new THREE.Vector3();
+  for (const p of parts) {
+    const g = p.g.index ? p.g.toNonIndexed() : p.g.clone();
+    e.set(...(p.rot ?? [0, 0, 0]));
+    m.compose(new THREE.Vector3(...(p.pos ?? [0, 0, 0])), new THREE.Quaternion().setFromEuler(e), new THREE.Vector3(1, 1, 1));
+    g.applyMatrix4(m);
+    const a = g.attributes.position as THREE.BufferAttribute;
+    for (let i = 0; i < a.count; i++) {
+      v.fromBufferAttribute(a, i);
+      pos.push(v.x, v.y, v.z);
+      col.push(p.color.r, p.color.g, p.color.b);
+    }
+    g.dispose();
+    p.g.dispose();
+  }
+  const out = new THREE.BufferGeometry();
+  out.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  out.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+  out.computeVertexNormals();
+  return out;
+}
+
+/** Đá nhỏ: khối đa diện gồ ghề (dịch đỉnh theo băm vị trí), mặt trên phủ rêu, chân đá sẫm. Màu đỉnh theo pháp tuyến. */
+function rockGeometry(): THREE.BufferGeometry {
+  const g = new THREE.IcosahedronGeometry(0.42, 1).toNonIndexed();
+  const a = g.attributes.position as THREE.BufferAttribute;
+  const v = new THREE.Vector3();
+  for (let i = 0; i < a.count; i++) {
+    v.fromBufferAttribute(a, i);
+    const k = 0.82 + hash01(Math.round(v.x * 40), Math.round(v.y * 40), Math.round(v.z * 40)) * 0.36;
+    a.setXYZ(i, v.x * k * 1.05, v.y * k * 0.72, v.z * k * 0.92);
+  }
+  g.computeVertexNormals();
+  const n = g.attributes.normal as THREE.BufferAttribute;
+  const stone = new THREE.Color(KIT.stone);
+  const dark = new THREE.Color(KIT.stoneDark);
+  const moss = new THREE.Color(KIT.moss);
+  const c = new THREE.Color();
+  const col = new Float32Array(a.count * 3);
+  for (let i = 0; i < a.count; i++) {
+    const up = Math.min(1, Math.max(0, (n.getY(i) - 0.45) / 0.4));
+    c.copy(stone)
+      .lerp(dark, Math.min(1, Math.max(0, (0.15 - a.getY(i)) / 0.3)))
+      .lerp(moss, up * 0.7);
+    col.set([c.r, c.g, c.b], i * 3);
+  }
+  g.setAttribute('color', new THREE.BufferAttribute(col, 3));
+  return g;
 }
 
 function jarGeometry(): THREE.BufferGeometry {
@@ -196,6 +273,35 @@ function jarGeometry(): THREE.BufferGeometry {
   return new THREE.LatheGeometry(pts, 14);
 }
 
+function kindGeometry(kind: BreakKind): THREE.BufferGeometry {
+  const col = (h: string) => new THREE.Color(h);
+  switch (kind) {
+    case 'jar':
+      return merge([
+        { g: jarGeometry(), color: col(KIT.clay) },
+        { g: new THREE.TorusGeometry(0.38, 0.03, 6, 16), color: col(KIT.band), pos: [0, 0.5, 0], rot: [Math.PI / 2, 0, 0] },
+      ]);
+    case 'dummy':
+      return merge([
+        { g: new THREE.CylinderGeometry(0.1, 0.12, 1.5, 8), color: col(KIT.wood), pos: [0, 0.75, 0] },
+        { g: new THREE.CylinderGeometry(0.28, 0.32, 0.9, 10), color: col(KIT.straw), pos: [0, 1.05, 0] },
+        { g: new THREE.BoxGeometry(1.0, 0.1, 0.1), color: col(KIT.wood), pos: [0, 1.25, 0] },
+      ]);
+    case 'rock':
+      return rockGeometry().translate(0, 0.26, 0);
+    default:
+      return merge([{ g: new THREE.CylinderGeometry(0.1, 0.14, 1.1, 8), color: col(KIT.wood), pos: [0, 0.55, 0] }]);
+  }
+}
+
+/** Số tam giác của hình từng loại (để test ngân sách offline). */
+export function breakableTriangles(kind: BreakKind): number {
+  const g = kindGeometry(kind);
+  const n = g.attributes.position!.count / 3;
+  g.dispose();
+  return n;
+}
+
 export class Breakables {
   readonly group = new THREE.Group();
   private items: Item[] = [];
@@ -207,62 +313,51 @@ export class Breakables {
   private mats: THREE.Material[] = [];
   private rnd = Math.random;
 
+  private kindMeshes: THREE.InstancedMesh[] = [];
+  private readonly kitMat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.9, metalness: 0 });
+
   constructor(specs: readonly BreakableSpec[]) {
     this.group.name = 'breakables';
-    const clay = new THREE.MeshStandardMaterial({ color: BREAK_KINDS.jar.color, roughness: 0.85 });
-    const band = new THREE.MeshStandardMaterial({ color: '#5a3328', roughness: 0.8 });
-    const wood = new THREE.MeshStandardMaterial({ color: BREAK_KINDS.dummy.color, roughness: 0.9 });
-    const straw = new THREE.MeshStandardMaterial({ color: '#c9b27a', roughness: 1 });
-    this.mats.push(clay, band, wood, straw);
-    const jar = jarGeometry();
-    const jarBand = new THREE.TorusGeometry(0.38, 0.03, 6, 16);
-    const post = new THREE.CylinderGeometry(0.1, 0.12, 1.5, 8);
-    const body = new THREE.CylinderGeometry(0.28, 0.32, 0.9, 10);
-    const arm = new THREE.BoxGeometry(1.0, 0.1, 0.1);
-    const stake = new THREE.CylinderGeometry(0.1, 0.14, 1.1, 8);
-    const rock = new THREE.IcosahedronGeometry(0.42, 0);
-    rock.scale(1, 0.7, 0.9);
-    const stone = new THREE.MeshStandardMaterial({ color: BREAK_KINDS.rock.color, roughness: 0.95, flatShading: true });
-    this.mats.push(stone);
-    this.geos.push(jar, jarBand, post, body, arm, stake, rock, this.shardGeo);
-    for (const spec of specs) {
-      const g = new THREE.Group();
-      g.position.set(spec.x, heightAt(spec.x, spec.z), spec.z);
-      g.rotation.y = spec.yaw;
-      if (spec.kind === 'jar') {
-        g.add(new THREE.Mesh(jar, clay));
-        const b = new THREE.Mesh(jarBand, band);
-        b.rotation.x = Math.PI / 2;
-        b.position.y = 0.5;
-        g.add(b);
-      } else if (spec.kind === 'dummy') {
-        const p = new THREE.Mesh(post, wood);
-        p.position.y = 0.75;
-        g.add(p);
-        const t = new THREE.Mesh(body, straw);
-        t.position.y = 1.05;
-        g.add(t);
-        const a = new THREE.Mesh(arm, wood);
-        a.position.y = 1.25;
-        g.add(a);
-      } else if (spec.kind === 'rock') {
-        const r = new THREE.Mesh(rock, stone);
-        r.position.y = 0.26;
-        g.add(r);
-      } else {
-        const s = new THREE.Mesh(stake, wood);
-        s.position.y = 0.55;
-        g.add(s);
-      }
-      for (const c of g.children) c.castShadow = true;
-      this.group.add(g);
-      this.items.push({ spec, group: g, alive: true, respawnIn: 0, grow: 1 });
+    this.mats.push(this.kitMat);
+    this.geos.push(this.shardGeo);
+    // Mỗi LOẠI vật = một InstancedMesh (tối đa 4 draw call bất kể số vật), mỗi vật một ô ma trận; ẩn = ma trận co về 0.
+    const byKind = new Map<BreakKind, BreakableSpec[]>();
+    for (const spec of specs) byKind.set(spec.kind, [...(byKind.get(spec.kind) ?? []), spec]);
+    for (const [kind, list] of byKind) {
+      const geo = kindGeometry(kind);
+      this.geos.push(geo);
+      const mesh = new THREE.InstancedMesh(geo, this.kitMat, list.length);
+      mesh.name = `breakables-${kind}`;
+      mesh.castShadow = true;
+      mesh.frustumCulled = false;
+      this.kindMeshes.push(mesh);
+      this.group.add(mesh);
+      list.forEach((spec, slot) => {
+        const it: Item = { spec, mesh, slot, alive: true, respawnIn: 0, grow: 1 };
+        this.items.push(it);
+        this.place(it, 1);
+      });
     }
     this.shardMesh = new THREE.InstancedMesh(this.shardGeo, this.shardMat, MAX_SHARDS);
     this.shardMesh.frustumCulled = false;
     this.shardMesh.visible = false;
     this.shardMesh.count = 0;
     this.group.add(this.shardMesh);
+  }
+
+  /** Đặt ma trận của vật: tỉ lệ `k` (0 = ẩn). */
+  private place(it: Item, k: number): void {
+    _p.set(it.spec.x, heightAt(it.spec.x, it.spec.z), it.spec.z);
+    _q.setFromAxisAngle(_up, it.spec.yaw);
+    _s.setScalar(Math.max(k, 1e-4));
+    _m.compose(_p, _q, _s);
+    it.mesh.setMatrixAt(it.slot, _m);
+    it.mesh.instanceMatrix.needsUpdate = true;
+  }
+
+  /** Số mesh vẽ khi yên (chưa có mảnh vỡ): bằng số loại vật hiện có. */
+  get meshCount(): number {
+    return this.kindMeshes.length;
   }
 
   get specs(): BreakableSpec[] {
@@ -296,7 +391,7 @@ export class Breakables {
     const def = BREAK_KINDS[it.spec.kind];
     it.alive = false;
     it.respawnIn = def.respawn;
-    it.group.visible = false;
+    this.place(it, 0);
     let dx = 0;
     let dz = 0;
     if (fromX !== undefined && fromZ !== undefined) {
@@ -306,7 +401,7 @@ export class Breakables {
         dz = (it.spec.z - fromZ) / l;
       }
     }
-    const y = it.group.position.y + 0.5;
+    const y = heightAt(it.spec.x, it.spec.z) + 0.5;
     for (let k = 0; k < def.debris && this.shards.length < MAX_SHARDS; k++) {
       this.shards.push(spawnShard(it.spec.x, y, it.spec.z, dx, dz, def.color, this.rnd));
     }
@@ -317,8 +412,7 @@ export class Breakables {
       if (it.alive) {
         if (it.grow < 1) {
           it.grow = Math.min(1, it.grow + dt / GROW);
-          const k = 0.2 + 0.8 * it.grow;
-          it.group.scale.setScalar(k);
+          this.place(it, 0.2 + 0.8 * it.grow);
         }
         continue;
       }
@@ -326,8 +420,7 @@ export class Breakables {
       if (it.respawnIn <= 0) {
         it.alive = true;
         it.grow = 0;
-        it.group.scale.setScalar(0.2);
-        it.group.visible = true;
+        this.place(it, 0.2);
       }
     }
     if (this.shards.length === 0) {
