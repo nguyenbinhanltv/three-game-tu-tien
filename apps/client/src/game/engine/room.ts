@@ -91,7 +91,14 @@ export function onHazard(eng: Game, m: HazardMsg): void {
     // `own` ở nhánh này chỉ đổi cách vẽ (đè lên thân boss); pháp trận quạt/chữ nhật luôn được vẽ nên không mất vạch báo khi `warn` bị bỏ qua.
     const own = !!eng.monFx?.ownWarn(m, m.src ? eng.ents?.monsters.get(m.src) : undefined);
     if (Math.hypot(m.x - eng.renderPos.x, m.z - eng.renderPos.z) < 90)
-      telegraph(eng.vfx, m, isBossSrc(eng, m.src), hazardDangerOf(eng, m), own);
+      telegraph(
+        eng.vfx,
+        m,
+        isBossSrc(eng, m.src),
+        hazardDangerOf(eng, m),
+        own,
+        eng.monFx?.warnTint(m, m.src ? eng.ents?.monsters.get(m.src) : undefined),
+      );
     // Vạch pháp trận cũ giữ nguyên; boss thêm nhấp nháy dọc vạch (`mon_warn_line|cone`, V5).
     eng.monFx?.warn(m, m.src ? eng.ents?.monsters.get(m.src) : undefined);
   } else if (m.mv === 'trail') eng.vfx?.trailPool(m.x, m.z, m.r, m.delay, m.dur ?? 8);

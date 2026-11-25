@@ -29,6 +29,8 @@ export const SPRITE_GROUPS = {
   // Vân Hải (A2): nước `thuy_*` + trăng `nguyet_*`; tinh anh chương 2–3 (A3): xương `cot_*`, đá `tho_*`, đất-độc `doc_*`, sét tím `tim_*`. Gom theo kiểu quái, không theo hướng tu.
   hai: { file: 'hoa-truc/vfx_sprites_hai.c8709e04fc.webp', cols: 4, rows: 4 },
   tinh: { file: 'hoa-truc/vfx_sprites_tinh.2c4a99f7e9.webp', cols: 4, rows: 6 },
+  // Tinh anh Vân Lam (A4): lửa ma ám tím `lua_*` + đá khe hổ phách `ham_*`.
+  lam: { file: 'hoa-truc/vfx_sprites_lam.bd61f69a94.webp', cols: 4, rows: 3 },
 } as const;
 export type SpriteGroup = keyof typeof SPRITE_GROUPS;
 /** Hướng tu (`PATHS[].id`) → nhóm atlas của nó. Thêm một dòng khi thêm hướng mới. */
@@ -38,7 +40,16 @@ export const SPRITE_MAX_RESIDENT = 3;
 export const SPRITE_IDLE_MS = 90_000;
 
 /** Tiền tố tên sprite → nhóm atlas khi nhóm KHÔNG trùng tiền tố (sprite của quái gom chung một atlas nhỏ). */
-const PREFIX_GROUP: Record<string, SpriteGroup> = { thuy: 'hai', nguyet: 'hai', cot: 'tinh', tho: 'tinh', doc: 'tinh', tim: 'tinh' };
+const PREFIX_GROUP: Record<string, SpriteGroup> = {
+  thuy: 'hai',
+  nguyet: 'hai',
+  cot: 'tinh',
+  tho: 'tinh',
+  doc: 'tinh',
+  tim: 'tinh',
+  lua: 'lam',
+  ham: 'lam',
+};
 export const spriteGroupOf = (name: string): SpriteGroup => {
   const pre = name.split('_')[0]!;
   return PREFIX_GROUP[pre] ?? (pre as SpriteGroup);

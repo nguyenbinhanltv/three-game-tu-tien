@@ -6,7 +6,7 @@
 import { MON_FX, MONSTER } from '@dtl/content';
 import type { FxTimeline, HazardMsg } from '@dtl/shared';
 import { forgeTexLoaded } from '../../render/vfx/forgeTex';
-import { monPaletteKey } from '../../render/vfx/palette';
+import { FX_PALETTE, monPaletteKey } from '../../render/vfx/palette';
 import { groundAt } from '../../base/levelCtx';
 import type { FxCaster, FxRunner, FxTarget } from './fxTimeline';
 import { OTHERS_FX_LIVE_MAX } from './fxBudget';
@@ -98,6 +98,27 @@ export class MonFx {
     const key = !h.sh ? 'mon_warn' : h.sh === 'rect' ? 'mon_warn_line' : 'mon_warn_cone';
     const mv = moveOfHazard(MONSTER.get(src.s.t), h);
     return !!((mv ? this.tl(`${key}__${src.s.t}__${mv}`) : undefined) ?? this.tl(`${key}__${src.s.t}`));
+  }
+
+  /**
+   * Màu vạch báo theo hệ (A4): nếu chiêu có timeline vạch báo RIÊNG mà bảng màu của nó có `accent` KHÔNG đỏ/cam (hue 36°–345°, vd. tím-hồng, hổ phách)
+   * thì trả màu đó để vạch báo cũ (pháp trận quạt/dải, luôn vẽ) cũng đổi theo, không còn đỏ. Không có thì undefined (giữ đỏ như mọi quái khác).
+   */
+  warnTint(h: Pick<HazardMsg, 'r' | 'delay' | 'sh'>, src: MonLike | undefined): number | undefined {
+    if (!src) return undefined;
+    const key = !h.sh ? 'mon_warn' : h.sh === 'rect' ? 'mon_warn_line' : 'mon_warn_cone';
+    const mv = moveOfHazard(MONSTER.get(src.s.t), h);
+    const tl = (mv ? this.tl(`${key}__${src.s.t}__${mv}`) : undefined) ?? this.tl(`${key}__${src.s.t}`);
+    const acc = tl?.palette ? FX_PALETTE[tl.palette]?.accent : undefined;
+    if (acc === undefined) return undefined;
+    const r = ((acc >> 16) & 255) / 255;
+    const g = ((acc >> 8) & 255) / 255;
+    const b = (acc & 255) / 255;
+    const mx = Math.max(r, g, b);
+    const d = mx - Math.min(r, g, b);
+    if (d < 0.05) return undefined;
+    const hue = ((mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4) * 60 + 360) % 360;
+    return hue > 36 && hue < 345 ? acc : undefined;
   }
 
   private note(key: string, id: string): void {

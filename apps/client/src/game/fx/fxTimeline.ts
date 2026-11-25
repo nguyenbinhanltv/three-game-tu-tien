@@ -68,6 +68,8 @@ const SPRITE_STYLE: Record<string, number> = {
   tho_: 7,
   doc_: 7,
   tim_: 8,
+  lua_: 8,
+  ham_: 8,
 };
 
 export interface FxTarget {
@@ -565,7 +567,7 @@ export class FxRunner {
     const kind = cell
       ? cell.group === 'hon'
         ? 'sprite'
-        : (`sprite_${cell.group}` as 'sprite_loi' | 'sprite_kiem' | 'sprite_hp' | 'sprite_hai' | 'sprite_tinh')
+        : (`sprite_${cell.group}` as 'sprite_loi' | 'sprite_kiem' | 'sprite_hp' | 'sprite_hai' | 'sprite_tinh' | 'sprite_lam')
       : kind0;
     const isSprite = cell !== null;
     if (cell) useSpriteGroup(cell.group);

@@ -115,7 +115,13 @@ export function mapDecalNodes(U: FxUniforms): { color: N; opacity: N } {
     max(smoothstep(half.sub(0.12), half.sub(0.03), ang), smoothstep(0.88, 0.97, r)).mul(fan),
     max(smoothstep(0.84, 0.97, abs(p.x)), smoothstep(0.94, 0.99, along)).mul(strip),
   ).mul(mask);
-  const base = s.rgb.mul(tint).mul(heat.mul(0.55).add(0.7)).mul(bright);
+  // Vạch báo THEO MÀU HỆ (A4: tím-hồng, hổ phách): vân Codex của `warn_crack` nung sẵn đỏ nên khi màu bảng màu không đỏ/cam (g/r hoặc b/r ≥ 0,6) thì tô lại vân bằng độ sáng × màu bảng màu.
+  const nonRed = max(step(0.6, U.color.g.div(U.color.r.max(1e-3))), step(0.6, U.color.b.div(U.color.r.max(1e-3)))).mul(
+    float(1).sub(step(0.5, idx)),
+  );
+  const warnLum = s.r.mul(0.3).add(s.g.mul(0.59)).add(s.b.mul(0.11));
+  const srcRgb = mix(s.rgb, U.color.mul(warnLum.mul(2.6).add(0.15)), nonRed);
+  const base = srcRgb.mul(tint).mul(heat.mul(0.55).add(0.7)).mul(bright);
   const lit = mix(base, U.b.xyz.mul(1.6), edge.mul(1.0));
   // Nền đặc dưới vân (các khe của ảnh Codex trong suốt): vạch báo = đĩa đỏ, mỗi hệ một màu thẫm; đọc được trên nền sáng ban ngày.
   let fillCol: N = U.color.mul(0.8);

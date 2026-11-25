@@ -233,6 +233,19 @@ export const FX_SPRITES = [
   'tim_orb',
   'tim_zigzag',
   'tim_flash',
+  // Tinh anh Vân Lam A4: lửa ma ám tím (lua_), đá + khe hổ phách (ham_)
+  'lua_plume',
+  'lua_blast',
+  'lua_embers',
+  'lua_smoke',
+  'lua_lick',
+  'lua_scar',
+  'ham_spikes',
+  'ham_crack',
+  'ham_dust',
+  'ham_pillar',
+  'ham_debris',
+  'ham_ridge',
 ] as const;
 export type FxSprite = (typeof FX_SPRITES)[number];
 
