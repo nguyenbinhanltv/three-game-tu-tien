@@ -73,12 +73,15 @@ describe('monConceptPrompt', () => {
   });
 });
 
-describe('warnColorRule: vạch báo theo màu hệ khi accent không đỏ/cam', () => {
-  it('accent đỏ giữ luật đỏ-cam', () => {
+describe('warnColorRule: vạch báo luôn đỏ-cam, thân hiệu ứng không đỏ/cam khi hệ không phải lửa', () => {
+  it('vạch báo luôn đỏ-cam, kể cả hệ tím/hổ phách', () => {
     expect(warnColorRule({ accent: 'ff1f3d', rim: 'ffffff', core: '000000', body: '888888' })).toMatch(/RED-ORANGE/);
+    expect(warnColorRule({ accent: 'ff1f3d', rim: 'f0d8ff', core: '140a1e', body: '6a3fa0' })).toMatch(/RED-ORANGE/);
+    expect(warnColorRule({ accent: 'ff1f3d', rim: 'f2d28a', core: '2a1a10', body: '7a4a2c' })).toMatch(/RED-ORANGE/);
   });
-  it('accent tím hoặc hổ phách cấm đỏ/cam', () => {
-    expect(warnColorRule({ accent: 'b02a8c', rim: 'f0d8ff', core: '140a1e', body: '6a3fa0' })).toMatch(/NOT be red and NOT orange/);
-    expect(warnColorRule({ accent: 'd9a02a', rim: 'f2d28a', core: '2a1a10', body: '7a4a2c' })).toMatch(/NOT be red and NOT orange/);
+  it('thân tím hoặc nâu hổ phách: cấm đỏ/cam ở vùng nổ; thân lửa đỏ thì không cấm', () => {
+    expect(warnColorRule({ accent: 'ff1f3d', rim: 'f0d8ff', core: '140a1e', body: '6a3fa0' })).toMatch(/NO red and NO orange/);
+    expect(warnColorRule({ accent: 'ff1f3d', rim: 'f2d28a', core: '2a1a10', body: '3a8ca0' })).toMatch(/NO red and NO orange/);
+    expect(warnColorRule({ accent: 'ff1f3d', rim: 'ffe9a8', core: '1a0f0a', body: 'c03a1c' })).not.toMatch(/NO red and NO orange/);
   });
 });
