@@ -1,9 +1,9 @@
 // TN-9 PR3 (Lôi tu): hình các chiêu từ camera mặc định (sau lưng), HUD bật, cùng góc máy ở 1080p + 720p,
 // mỗi chiêu một ảnh +30 ms sau khung trúng đòn rồi các mốc sau, để soát "không che camera/nhân vật/mục tiêu" và khoảnh khắc wow.
 // Mọi chiêu bấm thật (server phán định); lệnh GM chỉ để dựng cảnh (cấp, sao, nhánh, vòng sạc, gọi quái).
-// Dùng: pnpm shots loivfx --out <thư mục tuyệt đối> [--sizes 1080p,720p] [--genders m,f]
+// Dùng: pnpm shots loivfx --out <thư mục tuyệt đối> [--sizes 1080p,720p] [--genders m,f] [--query style=painted]
 import { SKILL } from '@dtl/content';
-import { list } from '../lib/env';
+import { list, opt } from '../lib/env';
 import { sleep } from '../lib/devserver';
 import { gm } from '../lib/game';
 import type { Run, Scenario } from '../lib/scenario';
@@ -64,6 +64,7 @@ async function run(r: Run, g: string, tags: string[]): Promise<Record<string, un
     seenIntro: true,
     look: { g },
     query: { realm: 'nk12', god: 1, chr: 'v3' },
+    extra: opt('--query', ''),
   });
   page.on('console', (m) => {
     if (m.type() === 'error' || m.type() === 'warning') console.log('[console]', m.text().slice(0, 300));
