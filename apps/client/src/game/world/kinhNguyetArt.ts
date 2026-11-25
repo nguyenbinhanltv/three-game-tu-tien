@@ -30,6 +30,7 @@ import { LEVELS } from '@dtl/content';
 import { heightAt } from '../../base/levelCtx';
 import { getCloudNoise } from '../../render/noiseTex';
 import { DungeonFx } from './dungeonFx';
+import { reflectionThrottle } from './reflectThrottle';
 
 /**
  * Cảnh Kính Nguyệt Cung (DUN-1 PR3; chỉ để nhìn, KHÔNG va chạm, không đổi vùng boss/đợt quái/đố ba gương/cổng): điện gương trăng bạc.
@@ -325,8 +326,11 @@ export class KinhNguyetArt {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private reflectorNode: any = null;
 
-  /** `reflect`: phản chiếu phẳng thật của sàn (một lần vẽ cảnh thêm, nửa độ phân giải); tắt ở preset Thấp/WebGL2. */
-  constructor(opts: { reflect: boolean; hideInReflection?: THREE.Object3D } = { reflect: false }) {
+  /**
+   * `reflect`: phản chiếu phẳng thật của sàn (một lần vẽ cảnh thêm, nửa độ phân giải); tắt ở preset Thấp/Vừa/WebGL2 (`q.lights`).
+   * `reflectEvery`: cập nhật phản chiếu mỗi N khung (mặc định 1 = mỗi khung): ở cảnh đánh lượt này chiếm ~67 draw/khung nên cho Cao/Cực cao dùng 2.
+   */
+  constructor(opts: { reflect: boolean; hideInReflection?: THREE.Object3D; reflectEvery?: number } = { reflect: false }) {
     this.group.name = 'kinh-nguyet-art';
     let planar = undefined;
     if (opts.reflect) {
@@ -344,7 +348,20 @@ export class KinhNguyetArt {
       // Danh sách vật cần ẩn được quét lại mỗi ~0,5 s (không `traverse` mỗi khung); vật mới sinh ra có thể lọt vào phản chiếu tối đa nửa giây.
       let hidden: THREE.Object3D[] = [];
       let sweepAt = 0;
+      const due = reflectionThrottle(opts.reflectEvery ?? 1);
+      const camSig = new Array<number>(18).fill(0);
       base.updateBefore = (frame: Parameters<typeof before>[0]) => {
+        // Chỉ bỏ khung khi camera ĐỨNG YÊN (ma trận thế giới + 2 phần tử chiếu không đổi): camera chéo đi theo người chơi nên bỏ khung lúc di chuyển
+        // làm phản chiếu lệch một khung rồi giật lại (rung 30 Hz).
+        const camNow = (frame as { camera?: THREE.Camera } | undefined)?.camera;
+        if (camNow) {
+          const w = camNow.matrixWorld.elements;
+          const p = camNow.projectionMatrix.elements;
+          camSig[0] = p[0]!;
+          camSig[1] = p[5]!;
+          for (let k = 0; k < 16; k++) camSig[2 + k] = w[k]!;
+        }
+        if (!due(camNow ? camSig : undefined)) return; // khung giữa (camera đứng yên): dùng lại texture phản chiếu khung trước
         const scene = this.group.parent;
         const now = performance.now();
         if (now >= sweepAt) {
