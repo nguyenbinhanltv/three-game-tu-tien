@@ -1,21 +1,20 @@
 {
   "skillId": "skl_dich_son_xung",
-  "idea": "Dịch Sơn Xung: Vai húc tới mục tiêu trong 8 mét, gây 130% công kích và hất kẻ địch ra xa sáu mét.",
+  "idea": "Dịch Sơn Xung: vai húc đẩy đất: một tảng đất đá dạng sóng nhô lên ở phía trước, hất ra xa như bức tường đá nghiêng, các tảng đá lớn lăn và bay theo hướng húc. Màu: lõi nâu đồng sẫm ngả vàng olive (#3B3010) ở tâm, thân VÀNG KIM–ĐỒNG ẤM (hue 46–50°, #D9B13A), viền vàng nhạt kem sáng (#FFF1B8) mỏng; KHÔNG đỏ, KHÔNG cam, KHÔNG nâu đỏ/gạch, KHÔNG tím (Hồn tu), KHÔNG xanh lam (Lôi tu), KHÔNG xanh ngọc/teal (Kiếm tu); vàng sáng #FFE27A chỉ là điểm nhỏ.",
   "element": "tho",
   "path": "the_tu",
   "shapeLang": [
-    "spike",
-    "arc",
-    "ring"
+    "line",
+    "spike"
   ],
   "timing": {
-    "anticipationMs": 300,
+    "anticipationMs": 0,
     "impactMs": 80,
     "lingerMs": 600
   },
   "footprint": {
-    "lengthM": 12,
-    "widthM": 2.5,
+    "lengthM": 8,
+    "widthM": 4,
     "heightM": 2
   },
   "colorRole": "own",
@@ -23,8 +22,14 @@
   "budget": {
     "drawCalls": 10,
     "particles": 251,
-    "screenCover": 0.2,
+    "screenCover": 0.15,
     "overdraw": 4
   },
-  "textures": []
+  "textures": [],
+  "silhouette": "sóng đất đá hình tường nghiêng hất ra xa, tảng đá lăn theo hướng húc",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles"
+  ]
 }

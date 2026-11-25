@@ -11,7 +11,11 @@ import { startHires } from './game/hires';
 const root = document.getElementById('root')!;
 
 const q = urlParams();
-if (q.get('viewer') === 'asset' || q.has('show')) {
+if (q.get('paintedlab') === '1') {
+  // Cảnh thử đối chiếu Họa Cảnh với painted-valley (render/painted/lab); nạp động, không vào bundle game.
+  document.getElementById('boot')?.remove();
+  void import('./render/painted/lab/page').then((m) => m.startPaintedLab(root));
+} else if (q.get('viewer') === 'asset' || q.has('show')) {
   // Trang xem asset: nạp động để code viewer không vào bundle game chính. Không cần màn tiêu đề.
   // `?show=char` (M1-10) là alias: mở model người chơi (`?show=<id asset>` cho asset khác trong manifest).
   document.getElementById('boot')?.remove();

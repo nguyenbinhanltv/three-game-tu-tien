@@ -21,10 +21,10 @@ let atlas: THREE.Texture | null = null;
  * Tên file atlas trên R2, THEO HASH NỘI DUNG (`vfx_sprites.<10 ký tự sha256>.webp`). R2 là bất biến: không bao giờ ghi đè một khóa đã có;
  * đổi nội dung atlas thì đóng ra tên mới, `assets:push` khóa mới và sửa hằng này (khóa cũ giữ nguyên cho nhánh/bản dựng cũ).
  */
-export const SPRITE_ATLAS_FILE = 'hoa-truc/vfx_sprites.cbf893b1a9.webp';
+export const SPRITE_ATLAS_FILE = 'hoa-truc/vfx_sprites.7cb6d1f06e.webp';
 export const SPRITE_COLS = 8;
-/** Cạnh atlas = cột × 512 / hàng × 512 px PHẢI ≤ 8192 (`maxTextureDimension2D` mặc định của WebGPU; một số GPU WebGL2 cũng chỉ 8192): nay 4096 × 6144. */
-export const SPRITE_ROWS = 12;
+/** Cạnh atlas = cột × 512 / hàng × 512 px PHẢI ≤ 8192 (`maxTextureDimension2D` mặc định của WebGPU; một số GPU WebGL2 cũng chỉ 8192): nay 4096 × 7168. */
+export const SPRITE_ROWS = 14;
 export const SPRITE_CELL_PX = 512;
 export const SPRITE_MAX_SIDE_PX = 8192;
 let spriteTex: THREE.Texture | null = null;

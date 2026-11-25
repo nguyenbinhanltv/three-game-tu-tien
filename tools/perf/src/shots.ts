@@ -17,6 +17,7 @@ import bossfaces from './scenarios/bossfaces';
 import dungeon from './scenarios/dungeon';
 import hires from './scenarios/hires';
 import lackiem from './scenarios/lackiem';
+import painted from './scenarios/painted';
 import tieucanh from './scenarios/tieucanh';
 import thienkhuyet from './scenarios/thienkhuyet';
 import bachoang from './scenarios/bachoang';
@@ -84,6 +85,7 @@ const SCENARIOS: Scenario[] = [
   collscan,
   propstc,
   lackiem,
+  painted,
   tieucanh,
   collwalk,
   thienkhuyet,

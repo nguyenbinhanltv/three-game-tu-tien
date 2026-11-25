@@ -592,15 +592,22 @@ export function spriteNodes(U: FxUniforms): { color: N; opacity: N } {
   const kWhite = vec3(0.8, 0.98, 0.92);
   const kT = smoothstep(0.1, 0.78, spLum.sqrt());
   const kRamp = mix(mix(mix(kCore, kBody, smoothstep(0.04, 0.4, kT)), kRim, smoothstep(0.4, 0.8, kT)), kWhite, smoothstep(0.9, 1.0, kT));
+  // Kiểu "hộ pháp" (`fxA.x` = 3): viền mực nâu olive sẫm, thân VÀNG ĐẤT/ochre ấm (hue ~46–50°), viền kem vàng; không ánh bạc kim loại (tách khỏi Đao tu thép bạc), không đỏ/cam.
+  const hCore = vec3(0.04, 0.03, 0.005);
+  const hBody = vec3(0.62, 0.42, 0.045);
+  const hRim = vec3(0.9, 0.74, 0.3);
+  const hWhite = vec3(1.0, 0.9, 0.55);
+  const hT = smoothstep(0.1, 0.78, spLum.sqrt());
+  const hRamp = mix(mix(mix(hCore, hBody, smoothstep(0.04, 0.4, hT)), hRim, smoothstep(0.4, 0.8, hT)), hWhite, smoothstep(0.9, 1.0, hT));
 
-  // Kiểu "thủy" (`fxA.x` = 2): lõi chàm tối, thân xanh biển, viền xanh nhạt, bọt trắng ở phần sáng nhất.
+  // Kiểu "thủy" (`fxA.x` = 4): lõi chàm tối, thân xanh biển, viền xanh nhạt, bọt trắng ở phần sáng nhất.
   const wCore = vec3(0.008, 0.035, 0.12);
   const wBody = vec3(0.06, 0.3, 0.62);
   const wRim = vec3(0.55, 0.84, 1.0);
   const wWhite = vec3(0.97, 1.0, 1.0);
   const wT = smoothstep(0.1, 0.78, spLum.sqrt());
   const wRamp = mix(mix(mix(wCore, wBody, smoothstep(0.04, 0.42, wT)), wRim, smoothstep(0.4, 0.74, wT)), wWhite, smoothstep(0.76, 1.0, wT));
-  // Kiểu "nguyệt" (`fxA.x` = 3): thép sẫm xanh → bạc xanh → trắng bạc (lưỡi trăng sáng ở rìa, không ngả tím).
+  // Kiểu "nguyệt" (`fxA.x` = 5): thép sẫm xanh → bạc xanh → trắng bạc (lưỡi trăng sáng ở rìa, không ngả tím).
   const mCore = vec3(0.02, 0.035, 0.07);
   const mBody = vec3(0.34, 0.44, 0.62);
   const mRim = vec3(0.8, 0.9, 1.0);
@@ -611,7 +618,7 @@ export function spriteNodes(U: FxUniforms): { color: N; opacity: N } {
     mWhite,
     smoothstep(0.78, 1.0, mT),
   );
-  // Kiểu vẽ tay của tinh anh A3 (`fxA.x` = 5 xương `cot_`, 6 đất-đá-độc `tho_`/`doc_`, 7 sét tím `tim_`). Bụi/đất nửa trong suốt trên nền chroma bị khử viền thành hồng, nên xương và đất
+  // Kiểu vẽ tay của tinh anh A3 (`fxA.x` = 6 xương `cot_`, 7 đất-đá-độc `tho_`/`doc_`, 8 sét tím `tim_`). Bụi/đất nửa trong suốt trên nền chroma bị khử viền thành hồng, nên xương và đất
   // tô theo bảng độ sáng (ngà / nâu) thay vì lấy màu gốc; riêng phần ngả lục (ngọc, độc: g > r) giữ màu Codex vẽ. Sét tím giữ nguyên màu.
   const boneRamp = mix(
     mix(vec3(0.03, 0.035, 0.05), vec3(0.58, 0.62, 0.7), smoothstep(0.05, 0.5, spLum)),
@@ -626,25 +633,11 @@ export function spriteNodes(U: FxUniforms): { color: N; opacity: N } {
   const keepGreen = smoothstep(0.0, 0.1, ts.g.sub(ts.r.mul(0.92)));
   const earthHybrid = mix(earthRamp, ts.rgb.mul(1.1), keepGreen);
   const rawRamp = ts.rgb.mul(1.12);
-  // Chọn kiểu tô theo `fxA.x`: 1 lôi, 2 kiếm, 3 thủy, 4 nguyệt, 5 vẽ tay nguyên màu (0 = âm hồn).
-  const spStyled = mix(
-    mix(
-      mix(
-        mix(
-          mix(spLift, lRamp, step(0.5, U.a.x).mul(float(1).sub(step(1.5, U.a.x)))),
-          kRamp,
-          step(1.5, U.a.x).mul(float(1).sub(step(2.5, U.a.x))),
-        ),
-        wRamp,
-        step(2.5, U.a.x).mul(float(1).sub(step(3.5, U.a.x))),
-      ),
-      mRamp,
-      step(3.5, U.a.x).mul(float(1).sub(step(4.5, U.a.x))),
-    ),
-    boneRamp,
-    step(4.5, U.a.x).mul(float(1).sub(step(5.5, U.a.x))),
-  );
-  const spStyled2 = mix(mix(spStyled, earthHybrid, step(5.5, U.a.x).mul(float(1).sub(step(6.5, U.a.x)))), rawRamp, step(6.5, U.a.x));
+  // Chọn kiểu tô theo `fxA.x`: 1 lôi, 2 kiếm, 3 hộ pháp, 4 thủy, 5 nguyệt, 6 xương, 7 đất/độc, 8 sét tím (0 = âm hồn).
+  const is = (n: number) => step(n - 0.5, U.a.x).mul(float(1).sub(step(n + 0.5, U.a.x)));
+  const spStyled0 = mix(mix(mix(spLift, lRamp, is(1)), kRamp, is(2)), hRamp, is(3));
+  const spStyled1 = mix(mix(mix(spStyled0, wRamp, is(4)), mRamp, is(5)), boneRamp, is(6));
+  const spStyled2 = mix(mix(spStyled1, earthHybrid, is(7)), rawRamp, is(8));
   // Tan như khói mỏng dần: nhiễu thấp tần + mép mỏng (tranh sáng/trong) tan trước, ngưỡng rộng nên không ra đường cắt răng cưa.
   const spE = vnoise(q.mul(vec2(5, 7)).add(U.a.z.mul(7)))
     .mul(0.55)

@@ -7,6 +7,7 @@ import { get } from '../../ui/store';
 import { Butterflies, BUTTERFLY_LEVELS } from '../world/butterflies';
 import { Breakables, BREAKABLES_BY_LEVEL } from '../world/breakables';
 import { Grass } from '../world/grass';
+import { PaintedGameField } from '../world/paintedField';
 import { applyAtmosphere, createLanternHalos, setHeightFog, tuneAtmosphere } from '../../render/atmosphere';
 import { buildRiftVeil } from '../../render/riftVeil';
 import { Aurora, AURORA_BY_TOD } from '../../render/aurora';
@@ -622,7 +623,9 @@ export function buildLevelB(eng: Game, id: string, q: (typeof QUALITY)[string]):
     eng.godRays = new GodRays(gr);
     eng.scene.add(eng.godRays.mesh);
   }
-  eng.grass = new Grass(levelAssets(id).grassCards);
+  // Họa Cảnh: cỏ lá mảnh thay bụi cỏ thường ở level dùng bụi lá thủ tục (level dùng thẻ cỏ khô/đảo giữ nguyên)
+  const cards = levelAssets(id).grassCards;
+  eng.grass = FLAGS.style === 'painted' && !cards ? new PaintedGameField() : new Grass(cards);
   eng.grass.setQuality(get().quality, q.shadows);
   eng.grass.setEnabled(F.grass);
   eng.grass.mesh.visible = F.grass;
