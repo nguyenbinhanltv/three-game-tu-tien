@@ -61,4 +61,3 @@ export function ktGroundColor(x: number, z: number, ny: number, out: [number, nu
   out[1] = c[1] * k;
   out[2] = c[2] * k;
 }
-

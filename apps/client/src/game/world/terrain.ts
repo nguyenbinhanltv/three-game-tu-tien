@@ -21,9 +21,30 @@ import { LEVELS } from '@dtl/content';
 import type { TileReq, TileRes } from './terrainBuild.worker';
 import { withSightFade } from './occlusion';
 import {
-  TILE, NEAR_R, NEAR_R_ISO, VEG_FAR_R, VEG_FAR_R_ISO, VD_SKIRT, COARSE_CELL, VEG_NEAR_R, CLIFF_SKIP,
-  T, ASH, XICH, KT, PM, heightAt, isVanLam, onPlayWall, onIslandBevel, quadSpan, buildTileGeometry, buildVegetation,
-  initTerrainBuild, terrainColor, unpackGeometry,
+  TILE,
+  NEAR_R,
+  NEAR_R_ISO,
+  VEG_FAR_R,
+  VEG_FAR_R_ISO,
+  VD_SKIRT,
+  COARSE_CELL,
+  VEG_NEAR_R,
+  CLIFF_SKIP,
+  T,
+  ASH,
+  XICH,
+  KT,
+  PM,
+  heightAt,
+  isVanLam,
+  onPlayWall,
+  onIslandBevel,
+  quadSpan,
+  buildTileGeometry,
+  buildVegetation,
+  initTerrainBuild,
+  terrainColor,
+  unpackGeometry,
 } from './terrainBuild';
 /** Nạp trước theo hướng đi (B3): điểm dẫn = vận tốc × LEAD_SEC (≤ LEAD_MAX m) khi chạy nhanh hơn LEAD_MIN m/s; trễ hủy thêm HYST ô. */
 const LEAD_SEC = 4;
@@ -264,7 +285,7 @@ export class Terrain {
   /** Áp tối đa `max` kết quả vào cảnh; trả về true nếu đã đổi mesh nào. */
   private applyResults(max: number): boolean {
     let n = 0;
-    for (; n < max && this.results.length > 0; ) {
+    for (; n < max && this.results.length > 0;) {
       const r = this.results.shift()!;
       if (r.type !== 'tile' && r.type !== 'veg') continue;
       const job = this.jobs.get(r.id);

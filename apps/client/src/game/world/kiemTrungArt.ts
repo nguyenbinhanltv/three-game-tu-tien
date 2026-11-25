@@ -37,7 +37,6 @@ export function ktMaterialFor(name: string): THREE.Material | null {
  * Draw call: 2 (kiếm nhỏ) + 1 (cự kiếm) + 1 (kiếm trận) = 4.
  */
 
-
 function rng(seed: number): () => number {
   let s = seed >>> 0 || 1;
   return () => {

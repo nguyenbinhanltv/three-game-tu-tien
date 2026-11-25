@@ -15,7 +15,6 @@ export { pmGroundColor };
  * (`DungeonFx`) và vòng trận cổng ra.
  */
 
-
 /** Tâm vòm hang và kích thước (khớp `cave` trong `phuc_mach.assets.json` và `DOME_R/DOME_H` của `phuc_mach_arch.py`). */
 export const PM_DOME = { r: 135, h: 75 };
 

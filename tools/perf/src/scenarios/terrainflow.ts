@@ -19,7 +19,10 @@ export default {
     const [vw, vh] = opt('--views', '1280x720').split('x').map(Number) as [number, number];
     // Level khác Vân Lam: xuất phát ở giữa mép nam vùng chơi, bay thẳng về phía bắc (z giảm) như tuyến Vân Lam.
     const b = level === 'van_lam' ? null : terrainOf(requireLevel(level)).playBounds;
-    const [fx, fz] = (opt('--from', '') || (b ? `${(b.x0 + b.x1) / 2},${b.z1 - 40}` : '700,2048')).split(',').map(Number) as [number, number];
+    const [fx, fz] = (opt('--from', '') || (b ? `${(b.x0 + b.x1) / 2},${b.z1 - 40}` : '700,2048')).split(',').map(Number) as [
+      number,
+      number,
+    ];
     const { page } = await r.open({
       name: 'TerrainFlow',
       quality: 'high',
