@@ -192,11 +192,13 @@ const SPEC = {
   skl_doan_luu: () => [
     ...[gather('dao_ribbons', { size: 2.6, off: [0, 1.5, 0] })],
     pullIn('target', [0, 1.4, 0], -0.24),
-    shade('target', [0, 0.3, 0], 3.6, 0.02),
+    shade('target', [0, 0.3, 0], 5, 0.0),
+    shade('target', [0, 0.25, 0], 3.6, 0.04),
     strike('dao_ribbons', { size: 4.8, off: [0, 1.6, 0], dur: 0.6, erodeFrom: 0.35 }),
     sprite('dao_shards', { t: 0.06, dur: 0.6, off: [0, 1.3, 0], size: 2.8, alpha: 0.8, erodeFrom: 0.3 }),
     flash('target', [0, 1.5, 0], 1.4, 0.03, { dur: 0.1 }),
-    scorch('target', [0, 0.02, 0], 2.6, 0.03, 1.6),
+    scorch('target', [0, 0.02, 0], 3.2, 0.0, 1.8),
+    scorch('target', [0, 0.02, 0], 2.4, 0.04, 1.8),
     after('target', [0, 1.3, 0], 2.4, 0.2, 1.2),
   ],
   // Liệt Địa Trảm: hai khe nứt thép bắt chéo chữ X rạch nền, đá tảng văng lên bốn góc.
