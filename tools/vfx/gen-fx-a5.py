@@ -74,18 +74,19 @@ def slam_boom(B, move, r, theme, seed):
     # Vùng lớn (r ≥ 8): sprite phẳng/nền co lại để độ phủ không vượt trần (chant r16 từng phủ ~0,46): đường kính sprite tối đa ~20 m, nền mờ hơn.
     cap = min(1.0, 10.0 / r)
     fade = min(1.0, 11.0 / r)
+    wide = r >= 8  # vùng rộng: bỏ màn bụi phẳng, bụi hạt ít và thấp (màn bụi làm mờ cả nhân vật)
     thin = theme == 'hoa' and r >= 10  # lửa ma vùng lớn: chỉ mạch/sét mảnh, không mảng đặc
     ev = [
         decal(dec, 0, 4, 2.2, 'core', round((0.12 if thin else 0.35) * fade, 2), 0.02, top=False, untilDelay=False, lift=LIFT),
         sp(sp_['crack'], 0.0, 1.1, round(8.0 * cap, 2), y=0.45, flat=True, alpha=round((0.45 if thin else 0.85) * (0.6 + 0.4 * fade), 2), erode=0.5, seed=seed),
-        sp(sp_['dust'], 0.03, 1.0, round(8.2 * cap, 2), y=0.5, flat=True, alpha=round(0.3 * fade, 2), erode=0.4, seed=seed + 1),
+        *([] if wide else [sp(sp_['dust'], 0.03, 1.0, round(8.2 * cap, 2), y=0.5, flat=True, alpha=round(0.3 * fade, 2), erode=0.4, seed=seed + 1)]),
         *[
             sp(sp_['spikes'], 0.03 + 0.04 * i, 0.95, 4.4, x=p[0] * r * 0.55, y=1.7, z=p[1] * r * 0.55, k=mul, alpha=1.0, erode=0.5, seed=seed + 2 + i)
             for i, p in enumerate(ring_pts(3, 1.0, 0.5))
         ],
         sp(sp_['debris'], 0.04, 0.9, 4.8, y=1.8, k=mul, alpha=0.9, erode=0.45, seed=seed + 6),
         parts('shard', 0, 22, 6, 0.9, 0.9, 0.1, 'rim', offset=[0, 0.3, 0], grav=9, tier=0),
-        parts('dust', 0, 16, 3.5, 0.9, 1.0, 0.22, 'body', offset=[0, 0.3, 0], grav=0.8),
+        parts('dust', 0, 6 if wide else 16, 2.0 if wide else 3.5, 0.7 if wide else 0.9, 1.0, 0.18 if wide else 0.22, 'body', offset=[0, 0.3, 0], grav=0.8),
     ]
     if thin:
         ev = [e for e in ev if not (e.get('sprite') in (sp_['dust'], sp_['debris']) and e.get('type') == 'mesh')]
