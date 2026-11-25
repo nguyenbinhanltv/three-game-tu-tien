@@ -25,15 +25,11 @@
     "screenCover": 0.2,
     "overdraw": 4
   },
-  "textures": [
-    {
-      "id": "proc:spark_burst",
-      "kind": "flipbook"
-    }
-  ],
+  "textures": [],
   "silhouette": "xoáy lá cuốn vào ở chỗ đi, cột sáng búp sen và xoáy lá tỏa ra ở chỗ đến",
   "materials": [
     "sprite",
     "particles"
-  ]
+  ],
+  "standard": 2
 }

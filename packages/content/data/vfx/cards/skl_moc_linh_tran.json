@@ -26,15 +26,11 @@
     "screenCover": 0.2,
     "overdraw": 4
   },
-  "textures": [
-    {
-      "id": "proc:spark_burst",
-      "kind": "flipbook"
-    }
-  ],
+  "textures": [],
   "silhouette": "tám lá ngọc lớn dựng đứng thành vòng như bông sen nở, gân lá sáng, dây leo nối các lá",
   "materials": [
     "sprite",
-    "crack"
-  ]
+    "particles"
+  ],
+  "standard": 2
 }

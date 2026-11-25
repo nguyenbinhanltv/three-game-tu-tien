@@ -8,7 +8,7 @@
     "ring"
   ],
   "timing": {
-    "anticipationMs": 300,
+    "anticipationMs": 100,
     "impactMs": 80,
     "lingerMs": 600
   },
@@ -25,15 +25,11 @@
     "screenCover": 0.2,
     "overdraw": 4
   },
-  "textures": [
-    {
-      "id": "proc:ink_smoke",
-      "kind": "flipbook"
-    }
-  ],
+  "textures": [],
   "silhouette": "dải khói hương hình chữ S dọc đường lùi 8 m, lá nhỏ rơi, bóng mờ tan dần",
   "materials": [
-    "smoke",
-    "sprite"
-  ]
+    "sprite",
+    "particles"
+  ],
+  "standard": 2
 }

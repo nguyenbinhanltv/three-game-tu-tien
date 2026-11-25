@@ -25,15 +25,11 @@
     "screenCover": 0.35,
     "overdraw": 6
   },
-  "textures": [
-    {
-      "id": "proc:spark_burst",
-      "kind": "flipbook"
-    }
-  ],
+  "textures": [],
   "silhouette": "lò đan khổng lồ trên cao rót dòng đan dịch xuống bông sen nở dưới đất",
   "materials": [
     "sprite",
-    "smoke"
-  ]
+    "particles"
+  ],
+  "standard": 2
 }

@@ -26,19 +26,11 @@
     "screenCover": 0.2,
     "overdraw": 4
   },
-  "textures": [
-    {
-      "id": "proc:ink_smoke",
-      "kind": "flipbook"
-    },
-    {
-      "id": "proc:spark_burst",
-      "kind": "flipbook"
-    }
-  ],
+  "textures": [],
   "silhouette": "dải sương thuốc cong từ tay áo rải mưa lá thuốc nhiều loại lá",
   "materials": [
     "sprite",
     "particles"
-  ]
+  ],
+  "standard": 2
 }

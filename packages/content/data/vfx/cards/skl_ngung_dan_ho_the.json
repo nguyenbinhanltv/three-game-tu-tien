@@ -25,15 +25,11 @@
     "screenCover": 0.2,
     "overdraw": 4
   },
-  "textures": [
-    {
-      "id": "proc:spark_burst",
-      "kind": "flipbook"
-    }
-  ],
+  "textures": [],
   "silhouette": "viên đan khổng lồ bóng ngọc có vân mây xoáy, bao cả đội",
   "materials": [
     "sprite",
-    "distort"
-  ]
+    "particles"
+  ],
+  "standard": 2
 }

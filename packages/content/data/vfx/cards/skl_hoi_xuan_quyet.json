@@ -25,15 +25,11 @@
     "screenCover": 0.2,
     "overdraw": 4
   },
-  "textures": [
-    {
-      "id": "proc:spark_burst",
-      "kind": "flipbook"
-    }
-  ],
+  "textures": [],
   "silhouette": "gió xoắn cánh hoa và sợi mưa mảnh; dây leo độc xanh thẫm trườn lên chân quái",
   "materials": [
     "sprite",
-    "smoke"
-  ]
+    "particles"
+  ],
+  "standard": 2
 }

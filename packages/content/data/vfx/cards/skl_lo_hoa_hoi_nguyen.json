@@ -29,7 +29,8 @@
   "impactFrame": true,
   "silhouette": "cột khói thuốc tròn như búp sen bốc lên, đốm than xanh ngọc lơ lửng",
   "materials": [
-    "smoke",
+    "sprite",
     "particles"
-  ]
+  ],
+  "standard": 2
 }

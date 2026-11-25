@@ -25,15 +25,11 @@
     "screenCover": 0.2,
     "overdraw": 4
   },
-  "textures": [
-    {
-      "id": "proc:spark_burst",
-      "kind": "flipbook"
-    }
-  ],
+  "textures": [],
   "silhouette": "hạc kết bằng lá thuốc bay vút để lại dải lá và sương, đáp xuống thành sóng ngọc",
   "materials": [
     "sprite",
-    "smoke"
-  ]
+    "particles"
+  ],
+  "standard": 2
 }

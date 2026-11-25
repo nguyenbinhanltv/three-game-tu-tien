@@ -20,7 +20,7 @@
   "colorRole": "own",
   "telegraph": false,
   "budget": {
-    "drawCalls": 4,
+    "drawCalls": 7,
     "particles": 120,
     "screenCover": 0.2,
     "overdraw": 4
@@ -30,6 +30,7 @@
   "silhouette": "lò đan ba chân lơ lửng trước ngực, lửa xanh ngọc ở miệng, khói xoắn ốc bốc lên",
   "materials": [
     "sprite",
-    "smoke"
-  ]
+    "particles"
+  ],
+  "standard": 2
 }

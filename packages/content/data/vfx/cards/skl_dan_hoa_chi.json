@@ -20,7 +20,7 @@
   "colorRole": "own",
   "telegraph": false,
   "budget": {
-    "drawCalls": 4,
+    "drawCalls": 7,
     "particles": 120,
     "screenCover": 0.2,
     "overdraw": 4
@@ -30,6 +30,7 @@
   "silhouette": "viên đan tròn sáng kéo đuôi khói mực dài như đuôi nòng nọc, điểm trúng nở hoa lửa nhỏ",
   "materials": [
     "sprite",
-    "smoke"
-  ]
+    "particles"
+  ],
+  "standard": 2
 }
