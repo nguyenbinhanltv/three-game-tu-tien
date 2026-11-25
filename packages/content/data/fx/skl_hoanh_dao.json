@@ -114,8 +114,8 @@
     1,
     2
    ],
-   "scale": 1.6,
-   "scaleTo": 2.3,
+   "scale": 1.24,
+   "scaleTo": 1.79,
    "align": "aim"
   },
   {
@@ -157,8 +157,8 @@
     0.2,
     5.5
    ],
-   "scale": 7.2,
-   "scaleTo": 7.2
+   "scale": 4.03,
+   "scaleTo": 4.03
   },
   {
    "type": "mesh",
@@ -180,8 +180,8 @@
     1,
     5.5
    ],
-   "scale": 6.56,
-   "scaleTo": 8,
+   "scale": 5.08,
+   "scaleTo": 6.2,
    "align": "aim"
   },
   {
@@ -204,8 +204,8 @@
     1,
     6
    ],
-   "scale": 6.4,
-   "scaleTo": 6.4,
+   "scale": 4.96,
+   "scaleTo": 4.96,
    "align": "aim"
   },
   {
@@ -228,8 +228,8 @@
     1.1,
     10
    ],
-   "scale": 0.96,
-   "scaleTo": 1.2
+   "scale": 0.74,
+   "scaleTo": 0.93
   },
   {
    "type": "decal",
@@ -285,8 +285,8 @@
     1.1,
     6
    ],
-   "scale": 2.56,
-   "scaleTo": 2.56,
+   "scale": 1.98,
+   "scaleTo": 1.98,
    "move": {
     "to": "ahead",
     "offset": [

@@ -23,10 +23,10 @@ const mesh = (o) => ({
 /** Hệ số cỡ theo chiêu (chỉnh sau khi đo `pnpm shots vfxlab --clean`: chiêu thường phủ ≤ 0,2, chiêu cuối ≤ 0,35). */
 let K = 1;
 const SCALE = {
-  skl_pha_phong_tien: 1,
+  skl_pha_phong_tien: 0.88,
   skl_bao_nhan: 1,
-  skl_tram_son_dao: 0.9,
-  skl_hoanh_dao: 0.8,
+  skl_tram_son_dao: 0.78,
+  skl_hoanh_dao: 0.62,
   skl_tam_dao: 1,
   skl_doan_luu: 1,
   skl_liet_dia_tram: 0.95,
@@ -169,7 +169,7 @@ const SPEC = {
   skl_hoanh_dao: () => [
     ...[gather('dao_scythe', { size: 4, off: [0, 1, 2], rest: { at: 'ahead', align: 'aim' } })],
     pullIn('self', [0, 1.1, 0.6], -0.24),
-    shade('ahead', [0, 0.2, 5.5], 9, 0.02),
+    shade('ahead', [0, 0.2, 5.5], 6.5, 0.02),
     strike('dao_scythe', { size: 10, at: 'ahead', off: [0, 1, 5.5], dur: 0.5, align: 'aim', erodeFrom: 0.3 }),
     sprite('dao_streaks', { t: 0.04, dur: 0.6, at: 'ahead', off: [0, 1, 6], size: 8, alpha: 0.6, align: 'aim', erodeFrom: 0.4 }),
     flash('ahead', [0, 1.1, 10], 1.2, 0.03, { dur: 0.1 }),
