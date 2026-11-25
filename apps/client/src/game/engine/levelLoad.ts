@@ -623,7 +623,11 @@ export function buildLevelB(eng: Game, id: string, q: (typeof QUALITY)[string]):
     void loadTtModel(eng, q.shadows);
   }
   if (levelAssets(id).kinhNguyetArt) {
-    eng.kinhNguyetArt = new KinhNguyetArt({ reflect: q.lights && isWebGPU(eng.renderer), hideInReflection: eng.vfx.group });
+    eng.kinhNguyetArt = new KinhNguyetArt({
+      reflect: q.lights && isWebGPU(eng.renderer),
+      hideInReflection: eng.vfx.group,
+      reflectEvery: 2, // phản chiếu chỉ bật ở Cao/Cực cao (q.lights); cập nhật mỗi 2 khung để bớt ~nửa số draw của lượt này
+    });
     eng.scene.add(eng.kinhNguyetArt.group);
     void loadKnModel(eng, q.shadows);
   }
