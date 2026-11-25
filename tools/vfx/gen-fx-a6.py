@@ -61,6 +61,17 @@ def _body_peak(ev, f):
     return best
 
 
+def _soft_warn(name, events):
+    """Vạch báo ĐỎ MỎNG chuẩn A5 (#651/#663): viền sáng + nền đỏ trong suốt, không mảng đặc. Độ đậm theo bán kính vùng (thẻ chiêu): tròn r<10 0,22+0,10, r≥10 0,16+0,08; quạt/dải r<10 0,30+0,22, r≥10 0,20+0,15."""
+    _, B, mv = name.split('__')
+    r = json.load(open(os.path.join(os.path.dirname(__file__), '..', '..', 'packages', 'content', 'data', 'vfx', 'cards', 'mon', f'{B}__{mv}.json'), encoding='utf8'))['zone']['r']
+    circle = name.startswith('mon_warn__')
+    a, b = ((0.16, 0.08) if r >= 10 else (0.22, 0.10)) if circle else ((0.2, 0.15) if r >= 10 else (0.3, 0.22))
+    dec = [e for e in events if e.get('type') == 'decal']
+    assert len(dec) == 2, name
+    dec[0]['alpha'], dec[1]['alpha'] = a, b
+
+
 def write(name, events, palette):  # noqa: F811
     """Co cỡ sprite để thân hiệu ứng ≤ trần HPL2 (tinh anh 0,2; boss 0,35; chant — vùng > khung — trần 0,35 chỉ cho sprite). Hệ số tối thiểu 0,5."""
     if _ZONE:
@@ -84,6 +95,8 @@ def write(name, events, palette):  # noqa: F811
                     if 'scaleTo' in e:
                         e['scaleTo'] = round(_num(e['scaleTo']) * f, 3)
         _ZONE.clear()
+    if name.startswith('mon_warn'):
+        _soft_warn(name, events)
     _write0(name, events, palette)
 
 
