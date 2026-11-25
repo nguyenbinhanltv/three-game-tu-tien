@@ -16,7 +16,6 @@ import {
   type SpriteGroup,
 } from './art';
 import { shapeGeometry, shapeKind } from './fxShapes';
-import { SPRITE_STYLE } from '../../game/fx/fxTimeline';
 
 const ROOT = path.resolve(import.meta.dirname, '../../../../..');
 const groups = Object.keys(SPRITE_GROUPS) as SpriteGroup[];
@@ -43,12 +42,6 @@ describe('sprite vẽ tay (Họa Pháp Lô 2) — atlas tách theo hướng tu',
 
   it('hướng tu → nhóm atlas khớp tiền tố sprite của hướng đó', () => {
     for (const g of Object.values(PATH_SPRITE_GROUP)) expect(groups).toContain(g);
-  });
-
-  it('mỗi hướng tu có kiểu tô (`fxA.x`) RIÊNG: không hai hướng nào trùng chỉ số (trùng thì ramp sau đè ramp trước, đã gặp cth_ vs dan_)', () => {
-    const hướng = ['hon_', 'loi_', 'kiem_', 'hp_', 'dao_', 'dan_', 'cth_'];
-    const idx = hướng.map((p) => SPRITE_STYLE[p] ?? 0);
-    expect(new Set(idx).size, JSON.stringify(Object.fromEntries(hướng.map((p, i) => [p, idx[i]])))).toBe(hướng.length);
   });
 
   it('hình sprite là tấm quay mặt về camera, kiểu vật liệu riêng không gộp instance', () => {

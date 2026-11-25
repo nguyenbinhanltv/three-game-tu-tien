@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { FX_TIMELINE, SKILL } from '@dtl/content';
 import { FX_SPRITES, fxDrawCount, fxEventsFor, fxParticleCount, validateFxTimeline } from '@dtl/shared';
 import type { FxEvent } from '@dtl/shared';
+import { SPRITE_STYLE } from './fxTimeline';
 
 // Cổ Thần theo Họa Pháp Lô 2: 10 chiêu, mỗi chiêu một hình sprite vẽ tay `cth_*` (đá bazan nâu sẫm gần đen, hổ phách ở mạch nứt), ba nhịp.
 const IDS = ['skl_cu_bo_xung', 'skl_thai_co_quyen', 'skl_co_than_nhat_kich', 'skl_tinh_bao', 'skl_huyet_cu_ho'];
@@ -63,5 +64,11 @@ describe('VFX Cổ Thần (sprite Họa Pháp Lô 2)', () => {
         id,
       ).toBe(false);
     }
+  });
+
+  it('mỗi hướng tu có kiểu tô (`fxA.x`) RIÊNG: không hai hướng nào trùng chỉ số (trùng thì ramp sau đè ramp trước, đã gặp cth_ vs dan_)', () => {
+    const hướng = ['hon_', 'loi_', 'kiem_', 'hp_', 'dao_', 'dan_', 'cth_'];
+    const idx = hướng.map((p) => SPRITE_STYLE[p] ?? 0);
+    expect(new Set(idx).size, JSON.stringify(Object.fromEntries(hướng.map((p, i) => [p, idx[i]])))).toBe(hướng.length);
   });
 });
