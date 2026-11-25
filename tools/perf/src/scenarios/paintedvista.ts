@@ -42,6 +42,25 @@ export default {
           await snap(page, r.out, `${style}-${view}-${s.id}.png`);
           perf[`${style}-${view}-${s.id}`] = await perfSample(page);
         }
+        // Ngự kiếm trên sân tông môn: chân trời lộ ra, vùng xa hiện rõ; đo có/không vòm (mesh.visible) để biết chi phí
+        await tp(page, 2048, 2100);
+        await gm(page, 'killall', 1200);
+        await page.evaluate(() => window.__game!.toggleFly());
+        await sleep(style === 'painted' ? 16000 : 4500);
+        const ready = await page.evaluate(
+          () => (window.__game as unknown as { farBackdrop?: { ready: boolean } | null }).farBackdrop?.ready ?? null,
+        );
+        await snap(page, r.out, `${style}-${view}-ngukiem.png`);
+        perf[`${style}-${view}-ngukiem`] = { ...((await perfSample(page)) as object), farReady: ready };
+        if (style === 'painted') {
+          await page.evaluate(() => {
+            const g = window.__game as unknown as { farBackdrop?: { mesh: { visible: boolean } } | null };
+            if (g.farBackdrop) g.farBackdrop.mesh.visible = false;
+          });
+          await sleep(1500);
+          await snap(page, r.out, `${style}-${view}-ngukiem-novom.png`);
+          perf[`${style}-${view}-ngukiem-novom`] = await perfSample(page);
+        }
         await ctx.close();
       }
     }
