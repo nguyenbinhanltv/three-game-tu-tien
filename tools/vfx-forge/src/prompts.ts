@@ -132,13 +132,13 @@ function hueOf(hex: string): number {
 }
 
 /**
- * Luật màu của vạch báo trong concept quái. Mặc định (accent đỏ) là đỏ-cam đặc. Thẻ có `palette.accent` KHÔNG ở vùng đỏ/cam (hue ngoài 345°–50°) là thẻ
+ * Luật màu của vạch báo trong concept quái. Mặc định (accent đỏ) là đỏ-cam đặc. Thẻ có `palette.accent` KHÔNG ở vùng đỏ/cam (hue ngoài 345°–36°; hổ phách ~40° vẫn là màu hệ) là thẻ
  * "báo theo màu hệ" (A4: tinh anh hỏa ám tím, thổ hổ phách): vạch báo đọc rõ bằng màu accent đó, tuyệt đối không đỏ/cam.
  */
 export function warnColorRule(p: { accent: string; rim: string; core: string; body: string }): string {
   const H = (x: string) => `#${x.toUpperCase()}`;
   const hue = hueOf(p.accent);
-  const redOrange = hue >= 345 || hue <= 50;
+  const redOrange = hue >= 345 || hue <= 36;
   const warn = redOrange
     ? `the WARNING (frames 1 and 2) uses vivid RED-ORANGE only, accent ${H(p.accent)} with a hot rim ${H(p.rim)}; red is reserved for enemy warnings and must read clearly on a bright stone floor and on dark floors.`
     : `the WARNING (frames 1 and 2) uses the element's own warning color ${H(p.accent)} (solid, saturated, with a bright rim ${H(p.rim)}); it must NOT be red and NOT orange anywhere (no red fill, no orange outline, no red-orange flame edges), and it must read clearly on a bright stone floor and on dark floors.`;
