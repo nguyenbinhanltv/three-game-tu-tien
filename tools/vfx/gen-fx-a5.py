@@ -41,7 +41,8 @@ def soft(r):
 
 
 def warn_circle_soft(delay, r, yaw_a=35, yaw_b=-50, spark=12):
-    a, b = soft(r)
+    # Vùng tròn phủ cả đĩa nên hai lớp chồng cộng lại: tổng ≤ ~0,32 (vùng lớn ≤ ~0,24), nền lấp dần chỉ thêm một chút.
+    a, b = (0.16, 0.08) if r >= 10 else (0.22, 0.10)
     return [
         decal('warn_crack', 0, 4, 2, 'accent', a, 0.04, yaw=yaw_b),
         decal('warn_crack', 0, 4, 2, 'accent', b, delay, yaw=yaw_a, growUntilDelay=True),
