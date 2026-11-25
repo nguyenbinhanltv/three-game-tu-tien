@@ -35,7 +35,7 @@ interface SlideRow {
 }
 
 /**
- * Trượt chân của chân trụ từ dãy khung. Mỗi ĐOẠN tiếp đất liên tục (cổ chân trong 3 cm trên điểm thấp nhất của chân đó, ≥ 4 khung) hồi quy vị trí chân TRONG THẾ GIỚI
+ * Trượt chân của chân trụ từ dãy khung. Mỗi ĐOẠN tiếp đất liên tục (cổ chân trong 3 cm trên điểm thấp nhất của chân đó, bỏ 20% đầu/cuối đoạn, còn ≥ 3 khung) hồi quy vị trí chân TRONG THẾ GIỚI
  * theo thời gian, chiếu lên hướng chạy: độ dốc = tốc độ trượt của đoạn (chân dính đất = 0). Hồi quy triệt nhiễu bước vị trí theo gói tin của thân (khác lấy
  * hiệu từng khung). Trả trung vị/p90 trên các đoạn. Hàm thuần.
  */
@@ -65,9 +65,13 @@ export function contactSlide(
       }
       let j = k;
       while (j + 1 < rows.length && on[j + 1]) j++;
-      if (j - k >= 3) {
-        const xs = rows.slice(k, j + 1).map((q) => q.t - rows[k]!.t);
-        const ws = rows.slice(k, j + 1).map((q) => q.f[i]![0] * ux + q.f[i]![2] * uz);
+      // bỏ 20% đầu/cuối đoạn (lăn gót/mũi, khung chuyển pha bay)
+      const trim = Math.floor((j - k + 1) * 0.2);
+      const k0 = k + trim;
+      const j0 = j - trim;
+      if (j0 - k0 >= 2) {
+        const xs = rows.slice(k0, j0 + 1).map((q) => q.t - rows[k0]!.t);
+        const ws = rows.slice(k0, j0 + 1).map((q) => q.f[i]![0] * ux + q.f[i]![2] * uz);
         const mx = xs.reduce((s, x) => s + x, 0) / xs.length;
         const mw = ws.reduce((s, x) => s + x, 0) / ws.length;
         let num = 0;
