@@ -109,6 +109,18 @@ export async function pool<T>(items: T[], n: number, fn: (x: T) => Promise<void>
 }
 
 /**
+ * Nhị phân trong `dir` (mặc định public/) mà sổ khóa KHÔNG có: do cache CI khôi phục từ nhánh khác (`restore-keys`) hoặc file mồ côi. Chỉ xét NHỊ PHÂN
+ * (manifest json do git theo dõi thì không đụng). Chỉ xóa file cục bộ khi `apply`; KHÔNG bao giờ chạm R2.
+ */
+export function pruneStale(lock: Lock, apply: boolean, dir: string = PUBLIC_DIR): string[] {
+  const stale = walk(dir)
+    .filter((r) => isLocked(r) && BINARY_EXT.test(r) && !lock.files[r])
+    .sort();
+  if (apply) for (const r of stale) fs.rmSync(path.join(dir, r), { force: true });
+  return stale;
+}
+
+/**
  * Quét đĩa dựng sổ khóa. Hash lấy lại từ sổ cũ khi kích thước không đổi và tên đã chứa hash,
  * còn lại tính sha256 thật. File chỉ có trong .asset-cache (sau R2-3) cũng được tính.
  */

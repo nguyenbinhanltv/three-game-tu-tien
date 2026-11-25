@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { isMutableKey, planPush, PushConflictError } from '../push.js';
 import { compareListing } from './verify.js';
-import { hasContentHash, type Lock, unhashedBinaries } from './lock.js';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import { hasContentHash, type Lock, pruneStale, unhashedBinaries } from './lock.js';
 
 const sha = (c: string) => c.repeat(64).slice(0, 64);
 const lock = (files: Record<string, { sha256: string; bytes: number }>): Lock => ({ version: 1, files });
@@ -138,5 +141,35 @@ describe('validate không đỏ vì manifest lệch R2 ở nhánh', () => {
     expect(errs.join('|')).not.toMatch(/assets\/manifest\.json: kích thước/);
     expect(errs.join('|')).toMatch(/x\/a\.0123456789\.glb: kích thước/);
     expect(errs.join('|')).toMatch(/audio\/manifest\.json: chưa có trên R2/);
+  });
+});
+
+describe('prune: dọn nhị phân cache ngoài sổ khóa (CI)', () => {
+  const setup = () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'prune-'));
+    const put = (rel: string) => {
+      fs.mkdirSync(path.dirname(path.join(dir, rel)), { recursive: true });
+      fs.writeFileSync(path.join(dir, rel), 'x');
+    };
+    put('hoa-truc/vfx_sprites.0fe2efa754.webp'); // cache nhánh khác, không có trong sổ
+    put('hoa-truc/vfx_sprites.aaaaaaaaaa.webp'); // có trong sổ
+    put('assets/manifest.json'); // json: không đụng dù không có trong sổ
+    put('fonts/a.woff2'); // không thuộc sổ khóa
+    return { dir, put };
+  };
+  const L = lock({ 'hoa-truc/vfx_sprites.aaaaaaaaaa.webp': { sha256: sha('a'), bytes: 1 } });
+
+  it('chạy thử chỉ liệt kê, không xóa', () => {
+    const { dir } = setup();
+    expect(pruneStale(L, false, dir)).toEqual(['hoa-truc/vfx_sprites.0fe2efa754.webp']);
+    expect(fs.existsSync(path.join(dir, 'hoa-truc/vfx_sprites.0fe2efa754.webp'))).toBe(true);
+  });
+  it('--apply xóa nhị phân ngoài sổ, giữ file trong sổ, json và font', () => {
+    const { dir } = setup();
+    pruneStale(L, true, dir);
+    expect(fs.existsSync(path.join(dir, 'hoa-truc/vfx_sprites.0fe2efa754.webp'))).toBe(false);
+    for (const keep of ['hoa-truc/vfx_sprites.aaaaaaaaaa.webp', 'assets/manifest.json', 'fonts/a.woff2'])
+      expect(fs.existsSync(path.join(dir, keep)), keep).toBe(true);
+    expect(pruneStale(L, true, dir)).toEqual([]);
   });
 });
