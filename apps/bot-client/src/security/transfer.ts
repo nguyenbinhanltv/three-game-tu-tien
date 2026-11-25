@@ -63,7 +63,7 @@ export async function runTransfer(ctx: Ctx): Promise<void> {
     await W(700);
     check(
       'bấm cổng đúng chỗ: có lệnh chuyển sang bí cảnh',
-      xfers.length === 1 && xfers[0].room === ROOM_DUNGEON && xfers[0].level === 'kiem_trung',
+      xfers.length === 1 && xfers[0]?.room === ROOM_DUNGEON && xfers[0]?.level === 'kiem_trung',
       JSON.stringify(xfers),
     );
     let first = false;
