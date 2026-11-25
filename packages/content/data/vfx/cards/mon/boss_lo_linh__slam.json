@@ -1,0 +1,33 @@
+{
+  "monId": "boss_lo_linh",
+  "move": "slam",
+  "idea": "Pha 1: mặt cầu lật mặt dưới chân người chơi: vòng sáng bán kính 5 m (vạch báo vàng sáng nhạt) lật một nửa rồi nổ, mảnh cầu sáng bay lên.",
+  "element": "kim",
+  "palette": {
+    "core": "241f12",
+    "body": "c2b27a",
+    "rim": "fff6d0",
+    "accent": "f2e48a"
+  },
+  "shapeLang": [
+    "ring",
+    "burst"
+  ],
+  "zone": {
+    "shape": "circle",
+    "r": 5,
+    "at": "target"
+  },
+  "timing": {
+    "anticipationMs": 1300,
+    "impactMs": 130,
+    "lingerMs": 900
+  },
+  "readability": "Vòng sáng 5 m, nửa lật nửa phẳng đọc rõ, mảnh cầu viền sáng.",
+  "budget": {
+    "drawCalls": 8,
+    "particles": 300,
+    "screenCover": 0.3,
+    "overdraw": 5
+  }
+}

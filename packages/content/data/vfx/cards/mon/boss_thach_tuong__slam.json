@@ -1,0 +1,33 @@
+{
+  "monId": "boss_thach_tuong",
+  "move": "slam",
+  "idea": "Thạch Tượng nện xuống: giáp đá nứt theo nhịp thở của núi, khe vàng đá tỏa từ tâm bán kính 5 m (vạch báo vàng đá nhạt), rồi tảng đá tróc ra bay lên, bụi mỏng.",
+  "element": "tho",
+  "palette": {
+    "core": "1e1c16",
+    "body": "a29d8c",
+    "rim": "f4eed8",
+    "accent": "e8d089"
+  },
+  "shapeLang": [
+    "ring",
+    "spike"
+  ],
+  "zone": {
+    "shape": "circle",
+    "r": 5,
+    "at": "target"
+  },
+  "timing": {
+    "anticipationMs": 1300,
+    "impactMs": 130,
+    "lingerMs": 900
+  },
+  "readability": "Đĩa khe vàng đá đúng 5 m, tảng đá sẫm viền sáng, bụi mỏng không che người.",
+  "budget": {
+    "drawCalls": 8,
+    "particles": 300,
+    "screenCover": 0.3,
+    "overdraw": 5
+  }
+}

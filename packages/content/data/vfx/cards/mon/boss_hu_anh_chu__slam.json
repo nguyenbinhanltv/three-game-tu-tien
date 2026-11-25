@@ -1,0 +1,33 @@
+{
+  "monId": "boss_hu_anh_chu",
+  "move": "slam",
+  "idea": "Pha 2: Hư Ảnh Chủ nện xuống dưới chân người chơi: gương tròn bán kính 4,5 m nứt dần từ tâm (vạch báo ngọc lam), rồi vỡ tung thành mảnh gương xoáy lên, một cái bóng người thoáng hiện trong những mảnh.",
+  "element": "thuy",
+  "palette": {
+    "core": "140f28",
+    "body": "3f8f9a",
+    "rim": "d9f6f2",
+    "accent": "7fe3d8"
+  },
+  "shapeLang": [
+    "ring",
+    "burst"
+  ],
+  "zone": {
+    "shape": "circle",
+    "r": 4.5,
+    "at": "target"
+  },
+  "timing": {
+    "anticipationMs": 1300,
+    "impactMs": 130,
+    "lingerMs": 800
+  },
+  "readability": "Đĩa gương ngọc tròn đúng 4,5 m, nứt hình mạng nhện rõ từ tâm; mảnh vỡ cao vừa phải, không che mục tiêu.",
+  "budget": {
+    "drawCalls": 8,
+    "particles": 300,
+    "screenCover": 0.3,
+    "overdraw": 5
+  }
+}

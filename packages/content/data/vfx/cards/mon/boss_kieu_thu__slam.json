@@ -1,0 +1,33 @@
+{
+  "monId": "boss_kieu_thu",
+  "move": "slam",
+  "idea": "Pha 2: Kiều Thủ dậm kiếm xuống: nứt tỏa tia từ tâm bán kính 5 m (vạch báo vàng ngà nhạt), rồi mặt cầu vỡ thành mảnh đá trắng bay lên, khe sáng lộ ra.",
+  "element": "kim",
+  "palette": {
+    "core": "2a2a28",
+    "body": "cfc8b0",
+    "rim": "fffaf0",
+    "accent": "f0dc9a"
+  },
+  "shapeLang": [
+    "ring",
+    "spike"
+  ],
+  "zone": {
+    "shape": "circle",
+    "r": 5,
+    "at": "target"
+  },
+  "timing": {
+    "anticipationMs": 1300,
+    "impactMs": 130,
+    "lingerMs": 900
+  },
+  "readability": "Đĩa nứt tỏa tia đúng 5 m, mảnh đá trắng viền sẫm, khe sáng vàng ngà.",
+  "budget": {
+    "drawCalls": 8,
+    "particles": 300,
+    "screenCover": 0.3,
+    "overdraw": 5
+  }
+}

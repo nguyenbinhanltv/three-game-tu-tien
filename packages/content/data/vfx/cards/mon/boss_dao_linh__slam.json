@@ -1,0 +1,33 @@
+{
+  "monId": "boss_dao_linh",
+  "move": "slam",
+  "idea": "Pha 2: Đạo Linh nện xuống: vòng \"đạo\" bán kính 5 m (vạch báo bạc lam nhạt) vỡ thành ba mảnh ba sắc nhạt (kim, thủy, mộc) bật lên, tan thành mực bạc.",
+  "element": "thuy",
+  "palette": {
+    "core": "161c2a",
+    "body": "8e98b8",
+    "rim": "f2f6fa",
+    "accent": "9fc4f0"
+  },
+  "shapeLang": [
+    "ring",
+    "burst"
+  ],
+  "zone": {
+    "shape": "circle",
+    "r": 5,
+    "at": "target"
+  },
+  "timing": {
+    "anticipationMs": 1300,
+    "impactMs": 130,
+    "lingerMs": 800
+  },
+  "readability": "Vòng bạc lam 5 m chia ba cung rõ, ba sắc nhạt khác nhau, không đỏ/cam.",
+  "budget": {
+    "drawCalls": 8,
+    "particles": 300,
+    "screenCover": 0.3,
+    "overdraw": 5
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "monId": "boss_ve_kieu",
+  "move": "line",
+  "idea": "Vệ Kiều (người canh cầu hai mặt) phóng một tia đá hai mặt dọc cầu 18 m, rộng 3,5 m: vạch báo lục ngọc nhạt, nửa sáng nửa xám; nổ ra tia đá chia đôi sáng/xám, khe lục lộ ra.",
+  "element": "tho",
+  "palette": {
+    "core": "1f2a26",
+    "body": "8aa59a",
+    "rim": "f0f6f3",
+    "accent": "8fd3a8"
+  },
+  "shapeLang": [
+    "line",
+    "beam"
+  ],
+  "zone": {
+    "shape": "rect",
+    "r": 18,
+    "w": 3.5,
+    "at": "forward"
+  },
+  "timing": {
+    "anticipationMs": 1300,
+    "impactMs": 150,
+    "lingerMs": 800
+  },
+  "readability": "Dải lục ngọc nhạt đúng 18×3,5 m chia đôi sáng/xám; mảnh đá sẫm viền sáng.",
+  "budget": {
+    "drawCalls": 8,
+    "particles": 300,
+    "screenCover": 0.3,
+    "overdraw": 5
+  }
+}

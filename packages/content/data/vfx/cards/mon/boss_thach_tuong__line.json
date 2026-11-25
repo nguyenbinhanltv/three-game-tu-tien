@@ -1,0 +1,34 @@
+{
+  "monId": "boss_thach_tuong",
+  "move": "line",
+  "idea": "Thạch Tượng đập tay xuống đất: một luống đá trồi nứt dọc đường 22 m (vạch báo vàng đá nhạt, rộng 4 m); nổ ra hàng khối đá trồi lên liên tiếp theo luống, khe vàng sáng giữa các khối.",
+  "element": "tho",
+  "palette": {
+    "core": "1e1c16",
+    "body": "a29d8c",
+    "rim": "f4eed8",
+    "accent": "e8d089"
+  },
+  "shapeLang": [
+    "line",
+    "spike"
+  ],
+  "zone": {
+    "shape": "rect",
+    "r": 22,
+    "w": 4,
+    "at": "forward"
+  },
+  "timing": {
+    "anticipationMs": 1300,
+    "impactMs": 150,
+    "lingerMs": 900
+  },
+  "readability": "Dải vàng đá 22×4 m, khối đá thấp nối nhau, khe vàng sáng; chỗ an toàn ngoài luống sạch.",
+  "budget": {
+    "drawCalls": 8,
+    "particles": 300,
+    "screenCover": 0.3,
+    "overdraw": 5
+  }
+}

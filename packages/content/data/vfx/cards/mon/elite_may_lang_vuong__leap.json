@@ -1,0 +1,33 @@
+{
+  "monId": "elite_may_lang_vuong",
+  "move": "leap",
+  "idea": "Mây Lang Vương đáp xuống: vòng mây phồng nổ bán kính 5 m (vạch báo trắng lục nhạt), bông mây bắn ra rồi tan.",
+  "element": "thuy",
+  "palette": {
+    "core": "17222a",
+    "body": "9fc4c0",
+    "rim": "f6fbfa",
+    "accent": "8fd8b4"
+  },
+  "shapeLang": [
+    "ring",
+    "cloud"
+  ],
+  "zone": {
+    "shape": "circle",
+    "r": 5,
+    "at": "target"
+  },
+  "timing": {
+    "anticipationMs": 1400,
+    "impactMs": 130,
+    "lingerMs": 700
+  },
+  "readability": "Vòng trắng lục 5 m, bông mây có viền đậm để đọc nền sáng; phủ nhỏ.",
+  "budget": {
+    "drawCalls": 7,
+    "particles": 220,
+    "screenCover": 0.2,
+    "overdraw": 4
+  }
+}

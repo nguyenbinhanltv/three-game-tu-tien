@@ -1,0 +1,34 @@
+{
+  "monId": "elite_may_lang_vuong",
+  "move": "charge",
+  "idea": "Mây Lang Vương lao lướt dọc đường 13 m, rộng 2,6 m (vạch báo trắng lục nhạt); để lại vệt mây lang lướt, bông mây tan dần.",
+  "element": "thuy",
+  "palette": {
+    "core": "17222a",
+    "body": "9fc4c0",
+    "rim": "f6fbfa",
+    "accent": "8fd8b4"
+  },
+  "shapeLang": [
+    "line",
+    "cloud"
+  ],
+  "zone": {
+    "shape": "rect",
+    "r": 13,
+    "w": 2.6,
+    "at": "forward"
+  },
+  "timing": {
+    "anticipationMs": 1000,
+    "impactMs": 130,
+    "lingerMs": 700
+  },
+  "readability": "Dải trắng lục 13×2,6 m, vệt mây trắng viền lục đậm để đọc được trên nền sáng; phủ nhỏ.",
+  "budget": {
+    "drawCalls": 7,
+    "particles": 220,
+    "screenCover": 0.2,
+    "overdraw": 4
+  }
+}

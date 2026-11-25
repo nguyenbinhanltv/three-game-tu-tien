@@ -1,0 +1,34 @@
+{
+  "monId": "boss_dao_linh",
+  "move": "sweep",
+  "idea": "Pha 3: Đạo Linh quét nét cọ lớn: quạt 14 m nửa góc 45° (vạch báo bạc lam nhạt), nét cọ bạc quét qua, mực bạc bắn thành chấm.",
+  "element": "thuy",
+  "palette": {
+    "core": "161c2a",
+    "body": "8e98b8",
+    "rim": "f2f6fa",
+    "accent": "9fc4f0"
+  },
+  "shapeLang": [
+    "arc",
+    "line"
+  ],
+  "zone": {
+    "shape": "cone",
+    "r": 14,
+    "w": 45,
+    "at": "forward"
+  },
+  "timing": {
+    "anticipationMs": 1300,
+    "impactMs": 140,
+    "lingerMs": 800
+  },
+  "readability": "Quạt bạc lam rõ rìa, nét cọ mực viền đậm; chỗ an toàn sạch.",
+  "budget": {
+    "drawCalls": 8,
+    "particles": 300,
+    "screenCover": 0.3,
+    "overdraw": 5
+  }
+}

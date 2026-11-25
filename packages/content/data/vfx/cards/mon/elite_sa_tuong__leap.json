@@ -1,0 +1,33 @@
+{
+  "monId": "elite_sa_tuong",
+  "move": "leap",
+  "idea": "Sa Tướng nhảy đáp xuống: cuộn cát nổ bán kính 5,5 m (vạch báo cát vàng nhạt, không cam), đao cát bắn ra theo vòng rồi tan thành bụi vàng.",
+  "element": "tho",
+  "palette": {
+    "core": "231e12",
+    "body": "c9b878",
+    "rim": "fff3cf",
+    "accent": "ead78e"
+  },
+  "shapeLang": [
+    "burst",
+    "cloud"
+  ],
+  "zone": {
+    "shape": "circle",
+    "r": 5.5,
+    "at": "target"
+  },
+  "timing": {
+    "anticipationMs": 1500,
+    "impactMs": 130,
+    "lingerMs": 700
+  },
+  "readability": "Vòng cát vàng nhạt 5,5 m, cuộn cát thấp, đao cát sẫm viền sáng; không cam/đỏ.",
+  "budget": {
+    "drawCalls": 7,
+    "particles": 220,
+    "screenCover": 0.2,
+    "overdraw": 4
+  }
+}
