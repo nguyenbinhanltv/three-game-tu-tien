@@ -24,6 +24,8 @@ export const PAINTED = {
   earth: [0xc8b98a, 0x8a7d72],
   /** Đá, vách núi gần. */
   rock: [0xa9a597, 0x575a70],
+  /** Đá lát sân (sơn môn, bệ cổng): xám ngọc sáng, khe và bóng ngả lam. */
+  paving: [0xb4bfb2, 0x5c6c80],
   /** Tán cây lá rộng và lá kim. */
   foliage: [0x4f8a3a, 0x1f4a47],
   conifer: [0x2f6b45, 0x16384a],
