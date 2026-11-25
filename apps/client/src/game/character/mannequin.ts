@@ -78,6 +78,7 @@ import {
   leanOf,
   LOCO,
   locoClipName,
+  type LocoTable,
   type LocoBand,
   type LocoDirKey,
   locoMix,
@@ -87,6 +88,7 @@ import {
   turnLagOf,
   xfade,
 } from './mannequinAnim';
+import { clipTimeAt, PATCH_TABLE } from './patchLoop';
 import { feetSlot, MqFeet } from './mannequinFeet';
 import { lodOf, mergeLodMeshes } from './mannequinLod';
 import { lowerBodyOf, upperBodyOf, MannequinPoseBank, type MqPose, PoseSource, POSE_SOURCE_ASSET, poseClipName } from './mannequinPoses';
@@ -722,6 +724,8 @@ export class MannequinCharacter implements CharacterView {
   private companions: THREE.AnimationAction[] = [];
   private loco = false;
   private locoPhase = 0;
+  /** Vòng chạy dùng clip Patch (`patchLoop.ts`) thay UAL: chốt lúc vào chế độ chạy. */
+  private patchLoop = false;
   private mix = { walk: 0, jog: 1, sprint: 0 };
   /** Trọng số bốn hướng đi (làm mượt) và dải/hướng của từng action đi-chạy (A1: đi lùi, đi ngang, chéo). */
   private dir: DirMix = { f: 1, b: 0, l: 0, r: 0 };
@@ -1162,7 +1166,11 @@ export class MannequinCharacter implements CharacterView {
 
   private play(name: string): void {
     if (this.baseName === name) return;
-    const next = this.action(name);
+    // Thân Pháp: vòng chạy bằng clip Patch (cần cả PM_Run và PM_Sprint trong template; thiếu thì giữ UAL).
+    const patchLoop =
+      V3_ANIM && name === LOCO.jog.clip && ANIM_FX.patchLoop && this.tpl.clips.has('PM_Run') && this.tpl.clips.has('PM_Sprint');
+    const table: LocoTable = patchLoop ? PATCH_TABLE : LOCO;
+    const next = this.action(patchLoop ? PATCH_TABLE.jog.clip : name);
     if (!next) return;
     this.fadeDur = V3_ANIM ? xfade(this.baseName, name) : FADE;
     // Chạy: kèm clip đi bộ + chạy nhanh, trộn theo tốc độ (companions chia trọng số nền với clip chạy).
@@ -1176,6 +1184,7 @@ export class MannequinCharacter implements CharacterView {
     this.companions = [];
     this.locoKey.clear();
     this.loco = V3_ANIM && name === LOCO.jog.clip;
+    this.patchLoop = this.loco && patchLoop;
     if (this.loco) {
       this.locoKey.set(next, { band: 'jog', dir: 'f' });
       // Thứ tự cố định: đi, chạy nhanh, rồi lùi/ngang của từng dải (thiếu clip trong asset thì bỏ qua, quay về clip tới).
@@ -1185,7 +1194,7 @@ export class MannequinCharacter implements CharacterView {
       ];
       for (const band of ['jog', 'walk', 'sprint'] as const) for (const d of ['b', 'l', 'r'] as const) want.push([band, d]);
       for (const [band, d] of want) {
-        const c = this.action(locoClipName(band, d));
+        const c = this.action(locoClipName(band, d, table));
         if (!c) continue;
         c.setLoop(THREE.LoopRepeat, Infinity);
         c.reset().play();
@@ -1643,7 +1652,7 @@ export class MannequinCharacter implements CharacterView {
     this.stepPatch(dt, a);
     if (this.loco) {
       // Trộn đi/chạy/chạy nhanh theo tốc độ thật; pha chung nên chân trụ không trượt khi đổi nhịp.
-      const m = locoMix(a.speed);
+      const m = locoMix(a.speed, this.patchLoop ? PATCH_TABLE : LOCO);
       const k = Math.min(1, realDt * 12);
       this.mix.walk += (m.walk - this.mix.walk) * k;
       this.mix.jog += (m.jog - this.mix.jog) * k;
@@ -1762,12 +1771,12 @@ export class MannequinCharacter implements CharacterView {
     this.locoPhase = (this.locoPhase + this.locoCycles * dt) % 1;
     for (const act of [this.base!, ...this.companions]) {
       act.timeScale = 0;
-      act.time = this.locoPhase * act.getClip().duration;
+      act.time = clipTimeAt(act.getClip().name, act.getClip().duration, this.locoPhase);
     }
     const lb = this.perf?.lowerBase;
     if (lb) {
       lb.timeScale = 0;
-      lb.time = this.locoPhase * lb.getClip().duration;
+      lb.time = clipTimeAt(lb.getClip().name, lb.getClip().duration, this.locoPhase);
     }
   }
 
@@ -1787,7 +1796,7 @@ export class MannequinCharacter implements CharacterView {
     }
     const lb = this.shotLower!;
     lb.timeScale = this.loco ? 0 : src.timeScale;
-    if (this.loco) lb.time = this.locoPhase * lb.getClip().duration;
+    if (this.loco) lb.time = clipTimeAt(lb.getClip().name, lb.getClip().duration, this.locoPhase);
     else lb.time = src.time;
   }
 

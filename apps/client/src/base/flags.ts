@@ -26,6 +26,8 @@ interface Flags {
   animLab: boolean;
   /** `?thanphap=1`: bật lớp Thân Pháp (cường điệu góc chéo, nảy bước...) trên nhân vật v3; mặc định tắt tới khi duyệt pilot. */
   thanPhap: boolean;
+  /** `?ploop=0` (cùng `?thanphap=1`) giữ vòng chạy UAL thay vì clip Patch, để so trước/sau. */
+  patchLoop: boolean;
   /** `?vfxwarm=0` tắt biên dịch trước VFX (chẩn đoán). */
   vfxWarm: boolean;
   /** `?aura=0` tắt hào quang cảnh giới (so số đo trước/sau, RFX-1). */
@@ -149,6 +151,7 @@ export const FLAG_DOCS: Readonly<Record<string, { scope: 'user' | 'diag' | 'test
   batch: { scope: 'diag', doc: '=0: tắt gộp draw call VFX' },
   vfxlab: { scope: 'test', doc: '=1 (dev): phòng thử VFX, gắn window.__vfxlab; dùng với pnpm shots vfxlab' },
   animlab: { scope: 'test', doc: '=1 (dev): phòng thử animation Thân Pháp, gắn window.__animlab; dùng với pnpm shots animlab' },
+  ploop: { scope: 'test', doc: '=0 (cùng ?thanphap=1): giữ vòng chạy UAL thay vì clip Patch PM_Run/PM_Sprint, để so trước/sau' },
   thanphap: {
     scope: 'diag',
     doc: '=1: lớp Thân Pháp (cường điệu góc chéo, nảy bước, idle/chiêu mới của Kiếm tu); pilot TP-1, mặc định tắt',
@@ -240,6 +243,7 @@ export function readFlags(search: string): Flags {
     vfxLab: q.get('vfxlab') === '1',
     animLab: q.get('animlab') === '1',
     thanPhap: q.get('thanphap') === '1',
+    patchLoop: !off(q.get('ploop')),
     vfxWarm: !off(q.get('vfxwarm')),
     aura: !off(q.get('aura')),
     auraGround: !off(q.get('auraground')),

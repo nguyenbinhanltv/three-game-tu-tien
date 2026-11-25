@@ -22,13 +22,16 @@ const QUERY: Record<string, Record<string, string>> = {
   v3new: { chr: 'v3' },
   v3nok5: { chr: 'v3', k5: '0' },
   v3raw: { chr: 'v3', v3pal: '0' },
+  // Thân Pháp: vòng chạy UAL (cũ, `?ploop=0`) so với clip Patch PM_Run/PM_Sprint (mới); cùng bắt đầu/dừng/thở dốc của Patch.
+  v3tpold: { chr: 'v3', thanphap: '1', ploop: '0' },
+  v3tpnew: { chr: 'v3', thanphap: '1' },
 };
 const FFMPEG = process.env.FFMPEG ?? 'ffmpeg';
 
 export default {
   name: 'chrv3',
   desc: 'Video so nhân vật hiện tại (v1/v2) với v3 (Lạc Kiếm trên Mannequin + UAL trực tiếp) cùng chuỗi hành động, nam/nữ',
-  usage: '[--genders m,f] [--variants v1,v2,v3,v3raw] [--size 960x600]',
+  usage: '[--genders m,f] [--variants v1,v2,v3,v3raw,v3tpold,v3tpnew] [--size 960x600] [--slide | --runstop]',
   async run(r) {
     const viewport = size('960x600');
     for (const g of list('--genders', 'm,f')) {
@@ -170,6 +173,44 @@ export default {
             JSON.stringify(res, null, 1),
           );
           console.log(`[shots:chrv3] slide ${tag}: ${JSON.stringify(res)}`);
+          await ctx.close();
+        };
+        // Chạy–dừng–chạy (Thân Pháp, `v3tpold` so `v3tpnew`): giữ W 1,6 s, thả 1,5 s, giữ W 1,6 s; chụp khung liên tục, tên có mốc ms để dựng dải khung.
+        // Ảnh `rs-<tag>-<NNN>-<ms>.png` ở thư mục ra (cắt quanh nhân vật khi xử lý hậu kỳ).
+        const runstop = async () => {
+          const { page, ctx } = await r.open({
+            name: `V3r${g}${v}`,
+            viewport,
+            quality: 'high',
+            look: { g },
+            query: QUERY[v] ?? {},
+            hide: 'hud',
+            warnings: /models|chr_v3|clip/,
+          });
+          await gm(page, 'god on', 1000);
+          await gm(page, 'tp 2048 2088', 1500);
+          await page.waitForFunction(() => !!window.__game!.ents?.players.get(window.__game!.sid)?.model?.v3, undefined, {
+            timeout: 60_000,
+            polling: 300,
+          });
+          await sleep(1500);
+          const t0 = Date.now();
+          let n = 0;
+          const grab = async (until: number) => {
+            while (Date.now() - t0 < until) {
+              const ms = Date.now() - t0;
+              await page.screenshot({ path: path.join(r.out, `rs-${tag}-${String(n++).padStart(3, '0')}-${ms}.png`) });
+            }
+          };
+          await page.keyboard.down('KeyW');
+          await grab(1600);
+          await page.keyboard.up('KeyW');
+          await grab(3100);
+          await page.keyboard.down('KeyW');
+          await grab(4700);
+          await page.keyboard.up('KeyW');
+          await grab(5600);
+          console.log(`[shots:chrv3] runstop ${tag}: ${n} khung`);
           await ctx.close();
         };
         const stills = async () => {
@@ -398,6 +439,10 @@ export default {
         }
         if (process.argv.includes('--slide')) {
           await slide();
+          continue;
+        }
+        if (process.argv.includes('--runstop')) {
+          await runstop();
           continue;
         }
         if (process.argv.includes('--stills')) {
