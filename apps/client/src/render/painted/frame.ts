@@ -29,6 +29,9 @@ export const paintedNight = uniform(0);
  * vì ngưỡng 1,5 không chạm cỏ/hoa; kiểm lại bằng ảnh chênh] → pass cuối: Kuwahara (`painted`) → [viền mực: chỉ cho nhân vật, bước P7]
  * → vignette → phơi sáng → đường cong họa sĩ → bão hòa 1,06 → sRGB → dither.
  */
+/** 1 = dùng mặt nạ VFX (mặc định), 0 = tắt (chỉ còn ngưỡng HDR): để so cùng một khung có/không mặt nạ (`window.__vfxMask`, kịch bản vfxlab `--maskcmp`). */
+export const vfxMaskOn = uniform(1);
+
 export interface PaintedOutputOpts {
   /** `?paint=` của nguồn: 0 tắt, 3 là mặc định của bản demo (bán kính hiệu dụng 2, còn 1 ở rất gần/rất xa). */
   paint: number;
@@ -121,7 +124,7 @@ export function paintedOutput(scenePass: N, o: PaintedOutputOpts): N {
       // mặt nạ mở rộng 2 điểm ảnh (cửa sổ Kuwahara) để mép VFX không bị trộn với nền
       const mk = (du: number, dv: number): N => o.mask!(uv.add(vec2(du, dv).mul(texel)));
       const m: N = max(max(max(mk(0, 0), mk(2, 0)), max(mk(-2, 0), mk(0, 2))), mk(0, -2));
-      keep = max(keep, clamp(m.mul(6), 0, 1));
+      keep = max(keep, clamp(m.mul(6), 0, 1).mul(vfxMaskOn));
     }
     c = mix(painted, c0.rgb, keep);
   } else {

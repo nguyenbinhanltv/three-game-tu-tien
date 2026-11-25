@@ -29,7 +29,7 @@ import { gaussianBlur } from 'three/addons/tsl/display/GaussianBlurNode.js';
 import type { Node } from 'three/webgpu';
 import { getCloudNoise } from './noiseTex';
 import { FLAGS } from '../base/flags';
-import { paintedOutput } from './painted/frame';
+import { paintedOutput, vfxMaskOn } from './painted/frame';
 import { BLOOM, GRAIN, VIGNETTE, type GradingPreset } from './grading';
 
 /**
@@ -262,6 +262,9 @@ export class PostPipeline {
       scenePass.setMRT(mrt({ output, bloom: vec4(0, 0, 0, output.a) }));
       scenePass.getTexture('bloom').type = THREE.UnsignedByteType;
       const vfxTex = scenePass.getTextureNode('bloom');
+      (window as unknown as { __vfxMask?: (on: boolean) => void }).__vfxMask = (on) => {
+        vfxMaskOn.value = on ? 1 : 0;
+      };
       const fromCenterP = screenUV.sub(0.5);
       this.post.outputNode = paintedOutput(scenePass, {
         paint: FLAGS.paint ?? 3,
