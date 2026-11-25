@@ -233,7 +233,32 @@ async function run(r: Run, poses: string[], cams: string[], sizes: string[]): Pr
       await ctx.close();
       return { ...out, stills: stillsMode };
     }
-    if (stillsMode === 'tp1b') {
+    if (stillsMode === 'closeup') {
+      // Cận đầu/tóc/mão, tay áo, chân/vạt: đứng (trước, bên, cận) rồi Roll (Space) ở khung xấu nhất ~0,73 s; toàn khung (không cắt) theo cỡ màn hình. `--set` + `--gender` mặc bộ (lệnh GM outfit).
+      const setId = opt('--set', 'none');
+      if (setId !== 'none') await gm(page, `outfit ${setId} ${opt('--gender', 'f')}`, 3500);
+      const fullShot = async (name: string) => {
+        const buf = await page.screenshot({ type: 'png' });
+        await sharp(buf).toFile(path.join(r.out, `${stillsMode}-${name}.png`));
+        console.log('  ảnh', `${stillsMode}-${name}.png`);
+      };
+      for (const cm of ['front', 'side', 'close'] as const) {
+        await page.evaluate((c) => window.__animlab!.cam(c), cm);
+        await sleep(1500);
+        await fullShot(`idle-${cm}`);
+      }
+      await page.evaluate(() => window.__animlab!.cam('close'));
+      await sleep(800);
+      await page.keyboard.press('Space');
+      await sleep(720);
+      await fullShot('roll-close');
+      await sleep(900);
+      await page.evaluate(() => window.__animlab!.cam('side'));
+      await sleep(600);
+      await page.keyboard.press('Space');
+      await sleep(720);
+      await fullShot('roll-side');
+    } else if (stillsMode === 'tp1b') {
       await page.evaluate(() => window.__animlab!.cam('iso'));
       await sleep(1200);
       await page.keyboard.down('w'); // bắt đầu chạy
