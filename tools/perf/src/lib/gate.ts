@@ -138,8 +138,9 @@ export function gate(run: IsoRun, base: Baseline | null, opts: GateOptions = {})
           limit: round(m.base! * (1 + tol)),
           why: m.soft ? 'cảnh báo ms' : 'tệ hơn baseline',
         });
-      } else if (over && m.base === null) {
-        // Chưa có baseline cho điểm này: ngân sách vùng là cổng cứng. Có baseline mà không tệ hơn thì cho qua (ratchet).
+      } else if (over && (m.base === null || m.base <= m.budget!)) {
+        // Ngân sách vùng là cổng cứng, trừ điểm mà CHÍNH baseline đã vượt (ratchet: chỉ chặn khi tệ hơn baseline, xét ở nhánh trên).
+        // Điểm đang đạt ngân sách trong baseline mà nay vượt (dù chưa quá `tol`) là hồi quy thật nên bị chặn.
         out.push({
           severity: sev,
           id: p.id,

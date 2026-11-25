@@ -71,6 +71,14 @@ describe('gate', () => {
     expect(f[0]).toMatchObject({ metric: 'texture MB', why: 'tệ hơn baseline' });
   });
 
+  it('lỗ hổng bậc thang: baseline đang đạt ngân sách mà nay vượt (dù chưa quá tol) vẫn bị chặn', () => {
+    const budget = ZONE_BUDGETS.tong_mon.drawCalls;
+    const base = toBaseline(run([pt('van_lam/san', 'map', { dc: budget - 5 })]));
+    const f = gate(run([pt('van_lam/san', 'map', { dc: budget + 3 })]), base);
+    expect(failed(f)).toBe(true);
+    expect(f[0]).toMatchObject({ metric: 'draw call (max)', why: 'vượt ngân sách', severity: 'fail', limit: budget });
+  });
+
   it('chặn khi tệ hơn baseline quá 10% dù còn trong ngân sách; bỏ qua chênh nhỏ tuyệt đối', () => {
     const base = toBaseline(run([pt('van_hai/giua', 'map', { dc: 100, tris: 500_000 })]));
     expect(failed(gate(run([pt('van_hai/giua', 'map', { dc: 120 })]), base))).toBe(true);
