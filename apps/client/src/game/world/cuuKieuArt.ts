@@ -1,4 +1,4 @@
-import { fbm, type TerrainDef } from '@dtl/shared';
+import { CUU_KIEU_ROAD, CUU_KIEU_ROAD_HALF, fbm, type TerrainDef } from '@dtl/shared';
 
 /**
  * Mặt đất Thiên Lộ Giới (TN-7, mỹ thuật): đồng cỏ xanh rêu ngả vàng úa (không chanh), biến thiên macro theo mảng (cỏ ẩm sẫm, cỏ khô vàng, đất trần nâu, đá lộ xám),
@@ -59,4 +59,26 @@ export function ckGroundColor(def: TerrainDef, x: number, z: number, ny: number,
   out[0] = lum + (c[0] - lum) * 0.8;
   out[1] = lum + (c[1] - lum) * 0.8;
   out[2] = lum + (c[2] - lum) * 0.8;
+}
+
+/**
+ * Hệ số 0..1 cho mật độ cỏ lá mảnh Họa Cảnh quanh con đường lát đá (và sân hub ở đầu đường): trên mặt đường chỉ còn vài búi (0,08), tăng dần tới 1 ở cách mép
+ * đường 2,5 m (cùng khoảng đệm với búi cỏ chân của `ckWonders`). Hàm thuần.
+ */
+export function ckGrassK(x: number, z: number): number {
+  let d2 = Infinity;
+  for (let i = 0; i + 1 < CUU_KIEU_ROAD.length; i++) {
+    const a = CUU_KIEU_ROAD[i]!;
+    const b = CUU_KIEU_ROAD[i + 1]!;
+    const vx = b[0] - a[0];
+    const vz = b[1] - a[1];
+    const l2 = vx * vx + vz * vz || 1;
+    const u = Math.max(0, Math.min(1, ((x - a[0]) * vx + (z - a[1]) * vz) / l2));
+    const dx = x - (a[0] + vx * u);
+    const dz = z - (a[1] + vz * u);
+    d2 = Math.min(d2, dx * dx + dz * dz);
+  }
+  const d = Math.sqrt(d2) - CUU_KIEU_ROAD_HALF;
+  const t = Math.min(1, Math.max(0, d / 2.5));
+  return 0.08 + 0.92 * t * t * (3 - 2 * t);
 }

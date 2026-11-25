@@ -21,7 +21,7 @@ Rút từ painted-valley (xem README và LICENCE-NOTES của nó). **Phạm vi: 
 7. **Animation cần clip chuyển tiếp.** Nhân vật đi bộ trên nền hoạt hình thiếu start, stop, pivot (xoay đột ngột), sprint và nhịp thở dốc (idle mệt) thì đọc là trượt; mỗi bộ cần các clip này (nối với `vfx-animation.md`, Thân Pháp).
 8. **Một hướng mỹ thuật thống nhất.** Mọi asset mới (kiến trúc, cây, prop, thẻ cây) đi qua bảng phong cách của chế độ này; không trộn bán tả thực với painted trong cùng một cảnh.
 9. **Đo khớp, không "nhìn cho giống".** Port từ nguồn phải dịch từng dòng, giữ hằng số, rồi so bằng số (SSIM, ΔE) ở cảnh thử cô lập (`tools/painted-compare` và cờ `?paintedlab=1`) (vào cùng PR #614) trước khi áp vào địa hình thật.
-10. **Giữ ngân sách.** Dưới 300 draw call, dưới 2 triệu tam giác, CPU dưới 8 ms; số đo trước/sau ở mỗi PR.
+10. **Giữ ngân sách.** Dưới 300 draw call, dưới 2 triệu tam giác, 512 MB texture, CPU dưới 8 ms; số đo trước/sau ở mỗi PR. **Ngoại lệ đã chốt (người dùng, 2026-11-25): với `?style=painted` KHÔNG áp luật "không vượt mặc định quá +20% draw/tam giác"**; chỉ áp ngân sách tuyệt đối ở trên (cỏ lá mảnh làm draw call +30…+76% so mặc định, giữ ở mọi preset). `pnpm perf:gate` vốn chỉ chặn theo ngân sách tuyệt đối từng vùng nên không đổi.
 
 ### Ghi công
 
