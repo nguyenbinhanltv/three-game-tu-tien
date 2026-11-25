@@ -229,6 +229,23 @@
    }
   },
   {
+   "type": "decal",
+   "tex": "crack",
+   "t": 0.06,
+   "r": 6,
+   "dur": 1.4,
+   "at": "target",
+   "offset": [
+    0,
+    0,
+    0
+   ],
+   "grow": 0.25,
+   "tone": "core",
+   "alpha": 0.41,
+   "tier": 1
+  },
+  {
    "type": "mesh",
    "t": 0.06,
    "dur": 1.1,

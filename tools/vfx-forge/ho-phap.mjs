@@ -113,6 +113,20 @@ const scorch = (at, off, r, t = 0, dur = 1.6) => ({
   alpha: 0.78,
   tier: 0,
 });
+/** Mép vùng tác dụng THẬT (server `radius`): decal nứt đất mờ trải tới bán kính `r` m để người chơi đọc đúng tầm; alpha 0,41 làm dấu để chạy lại không nhân đôi. */
+const zoneEdge = (at, r, t = 0.05) => ({
+  type: 'decal',
+  tex: 'crack',
+  t,
+  r,
+  dur: 1.4,
+  at,
+  offset: [0, 0, 0],
+  grow: 0.25,
+  tone: 'core',
+  alpha: 0.41,
+  tier: 1,
+});
 const ground = (at, off, size, t = 0.02, o = {}) =>
   sprite('hp_cracks', { t, dur: 0.6, at, off, size, sizeTo: size * 1.15, alpha: 0.8, erodeFrom: 0.15, ...o });
 
@@ -134,6 +148,7 @@ const SPEC = {
     ...[gather('hp_seal', { size: 3.2, off: [0, 4.2, 0] })],
     pullIn('target', [0, 3.6, 0], -0.26),
     strike('hp_seal', { size: 5, off: [0, 3.6, 0], dur: 0.5, erodeFrom: 0.3, move: { to: 'target', offset: [0, 1.4, 0], ease: 'in' } }),
+    zoneEdge('target', 12),
     strike('hp_fieldcracks', { size: 11, off: [0, 0.4, 0], t: 0.06, dur: 1.2, erodeFrom: 0.4 }),
     flash('target', [0, 1.2, 0], 2.4, 0.04, { dur: 0.14 }),
     scorch('target', [0, 0.02, 0], 3.4, 0.03, 2),
@@ -157,6 +172,7 @@ const SPEC = {
     ...[gather('hp_fist', { size: 2.8, off: [0, 4.4, 0] })],
     pullIn('target', [0, 3, 0], -0.26),
     strike('hp_fist', { size: 4.6, off: [0, 4, 0], dur: 0.45, erodeFrom: 0.35, move: { to: 'target', offset: [0, 1.5, 0], ease: 'in' } }),
+    zoneEdge('target', 6, 0.06),
     strike('hp_cracks', { size: 8, off: [0, 0.4, 0], t: 0.06, dur: 1.1, erodeFrom: 0.4 }),
     sprite('hp_rubble', { t: 0.08, dur: 0.8, off: [0, 1.6, 0], size: 5, alpha: 0.85, erodeFrom: 0.3 }),
     flash('target', [0, 1.2, 0], 2.4, 0.04, { dur: 0.14 }),
@@ -303,6 +319,7 @@ for (const id of ids) {
       e.type !== 'mesh' &&
       !(e.type === 'decal' && e.tex === 'rune') &&
       !(e.type === 'decal' && e.tex === 'scorch' && e.alpha === 0.78) &&
+      !(e.type === 'decal' && e.tex === 'crack' && e.alpha === 0.41) &&
       !(e.type === 'particles' && e.tier === 1 && e.tone === 'rim' && e.kind === 'spark'),
   );
   for (const e of t.events) if (e.type === 'flash' && FLASH_CAP[id] !== undefined) e.amount = Math.min(e.amount, FLASH_CAP[id]);

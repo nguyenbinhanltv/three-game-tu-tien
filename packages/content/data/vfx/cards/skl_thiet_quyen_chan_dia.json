@@ -13,8 +13,8 @@
     "lingerMs": 600
   },
   "footprint": {
-    "lengthM": 7,
-    "widthM": 7,
+    "lengthM": 12,
+    "widthM": 12,
     "heightM": 2
   },
   "colorRole": "own",
