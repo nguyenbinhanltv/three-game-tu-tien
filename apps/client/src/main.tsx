@@ -15,6 +15,10 @@ if (q.get('paintedlab') === '1') {
   // Cảnh thử đối chiếu Họa Cảnh với painted-valley (render/painted/lab); nạp động, không vào bundle game.
   document.getElementById('boot')?.remove();
   void import('./render/painted/lab/page').then((m) => m.startPaintedLab(root));
+} else if (q.get('paintedlab') === 'far') {
+  // Bản đồ độ cao vùng xa (P3a): xem render/painted/lab/farLab.ts
+  document.getElementById('boot')?.remove();
+  void import('./render/painted/lab/farLab').then((m) => m.startFarLab(root));
 } else if (q.get('viewer') === 'asset' || q.has('show')) {
   // Trang xem asset: nạp động để code viewer không vào bundle game chính. Không cần màn tiêu đề.
   // `?show=char` (M1-10) là alias: mở model người chơi (`?show=<id asset>` cho asset khác trong manifest).

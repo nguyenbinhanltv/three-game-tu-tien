@@ -136,7 +136,7 @@ export const FLAG_DOCS: Readonly<Record<string, { scope: 'user' | 'diag' | 'test
   vista: { scope: 'diag', doc: '0: tắt camera mở tầm nhìn (hạ thấp khi ngự kiếm và ở điểm ngắm cảnh)' },
   paintedlab: {
     scope: 'test',
-    doc: '=1: cảnh thử đối chiếu Họa Cảnh với painted-valley (render/painted/lab; tools/painted-compare); ?win=x,z ?paint=0..3',
+    doc: '=1: cảnh thử đối chiếu Họa Cảnh với painted-valley (render/painted/lab; tools/painted-compare); ?win=x,z ?paint=0..3; =far: bản đồ độ cao vùng xa (P3a)',
   },
   isoyaw: { scope: 'diag', doc: 'độ: ghi đè hướng nhìn cố định của camera chéo (chọn hướng đẹp nhất cho từng bản đồ)' },
   isofx: { scope: 'diag', doc: '=0 tắt nén hình VFX đứng cao ở camera chéo (debug, so ảnh trước/sau)' },
