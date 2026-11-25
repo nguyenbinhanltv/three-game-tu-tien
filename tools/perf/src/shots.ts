@@ -15,9 +15,9 @@ import herocheck from './scenarios/herocheck';
 import herolight from './scenarios/herolight';
 import bossfaces from './scenarios/bossfaces';
 import dungeon from './scenarios/dungeon';
-import hires from './scenarios/hires';
 import lackiem from './scenarios/lackiem';
 import painted from './scenarios/painted';
+import paintedvista from './scenarios/paintedvista';
 import tieucanh from './scenarios/tieucanh';
 import thienkhuyet from './scenarios/thienkhuyet';
 import bachoang from './scenarios/bachoang';
@@ -28,7 +28,6 @@ import isoplay from './scenarios/isoplay';
 import kieu from './scenarios/kieu';
 import doanmach from './scenarios/doanmach';
 import vanhai from './scenarios/vanhai';
-import quality from './scenarios/quality';
 import map from './scenarios/map';
 import mons from './scenarios/mons';
 import camiso from './scenarios/camiso';
@@ -86,6 +85,7 @@ const SCENARIOS: Scenario[] = [
   propstc,
   lackiem,
   painted,
+  paintedvista,
   tieucanh,
   collwalk,
   thienkhuyet,
@@ -145,8 +145,6 @@ const SCENARIOS: Scenario[] = [
   herolight,
   xichkhe,
   dungeonart,
-  hires,
-  quality,
   realmaura,
   fxlib,
 ];

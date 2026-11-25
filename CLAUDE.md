@@ -36,7 +36,7 @@ tools/vfx-forge    lò rèn texture VFX (Codex → KTX2 + contact sheet + manife
 tools/vfx          gen-fx-*.py, recipes_*.py: sinh timeline VFX (data/fx/*.json)
 tools/ui           contrast.mjs: kiểm WCAG AA token chữ
 tools/docs         check.mjs (media docs), check-paths.mjs (đường dẫn trong CLAUDE.md/handbook/skill)
-tools/codex-assets script sinh concept/tranh qua Codex (gen.mjs icons|portraits|loading|ui, cutin-gen, chr-v3*, mon-multiview-gen; đã gỡ bớt script một lần ở tối ưu Đợt C)
+tools/codex-assets script sinh concept/tranh qua Codex (gen.mjs icons|portraits|loading|ui, cutin-gen, chr-v3-sets-gen, v3-sets-*; đã gỡ bớt script một lần ở tối ưu Đợt C; script concept một lần còn lại ở `archive/codex-assets/`, kịch bản shots ít dùng ở `tools/perf/archive/scenarios/`)
 tools/calli        build.mjs + groups.json: vẽ chữ thư pháp Giao Long (font ngoài repo, `CALLI_FONT`) thành PNG trong suốt ở `apps/client/public/assets/calli/` (`pnpm calli[:check]`; KHÔNG commit font)
 tools/icons        build.mjs + subjects.json: icon vật phẩm/chiêu (`pnpm icons:build|check`)
 tools/palette      gen_palette.mjs: bảng màu từ `assets/palette.json` (`pnpm palette[:check]`)

@@ -1,4 +1,5 @@
 // R-8: tách từ game/engine.ts (hàm nhận `g: Game`, trước là phương thức private của lớp Game).
+import { updateLampPools } from '../../render/painted/lampPools';
 import { FLAGS } from '../../base/flags';
 import { spotAt, vistaView } from '../camera/vista';
 import { downgradeOf, getGpuHint, setGpuHint, suggestQuality } from '../../base/quality';
@@ -271,6 +272,7 @@ export function runFrame(eng: Game): void {
   eng.aurora?.update(eng.camera.position);
   updateEclipse(eng, dt);
   eng.lanterns?.update(_v.set(rp.x, rp.y, rp.z));
+  if (FLAGS.style === 'painted') updateLampPools(eng.lanterns?.lights ?? []); // level không có đèn: xóa vũng của level trước
   if (me) eng.ambient.update(dt, eng.camera.position, rp);
   if (me) eng.butterflies?.update(dt, rp);
   eng.lacKiemBirds?.update(rp.x, rp.y, rp.z, eng.camera.position);
@@ -450,7 +452,7 @@ function updateCamera(eng: Game, dt: number): void {
           break;
         }
     const spot = combat ? null : spotAt(levelId(), rp.x, rp.z);
-    const vv = vistaView(eng.vista.update(dt, flying, spot, FLAGS.vista && !eng.cine.active, combat));
+    const vv = vistaView(eng.vista.update(dt, flying, spot, FLAGS.vista && !eng.cine.active, combat), flying ? 'fly' : 'spot');
     if (eng.vista.hint(spot) && FLAGS.vista) pushToast(t('ui.vista_hint'));
     const wantD = isoDistFor(levelId()) * (flying ? 1.35 : 1) * vv.distMul * (1 + pull);
     iso.distCur += (wantD - iso.distCur) * Math.min(1, dt * 6);

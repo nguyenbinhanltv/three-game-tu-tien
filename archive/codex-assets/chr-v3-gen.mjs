@@ -6,7 +6,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawn, spawnSync } from 'node:child_process';
-import { A, NOTEXT, ORIGINAL, STYLE } from './outfit-data.mjs';
+import { A, NOTEXT, ORIGINAL, STYLE } from '../../tools/codex-assets/outfit-data.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, '../..');

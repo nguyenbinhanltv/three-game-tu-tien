@@ -1,7 +1,7 @@
 // Phòng thử VFX (V-P0): chụp một chiêu ở 0 / +30 / +150 / +400 ms sau khung trúng đòn, 720p + 1080p cùng góc camera chéo, dừng thời gian
 // bằng `window.__vfxlab` để các khung đúng từng mili giây; đo ngân sách (draw call, hạt, phủ màn hình, overdraw), so với thẻ chiêu
 // (`packages/content/data/vfx/cards/<id>.json`) và (tùy chọn) đặt ảnh concept cạnh khung +30 ms.
-// Dùng: pnpm shots vfxlab --skill <id> --out <thư mục tuyệt đối> [--dummies 1..5] [--mon <id quái>] [--concept <ảnh>] [--sizes 720p,1080p] [--at 0,30,150,400] [--clean] [--reload]
+// Dùng: pnpm shots vfxlab --skill <id> --out <thư mục tuyệt đối> [--dummies 1..5] [--mon <id quái>] [--concept <ảnh>] [--sizes 720p,1080p] [--at 0,30,150,400] [--clean] [--reload] [--maskcmp]
 import fs from 'node:fs';
 import path from 'node:path';
 import sharp from 'sharp';
@@ -154,6 +154,14 @@ async function run(r: Run, skills: string[], sizes: string[], at: number[]): Pro
         await frame(page);
         const buf = await snap(page, outDir, `${skill}-${tag}-${ms >= 0 ? '+' : ''}${ms}ms.jpg`, { wait: 0 });
         files.push(buf);
+        if (process.argv.includes('--maskcmp')) {
+          // cùng khung tạm dừng, tắt mặt nạ VFX của Họa Cảnh (chỉ còn ngưỡng HDR) rồi chụp lại: so có/không mặt nạ cùng pha
+          await page.evaluate(() => (window as unknown as { __vfxMask?: (on: boolean) => void }).__vfxMask?.(false));
+          await frame(page);
+          await snap(page, outDir, `${skill}-${tag}-${ms >= 0 ? '+' : ''}${ms}ms-nomask.jpg`, { wait: 0 });
+          await page.evaluate(() => (window as unknown as { __vfxMask?: (on: boolean) => void }).__vfxMask?.(true));
+          await frame(page);
+        }
         const raw = await page.evaluate(() => window.__vfxlab!.budget());
         const b = { ...raw, particles: Math.max(0, raw.particles - b0.particles), drawCalls: Math.max(0, raw.drawCalls - b0.drawCalls) };
         const cover = await coverage(base, buf);

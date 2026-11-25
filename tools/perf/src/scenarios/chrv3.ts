@@ -21,13 +21,88 @@ const QUERY: Record<string, Record<string, string>> = {
   v3new: { chr: 'v3' },
   v3nok5: { chr: 'v3', k5: '0' },
   v3raw: { chr: 'v3', v3pal: '0' },
+  // Thân Pháp: vòng chạy UAL (cũ, `?ploop=0`) so với clip Patch PM_Run/PM_Sprint (mới); cùng bắt đầu/dừng/thở dốc của Patch.
+  v3tpold: { chr: 'v3', thanphap: '1', ploop: '0' },
+  v3tpnew: { chr: 'v3', thanphap: '1' },
 };
 const FFMPEG = process.env.FFMPEG ?? 'ffmpeg';
+
+interface SlideRow {
+  t: number;
+  r: [number, number];
+  f: [number, number, number][];
+}
+
+/**
+ * Trượt chân của chân trụ từ dãy khung. Mỗi ĐOẠN tiếp đất liên tục (cổ chân trong 3 cm trên điểm thấp nhất của chân đó, bỏ 20% đầu/cuối đoạn, còn ≥ 3 khung) hồi quy vị trí chân TRONG THẾ GIỚI
+ * theo thời gian, chiếu lên hướng chạy: độ dốc = tốc độ trượt của đoạn (chân dính đất = 0). Hồi quy triệt nhiễu bước vị trí theo gói tin của thân (khác lấy
+ * hiệu từng khung). Trả trung vị/p90 trên các đoạn. Hàm thuần.
+ */
+export function contactSlide(
+  rows: SlideRow[],
+): { median: number; p90: number; segments: number; bodySpeed: number; segSec: number } | null {
+  if (rows.length < 10) return null;
+  const a = rows[0]!;
+  const b = rows[rows.length - 1]!;
+  const dx = b.r[0] - a.r[0];
+  const dz = b.r[1] - a.r[1];
+  const dist = Math.hypot(dx, dz);
+  const span = b.t - a.t;
+  if (dist < 1 || span <= 0) return null;
+  const ux = dx / dist;
+  const uz = dz / dist;
+  const slips: number[] = [];
+  let segSec = 0;
+  for (const i of [0, 1]) {
+    const ymin = Math.min(...rows.map((q) => q.f[i]![1]));
+    const on = rows.map((q) => q.f[i]![1] < ymin + 0.03);
+    let k = 0;
+    while (k < rows.length) {
+      if (!on[k]) {
+        k++;
+        continue;
+      }
+      let j = k;
+      while (j + 1 < rows.length && on[j + 1]) j++;
+      // bỏ 20% đầu/cuối đoạn (lăn gót/mũi, khung chuyển pha bay)
+      const trim = Math.floor((j - k + 1) * 0.2);
+      const k0 = k + trim;
+      const j0 = j - trim;
+      if (j0 - k0 >= 2) {
+        const xs = rows.slice(k0, j0 + 1).map((q) => q.t - rows[k0]!.t);
+        const ws = rows.slice(k0, j0 + 1).map((q) => q.f[i]![0] * ux + q.f[i]![2] * uz);
+        const mx = xs.reduce((s, x) => s + x, 0) / xs.length;
+        const mw = ws.reduce((s, x) => s + x, 0) / ws.length;
+        let num = 0;
+        let den = 0;
+        xs.forEach((x, q) => {
+          num += (x - mx) * (ws[q]! - mw);
+          den += (x - mx) ** 2;
+        });
+        if (den > 1e-9) {
+          slips.push(Math.abs(num / den));
+          segSec += xs[xs.length - 1]!;
+        }
+      }
+      k = j + 1;
+    }
+  }
+  if (slips.length < 3) return null;
+  const s = [...slips].sort((x, y) => x - y);
+  const r2 = (x: number) => Math.round(x * 100) / 100;
+  return {
+    median: r2(s[Math.floor(s.length * 0.5)]!),
+    p90: r2(s[Math.floor(s.length * 0.9)]!),
+    segments: s.length,
+    bodySpeed: r2(dist / span),
+    segSec: r2(segSec / s.length),
+  };
+}
 
 export default {
   name: 'chrv3',
   desc: 'Video so nhân vật hiện tại (v1/v2) với v3 (Lạc Kiếm trên Mannequin + UAL trực tiếp) cùng chuỗi hành động, nam/nữ',
-  usage: '[--genders m,f] [--variants v1,v2,v3,v3raw] [--size 960x600]',
+  usage: '[--genders m,f] [--variants v1,v2,v3,v3raw,v3tpold,v3tpnew] [--size 960x600] [--slide | --runstop]',
   async run(r) {
     const viewport = size('960x600');
     for (const g of list('--genders', 'm,f')) {
@@ -116,7 +191,11 @@ export default {
             viewport: [640, 400],
             quality: 'medium',
             look: { g },
-            query: { ...(QUERY[v] ?? {}), ...(process.env.JOG ? { jog: process.env.JOG } : {}) },
+            query: {
+              ...(QUERY[v] ?? {}),
+              ...(process.env.JOG ? { jog: process.env.JOG } : {}),
+              ...(process.env.PSTRIDE ? { pstride: process.env.PSTRIDE } : {}),
+            },
             hide: 'hud',
             warnings: /models|chr_v3|clip/,
           });
@@ -135,7 +214,7 @@ export default {
             const rig = e.model.rig;
             const feet = [rig.getObjectByName('foot_l'), rig.getObjectByName('foot_r')];
             const V3 = feet[0].position.constructor;
-            const w = { samples: [], speeds: [] };
+            const w = { samples: [], speeds: [], rows: [] };
             let last = null;
             const tick = () => {
               const now = performance.now() / 1000;
@@ -147,6 +226,8 @@ export default {
                 w.samples.push(Math.hypot(pts[i].x - last.p[i].x, pts[i].z - last.p[i].z) / dt);
                 w.speeds.push(Math.hypot(root.x - last.root.x, root.z - last.root.z) / dt);
               }
+              const rw = e.model.root.getWorldPosition(new V3());
+              w.rows.push({ t: now, r: [rw.x, rw.z], f: pts.map((q) => [q.x, q.y, q.z]) });
               last = { t: now, p: pts, root };
               window.__slide = w;
               requestAnimationFrame(tick);
@@ -155,20 +236,79 @@ export default {
           })()`);
           await page.keyboard.down('KeyW');
           await sleep(500);
-          await page.evaluate('(() => { window.__slide.samples.length = 0; window.__slide.speeds.length = 0; })()');
-          await sleep(3500);
+          await page.evaluate(
+            '(() => { window.__slide.samples.length = 0; window.__slide.speeds.length = 0; window.__slide.rows.length = 0; })()',
+          );
+          await sleep(Number(process.env.SLIDE_SEC ?? 3.5) * 1000);
           await page.keyboard.up('KeyW');
           const res = (await page.evaluate(`(() => {
             const w = window.__slide;
             const q = (a, p) => [...a].sort((x, y) => x - y)[Math.floor(a.length * p)] ?? 0;
             const run = w.speeds.filter((x) => x > 0.5);
-            return { frames: w.samples.length, runSpeedMean: run.reduce((a, b) => a + b, 0) / Math.max(1, run.length), slideMedian: q(w.samples, 0.5), slideP90: q(w.samples, 0.9) };
-          })()`)) as unknown;
+            return { frames: w.samples.length, runSpeedMean: run.reduce((a, b) => a + b, 0) / Math.max(1, run.length), slideMedian: q(w.samples, 0.5), slideP90: q(w.samples, 0.9), rows: w.rows };
+          })()`)) as { rows: SlideRow[] } & Record<string, unknown>;
+          // Trượt chân đo ĐÚNG chân trụ: chỉ khung hai khung liền chân đang tiếp đất (cổ chân trong 3 cm trên điểm thấp nhất của nó), vị trí chân tính TƯƠNG ĐỐI thân
+          // hồi quy vị trí chân trong thế giới theo từng đoạn tiếp đất (xem `contactSlide`). 0 = chân dính đất; `SLIDE_SEC` đặt thời gian chạy đo (mặc định 3,5 s).
           fs.writeFileSync(
-            path.join(r.out, `slide-${tag}${process.env.JOG ? '-jog' + process.env.JOG : ''}.json`),
+            path.join(r.out, `slide-rows-${tag}${process.env.PSTRIDE ? '-ps' + process.env.PSTRIDE : ''}.json`),
+            JSON.stringify(res.rows),
+          );
+          const contact = contactSlide(res.rows);
+          delete (res as { rows?: unknown }).rows;
+          Object.assign(res, { contact });
+          fs.writeFileSync(
+            path.join(
+              r.out,
+              `slide-${tag}${process.env.JOG ? '-jog' + process.env.JOG : ''}${process.env.PSTRIDE ? '-ps' + process.env.PSTRIDE : ''}.json`,
+            ),
             JSON.stringify(res, null, 1),
           );
           console.log(`[shots:chrv3] slide ${tag}: ${JSON.stringify(res)}`);
+          await ctx.close();
+        };
+        // Chạy–dừng–chạy (Thân Pháp, `v3tpold` so `v3tpnew`): giữ W 1,6 s, thả 1,5 s, giữ W 1,6 s; chụp khung liên tục, tên có mốc ms để dựng dải khung.
+        // Ảnh `rs-<tag>-<NNN>-<ms>.png` ở thư mục ra (cắt quanh nhân vật khi xử lý hậu kỳ).
+        const runstop = async () => {
+          const { page, ctx } = await r.open({
+            name: `V3r${g}${v}`,
+            viewport,
+            quality: 'high',
+            look: { g },
+            query: { ...(QUERY[v] ?? {}), ...(process.env.RS_ISOYAW ? { isoyaw: process.env.RS_ISOYAW } : {}) },
+            dpr: Number(process.env.RS_DPR ?? 1),
+            hide: 'hud',
+            warnings: /models|chr_v3|clip/,
+          });
+          await gm(page, 'god on', 1000);
+          await gm(page, 'tp 2048 2088', 1500);
+          await page.waitForFunction(() => !!window.__game!.ents?.players.get(window.__game!.sid)?.model?.v3, undefined, {
+            timeout: 60_000,
+            polling: 300,
+          });
+          await sleep(1500);
+          const t0 = Date.now();
+          let n = 0;
+          const key = process.env.RS_KEY ?? 'KeyW';
+          // RS_CLIP=1: chụp vùng quanh nhân vật (CSS 360×330 ở giữa khung) với RS_DPR lần phân giải → nhân vật ~1/3 khung, thấy rõ chân.
+          const clip = process.env.RS_CLIP ? { x: viewport[0] / 2 - 180, y: viewport[1] / 2 - 190, width: 360, height: 330 } : undefined;
+          const grab = async (until: number) => {
+            while (Date.now() - t0 < until) {
+              const ms = Date.now() - t0;
+              await page.screenshot({
+                path: path.join(r.out, `rs-${tag}-${String(n++).padStart(3, '0')}-${ms}.png`),
+                ...(clip ? { clip } : {}),
+              });
+            }
+          };
+          await page.keyboard.down(key);
+          await grab(1600);
+          await page.keyboard.up(key);
+          await grab(3100);
+          await page.keyboard.down(key);
+          await grab(4700);
+          await page.keyboard.up(key);
+          await grab(5600);
+          console.log(`[shots:chrv3] runstop ${tag}: ${n} khung`);
           await ctx.close();
         };
         const stills = async () => {
@@ -397,6 +537,10 @@ export default {
         }
         if (process.argv.includes('--slide')) {
           await slide();
+          continue;
+        }
+        if (process.argv.includes('--runstop')) {
+          await runstop();
           continue;
         }
         if (process.argv.includes('--stills')) {
