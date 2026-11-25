@@ -611,8 +611,21 @@ export function spriteNodes(U: FxUniforms): { color: N; opacity: N } {
     mWhite,
     smoothstep(0.78, 1.0, mT),
   );
-  // Kiểu "vẽ tay nguyên màu" (`fxA.x` = 5: tiền tố `cot_`, `tho_`, `doc_`, `tim_`): giữ màu Codex vẽ (xương ngà, đá nâu + ngọc, độc vàng-lục, sét tím), chỉ kéo tương phản nhẹ.
-  const pRamp = ts.rgb.mul(1.12);
+  // Kiểu vẽ tay của tinh anh A3 (`fxA.x` = 5 xương `cot_`, 6 đất-đá-độc `tho_`/`doc_`, 7 sét tím `tim_`). Bụi/đất nửa trong suốt trên nền chroma bị khử viền thành hồng, nên xương và đất
+  // tô theo bảng độ sáng (ngà / nâu) thay vì lấy màu gốc; riêng phần ngả lục (ngọc, độc: g > r) giữ màu Codex vẽ. Sét tím giữ nguyên màu.
+  const boneRamp = mix(
+    mix(vec3(0.1, 0.09, 0.08), vec3(0.62, 0.58, 0.5), smoothstep(0.05, 0.55, spLum)),
+    vec3(0.96, 0.93, 0.84),
+    smoothstep(0.5, 0.95, spLum),
+  );
+  const earthRamp = mix(
+    mix(vec3(0.06, 0.04, 0.025), vec3(0.4, 0.27, 0.16), smoothstep(0.05, 0.55, spLum)),
+    vec3(0.8, 0.68, 0.5),
+    smoothstep(0.5, 0.95, spLum),
+  );
+  const keepGreen = smoothstep(0.0, 0.1, ts.g.sub(ts.r.mul(0.92)));
+  const earthHybrid = mix(earthRamp, ts.rgb.mul(1.1), keepGreen);
+  const rawRamp = ts.rgb.mul(1.12);
   // Chọn kiểu tô theo `fxA.x`: 1 lôi, 2 kiếm, 3 thủy, 4 nguyệt, 5 vẽ tay nguyên màu (0 = âm hồn).
   const spStyled = mix(
     mix(
@@ -628,9 +641,10 @@ export function spriteNodes(U: FxUniforms): { color: N; opacity: N } {
       mRamp,
       step(3.5, U.a.x).mul(float(1).sub(step(4.5, U.a.x))),
     ),
-    pRamp,
-    step(4.5, U.a.x),
+    boneRamp,
+    step(4.5, U.a.x).mul(float(1).sub(step(5.5, U.a.x))),
   );
+  const spStyled2 = mix(mix(spStyled, earthHybrid, step(5.5, U.a.x).mul(float(1).sub(step(6.5, U.a.x)))), rawRamp, step(6.5, U.a.x));
   // Tan như khói mỏng dần: nhiễu thấp tần + mép mỏng (tranh sáng/trong) tan trước, ngưỡng rộng nên không ra đường cắt răng cưa.
   const spE = vnoise(q.mul(vec2(5, 7)).add(U.a.z.mul(7)))
     .mul(0.55)
@@ -642,7 +656,12 @@ export function spriteNodes(U: FxUniforms): { color: N; opacity: N } {
   const spPaint = mix(vec3(spLum, spLum, spLum), ts.rgb, 0.5)
     .mul(mix(float(0.3), float(1.0), spTier))
     .mul(vec3(1.05, 0.82, 1.1));
-  const spCol = min(mix(spStyled, spPaint, float(0.2).mul(float(1).sub(step(0.5, U.a.x)))).add(spRimC.mul(spEdge.mul(0.5))), U.maxHdr);
+  const spCol = min(
+    mix(spStyled2, spPaint, float(0.2).mul(float(1).sub(step(0.5, U.a.x)))).add(
+      spRimC.mul(spEdge.mul(0.5)).mul(float(1).sub(step(4.5, U.a.x))),
+    ),
+    U.maxHdr,
+  ); // kiểu vẽ tay nguyên màu (5): không thêm viền tím khi tan
   const spOpacity = U.opacity.mul(smoothstep(0.0, 0.85, ts.a)).mul(spAlive);
   return { color: spCol, opacity: spOpacity };
 }

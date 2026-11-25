@@ -214,8 +214,14 @@ export class MonFx {
     if (!src || !(h.r > 0) || !(h.delay > 0) || !this.near(h.x, h.z)) return false;
     const boss = this.bossOf(src);
     // Vùng tròn: mọi quái; đường/nón: chỉ boss (nhấp nháy dọc vạch, vạch pháp trận cũ vẫn chạy).
-    const key = !h.sh ? 'mon_warn' : boss ? (h.sh === 'rect' ? 'mon_warn_line' : 'mon_warn_cone') : undefined;
-    const tl = key ? this.tlFor(key, src, h) : undefined;
+    // Quạt/dải: boss luôn; quái khác (tinh anh) chỉ khi chiêu có timeline RIÊNG (không dùng timeline chung để khỏi đổi hành vi quái thường).
+    const key = !h.sh ? 'mon_warn' : h.sh === 'rect' ? 'mon_warn_line' : 'mon_warn_cone';
+    let tl: FxTimeline | undefined;
+    if (!h.sh || boss) tl = this.tlFor(key, src, h);
+    else {
+      const mv = moveOfHazard(MONSTER.get(src.s.t), h);
+      tl = (mv ? this.tl(`${key}__${src.s.t}__${mv}`) : undefined) ?? this.tl(`${key}__${src.s.t}`);
+    }
     if (!tl || !key) return false;
     const y = groundAt(h.x, h.z);
     this.runner.startAt(tl, {

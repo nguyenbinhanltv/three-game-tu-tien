@@ -740,7 +740,7 @@ export class FxRunner {
                 : 0;
     m.fxA.z = ev.seed ?? 0;
     // Sprite: `fxA.x` chọn kiểu tô (0 = âm hồn tím mực, 1 = lôi: viền mực chàm, lõi trắng xanh, 2 = kiếm: viền mực lam lục, thân xanh ngọc, viền bạc,
-    // 3 = thủy: chàm → xanh biển → bọt trắng, 4 = nguyệt: thép sẫm → bạc → trắng, 5 = vẽ tay nguyên màu: cot_/tho_/doc_/tim_), theo tiền tố tên.
+    // 3 = thủy: chàm → xanh biển → bọt trắng, 4 = nguyệt: thép sẫm → bạc → trắng, 5 = xương cot_ (bảng ngà), 6 = đất/đá/độc tho_/doc_ (bảng nâu, giữ phần ngả lục), 7 = sét tím tim_ (nguyên màu)), theo tiền tố tên.
     if (kind === 'sprite') {
       const sn = ev.sprite ?? '';
       m.fxA.x = sn.startsWith('kiem_')
@@ -751,9 +751,13 @@ export class FxRunner {
             ? 3
             : sn.startsWith('nguyet_')
               ? 4
-              : /^(cot|tho|doc|tim)_/.test(sn)
+              : sn.startsWith('cot_')
                 ? 5
-                : 0;
+                : sn.startsWith('tho_') || sn.startsWith('doc_')
+                  ? 6
+                  : sn.startsWith('tim_')
+                    ? 7
+                    : 0;
     }
   }
 
