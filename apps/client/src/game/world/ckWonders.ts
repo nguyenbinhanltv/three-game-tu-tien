@@ -32,6 +32,7 @@ import {
 } from '@dtl/shared';
 import { mergeVertices } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { markBloom } from '../../render/post';
+import { paintedPaving } from '../../render/painted/props';
 import { withSightFade } from './occlusion';
 import { ASSET_BASE } from '../../base/assetBase';
 
@@ -433,7 +434,7 @@ export class CkWonders {
       polygonOffsetFactor: -2,
       polygonOffsetUnits: -2,
     });
-    this.mesh(geo, mat, 'ck-road');
+    this.mesh(geo, paintedPaving(mat), 'ck-road'); // Họa Cảnh: đá lát hai tông theo bảng level (mặc định giữ nguyên)
   }
 
   /** Lan can hai bên đường: trụ có mũ, thanh ngang nối trụ, cứ ba trụ một đèn lồng. Khung "mở" của `CUU_KIEU_RAIL` là lối băng ngang (không trụ, không va chạm). */
@@ -476,7 +477,7 @@ export class CkWonders {
         prev = p;
       });
     }
-    this.mesh(b.build(), stoneMat(tex), 'ck-railings', true);
+    this.mesh(b.build(), paintedPaving(stoneMat(tex)), 'ck-railings', true);
     this.mesh(lamps.build(), lampMat(), 'ck-road-lanterns');
   }
 
@@ -606,7 +607,7 @@ export class CkWonders {
       // thanh giằng giữa hai vòm
       b.box(W - 3.2, 0.9, 1.4, mid.x, baseY + ry - 0.5, mid.z, STONE_DARK, yaw);
     }
-    this.mesh(b.build(), stoneMat(tex), 'ck-bridges', true);
+    this.mesh(b.build(), paintedPaving(stoneMat(tex)), 'ck-bridges', true);
     this.mesh(lamps.build(), lampMat(), 'ck-bridge-lanterns');
     // ánh sáng cuối chuỗi cầu: đĩa vàng nhạt phía chân trời
     const last = SP[SP.length - 1]!;
