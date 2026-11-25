@@ -8,6 +8,7 @@
 //  - hai đèn thật: đèn chủ đạo treo trên tâm ải (màu ải, nhạt) và đèn viền bám nhân vật, để người và vật của ải nổi khỏi nền mà không đổi không khí đêm;
 //  - cột linh quang cộng sáng có bloom (`Vfx.suyBeacon`) ở Linh Nhãn, vòng Tôi Thể Lôi, tâm lôi ẩn, nhịp phá vọng;
 //  - ngọn lửa Thọ Đăng phát sáng có trạng thái liên tục (`Vfx.suyLamps`): cháy, bị suy phong nhắm thì nhạt màu dần, tắt, đang thắp lại.
+import { markVfxMask } from '../../render/post';
 import * as THREE from 'three/webgpu';
 import { HK_FX, KC_FX, SUY_FX } from '@dtl/content';
 import {
@@ -486,9 +487,9 @@ export class SuyFx {
       draw();
       tex.needsUpdate = true;
     });
-    const sprite = new THREE.Sprite(
-      new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false, depthTest: false, toneMapped: false }),
-    );
+    const spriteMat = new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false, depthTest: false, toneMapped: false });
+    markVfxMask(spriteMat);
+    const sprite = new THREE.Sprite(spriteMat);
     sprite.scale.set(3.4, 3.4, 1);
     sprite.position.set(x, this.env.ground(x, z) + h, z);
     sprite.renderOrder = 30;
@@ -519,6 +520,7 @@ export class SuyFx {
         side: THREE.DoubleSide,
         toneMapped: false,
       });
+      markVfxMask(mat);
       const m = new THREE.Mesh(geo, mat);
       m.rotation.x = -Math.PI / 2;
       m.renderOrder = 25;
