@@ -4,7 +4,7 @@ import { fxAwayFromCam, fxDrawCount, fxEventsFor, fxParticleCount, HOA_HINH_SKIL
 import type { FxEvent } from '@dtl/shared';
 import { paletteOf } from '../../render/vfx/palette';
 
-// Cổ Thần (PR VFX): 4 timeline riêng cho chiêu có pose riêng + Hóa Hình (fx riêng); chiêu của tư thế mượn hình chiêu nền.
+// Cổ Thần (PR VFX): 4 timeline riêng cho chiêu có pose riêng + Hóa Hình (fx riêng, giữ nguyên) + Cự Bộ Xung (chiêu lướt, Họa Pháp Lô 2); chiêu của tư thế mượn hình chiêu nền.
 const METHOD = 'co_than_quyet';
 const OWN = ['skl_thai_co_quyen', 'skl_tinh_bao', 'skl_huyet_cu_ho', 'skl_co_than_nhat_kich', 'skl_hoa_hinh'];
 const SCENE = 'skl_hoa_hinh';
@@ -26,9 +26,11 @@ describe('VFX Cổ Thần', () => {
     }
   });
 
-  it('không có timeline cho chiêu của tư thế (mượn hình chiêu nền) hay chiêu lướt', () => {
-    for (const s of METHOD_SKILLS.filter((x) => x.method === METHOD && (x.stanceOf || x.kind === 'dash')))
+  it('chiêu của tư thế (mượn hình chiêu nền) không có timeline; chiêu lướt Cự Bộ Xung có timeline riêng kích theo S.FX (Họa Pháp Lô 2)', () => {
+    for (const s of METHOD_SKILLS.filter((x) => x.method === METHOD && (x.stanceOf || x.kind === 'dash') && x.id !== 'skl_cu_bo_xung'))
       expect(FX_TIMELINE.has(s.id), s.id).toBe(false);
+    const dash = FX_TIMELINE.get('skl_cu_bo_xung')!;
+    expect([dash.trigger, dash.fxKind, dash.method]).toEqual(['fx', 'dash', METHOD]);
   });
 
   it('Hóa Hình có fx + pose riêng (không mượn Sơn Nhạc): timeline của chính chiêu, thay đúng loại FX của nó', () => {
@@ -85,17 +87,13 @@ describe('VFX Cổ Thần', () => {
     }
   });
 
-  it('Thái Cổ Quyền: cự quyền (thẻ fist) giáng xuống mục tiêu + sóng chấn + bụi; Nhất Kích: cự quyền phía trước vùng, camFade', () => {
-    const q = evs('skl_thai_co_quyen');
-    expect(q.some((x) => x.type === 'mesh' && x.shape === 'card' && x.card === 'fist' && x.at === 'target')).toBe(true);
-    expect(q.some((x) => x.type === 'mesh' && x.shape === 'shock_cone')).toBe(true);
-    expect(q.filter((x) => x.type === 'mesh' && x.shape === 'flip' && x.flip === 'dust_kick').length).toBeGreaterThanOrEqual(1);
-    const k = evs('skl_co_than_nhat_kich').filter((x) => x.type === 'mesh' && x.shape === 'card' && x.card === 'fist');
-    expect(k.length).toBe(2);
-    // cự quyền Thái Cổ Quyền giữ lâu ngay trên mục tiêu (ảnh chụp có độ trễ): còn ở lại ≥ 0,5 s sau lúc trúng
-    const main = q.find((x) => x.type === 'mesh' && x.shape === 'card' && x.card === 'fist' && x.alpha === 1);
-    expect(main && main.type === 'mesh' ? main.t + main.dur : 0).toBeGreaterThanOrEqual(0.5);
-    for (const f of k) if (f.type === 'mesh') expect(f.camFade).toBe(true);
+  it('Họa Pháp Lô 2: Thái Cổ Quyền = sprite nắm đấm vỉa `cth_fist` ngay trên mục tiêu; Nhất Kích = sprite cánh tay đá `cth_arm` bổ xuống mục tiêu + hố `cth_crater`', () => {
+    const sprites = (id: string) =>
+      evs(id).filter((x) => x.type === 'mesh' && x.shape === 'sprite') as (FxEvent & { sprite?: string; at?: string })[];
+    expect(sprites('skl_thai_co_quyen').some((x) => x.sprite === 'cth_fist' && (x.at ?? 'target') === 'target')).toBe(true);
+    const k = sprites('skl_co_than_nhat_kich');
+    expect(k.some((x) => x.sprite === 'cth_arm')).toBe(true);
+    expect(k.some((x) => x.sprite === 'cth_crater')).toBe(true);
   });
 
   it('không che camera/nhân vật/mục tiêu: khối đứng hoặc rơi cao và mọi tảng đá đều camFade; đá có trần 2,2 m', () => {
