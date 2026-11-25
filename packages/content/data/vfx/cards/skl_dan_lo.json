@@ -1,6 +1,6 @@
 {
   "skillId": "skl_dan_lo",
-  "idea": "Đan Lô: Vào tư thế 10 giây: nhóm lò đan trước ngực, Đan hỏa tích nhanh gấp rưỡi. Ba ô chiêu đổi thành chiêu lò (Đan Hỏa Chỉ, Lô Hỏa Hồi Nguyên, Đan Hỏa Vũ).",
+  "idea": "Đan Lô: một lò đan ba chân bằng đồng xanh ngọc, nhỏ, lơ lửng trước ngực người tu, miệng lò liếm lửa xanh ngọc lõi vàng nhạt, khói thuốc cuộn xoắn ốc bay lên từ nắp lò rồi tan. Màu: lõi lục thẫm gần đen (hue 135–150°), thân XANH LÁ CÂY / ngọc bích ngả lục (hue 135–155°, ÍT lam, KHÔNG teal hay ngọc lam hue 170–200° vì đó là Kiếm tu), viền lục nhạt vàng, điểm vàng nhạt F2D86B tách rõ và khói mực lục thẫm; đan hỏa là LỬA THUỐC LỤC lõi vàng nhạt (đọc là lửa lò đan, không phải kiếm khí), KHÔNG đỏ, KHÔNG cam.",
   "element": "hoa",
   "path": "dan_su",
   "shapeLang": [
@@ -20,11 +20,17 @@
   "colorRole": "own",
   "telegraph": false,
   "budget": {
-    "drawCalls": 4,
+    "drawCalls": 7,
     "particles": 120,
     "screenCover": 0.2,
     "overdraw": 4
   },
   "textures": [],
-  "impactFrame": true
+  "impactFrame": true,
+  "silhouette": "lò đan ba chân lơ lửng trước ngực, lửa xanh ngọc ở miệng, khói xoắn ốc bốc lên",
+  "materials": [
+    "sprite",
+    "particles"
+  ],
+  "standard": 2
 }

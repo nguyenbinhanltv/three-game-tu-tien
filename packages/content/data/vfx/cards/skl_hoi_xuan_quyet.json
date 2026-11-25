@@ -1,6 +1,6 @@
 {
   "skillId": "skl_hoi_xuan_quyet",
-  "idea": "Hồi Xuân Quyết: Gió xuân mang mưa, hồi tổng cộng 40% khí huyết tối đa trong 6 giây cho ngươi và đạo hữu trong 10 mét, đồng thời gieo mộc độc lên quái trong 10 mét: mỗi giây gây 40% công kích trong 8 giây. Người được chữa mang Mộc ấn 10 giây.",
+  "idea": "Hồi Xuân Quyết: một cơn gió xuân xoắn mang cánh hoa và những sợi mưa mảnh quanh người tu và đạo hữu; với quái trong 10 m có những sợi dây leo độc xanh thẫm trườn lên chân (mộc độc), tối hơn và nhỏ hơn phần hồi máu. Màu: lõi lục thẫm gần đen (hue 135–150°), thân XANH LÁ CÂY / ngọc bích ngả lục (hue 135–155°, ÍT lam, KHÔNG teal hay ngọc lam hue 170–200° vì đó là Kiếm tu), viền lục nhạt vàng, điểm vàng nhạt F2D86B tách rõ và khói mực lục thẫm; đan hỏa là LỬA THUỐC LỤC lõi vàng nhạt (đọc là lửa lò đan, không phải kiếm khí), KHÔNG đỏ, KHÔNG cam.",
   "element": "moc",
   "path": "dan_su",
   "shapeLang": [
@@ -25,10 +25,11 @@
     "screenCover": 0.2,
     "overdraw": 4
   },
-  "textures": [
-    {
-      "id": "proc:spark_burst",
-      "kind": "flipbook"
-    }
-  ]
+  "textures": [],
+  "silhouette": "gió xoắn cánh hoa và sợi mưa mảnh; dây leo độc xanh thẫm trườn lên chân quái",
+  "materials": [
+    "sprite",
+    "particles"
+  ],
+  "standard": 2
 }
