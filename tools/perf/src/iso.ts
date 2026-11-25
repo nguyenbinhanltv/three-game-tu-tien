@@ -611,6 +611,10 @@ async function runPreset(
     await sleep(12_000);
     out.push(await measure(page, `van_lam/dong${BOTS}`, t, preset));
     console.log(`  [${preset}] van_lam/dong${BOTS}: dc ${out.at(-1)!.drawCalls.p50}, cpu p95 ${out.at(-1)!.cpuMs.p95} ms`);
+    // Ghi vào checkpoint như mọi mục tiêu: báo cáo cuối dựng từ `ck.points`.
+    markDone(ck, preset, `van_lam/dong${BOTS}`, out);
+    ck.meta = { adapter: meta.adapter, backend: meta.backend, devBytesMB: meta.devBytesMB };
+    saveCk();
     await ctx.close().catch(() => undefined);
     return out;
   }
@@ -743,6 +747,9 @@ async function main(): Promise<void> {
     await bots.stop();
     dev.stop();
   }
+  // `--trace` chỉ in chuỗi thời gian, không đo điểm nào: không ghi iso-*.json rỗng trông như một lần đo thật.
+  if (TRACE > 0) return;
+  if (ck.points.length === 0) throw new Error('không có điểm đo nào (mọi mục tiêu đều lỗi?): không ghi báo cáo rỗng');
   const date = new Date().toISOString().slice(0, 16).replace(/[:T]/g, '-');
   const run: IsoRun = {
     version: 1,
