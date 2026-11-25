@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Họa Pháp Lô 2 — đợt Cổ Thần: dựng timeline 5 chiêu theo concept Codex (đá bazan nguyên thủy NÂU SẪM gần đen, hổ phách chỉ ở mạch nứt/viền mảnh) bằng sprite vẽ tay (ô `cth_*`, kiểu tô `cth` = `fxA.x` 10).
+// Họa Pháp Lô 2 — đợt Cổ Thần: dựng timeline 5 chiêu theo concept Codex (đá bazan nguyên thủy NÂU SẪM gần đen, hổ phách chỉ ở mạch nứt/viền mảnh) bằng sprite vẽ tay (ô `cth_*`, kiểu tô `cth` = `fxA.x` 11).
 // Mỗi chiêu một hình riêng và ba nhịp báo trước / trúng (+30 ms `cth_spark`) / dư ba. Chạy lại an toàn (bỏ mesh, decal rune, scorch/mép vùng do bản này sinh; decal cũ quá lớn được làm nhạt). Dùng: node tools/vfx-forge/co-than.mjs [id...]
 import fs from 'node:fs';
 

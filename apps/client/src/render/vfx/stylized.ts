@@ -631,7 +631,7 @@ function spriteNodesImpl(U: FxUniforms, group: SpriteGroup): { color: N; opacity
   const dWhite = vec3(0.97, 0.97, 0.96);
   const dT = smoothstep(0.1, 0.78, spLum.sqrt());
   const dRamp = mix(mix(mix(dCore, dBody, smoothstep(0.04, 0.42, dT)), dRim, smoothstep(0.4, 0.78, dT)), dWhite, smoothstep(0.88, 1.0, dT));
-  // Kiểu "cổ thần" (`fxA.x` = 10): đá bazan nguyên thủy NÂU SẪM gần đen (lõi umber đen, thân nâu đất sẫm, viền xương nhạt hẹp); chỉ phần SÁNG NHẤT của tranh (mạch/viền hổ phách) lên màu hổ phách. Tách vàng đất Hộ pháp (sáng) và bạc Đao tu.
+  // Kiểu "cổ thần" (`fxA.x` = 11): đá bazan nguyên thủy NÂU SẪM gần đen (lõi umber đen, thân nâu đất sẫm, viền xương nhạt hẹp); chỉ phần SÁNG NHẤT của tranh (mạch/viền hổ phách) lên màu hổ phách. Tách vàng đất Hộ pháp (sáng) và bạc Đao tu.
   const cCore = vec3(0.006, 0.004, 0.002);
   const cBody = vec3(0.075, 0.045, 0.02);
   const cRim = vec3(0.5, 0.42, 0.28);
@@ -663,11 +663,11 @@ function spriteNodesImpl(U: FxUniforms, group: SpriteGroup): { color: N; opacity
   const nRamp = mix(mix(mix(nCore, nBody, smoothstep(0.04, 0.4, nT)), nRim, smoothstep(0.4, 0.8, nT)), nWhite, smoothstep(0.9, 1.0, nT));
   const nWarm = smoothstep(0.0, 0.08, ts.r.sub(ts.g.mul(0.9)));
   const nHybrid = mix(nRamp, min(ts.rgb.mul(1.12), vec3(1.0, 0.95, 0.6)), nWarm);
-  // Chọn kiểu tô theo `fxA.x`: 1 lôi, 2 kiếm, 3 hộ pháp, 4 thủy, 5 nguyệt, 6 xương, 7 đất/độc, 8 sét tím, 10 đan (0 = âm hồn).
+  // Chọn kiểu tô theo `fxA.x`: 1 lôi, 2 kiếm, 3 hộ pháp, 4 thủy, 5 nguyệt, 6 xương, 7 đất/độc, 8 sét tím, 9 đao, 10 đan, 11 cổ thần (0 = âm hồn).
   const is = (n: number) => step(n - 0.5, U.a.x).mul(float(1).sub(step(n + 0.5, U.a.x)));
   const spStyled0 = mix(mix(mix(spLift, lRamp, is(1)), kRamp, is(2)), hRamp, is(3));
   const spStyled1 = mix(mix(mix(spStyled0, wRamp, is(4)), mRamp, is(5)), boneRamp, is(6));
-  const spStyled2 = mix(mix(mix(mix(spStyled1, earthHybrid, is(7)), rawRamp, is(8)), dRamp, is(9)), cRamp, is(10));
+  const spStyled2 = mix(mix(mix(mix(spStyled1, earthHybrid, is(7)), rawRamp, is(8)), dRamp, is(9)), cRamp, is(11));
   const spStyled3 = mix(spStyled2, nHybrid, is(10));
   // Tan như khói mỏng dần: nhiễu thấp tần + mép mỏng (tranh sáng/trong) tan trước, ngưỡng rộng nên không ra đường cắt răng cưa.
   const spE = vnoise(q.mul(vec2(5, 7)).add(U.a.z.mul(7)))
