@@ -34,15 +34,49 @@ def clip(x, lo=0.5, hi=4.0):
     return max(lo, min(hi, x))
 
 
+def soft(r):
+    """Độ đậm vạch báo theo cỡ vùng: viền sáng + nền đỏ trong suốt ≤ ~25% (vùng lớn mỏng hơn để không phủ kín khung)."""
+    big = r >= 10
+    return (0.3, 0.17) if big else (0.42, 0.26)
+
+
+def warn_circle_soft(delay, r, yaw_a=35, yaw_b=-50, spark=12):
+    a, b = soft(r)
+    return [
+        decal('warn_crack', 0, 4, 2, 'accent', a, 0.04, yaw=yaw_b),
+        decal('warn_crack', 0, 4, 2, 'accent', b, delay, yaw=yaw_a, growUntilDelay=True),
+        parts('spark', 0, spark, 1.7, 1, 0.9, 0.09, 'accent', inward=True, offset=[0, 0.2, 0]),
+    ]
+
+
+def warn_fan_soft(delay, half, r, spark=14):
+    a, b = soft(r)
+    return [
+        decal('warn_crack', 0, 8, 2, 'accent', a, 0.04, sector=half),
+        decal('warn_crack', 0, 8, 2, 'accent', b, delay, sector=half, growUntilDelay=True),
+        parts('spark', 0, spark, 2.2, 0.5, 1.2, 0.1, 'accent', inward=True, offset=[0, 0.3, 3]),
+    ]
+
+
+def warn_strip_soft(delay, length, width, spark=14):
+    a, b = soft(8)
+    return [
+        decal('warn_crack', 0, 1, 2, 'accent', a, 0.04, strip=[length, width]),
+        decal('warn_crack', 0, 1, 2, 'accent', b, delay, strip=[length, width], growUntilDelay=True),
+        parts('spark', 0, spark, 2.2, 0.4, 1.2, 0.1, 'accent', inward=True, offset=[0, 0.3, length * 0.3]),
+    ]
+
+
 def slam_boom(B, move, r, theme, seed):
     pal, sp_, dec = THEMES[theme]
     mul = clip(r / 4)
     # Vùng lớn (r ≥ 8): sprite phẳng/nền co lại để độ phủ không vượt trần (chant r16 từng phủ ~0,46): đường kính sprite tối đa ~20 m, nền mờ hơn.
     cap = min(1.0, 10.0 / r)
     fade = min(1.0, 11.0 / r)
+    thin = theme == 'hoa' and r >= 10  # lửa ma vùng lớn: chỉ mạch/sét mảnh, không mảng đặc
     ev = [
-        decal(dec, 0, 4, 2.2, 'core', round(0.35 * fade, 2), 0.02, top=False, untilDelay=False, lift=LIFT),
-        sp(sp_['crack'], 0.0, 1.1, round(8.0 * cap, 2), y=0.45, flat=True, alpha=round(0.85 * (0.6 + 0.4 * fade), 2), erode=0.5, seed=seed),
+        decal(dec, 0, 4, 2.2, 'core', round((0.12 if thin else 0.35) * fade, 2), 0.02, top=False, untilDelay=False, lift=LIFT),
+        sp(sp_['crack'], 0.0, 1.1, round(8.0 * cap, 2), y=0.45, flat=True, alpha=round((0.45 if thin else 0.85) * (0.6 + 0.4 * fade), 2), erode=0.5, seed=seed),
         sp(sp_['dust'], 0.03, 1.0, round(8.2 * cap, 2), y=0.5, flat=True, alpha=round(0.3 * fade, 2), erode=0.4, seed=seed + 1),
         *[
             sp(sp_['spikes'], 0.03 + 0.04 * i, 0.95, 4.4, x=p[0] * r * 0.55, y=1.7, z=p[1] * r * 0.55, k=mul, alpha=1.0, erode=0.5, seed=seed + 2 + i)
@@ -52,21 +86,26 @@ def slam_boom(B, move, r, theme, seed):
         parts('shard', 0, 22, 6, 0.9, 0.9, 0.1, 'rim', offset=[0, 0.3, 0], grav=9, tier=0),
         parts('dust', 0, 16, 3.5, 0.9, 1.0, 0.22, 'body', offset=[0, 0.3, 0], grav=0.8),
     ]
+    if thin:
+        ev = [e for e in ev if not (e.get('sprite') in (sp_['dust'], sp_['debris']) and e.get('type') == 'mesh')]
+        for e in ev:
+            if e.get('sprite') == sp_['spikes']:
+                e['alpha'] = 0.6
     write(f'mon_boom_circle__{B}__{move}', ev, pal)
 
 
 def circle(B, move, r, delay, theme, seed, cast=False):
     pal, _, _ = THEMES[theme]
     if cast:
-        cast_ring(B, r, pal)
-    write(f'mon_warn__{B}__{move}', warn_circle(delay, 35, -50), pal)
+        write('mon_cast__' + B, [decal('rune', 0, r, 3.6, 'accent', 0.3, 0.35, ink=True, untilDelay=False, at='self')], pal)  # viền niệm mảnh, mờ
+    write(f'mon_warn__{B}__{move}', warn_circle_soft(delay, r), pal)
     slam_boom(B, move, r, theme, seed)
 
 
 def cone(B, move, r, half, delay, theme, seed):
     pal, sp_, dec = THEMES[theme]
     k = clip(r / 8)
-    write(f'mon_warn_cone__{B}__{move}', warn_fan(delay, half), pal)
+    write(f'mon_warn_cone__{B}__{move}', warn_fan_soft(delay, half, r), pal)
     reach = r * 0.55
     side = math.sin(math.radians(half * 0.7)) * r * 0.55
     write(
@@ -90,7 +129,7 @@ def cone(B, move, r, half, delay, theme, seed):
 def line(B, move, length, width, delay, theme, seed):
     pal, sp_, dec = THEMES[theme]
     k = clip(length / 8)
-    write(f'mon_warn_line__{B}__{move}', warn_strip(delay, length, width, spark=22), pal)
+    write(f'mon_warn_line__{B}__{move}', warn_strip_soft(delay, length, width), pal)
     write(
         f'mon_boom_line__{B}__{move}',
         [
