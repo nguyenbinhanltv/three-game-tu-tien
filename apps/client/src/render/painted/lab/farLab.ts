@@ -3,6 +3,8 @@ import { float, mix, uniform, uv, vec2, vec3, vec4 } from 'three/tsl';
 import { FAR_SPAN, farHeightAt } from './farHeight';
 import { bakeFarHeight } from './farHeightBake';
 import { farPaint } from './farPaint';
+import { FarBackdrop } from '../farBackdrop';
+import { createSky } from '../../sky';
 
 /**
  * Cảnh thử bản đồ độ cao vùng xa (P3a, `?paintedlab=far`): vẽ độ cao (km) của `farHeightAt` ra màn hình để so mắt với bản gốc và đọc số
@@ -10,6 +12,7 @@ import { farPaint } from './farPaint';
  */
 declare global {
   interface Window {
+    __domeReady?: boolean;
     __farLab?: {
       stats(): Promise<{ min: number; max: number; mean: number }>;
       readback(n: number): Promise<{ n: number; b64: string }>;
@@ -31,6 +34,34 @@ export async function startFarLab(host: HTMLElement): Promise<void> {
   await renderer.init();
 
   const hero: [number, number] = [0.6, 0.8];
+
+  if (q.get('stage') === 'dome') {
+    // P3c: vòm vùng xa nhìn từ gốc, camera nhìn dọc hướng thung lũng, ngẩng `el` độ (cảnh thử so với painted-valley cùng góc)
+    const W = Number(q.get('w') ?? 1920);
+    const Hh = Number(q.get('h') ?? 1080);
+    renderer.setSize(W, Hh);
+    const scene = new THREE.Scene();
+    scene.add(createSky());
+    const far = new FarBackdrop(renderer, {
+      hero,
+      side: [0.7168, -0.1073],
+      width: Number(q.get('width') ?? 2048),
+      ground: Number(q.get('ground') ?? 1024),
+    });
+    scene.add(far.mesh);
+    const camera = new THREE.PerspectiveCamera(Number(q.get('fov') ?? 40), W / Hh, 1, 8000);
+    const el = (Number(q.get('el') ?? 8) * Math.PI) / 180;
+    camera.position.set(0, 2, 0);
+    camera.lookAt(Math.cos(el) * hero[0] * 100, 2 + Math.sin(el) * 100, Math.cos(el) * hero[1] * 100);
+    far.mesh.onBeforeRender = () => far.follow(camera);
+    await far.bake();
+    renderer.render(scene, camera);
+    await new Promise((r) => requestAnimationFrame(r));
+    renderer.render(scene, camera);
+    window.__domeReady = true;
+    return;
+  }
+
   const p = uv().sub(0.5).mul(FAR_SPAN);
   const h = farHeightAt(p, hero, 9, Number(q.get('stop') ?? 0));
   const g = h.div(6);

@@ -16,6 +16,9 @@ const out = path.resolve(arg('--out', 'far-out'));
 const port = Number(arg('--port', '5191'));
 const size = Number(arg('--size', '1024'));
 const renderer = arg('--renderer', 'webgpu');
+const query = arg('--query', '');
+const [vw, vh] = arg('--viewport', `${size}x${size}`).split('x').map(Number);
+const waitFlag = arg('--wait', '__farLab');
 fs.mkdirSync(out, { recursive: true });
 
 const root = path.resolve(new URL('../..', import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1'));
@@ -49,16 +52,19 @@ try {
       args: ['--mute-audio', '--enable-unsafe-webgpu', '--enable-gpu', '--ignore-gpu-blocklist'],
     })
     .catch(() => chromium.launch({ headless: true, args: ['--mute-audio'] }));
-  const page = await (await browser.newContext({ viewport: { width: size, height: size }, deviceScaleFactor: 1 })).newPage();
+  const page = await (await browser.newContext({ viewport: { width: vw, height: vh }, deviceScaleFactor: 1 })).newPage();
   const logs = [];
   page.on('console', (m) => {
     if (['error', 'warning'].includes(m.type())) logs.push(`${m.type()}: ${m.text()}`.slice(0, 500));
   });
   page.on('pageerror', (e) => logs.push(`pageerror: ${e.message}`.slice(0, 400)));
-  await page.goto(`http://127.0.0.1:${port}/?paintedlab=far&mute=1&size=${size}&renderer=${renderer}`, { waitUntil: 'load' });
-  await page.waitForFunction(() => window.__farLab, null, { timeout: 60000 }).catch(() => logs.push('lab không lên'));
+  await page.goto(`http://127.0.0.1:${port}/?paintedlab=far&mute=1&size=${size}&renderer=${renderer}${query ? `&${query}` : ''}`, {
+    waitUntil: 'load',
+  });
+  await page.waitForFunction((k) => window[k], waitFlag, { timeout: 120000 }).catch(() => logs.push('lab không lên'));
   await new Promise((r) => setTimeout(r, 1500));
-  const stats = await page.evaluate(() => window.__farLab?.stats()).catch((e) => ({ error: String(e) }));
+  const stats =
+    waitFlag === '__farLab' ? await page.evaluate(() => window.__farLab?.stats()).catch((e) => ({ error: String(e) })) : { ok: true };
   await page.screenshot({ path: path.join(out, 'far.png') });
   fs.writeFileSync(path.join(out, 'far.json'), JSON.stringify({ stats, logs: logs.slice(0, 20) }, null, 2));
   console.log(JSON.stringify({ stats, logs: logs.slice(0, 6) }));
