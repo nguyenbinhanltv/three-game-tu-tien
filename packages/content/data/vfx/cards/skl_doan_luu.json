@@ -1,0 +1,44 @@
+{
+  "skillId": "skl_doan_luu",
+  "idea": "Đoạn Lưu: chém đứt dòng chảy: một vết chém thẳng đứng mảnh, hai bên dải lụa khí thép bị tách đôi chảy lệch về hai phía, mảnh sương thép rơi. Màu: lõi xám than thép sẫm (#22262C) ở tâm vệt, thân BẠC THÉP lạnh (#A9B4C0), viền trắng bạc sáng mỏng (#EEF2F6), điểm nhấn VÀNG ĐỒNG (#CFB04A) nhỏ ở sống đao/chuôi/ấn; KHÔNG đỏ, KHÔNG cam, KHÔNG teal/cyan (Kiếm tu), KHÔNG xanh lam điện (Lôi tu), KHÔNG tím (Hồn tu), KHÔNG vàng đất ochre đặc (Hộ pháp).",
+  "element": "kim",
+  "path": "dao_tu",
+  "shapeLang": [
+    "line",
+    "arc"
+  ],
+  "timing": {
+    "anticipationMs": 300,
+    "impactMs": 80,
+    "lingerMs": 600
+  },
+  "footprint": {
+    "lengthM": 4,
+    "widthM": 4,
+    "heightM": 2
+  },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": {
+    "drawCalls": 8,
+    "particles": 267,
+    "screenCover": 0.15,
+    "overdraw": 4
+  },
+  "textures": [
+    {
+      "id": "proc:spark_burst",
+      "kind": "flipbook"
+    },
+    {
+      "id": "proc:dust_kick",
+      "kind": "flipbook"
+    }
+  ],
+  "silhouette": "vết chém thẳng đứng mảnh tách đôi hai dải lụa khí",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles"
+  ]
+}

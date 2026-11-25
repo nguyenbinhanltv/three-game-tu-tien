@@ -262,6 +262,7 @@ import fx_skl_cuu_tieu_thien_loi from '../data/fx/skl_cuu_tieu_thien_loi.json';
 import fx_skl_phich_lich from '../data/fx/skl_phich_lich.json';
 import fx_skl_loi_vong from '../data/fx/skl_loi_vong.json';
 import fx_skl_thiem_loi_bo from '../data/fx/skl_thiem_loi_bo.json';
+import fx_skl_pha_phong_tien from '../data/fx/skl_pha_phong_tien.json';
 import fx_skl_loi_chich from '../data/fx/skl_loi_chich.json';
 import fx_skl_loi_the from '../data/fx/skl_loi_the.json';
 import fx_skl_loi_lien from '../data/fx/skl_loi_lien.json';
@@ -402,6 +403,7 @@ export const FX_TIMELINES = [
   fx_skl_tran_son_an,
   fx_skl_van_kiem_quy_tong,
   fx_skl_thiem_loi_bo,
+  fx_skl_pha_phong_tien,
   fx_skl_loi_chich,
   fx_skl_loi_the,
   fx_skl_loi_lien,
