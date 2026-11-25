@@ -13,7 +13,7 @@
    "erodeFrom": 0.4,
    "ragged": 0.5,
    "tone": "body",
-   "alpha": 0.7,
+   "alpha": 0.45,
    "tier": 0,
    "seed": 1000,
    "shape": "sprite",
@@ -24,8 +24,8 @@
     0.3,
     3.4
    ],
-   "scale": 6,
-   "scaleTo": 6
+   "scale": 2.94,
+   "scaleTo": 2.94
   },
   {
    "type": "mesh",
@@ -47,8 +47,8 @@
     0.5,
     3.6
    ],
-   "scale": 6.56,
-   "scaleTo": 8,
+   "scale": 4.59,
+   "scaleTo": 5.6,
    "align": "aim"
   },
   {
@@ -71,8 +71,8 @@
     0.9,
     3.4
    ],
-   "scale": 5,
-   "scaleTo": 5
+   "scale": 3.5,
+   "scaleTo": 3.5
   },
   {
    "type": "mesh",
@@ -94,8 +94,8 @@
     1.2,
     5
    ],
-   "scale": 4,
-   "scaleTo": 4
+   "scale": 2.8,
+   "scaleTo": 2.8
   },
   {
    "type": "mesh",
@@ -117,8 +117,8 @@
     0.8,
     6
    ],
-   "scale": 1.2,
-   "scaleTo": 1.5
+   "scale": 0.84,
+   "scaleTo": 1.05
   },
   {
    "type": "decal",
@@ -174,8 +174,8 @@
     1,
     5
    ],
-   "scale": 3,
-   "scaleTo": 3,
+   "scale": 2.1,
+   "scaleTo": 2.1,
    "move": {
     "to": "ahead",
     "offset": [

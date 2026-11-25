@@ -632,12 +632,12 @@ function spriteNodesImpl(U: FxUniforms, group: SpriteGroup): { color: N; opacity
   const dT = smoothstep(0.1, 0.78, spLum.sqrt());
   const dRamp = mix(mix(mix(dCore, dBody, smoothstep(0.04, 0.42, dT)), dRim, smoothstep(0.4, 0.78, dT)), dWhite, smoothstep(0.88, 1.0, dT));
   // Kiểu "cổ thần" (`fxA.x` = 11): đá bazan nguyên thủy NÂU SẪM gần đen (lõi umber đen, thân nâu đất sẫm, viền xương nhạt hẹp); chỉ phần SÁNG NHẤT của tranh (mạch/viền hổ phách) lên màu hổ phách. Tách vàng đất Hộ pháp (sáng) và bạc Đao tu.
-  const cCore = vec3(0.006, 0.004, 0.002);
-  const cBody = vec3(0.075, 0.045, 0.02);
-  const cRim = vec3(0.5, 0.42, 0.28);
+  const cCore = vec3(0.05, 0.022, 0.008);
+  const cBody = vec3(0.3, 0.15, 0.05);
+  const cRim = vec3(0.82, 0.6, 0.32);
   const cAmber = vec3(0.86, 0.58, 0.12);
   const cT = smoothstep(0.1, 0.78, spLum.sqrt());
-  const cRamp = mix(mix(mix(cCore, cBody, smoothstep(0.05, 0.5, cT)), cRim, smoothstep(0.5, 0.84, cT)), cAmber, smoothstep(0.84, 1.0, cT));
+  const cRamp = mix(mix(mix(cCore, cBody, smoothstep(0.05, 0.5, cT)), cRim, smoothstep(0.5, 0.84, cT)), cAmber, smoothstep(0.9, 1.0, cT));
   // Kiểu vẽ tay của tinh anh A3 (`fxA.x` = 6 xương `cot_`, 7 đất-đá-độc `tho_`/`doc_`, 8 sét tím `tim_`). Bụi/đất nửa trong suốt trên nền chroma bị khử viền thành hồng, nên xương và đất
   // tô theo bảng độ sáng (ngà / nâu) thay vì lấy màu gốc; riêng phần ngả lục (ngọc, độc: g > r) giữ màu Codex vẽ. Sét tím giữ nguyên màu.
   const boneRamp = mix(

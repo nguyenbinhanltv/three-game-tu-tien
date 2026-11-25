@@ -23,7 +23,7 @@
     "drawCalls": 8,
     "particles": 267,
     "screenCover": 0.2,
-    "overdraw": 4
+    "overdraw": 6
   },
   "textures": [
     {

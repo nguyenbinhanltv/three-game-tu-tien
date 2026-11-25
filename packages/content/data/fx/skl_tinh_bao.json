@@ -125,8 +125,8 @@
     1.4,
     0
    ],
-   "scale": 1.2,
-   "scaleTo": 1.73
+   "scale": 0.84,
+   "scaleTo": 1.21
   },
   {
    "type": "particles",
@@ -173,7 +173,7 @@
    "erodeFrom": 0.4,
    "ragged": 0.5,
    "tone": "body",
-   "alpha": 0.7,
+   "alpha": 0.45,
    "tier": 0,
    "seed": 1001,
    "shape": "sprite",
@@ -184,8 +184,8 @@
     0.3,
     0
    ],
-   "scale": 5,
-   "scaleTo": 5
+   "scale": 2.45,
+   "scaleTo": 2.45
   },
   {
    "type": "mesh",
@@ -207,8 +207,8 @@
     1.4,
     0
    ],
-   "scale": 2.46,
-   "scaleTo": 3
+   "scale": 1.72,
+   "scaleTo": 2.1
   },
   {
    "type": "mesh",
@@ -230,8 +230,8 @@
     1.4,
     0
    ],
-   "scale": 6.56,
-   "scaleTo": 8
+   "scale": 4.59,
+   "scaleTo": 5.6
   },
   {
    "type": "mesh",
@@ -253,8 +253,8 @@
     0.9,
     0
    ],
-   "scale": 4.4,
-   "scaleTo": 4.4
+   "scale": 3.08,
+   "scaleTo": 3.08
   },
   {
    "type": "mesh",
@@ -276,8 +276,8 @@
     1.4,
     0
    ],
-   "scale": 2.2,
-   "scaleTo": 2.75
+   "scale": 1.54,
+   "scaleTo": 1.92
   },
   {
    "type": "decal",
@@ -316,8 +316,8 @@
     1.4,
     0
    ],
-   "scale": 3.2,
-   "scaleTo": 3.2,
+   "scale": 2.24,
+   "scaleTo": 2.24,
    "move": {
     "to": "target",
     "offset": [

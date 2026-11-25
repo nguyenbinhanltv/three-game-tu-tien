@@ -23,11 +23,11 @@ const mesh = (o) => ({
 /** Hệ số cỡ theo chiêu (chỉnh sau khi đo `pnpm shots vfxlab --clean`: chiêu thường phủ ≤ 0,2, chiêu cuối ≤ 0,35). */
 let K = 1;
 const SCALE = {
-  skl_cu_bo_xung: 1,
+  skl_cu_bo_xung: 0.7,
   skl_thai_co_quyen: 1,
-  skl_co_than_nhat_kich: 0.8,
-  skl_tinh_bao: 1,
-  skl_huyet_cu_ho: 1,
+  skl_co_than_nhat_kich: 0.7,
+  skl_tinh_bao: 0.7,
+  skl_huyet_cu_ho: 0.85,
 };
 /** Hệ số alpha thân theo chiêu (không áp cho chớp `cth_spark`). */
 let A = 1;
@@ -120,7 +120,8 @@ const ground = (at, off, size, t = 0.02, o = {}) =>
   sprite('cth_crater', { t, dur: 0.6, at, off, size, sizeTo: size * 1.15, alpha: 0.8, erodeFrom: 0.15, ...o });
 
 /** Vệt đất tối dưới nét đánh (sprite `cth_smear`): tách nét đá nâu sẫm khỏi nền đá sáng ban ngày. */
-const shade = (at, off, size, t = 0, o = {}) => sprite('cth_smear', { t, dur: 0.9, at, off, size, alpha: 0.7, erodeFrom: 0.4, ...o });
+const shade = (at, off, size, t = 0, o = {}) =>
+  sprite('cth_smear', { t, dur: 0.9, at, off, size: size * 0.7, alpha: 0.45, erodeFrom: 0.4, ...o });
 
 const SPEC = {
   // Cự Bộ Xung (lướt, mọi mốc ≥ 0): bước chân người khổng lồ — hàng dấu chân khổng lồ lõm xuống đất, bụi cuộn, đá văng.
