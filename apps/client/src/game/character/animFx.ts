@@ -3,7 +3,7 @@
 // cho tới khi người dùng duyệt pilot; `window.__animlab.fx({...})` đổi lúc chạy).
 
 import { FLAGS } from '../../base/flags';
-import type { SpringParams } from './spring';
+import type { PinGradient, SpringParams } from './spring';
 
 export interface AnimFxFlags {
   /** T1: khuếch đại biên độ tay/vai/hông. */
@@ -30,6 +30,8 @@ export interface AnimFxFlags {
   patch: boolean;
   /** Vòng chạy/chạy nhanh bằng clip Patch (`PM_Run`/`PM_Sprint`) thay UAL (`patchLoop.ts`); cần `patch` bật. `?ploop=0` tắt riêng để so. */
   patchLoop: boolean;
+  /** Gradient lò xo "ghim gốc, thả ngọn" (`PIN_GRADIENT`): độ cứng/cản/góc đổi dần từ gốc chuỗi `dtl_o_*` tới ngọn, không thêm xương. Mặc định TẮT (chờ A/B animlab); đọc lúc dựng nhân vật. */
+  pin: boolean;
 }
 
 /** Trạng thái cờ chạy (mặc định theo `?thanphap=1`); phòng thử đổi được. */
@@ -46,6 +48,17 @@ export const ANIM_FX: AnimFxFlags = {
   ragdoll: FLAGS.thanPhap,
   patch: FLAGS.thanPhap,
   patchLoop: FLAGS.thanPhap && FLAGS.patchLoop,
+  pin: false,
+};
+
+/**
+ * Gradient ghim gốc-thả ngọn theo nhóm xương `dtl_o_*` (hệ số nhân lên thông số nhóm, nội suy tuyến tính gốc→ngọn theo chỉ số đốt):
+ * tóc/dải/tay áo: gốc cứng (1,5×) cản nhiều (1,4×) góc hẹp (0,6×) → ngọn mềm (0,7×) cản ít (0,8×) góc rộng (1,2×), nên cổ áo/vai/thắt lưng ít vung còn gấu/đuôi tóc phấp phới;
+ * vạt: gấu đã cứng hơn gốc (`HEM_STIFF`, tránh rách khi lăn) nên chỉ đổi cản và góc.
+ */
+export const PIN_GRADIENT: Readonly<Record<'free' | 'skirt', PinGradient>> = {
+  free: { stiff: [1.5, 0.7], drag: [1.4, 0.8], angle: [0.6, 1.2] },
+  skirt: { drag: [1.2, 0.9], angle: [0.7, 1.1] },
 };
 
 /** T6: thông số lò xo sống động hơn `V3_SPRING` (130/8/30°): tần số riêng thấp hơn, cản nhẹ hơn, góc rộng hơn; ở góc chéo tóc/dải đọc được rõ. */

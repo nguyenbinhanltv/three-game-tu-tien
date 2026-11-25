@@ -58,6 +58,54 @@ export interface SpringDef {
   tailLocal: THREE.Vector3;
   /** Hệ số độ cứng của riêng xương này (mặc định 1): gấu vạt cứng hơn thì ít rách khi lăn/chém xoay. */
   stiff?: number;
+  /** Hệ số cản (mặc định 1): đốt gốc cản nhiều hơn thì ít vung, ngọn cản ít hơn thì phấp phới (xem `pinGradient`). */
+  drag?: number;
+  /** Hệ số góc lệch tối đa (mặc định 1): đốt gốc góc hẹp (ghim), ngọn góc rộng. */
+  angle?: number;
+}
+
+/** Cặp [gốc, ngọn] của một hệ số; nội suy tuyến tính theo vị trí đốt trong chuỗi (0 = gốc, 1 = ngọn). */
+export type PinRange = readonly [root: number, tip: number];
+
+/** Gradient "ghim gốc, thả ngọn" cho chuỗi xương `dtl_o_<nhóm>_<…>_<đốt>`: không thêm xương, chỉ nhân độ cứng/cản/góc theo chỉ số đốt. */
+export interface PinGradient {
+  stiff?: PinRange;
+  drag?: PinRange;
+  angle?: PinRange;
+}
+
+const CHAIN = /^(dtl_o_.+)_(\d+)$/;
+
+/**
+ * Gán hệ số theo chỉ số đốt: các xương cùng tiền tố (bỏ số đốt cuối) hợp thành một chuỗi; đốt nhỏ nhất = gốc (t=0), lớn nhất = ngọn (t=1).
+ * Chuỗi một đốt giữ nguyên (không có gốc/ngọn để nội suy). Trả bản sao; xương không khớp tên giữ nguyên.
+ */
+export function pinGradient(defs: readonly SpringDef[], g: PinGradient): SpringDef[] {
+  const span = new Map<string, [number, number]>();
+  for (const d of defs) {
+    const m = CHAIN.exec(d.bone);
+    if (!m) continue;
+    const l = Number(m[2]);
+    const sp = span.get(m[1]!);
+    if (!sp) span.set(m[1]!, [l, l]);
+    else {
+      sp[0] = Math.min(sp[0], l);
+      sp[1] = Math.max(sp[1], l);
+    }
+  }
+  const lerp = (r: PinRange, t: number) => r[0] + (r[1] - r[0]) * t;
+  return defs.map((d) => {
+    const m = CHAIN.exec(d.bone);
+    const sp = m ? span.get(m[1]!) : undefined;
+    if (!m || !sp || sp[1] === sp[0]) return d;
+    const t = (Number(m[2]) - sp[0]) / (sp[1] - sp[0]);
+    return {
+      ...d,
+      ...(g.stiff && { stiff: (d.stiff ?? 1) * lerp(g.stiff, t) }),
+      ...(g.drag && { drag: (d.drag ?? 1) * lerp(g.drag, t) }),
+      ...(g.angle && { angle: (d.angle ?? 1) * lerp(g.angle, t) }),
+    };
+  });
 }
 
 /** dt lớn hơn thế này (khung giật, tab ẩn) thì chia nhỏ, quá xa thì đặt lại. */
@@ -72,6 +120,9 @@ interface Bone {
   restM: THREE.Matrix4;
   tail: THREE.Vector3;
   k: number;
+  /** Hệ số cản và góc lệch của riêng xương này (từ `SpringDef`). */
+  d: number;
+  a: number;
   p: THREE.Vector3;
   prev: THREE.Vector3;
   head: THREE.Vector3;
@@ -121,6 +172,8 @@ export class SpringBones {
         restM: bone.matrix.clone(),
         tail: d.tailLocal.clone(),
         k: d.stiff ?? 1,
+        d: d.drag ?? 1,
+        a: d.angle ?? 1,
         p: new THREE.Vector3(),
         prev: new THREE.Vector3(),
         head: new THREE.Vector3(),
@@ -141,14 +194,14 @@ export class SpringBones {
     const steps = Math.min(4, Math.ceil(dt / MAX_STEP));
     const h = dt / steps;
     const { stiffness, drag, maxAngle, maxInward } = this.params;
-    const keep = Math.exp(-drag * h);
     for (let i = 0; i < this.colliders.length; i++) {
       this.capA[i]!.setFromMatrixPosition(_m.multiplyMatrices(world, this.colliders[i]!.a.matrixWorld));
       this.capB[i]!.setFromMatrixPosition(_m.multiplyMatrices(world, this.colliders[i]!.b.matrixWorld));
     }
-    const cosMax = Math.cos((maxAngle * Math.PI) / 180);
     const sinIn = Math.sin((maxInward * Math.PI) / 180);
     for (const b of this.bones) {
+      const keep = Math.exp(-drag * b.d * h);
+      const cosMax = Math.cos((Math.min(maxAngle * b.a, 89) * Math.PI) / 180);
       // Xương ở tư thế nghỉ theo cha hiện tại, trong hệ thế giới.
       _w.multiplyMatrices(world, b.parent.matrixWorld).multiply(b.restM);
       _head.setFromMatrixPosition(_w);

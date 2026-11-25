@@ -18,6 +18,7 @@ import {
   leanBoost,
   LOCO_CLAMP,
   LocoImpulse,
+  PIN_GRADIENT,
   SPRING_TP,
 } from './animFx';
 import { DEATH_DIR_TTL, DEATH_TURN_S, dashClipOf, holdHipsInPlace, deathYawOffset, flinchAmpOf, hitClipOf, hitSideOf } from './hitDir';
@@ -56,7 +57,7 @@ import { type AssetCache, type AssetHandle, assetKey, assets } from '../core/ass
 import { HitReact, type HitOpts } from '../combat/hitreact';
 import { adoptGltfMaterials, cloneWorldMaterial } from '../../render/materials/world';
 import { lodLevel, mixerDue, mixerInterval, mixerPhase } from './skinned';
-import { SpringBones, type SpringCollider, type SpringDef, type SpringParams } from './spring';
+import { pinGradient, SpringBones, type SpringCollider, type SpringDef, type SpringParams } from './spring';
 import { attachBrawlerGear, gearShown, snapshotBind, type BindSnapshot, type BrawlerGear } from './brawlerGear';
 import { attachCoGear, fluteMesh } from './coGear';
 import { tranKyMesh } from './tranGear';
@@ -833,6 +834,19 @@ export class MannequinCharacter implements CharacterView {
         ...(this.spring2 && /^dtl_o_skirt_\d+_[1-9]$/.test(o.name) && { stiff: skirtTuneOf(tpl.handle.id)?.hemStiff ?? SPRING2.hemStiff }),
       });
     });
+    if (ANIM_FX.pin && !shadow) {
+      // Gradient ghim gốc-thả ngọn (cờ `pin`, mặc định tắt): đổi hệ số theo chỉ số đốt trong từng chuỗi, không thêm xương.
+      const skirtish = (n: string) => n.startsWith('dtl_o_skirt_');
+      const free = pinGradient(
+        defs.filter((d) => !skirtish(d.bone)),
+        PIN_GRADIENT.free,
+      );
+      const skirtPinned = pinGradient(
+        defs.filter((d) => skirtish(d.bone)),
+        PIN_GRADIENT.skirt,
+      );
+      defs.splice(0, defs.length, ...free, ...skirtPinned);
+    }
     if (this.spring2) {
       // Lò xo v2: vạt tách riêng (góc hẹp, gấu cứng hơn, viên nang tay + đùi phình khi ngồi); tóc và tay áo như cũ.
       const tune = skirtTuneOf(tpl.handle.id);
