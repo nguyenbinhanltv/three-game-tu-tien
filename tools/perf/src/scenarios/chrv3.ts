@@ -28,6 +28,53 @@ const QUERY: Record<string, Record<string, string>> = {
 };
 const FFMPEG = process.env.FFMPEG ?? 'ffmpeg';
 
+interface SlideRow {
+  t: number;
+  r: [number, number];
+  f: [number, number, number][];
+}
+
+/** Trượt chân của chân trụ từ dãy khung (xem chú thích ở `slide`). Hàm thuần. */
+export function contactSlide(
+  rows: SlideRow[],
+): { median: number; p90: number; samples: number; contactFrac: number; bodySpeed: number } | null {
+  if (rows.length < 10) return null;
+  const a = rows[0]!;
+  const b = rows[rows.length - 1]!;
+  const dx = b.r[0] - a.r[0];
+  const dz = b.r[1] - a.r[1];
+  const dist = Math.hypot(dx, dz);
+  const span = b.t - a.t;
+  if (dist < 1 || span <= 0) return null;
+  const ux = dx / dist;
+  const uz = dz / dist;
+  const vbar = dist / span;
+  const out: number[] = [];
+  let contactFrames = 0;
+  for (const i of [0, 1]) {
+    const ymin = Math.min(...rows.map((q) => q.f[i]![1]));
+    const rel = rows.map((q) => (q.f[i]![0] - q.r[0]) * ux + (q.f[i]![2] - q.r[1]) * uz);
+    const on = rows.map((q) => q.f[i]![1] < ymin + 0.03);
+    contactFrames += on.filter(Boolean).length;
+    for (let k = 1; k < rows.length; k++) {
+      if (!on[k] || !on[k - 1]) continue;
+      const dt = rows[k]!.t - rows[k - 1]!.t;
+      if (dt < 0.002) continue;
+      out.push(Math.abs((rel[k]! - rel[k - 1]!) / dt + vbar));
+    }
+  }
+  if (out.length < 8) return null;
+  const s = [...out].sort((x, y) => x - y);
+  const r2 = (x: number) => Math.round(x * 100) / 100;
+  return {
+    median: r2(s[Math.floor(s.length * 0.5)]!),
+    p90: r2(s[Math.floor(s.length * 0.9)]!),
+    samples: s.length,
+    contactFrac: r2(contactFrames / (2 * rows.length)),
+    bodySpeed: r2(vbar),
+  };
+}
+
 export default {
   name: 'chrv3',
   desc: 'Video so nhân vật hiện tại (v1/v2) với v3 (Lạc Kiếm trên Mannequin + UAL trực tiếp) cùng chuỗi hành động, nam/nữ',
@@ -143,7 +190,7 @@ export default {
             const rig = e.model.rig;
             const feet = [rig.getObjectByName('foot_l'), rig.getObjectByName('foot_r')];
             const V3 = feet[0].position.constructor;
-            const w = { samples: [], speeds: [] };
+            const w = { samples: [], speeds: [], rows: [] };
             let last = null;
             const tick = () => {
               const now = performance.now() / 1000;
@@ -155,6 +202,8 @@ export default {
                 w.samples.push(Math.hypot(pts[i].x - last.p[i].x, pts[i].z - last.p[i].z) / dt);
                 w.speeds.push(Math.hypot(root.x - last.root.x, root.z - last.root.z) / dt);
               }
+              const rw = e.model.root.getWorldPosition(new V3());
+              w.rows.push({ t: now, r: [rw.x, rw.z], f: pts.map((q) => [q.x, q.y, q.z]) });
               last = { t: now, p: pts, root };
               window.__slide = w;
               requestAnimationFrame(tick);
@@ -163,15 +212,22 @@ export default {
           })()`);
           await page.keyboard.down('KeyW');
           await sleep(500);
-          await page.evaluate('(() => { window.__slide.samples.length = 0; window.__slide.speeds.length = 0; })()');
+          await page.evaluate(
+            '(() => { window.__slide.samples.length = 0; window.__slide.speeds.length = 0; window.__slide.rows.length = 0; })()',
+          );
           await sleep(3500);
           await page.keyboard.up('KeyW');
           const res = (await page.evaluate(`(() => {
             const w = window.__slide;
             const q = (a, p) => [...a].sort((x, y) => x - y)[Math.floor(a.length * p)] ?? 0;
             const run = w.speeds.filter((x) => x > 0.5);
-            return { frames: w.samples.length, runSpeedMean: run.reduce((a, b) => a + b, 0) / Math.max(1, run.length), slideMedian: q(w.samples, 0.5), slideP90: q(w.samples, 0.9) };
-          })()`)) as unknown;
+            return { frames: w.samples.length, runSpeedMean: run.reduce((a, b) => a + b, 0) / Math.max(1, run.length), slideMedian: q(w.samples, 0.5), slideP90: q(w.samples, 0.9), rows: w.rows };
+          })()`)) as { rows: SlideRow[] } & Record<string, unknown>;
+          // Trượt chân đo ĐÚNG chân trụ: chỉ khung hai khung liền chân đang tiếp đất (cổ chân trong 3 cm trên điểm thấp nhất của nó), vị trí chân tính TƯƠNG ĐỐI thân
+          // (triệt nhiễu bước vị trí theo gói tin) chiếu lên hướng chạy; trượt = |vận tốc chân so với thân + tốc độ thân trung bình|. 0 = chân dính đất.
+          const contact = contactSlide(res.rows);
+          delete (res as { rows?: unknown }).rows;
+          Object.assign(res, { contact });
           fs.writeFileSync(
             path.join(
               r.out,

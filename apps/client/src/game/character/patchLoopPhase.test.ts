@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 import * as THREE from 'three/webgpu';
 import { describe, expect, it } from 'vitest';
 import { AssetCache, createGltfLoader, createKtx2Loader, type Manifest } from '../core/assets';
-import { PATCH_PHASE } from './patchLoop';
+import { PATCH_LOCO, PATCH_PHASE } from './patchLoop';
 
 /**
  * Đo pha chân trụ trên file clip THẬT: bước chạm đất của chân trái (chân hạ xuống dưới ymin + 5 cm sau đoạn bay) của `Jog_Fwd_Loop` (clip tham chiếu của
@@ -60,6 +60,68 @@ describe('clip chạy Patch: pha chạm đất khớp Jog_Fwd_Loop sau độ l�
         const d = Math.abs(((shared - ref + 1.5) % 1) - 0.5);
         expect(d, `${name} ${side}: chung ${shared.toFixed(3)} vs jog ${ref.toFixed(3)}`).toBeLessThanOrEqual(0.02);
       }
+    }
+  }, 60_000);
+});
+
+/**
+ * Tốc độ chân trụ (m/s, chiều tiến) của clip: hồi quy vị trí chân (thế giới của clip, thân không dịch) theo thời gian trên đoạn tiếp đất dài nhất (cổ chân
+ * trong 3 cm trên điểm thấp nhất), bỏ 20% đầu/cuối đoạn (lăn gót/mũi). Thân phải chạy đúng tốc độ này thì chân dính đất.
+ */
+function stanceSpeed(scene: THREE.Object3D, clip: THREE.AnimationClip, side: 'l' | 'r'): number {
+  const mixer = new THREE.AnimationMixer(scene);
+  mixer.clipAction(clip).play();
+  const foot = scene.getObjectByName(`foot_${side}`)!;
+  const N = 960;
+  const y: number[] = [];
+  const z: number[] = [];
+  for (let i = 0; i < N; i++) {
+    mixer.setTime((i / N) * clip.duration);
+    scene.updateMatrixWorld(true);
+    const p = foot.getWorldPosition(new THREE.Vector3());
+    y.push(p.y);
+    z.push(p.z);
+  }
+  mixer.stopAllAction();
+  const on = y.map((v) => v < Math.min(...y) + 0.03);
+  let best: number[] = [];
+  let cur: number[] = [];
+  for (let i = 0; i < 2 * N; i++) {
+    if (on[i % N]) cur.push(i);
+    else {
+      if (cur.length > best.length) best = cur;
+      cur = [];
+    }
+  }
+  if (cur.length > best.length) best = cur;
+  const m = Math.floor(best.length * 0.2);
+  const seg = best.slice(m, best.length - m);
+  const xs = seg.map((i) => (i / N) * clip.duration);
+  const ys = seg.map((i) => z[i % N]!);
+  const mx = xs.reduce((a, b) => a + b, 0) / xs.length;
+  const my = ys.reduce((a, b) => a + b, 0) / ys.length;
+  let num = 0;
+  let den = 0;
+  xs.forEach((x, k) => {
+    num += (x - mx) * (ys[k]! - my);
+    den += (x - mx) ** 2;
+  });
+  return Math.abs(num / den);
+}
+
+describe('clip chạy Patch: tốc độ chân trụ khớp bảng PATCH_LOCO', () => {
+  it('PM_Run và PM_Sprint: chân trụ đi đúng tốc độ gốc ghi trong bảng (±5%), nên cycles = tốc độ / chu kỳ làm chân dính đất ở mọi tốc độ', async () => {
+    const pm = await cache.acquire('anim_patch_move');
+    for (const [key, def] of Object.entries(PATCH_LOCO)) {
+      const clip = pm.animations.find((c) => c.name === def.clip)!;
+      for (const side of ['l', 'r'] as const) {
+        const v = stanceSpeed(pm.scene, clip, side);
+        expect(Math.abs(v - def.speed) / def.speed, `${key} ${side}: chân ${v.toFixed(2)} m/s vs bảng ${def.speed}`).toBeLessThanOrEqual(
+          0.05,
+        );
+      }
+      // chu kỳ = tốc độ × thời lượng clip
+      expect(def.stride).toBeCloseTo(def.speed * clip.duration, 1);
     }
   }, 60_000);
 });
