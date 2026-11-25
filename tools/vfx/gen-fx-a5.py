@@ -1,0 +1,133 @@
+#!/usr/bin/env python3
+"""A5 (Họa Pháp Lô 2): timeline riêng cho các chiêu của boss chương 4–5 (chuẩn HPL2: VẠCH BÁO ĐỎ chuẩn kẻ địch, THÂN hiệu ứng theo hệ, không đỏ/cam).
+Đợt 1 (Thiên Khuyết): boss_thien_khuyet_thu_linh (thổ: line 20×4, slam r8, sweep quạt r14/40°, chant r16), boss_vo_dien_than_quan (thổ: sweep quạt r12/50°),
+boss_tam_thu_nguc_khuyen (hỏa ám: sweep quạt r11/70°, chant r14, slam r7, line 26×4), boss_thu_khich_duc_chu (thổ: line 22×4, slam r4,5, sweep quạt r14/45°).
+Sprite DÙNG LẠI theo hệ, không vẽ mới: thổ = nhóm `ham_*` (đá + khe hổ phách; KHÔNG dùng `tho_crack/tho_jade` vì ngọc lam lẫn hệ Lôi), hỏa ám = `lua_*` (lửa ma tím).
+Quy ước cỡ như gen-fx-a2/a3/a4: vùng tròn `mul` = r/4, quạt/dải `mul` = r/8 (kẹp 0,5..4); sprite phẳng của vùng tròn viết cạnh 8 (k=1) để ra đường kính 2r; sprite dọc/quay mặt camera chia `k`.
+Giữ độ phủ thấp (≤ 0,2 theo mặt nạ màu): ít sprite, đặt ở mép vùng, dư ba mỏng.
+Chạy: python tools/vfx/gen-fx-a5.py  (ghi vào packages/content/data/fx/)."""
+import math
+import os
+import sys
+
+sys.path.insert(0, os.path.dirname(__file__))
+from mon_helpers import *  # noqa: E402,F401,F403
+
+LIFT = 0.35
+
+THEMES = {
+    # hệ → (palette timeline, tên sprite, decal nền tối)
+    'tho': (
+        'mon_tho_pk',
+        dict(crack='ham_crack', spikes='ham_spikes', dust='ham_dust', pillar='ham_pillar', debris='ham_debris', ridge='ham_ridge'),
+        'jade_crack',
+    ),
+    'hoa': (
+        'mon_hoa_am',
+        dict(crack='lua_scar', spikes='lua_plume', dust='lua_smoke', pillar='lua_plume', debris='lua_embers', ridge='lua_lick'),
+        'bolt_scorch',
+    ),
+}
+
+
+def clip(x, lo=0.5, hi=4.0):
+    return max(lo, min(hi, x))
+
+
+def slam_boom(B, move, r, theme, seed):
+    pal, sp_, dec = THEMES[theme]
+    mul = clip(r / 4)
+    ev = [
+        decal(dec, 0, 4, 2.2, 'core', 0.35, 0.02, top=False, untilDelay=False, lift=LIFT),
+        sp(sp_['crack'], 0.0, 1.1, 8.0, y=0.45, flat=True, alpha=0.85, erode=0.5, seed=seed),
+        sp(sp_['dust'], 0.03, 1.0, 8.2, y=0.5, flat=True, alpha=0.3, erode=0.4, seed=seed + 1),
+        *[
+            sp(sp_['spikes'], 0.03 + 0.04 * i, 0.95, 4.4, x=p[0] * r * 0.55, y=1.7, z=p[1] * r * 0.55, k=mul, alpha=1.0, erode=0.5, seed=seed + 2 + i)
+            for i, p in enumerate(ring_pts(3, 1.0, 0.5))
+        ],
+        sp(sp_['debris'], 0.04, 0.9, 4.8, y=1.8, k=mul, alpha=0.9, erode=0.45, seed=seed + 6),
+        parts('shard', 0, 22, 6, 0.9, 0.9, 0.1, 'rim', offset=[0, 0.3, 0], grav=9, tier=0),
+        parts('dust', 0, 16, 3.5, 0.9, 1.0, 0.22, 'body', offset=[0, 0.3, 0], grav=0.8),
+    ]
+    write(f'mon_boom_circle__{B}__{move}', ev, pal)
+
+
+def circle(B, move, r, delay, theme, seed, cast=False):
+    pal, _, _ = THEMES[theme]
+    if cast:
+        cast_ring(B, r, pal)
+    write(f'mon_warn__{B}__{move}', warn_circle(delay, 35, -50), pal)
+    slam_boom(B, move, r, theme, seed)
+
+
+def cone(B, move, r, half, delay, theme, seed):
+    pal, sp_, dec = THEMES[theme]
+    k = clip(r / 8)
+    write(f'mon_warn_cone__{B}__{move}', warn_fan(delay, half), pal)
+    reach = r * 0.55
+    side = math.sin(math.radians(half * 0.7)) * r * 0.55
+    write(
+        f'mon_boom_cone__{B}__{move}',
+        [
+            decal(dec, 0, 8, 2.0, 'core', 0.3, 0.04, top=False, untilDelay=False, sector=half, lift=LIFT),
+            sp(sp_['crack'], 0.0, 1.0, 6.4, y=0.45, z=r * 0.4, k=k, flat=True, alpha=0.7, erode=0.45, seed=seed),
+            *[
+                sp(sp_['spikes'], 0.03 + 0.04 * i, 1.0, 4.0, x=px * side, y=1.6, z=r * 0.55, k=k, alpha=1.0, erode=0.5, seed=seed + 1 + i)
+                for i, px in enumerate((-1, 1))
+            ],
+            sp(sp_['ridge'], 0.02, 1.0, 8.0, y=0.7, z=r * 0.18, k=k, aim=True, to=(0, reach), alpha=0.8, erode=0.5, seed=seed + 4),
+            sp(sp_['debris'], 0.05, 0.9, 4.4, y=1.7, z=r * 0.5, k=k, alpha=0.8, erode=0.45, seed=seed + 5),
+            parts('shard', 0, 22, 6, 0.5, 1.0, 0.1, 'rim', offset=[0, 0.5 / k, 3 / k], grav=8, tier=0),
+            parts('dust', 0, 14, 4, 0.5, 1.2, 0.2, 'body', offset=[0, 0.3 / k, 3 / k], grav=0.8),
+        ],
+        pal,
+    )
+
+
+def line(B, move, length, width, delay, theme, seed):
+    pal, sp_, dec = THEMES[theme]
+    k = clip(length / 8)
+    write(f'mon_warn_line__{B}__{move}', warn_strip(delay, length, width, spark=22), pal)
+    write(
+        f'mon_boom_line__{B}__{move}',
+        [
+            decal(dec, 0, 1, 2.2, 'core', 0.35, 0.06, top=False, untilDelay=False, strip=[length, width], lift=LIFT),
+            *[
+                sp(sp_['ridge'], 0.05 * i, 0.9, 9.0, y=0.8, x=(i % 2 - 0.5) * 1.2, z=2.0, k=k, aim=True, to=((i % 2 - 0.5) * 1.2, length * (0.8 - 0.1 * (i % 2))), alpha=0.9, erode=0.5, seed=seed + i)
+                for i in range(3)
+            ],
+            *[
+                sp(sp_['spikes'], 0.06 + 0.05 * i, 0.9, 4.0, x=(-width * 0.55 if i % 2 == 0 else width * 0.55), y=1.6, z=length * (0.22 + 0.2 * i), k=k, alpha=1.0, erode=0.45, seed=seed + 4 + i)
+                for i in range(4)
+            ],
+            parts('shard', 0, 26, 7, 0.4, 1.0, 0.1, 'rim', offset=[0, 0.4 / k, length * 0.3 / k], grav=7, tier=0),
+            parts('dust', 0, 18, 4, 0.5, 1.2, 0.22, 'body', offset=[0, 0.3 / k, length * 0.3 / k], grav=0.8),
+        ],
+        pal,
+    )
+
+
+# ================= Thiên Khuyết Thú Linh (thổ) =================
+B = 'boss_thien_khuyet_thu_linh'
+line(B, 'line', 20, 4, 1.8, 'tho', 4100)
+circle(B, 'slam', 8, 1.5, 'tho', 4110)
+cone(B, 'sweep', 14, 40, 1.5, 'tho', 4120)
+circle(B, 'chant', 16, 1.2, 'tho', 4130, cast=True)
+
+# ================= Vô Diện Thần Quân (thổ) =================
+B = 'boss_vo_dien_than_quan'
+cone(B, 'sweep', 12, 50, 1.5, 'tho', 4200)
+
+# ================= Tam Thủ Ngục Khuyển (hỏa ám) =================
+B = 'boss_tam_thu_nguc_khuyen'
+cone(B, 'sweep', 11, 70, 1.2, 'hoa', 4300)
+circle(B, 'chant', 14, 0.9, 'hoa', 4310, cast=True)
+circle(B, 'slam', 7, 1.5, 'hoa', 4320)
+line(B, 'line', 26, 4, 1.6, 'hoa', 4330)
+
+# ================= Thử Khích Dục Chủ (thổ) =================
+B = 'boss_thu_khich_duc_chu'
+line(B, 'line', 22, 4, 1.3, 'tho', 4400)
+circle(B, 'slam', 4.5, 1.3, 'tho', 4410)
+cone(B, 'sweep', 14, 45, 1.3, 'tho', 4420)
+print('ok')
