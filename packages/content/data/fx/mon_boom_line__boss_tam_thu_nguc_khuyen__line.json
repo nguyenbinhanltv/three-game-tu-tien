@@ -24,6 +24,90 @@
    "type": "mesh",
    "shape": "sprite",
    "t": 0.0,
+   "dur": 1.0,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.7,
+   "seed": 4338,
+   "tier": 0,
+   "sprite": "lua_scar",
+   "scale": 1.6,
+   "scaleTo": 1.6,
+   "offset": [
+    0.0,
+    0.138,
+    1.44
+   ],
+   "erodeFrom": 0.5,
+   "sweep": 0,
+   "ragged": 0.5,
+   "billboard": false,
+   "rot": [
+    -90,
+    0,
+    0
+   ]
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.02,
+   "dur": 1.0,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.7,
+   "seed": 4339,
+   "tier": 0,
+   "sprite": "lua_scar",
+   "scale": 1.6,
+   "scaleTo": 1.6,
+   "offset": [
+    0.0,
+    0.138,
+    4.0
+   ],
+   "erodeFrom": 0.5,
+   "sweep": 0,
+   "ragged": 0.5,
+   "billboard": false,
+   "rot": [
+    -90,
+    0,
+    0
+   ]
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.04,
+   "dur": 1.0,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.7,
+   "seed": 4340,
+   "tier": 0,
+   "sprite": "lua_scar",
+   "scale": 1.6,
+   "scaleTo": 1.6,
+   "offset": [
+    0.0,
+    0.138,
+    6.56
+   ],
+   "erodeFrom": 0.5,
+   "sweep": 0,
+   "ragged": 0.5,
+   "billboard": false,
+   "rot": [
+    -90,
+    0,
+    0
+   ]
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.0,
    "dur": 0.9,
    "at": "area",
    "tone": "body",
@@ -55,7 +139,7 @@
   {
    "type": "mesh",
    "shape": "sprite",
-   "t": 0.05,
+   "t": 0.04,
    "dur": 0.9,
    "at": "area",
    "tone": "body",
@@ -87,39 +171,7 @@
   {
    "type": "mesh",
    "shape": "sprite",
-   "t": 0.1,
-   "dur": 0.9,
-   "at": "area",
-   "tone": "body",
-   "alpha": 0.9,
-   "seed": 4332,
-   "tier": 0,
-   "sprite": "lua_lick",
-   "scale": 1.385,
-   "scaleTo": 1.385,
-   "offset": [
-    -0.185,
-    0.246,
-    0.615
-   ],
-   "erodeFrom": 0.5,
-   "sweep": 0,
-   "ragged": 0.5,
-   "aim": true,
-   "move": {
-    "to": "area",
-    "offset": [
-     -0.185,
-     0.246,
-     6.4
-    ],
-    "ease": "out"
-   }
-  },
-  {
-   "type": "mesh",
-   "shape": "sprite",
-   "t": 0.06,
+   "t": 0.01,
    "dur": 0.9,
    "at": "area",
    "tone": "body",
@@ -141,7 +193,7 @@
   {
    "type": "mesh",
    "shape": "sprite",
-   "t": 0.11,
+   "t": 0.035,
    "dur": 0.9,
    "at": "area",
    "tone": "body",
@@ -163,7 +215,7 @@
   {
    "type": "mesh",
    "shape": "sprite",
-   "t": 0.16,
+   "t": 0.060000000000000005,
    "dur": 0.9,
    "at": "area",
    "tone": "body",
@@ -185,7 +237,7 @@
   {
    "type": "mesh",
    "shape": "sprite",
-   "t": 0.21000000000000002,
+   "t": 0.085,
    "dur": 0.9,
    "at": "area",
    "tone": "body",

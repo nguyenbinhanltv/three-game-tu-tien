@@ -37,10 +37,13 @@ def clip(x, lo=0.5, hi=4.0):
 def slam_boom(B, move, r, theme, seed):
     pal, sp_, dec = THEMES[theme]
     mul = clip(r / 4)
+    # Vùng lớn (r ≥ 8): sprite phẳng/nền co lại để độ phủ không vượt trần (chant r16 từng phủ ~0,46): đường kính sprite tối đa ~20 m, nền mờ hơn.
+    cap = min(1.0, 10.0 / r)
+    fade = min(1.0, 11.0 / r)
     ev = [
-        decal(dec, 0, 4, 2.2, 'core', 0.35, 0.02, top=False, untilDelay=False, lift=LIFT),
-        sp(sp_['crack'], 0.0, 1.1, 8.0, y=0.45, flat=True, alpha=0.85, erode=0.5, seed=seed),
-        sp(sp_['dust'], 0.03, 1.0, 8.2, y=0.5, flat=True, alpha=0.3, erode=0.4, seed=seed + 1),
+        decal(dec, 0, 4, 2.2, 'core', round(0.35 * fade, 2), 0.02, top=False, untilDelay=False, lift=LIFT),
+        sp(sp_['crack'], 0.0, 1.1, round(8.0 * cap, 2), y=0.45, flat=True, alpha=round(0.85 * (0.6 + 0.4 * fade), 2), erode=0.5, seed=seed),
+        sp(sp_['dust'], 0.03, 1.0, round(8.2 * cap, 2), y=0.5, flat=True, alpha=round(0.3 * fade, 2), erode=0.4, seed=seed + 1),
         *[
             sp(sp_['spikes'], 0.03 + 0.04 * i, 0.95, 4.4, x=p[0] * r * 0.55, y=1.7, z=p[1] * r * 0.55, k=mul, alpha=1.0, erode=0.5, seed=seed + 2 + i)
             for i, p in enumerate(ring_pts(3, 1.0, 0.5))
@@ -92,12 +95,17 @@ def line(B, move, length, width, delay, theme, seed):
         f'mon_boom_line__{B}__{move}',
         [
             decal(dec, 0, 1, 2.2, 'core', 0.35, 0.06, top=False, untilDelay=False, strip=[length, width], lift=LIFT),
+            # vệt nứt phẳng dọc dải hiện ngay lúc nổ (không chờ sprite trượt tới), cỡ theo bề rộng dải
             *[
-                sp(sp_['ridge'], 0.05 * i, 0.9, 9.0, y=0.8, x=(i % 2 - 0.5) * 1.2, z=2.0, k=k, aim=True, to=((i % 2 - 0.5) * 1.2, length * (0.8 - 0.1 * (i % 2))), alpha=0.9, erode=0.5, seed=seed + i)
+                sp(sp_['crack'], 0.0 + 0.02 * i, 1.0, width * 2.6, y=0.45, z=length * (0.18 + 0.32 * i), k=k, flat=True, alpha=0.7, erode=0.5, seed=seed + 8 + i)
                 for i in range(3)
             ],
             *[
-                sp(sp_['spikes'], 0.06 + 0.05 * i, 0.9, 4.0, x=(-width * 0.55 if i % 2 == 0 else width * 0.55), y=1.6, z=length * (0.22 + 0.2 * i), k=k, alpha=1.0, erode=0.45, seed=seed + 4 + i)
+                sp(sp_['ridge'], 0.04 * i, 0.9, 9.0, y=0.8, x=(i % 2 - 0.5) * 1.2, z=2.0, k=k, aim=True, to=((i % 2 - 0.5) * 1.2, length * (0.8 - 0.1 * (i % 2))), alpha=0.9, erode=0.5, seed=seed + i)
+                for i in range(2)
+            ],
+            *[
+                sp(sp_['spikes'], 0.01 + 0.025 * i, 0.9, 4.0, x=(-width * 0.55 if i % 2 == 0 else width * 0.55), y=1.6, z=length * (0.22 + 0.2 * i), k=k, alpha=1.0, erode=0.45, seed=seed + 4 + i)
                 for i in range(4)
             ],
             parts('shard', 0, 26, 7, 0.4, 1.0, 0.1, 'rim', offset=[0, 0.4 / k, length * 0.3 / k], grav=7, tier=0),
