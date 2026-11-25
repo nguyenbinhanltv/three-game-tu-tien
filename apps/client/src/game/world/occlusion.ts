@@ -1,3 +1,4 @@
+import { FLAGS } from '../../base/flags';
 import * as THREE from 'three/webgpu';
 import type { ShaderNodeObject } from 'three/tsl';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -66,6 +67,11 @@ const uSlots = Array.from({ length: SLOTS }, () => uniform(new THREE.Vector4()))
 
 /** Nhiễu gradient đan xen theo tọa độ màn hình: dither ổn định, không cần texture. */
 const ign = fract(float(52.9829189).mul(fract(dot(screenCoordinate.xy, vec2(0.06711056, 0.00583715)))));
+/**
+ * Ngưỡng của mặt nạ làm mờ. Họa Cảnh: một ngưỡng cứng (mép cắt rõ như nét cọ) thay cho nhiễu dither, vì Kuwahara làm tán lá lốm đốm/nhòe
+ * khi mờ bằng nhiễu từng điểm ảnh.
+ */
+const dither = FLAGS.style === 'painted' ? float(0.5) : ign;
 const nearer = step(length(positionWorld.sub(uCam)), uNear);
 const aboveFeet = step(uFeetY.add(0.25), positionWorld.y);
 
@@ -107,13 +113,13 @@ export function archWrap<M extends THREE.MeshStandardNodeMaterial>(m: M): M {
 
 /** Gắn làm mờ vật che theo danh sách `OCCLUDERS` cho material kiến trúc. Gọi một lần lúc tạo. */
 export function withOccluderFade<M extends THREE.NodeMaterial>(m: M): M {
-  m.maskNode = ign.greaterThanEqual(archFade());
+  m.maskNode = dither.greaterThanEqual(archFade());
   return m;
 }
 
 /** Gắn làm mờ cây nằm trên đường nhìn camera→nhân vật. Gọi một lần lúc tạo. */
 export function withSightFade<M extends THREE.NodeMaterial>(m: M): M {
-  m.maskNode = ign.greaterThanEqual(vegFade());
+  m.maskNode = dither.greaterThanEqual(vegFade());
   return m;
 }
 
