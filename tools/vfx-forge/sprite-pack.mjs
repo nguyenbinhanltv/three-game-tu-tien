@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Họa Pháp Lô 2: tách nền xanh chroma của bảng sprite Codex (`forge sprites`) và xếp thành atlas WebP trong suốt cho `FX_SPRITES` (packages/shared/src/fxtimeline.ts).
-// Dùng: node tools/vfx-forge/sprite-pack.mjs <bảng.png> | --sheet <bảng.png>:<cột>:<hàng> ... [--cols 4] [--base <atlas.webp> nối thêm vào atlas có sẵn] [--patch <ô>=<bảng.png>:<cột>:<hàng>:<số cột>:<số hàng> thay một ô] [--cell 512] [--out <đường dẫn>; mặc định public/hoa-truc/vfx_sprites.<hash10>.webp] [--preview <png>]
+// Dùng: node tools/vfx-forge/sprite-pack.mjs <bảng.png> | --sheet <bảng.png>:<cột>:<hàng> ... [--cols 8: số cột của atlas, khớp SPRITE_COLS] [--base <atlas.webp> nối thêm vào atlas có sẵn] [--patch <ô>=<bảng.png>:<cột>:<hàng>:<số cột>:<số hàng> thay một ô] [--cell 512] [--out <đường dẫn>; mặc định public/hoa-truc/vfx_sprites.<hash10>.webp] [--preview <png>]
 // Mỗi ô lưới đều (cols × rows) của bảng: tìm khung bao của phần không phải nền, cắt, thu vừa ô (chừa lề), xếp vào atlas. alpha = 1 − (g − max(r,b))/255; khử viền xanh bằng cách trừ phần nền.
 import { createHash } from 'node:crypto';
 import fs from 'node:fs';

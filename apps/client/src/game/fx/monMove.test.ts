@@ -4,6 +4,8 @@ import { moveOfHazard, movesOf } from './monMove';
 
 const han = MONSTER.get('boss_han_giao')!;
 const ngo = MONSTER.get('boss_thon_mach_ngo_cong_vuong')!;
+const xichSa = MONSTER.get('elite_xich_sa_ngo_cong')!;
+const loiVan = MONSTER.get('elite_loi_van_su_vuong')!;
 
 describe('moveOfHazard', () => {
   it('Hàn Giao: nhận slam, chant, sweep theo hình/bán kính/thời gian báo', () => {
@@ -16,6 +18,13 @@ describe('moveOfHazard', () => {
     expect(moveOfHazard(ngo, { r: 5.5, delay: 1.7 })).toBe('slam');
     expect(moveOfHazard(ngo, { r: 4, delay: 2 })).toBe('burrow');
     expect(moveOfHazard(ngo, { r: 14, delay: 1.5, sh: 'cone' })).toBe('emerge');
+  });
+  it('tinh anh: đòn niệm caster (quạt/tròn), chui đất, nhảy vồ', () => {
+    expect(moveOfHazard(xichSa, { r: 12, delay: 1.3, sh: 'cone' })).toBe('caster');
+    expect(moveOfHazard(xichSa, { r: 3, delay: 2 })).toBe('burrow');
+    expect(moveOfHazard(xichSa, { r: 10, delay: 1.6, sh: 'cone' })).toBe('emerge');
+    expect(moveOfHazard(loiVan, { r: 4, delay: 1.2 })).toBe('caster');
+    expect(moveOfHazard(loiVan, { r: 4, delay: 1.0 })).toBe('leap');
   });
   it('khác hình hoặc lệch xa thì không đoán (dùng timeline chung)', () => {
     expect(moveOfHazard(han, { r: 8, delay: 1, sh: 'rect' })).toBeUndefined();

@@ -1,0 +1,33 @@
+{
+  "monId": "elite_loi_van_su_vuong",
+  "move": "leap",
+  "idea": "Lôi Vân Sư Vương nhảy vồ xuống chỗ người chơi: vòng ĐỎ tròn đúng 4 m tô dần theo nhịp 1,0 s; chạm đất nổ sét chẻ nhánh tỏa theo mặt đất và chớp trắng-tím.",
+  "element": "loi",
+  "palette": {
+    "core": "14103a",
+    "body": "7f8cff",
+    "rim": "f2f0ff",
+    "accent": "ff1f3d"
+  },
+  "shapeLang": [
+    "burst",
+    "beam"
+  ],
+  "zone": {
+    "shape": "circle",
+    "r": 4,
+    "at": "target"
+  },
+  "timing": {
+    "anticipationMs": 1000,
+    "impactMs": 140,
+    "lingerMs": 800
+  },
+  "readability": "Vòng đỏ đặc đúng 4 m, nhịp ngắn (1,0 s) nên viền rõ ngay; sét tím-trắng không lẫn đỏ.",
+  "budget": {
+    "drawCalls": 9,
+    "particles": 300,
+    "screenCover": 0.25,
+    "overdraw": 5
+  }
+}

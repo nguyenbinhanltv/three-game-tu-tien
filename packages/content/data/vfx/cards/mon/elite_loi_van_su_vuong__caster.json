@@ -1,0 +1,33 @@
+{
+  "monId": "elite_loi_van_su_vuong",
+  "move": "caster",
+  "idea": "Lôi Vân Sư Vương gọi sét giáng xuống chỗ người chơi: vòng ĐỎ tròn đúng 4 m tô dần theo nhịp 1,2 s; nổ ra cột sét tím-trắng chẻ nhánh, tàn lửa điện và khói giông.",
+  "element": "loi",
+  "palette": {
+    "core": "14103a",
+    "body": "7f8cff",
+    "rim": "f2f0ff",
+    "accent": "ff1f3d"
+  },
+  "shapeLang": [
+    "beam",
+    "burst"
+  ],
+  "zone": {
+    "shape": "circle",
+    "r": 4,
+    "at": "target"
+  },
+  "timing": {
+    "anticipationMs": 1200,
+    "impactMs": 140,
+    "lingerMs": 800
+  },
+  "readability": "Vòng đỏ đặc đúng 4 m; sét tím-trắng lõi sáng viền tối không lẫn đỏ, khói giông mỏng.",
+  "budget": {
+    "drawCalls": 9,
+    "particles": 300,
+    "screenCover": 0.25,
+    "overdraw": 5
+  }
+}
