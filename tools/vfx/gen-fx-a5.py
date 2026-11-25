@@ -37,7 +37,7 @@ def clip(x, lo=0.5, hi=4.0):
 def soft(r):
     """Độ đậm vạch báo theo cỡ vùng: viền sáng + nền đỏ trong suốt ≤ ~25% (vùng lớn mỏng hơn để không phủ kín khung)."""
     big = r >= 10
-    return (0.3, 0.17) if big else (0.42, 0.26)
+    return (0.2, 0.15) if big else (0.3, 0.22)
 
 
 def warn_circle_soft(delay, r, yaw_a=35, yaw_b=-50, spark=12):
