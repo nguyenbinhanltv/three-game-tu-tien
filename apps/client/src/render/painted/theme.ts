@@ -1,0 +1,69 @@
+import * as THREE from 'three/webgpu';
+import { uniform } from 'three/tsl';
+import type { PaintPair } from './palette';
+import { LIGHT } from './fieldShared';
+import { FLAGS } from '../../base/flags';
+
+/**
+ * Họa Cảnh P9: bảng màu theo level. Pilot Vân Lam dùng đúng cỏ xanh của painted-valley; bản đồ khác (tuyết, đá đỏ, đảo mây...) đi qua MỘT bước đổi tông: màu
+ * đất vẽ (đã có nét cọ và mảng sáng/tối của painted-valley) được đo độ chói rồi ánh xạ vào cặp [sáng, tối] của level, nên nét cọ giữ nguyên, chỉ đổi bảng màu
+ * (nguyên tắc 1: mỗi vật hai màu, màu tối pha tay). Level không có trong bảng giữ cỏ xanh (`mix` = 0). Uniform (không dựng lại shader khi đổi level).
+ */
+export interface PaintedTheme {
+  /** Đất/cỏ nền: [sáng, tối]. */
+  ground: PaintPair;
+  /** Đá, vách, tuyết (phần địa hình không phải đất cỏ): [sáng, tối]. */
+  rock: PaintPair;
+  /** Màu sương thấp (sRGB hex). */
+  mist: number;
+  /** Vùng xa nướng một lần (P3): bật mặc định ở level này; [sáng, tối] của dải núi. Bỏ trống = không có (Vân Lam: thung lũng kín). */
+  far?: PaintPair;
+  /** Sương thấp: dải cao độ (m) mà sương nằm dưới, từ đỉnh dải trở xuống; và cường độ 0..1. */
+  mistBand: [number, number];
+  mistK: number;
+}
+
+export const PAINTED_THEMES: Record<string, PaintedTheme> = {
+  // Bắc Hoang Tẫn Nguyên (MAP-5): tuyết trắng lam, bóng tím chàm, đá đen tím, sương lam lạnh
+  bac_hoang: { ground: [0xe4ecf6, 0x8a98c4], rock: [0x6a6585, 0x2a2540], mist: 0xc4d0ea, mistBand: [10, 60], mistK: 0.6, far: [0xdce6f6, 0x5c6896] },
+};
+
+/** Vân Lam (pilot) và level chưa có bảng: sương cũ của P4. */
+export const DEFAULT_MIST = { color: -1, band: [46, 66] as [number, number], k: 0.5 };
+
+export const themeU = {
+  /** 0 = cỏ xanh painted-valley; 1 = ánh xạ vào bảng của level. */
+  on: uniform(0),
+  gLit: uniform(new THREE.Color()),
+  gShade: uniform(new THREE.Color()),
+  rLit: uniform(new THREE.Color()),
+  rShade: uniform(new THREE.Color()),
+  mist: uniform(new THREE.Color().fromArray(LIGHT.fogColor).multiplyScalar(1.05)),
+  mistLo: uniform(DEFAULT_MIST.band[0]),
+  mistHi: uniform(DEFAULT_MIST.band[1]),
+  mistK: uniform(DEFAULT_MIST.k),
+};
+
+/** Chọn bảng cho level (gọi trước khi dựng/hiển thị địa hình). */
+export function setPaintedTheme(levelId: string): void {
+  const t = PAINTED_THEMES[levelId];
+  themeU.on.value = t ? 1 : 0;
+  if (t) {
+    themeU.gLit.value.setHex(t.ground[0], THREE.SRGBColorSpace);
+    themeU.gShade.value.setHex(t.ground[1], THREE.SRGBColorSpace);
+    themeU.rLit.value.setHex(t.rock[0], THREE.SRGBColorSpace);
+    themeU.rShade.value.setHex(t.rock[1], THREE.SRGBColorSpace);
+  }
+  const m = t ? { color: t.mist, band: t.mistBand, k: t.mistK } : DEFAULT_MIST;
+  if (m.color < 0) themeU.mist.value.fromArray(LIGHT.fogColor).multiplyScalar(1.05);
+  else themeU.mist.value.setHex(m.color, THREE.SRGBColorSpace);
+  themeU.mistLo.value = m.band[0];
+  themeU.mistHi.value = m.band[1];
+  themeU.mistK.value = m.k;
+}
+
+/** Vùng xa Họa Cảnh có bật ở level này không: `?far=1|0` ép, không thì theo bảng level; chỉ với `?style=painted`. */
+export function paintedFarOn(levelId: string): boolean {
+  if (FLAGS.style !== 'painted') return false;
+  return FLAGS.far ?? PAINTED_THEMES[levelId]?.far !== undefined;
+}

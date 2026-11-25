@@ -36,6 +36,7 @@ import { FLAGS } from '../../base/flags';
 import { isoTerrainDetail } from './isoDetail';
 import { lampPoolAt } from '../painted/lampPools';
 import { withLowMist } from '../painted/lowMist';
+import { themeU } from '../painted/theme';
 import { paintedColor } from '../painted/palette';
 import { getPaintedRefField } from '../painted/fieldShared';
 import { flatTextures, groundColor } from '../painted/lab/ground';
@@ -674,9 +675,15 @@ export function applyGroundShader(mat: THREE.MeshStandardNodeMaterial, tex: Grou
       vec3(pavLit.r, pavLit.g, pavLit.b),
       smoothstep(0.14, 0.26, dot(col.rgb, vec3(0.299, 0.587, 0.114))),
     );
-    mat.colorNode = col.mul(keep);
+    mat.colorNode = col.mul(keep).mul(float(1).sub(themeU.on));
     // + sương thấp sát đáy thung lũng (render/painted/lowMist.ts), chỉ trên phần đất tô phẳng
-    const groundBase = painted.mul(grassW).add(pavTone.mul(pavW));
+    // bảng theo level (theme.ts): đổi tông đất vẽ và đá/tuyết sang hai màu của level, giữ nét cọ; `themeU.on` = 0 (Vân Lam) giữ nguyên
+    const ink: Node = dot(painted, vec3(0.299, 0.587, 0.114));
+    const gTone: Node = mix(vec3(themeU.gShade), vec3(themeU.gLit), smoothstep(0.05, 0.3, ink));
+    const rockInk: Node = dot(col.rgb, vec3(0.299, 0.587, 0.114));
+    const rTone: Node = mix(vec3(themeU.rShade), vec3(themeU.rLit), smoothstep(0.1, 0.6, rockInk));
+    const paintedT: Node = mix(painted, gTone, themeU.on);
+    const groundBase = paintedT.mul(grassW).add(pavTone.mul(pavW)).add(rTone.mul(keep).mul(themeU.on));
     mat.emissiveNode = withLowMist(F, groundBase, positionWorld.xz, positionWorld.y, grassW.add(pavW).min(1));
     // vũng sáng đèn đêm: ghi vào đích MRT `lamp`, pass cuối cộng SAU bước nhuộm trăng (giữ tông hổ phách)
     (mat as unknown as { mrtNode: unknown }).mrtNode = mrt({ lamp: vec4(lampPoolAt(positionWorld.xz), 1) });
