@@ -36,7 +36,7 @@ import { FLAGS } from '../../base/flags';
 import { isoTerrainDetail } from './isoDetail';
 import { lampPoolAt } from '../painted/lampPools';
 import { withLowMist } from '../painted/lowMist';
-import { themeU } from '../painted/theme';
+import { DRY_HI, DRY_LO, themeU } from '../painted/theme';
 import { paintedColor } from '../painted/palette';
 import { getPaintedRefField } from '../painted/fieldShared';
 import { flatTextures, groundColor } from '../painted/lab/ground';
@@ -682,7 +682,17 @@ export function applyGroundShader(mat: THREE.MeshStandardNodeMaterial, tex: Grou
     const gTone: Node = mix(vec3(themeU.gShade), vec3(themeU.gLit), smoothstep(0.09, 0.26, ink).mul(patch.mul(0.6).add(0.4)));
     const mixed: Node = mix(painted, gTone, themeU.on.mul(themeU.groundMix));
     const mixedL: Node = dot(mixed, vec3(0.299, 0.587, 0.114));
-    const paintedT: Node = mix(vec3(mixedL), mixed, mix(float(1), themeU.groundSat, themeU.on));
+    const grassy: Node = mix(vec3(mixedL), mixed, mix(float(1), themeU.groundSat, themeU.on));
+    // mảng đất trần (theme.dryMix): vùng màu đỉnh đỏ hơn xanh; tô đất painted nâu nhạt ấm (hai tông, giữ nét cọ), viền mềm, không nhiễu
+    const dryW: Node = smoothstep(DRY_LO, DRY_HI, vc.r.sub(vc.g)).mul(themeU.dryMix).mul(float(1).sub(pathW));
+    const earthLit = paintedColor('earth', 0);
+    const earthShade = paintedColor('earth', 1);
+    const earthTone: Node = mix(
+      vec3(earthShade.r, earthShade.g, earthShade.b),
+      vec3(earthLit.r, earthLit.g, earthLit.b),
+      smoothstep(0.09, 0.26, ink).mul(0.5).add(0.4),
+    );
+    const paintedT: Node = mix(grassy, earthTone, dryW);
     // đá/vách/tuyết đổi tông ở ALBEDO (vẫn qua đèn, bóng và pháp tuyến như Vân Lam), không đi qua emissive
     const rockInk: Node = dot(col.rgb, vec3(0.299, 0.587, 0.114));
     const rTone: Node = mix(vec3(themeU.rShade), vec3(themeU.rLit), smoothstep(0.1, 0.6, rockInk));

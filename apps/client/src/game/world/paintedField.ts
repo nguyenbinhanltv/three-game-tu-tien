@@ -1,5 +1,7 @@
 import * as THREE from 'three/webgpu';
-import { heightAt } from '../../base/levelCtx';
+import { heightAt, levelId } from '../../base/levelCtx';
+import { DRY_HI, DRY_LO, PAINTED_THEMES } from '../../render/painted/theme';
+import { terrainColor } from './terrainBuild';
 import { baseOf } from '../../base/quality';
 import { createBlades } from '../../render/painted/lab/blades';
 import { createFlowers, FLOWER_RING } from '../../render/painted/lab/flowers';
@@ -47,12 +49,22 @@ export class PaintedGameField implements GrassLayer {
     this.mesh.add(this.blades.group, this.flowers.group);
   }
 
+  private readonly tmpCol = new THREE.Color();
+  /** 0..1: mức đất trần ở (x, z), cùng quy tắc với shader đất (màu đỉnh đỏ hơn xanh, ngưỡng `DRY_LO..DRY_HI`). */
+  private dryAt(x: number, z: number, h: number, slope: number): number {
+    terrainColor(x, z, h, 1 / Math.hypot(1, slope), this.tmpCol);
+    const e = this.tmpCol.r - this.tmpCol.g;
+    const t = Math.min(1, Math.max(0, (e - DRY_LO) / (DRY_HI - DRY_LO)));
+    return t * t * (3 - 2 * t);
+  }
+
   /** Dựng một ô 16×16 m của lưới (độ cao, độ phủ cỏ theo luật cỏ thường, độ dốc) vào chỗ cuộn của nó. */
   private fillChunk(cx: number, cz: number): void {
     const d = this.lat.data;
     const x0 = cx * CT;
     const z0 = cz * CT;
     setGrassColliders(x0, z0, CT);
+    const dryK = PAINTED_THEMES[levelId()]?.dryMix ?? 0;
     const n = CT + 1;
     const hs = new Float64Array(n * n);
     for (let j = 0; j < n; j++) for (let i = 0; i < n; i++) hs[j * n + i] = heightAt(x0 + i + 0.5, z0 + j + 0.5);
@@ -64,6 +76,7 @@ export class PaintedGameField implements GrassLayer {
         const slopeG = (Math.abs(hs[j * n + i + 1]! - h) + Math.abs(hs[(j + 1) * n + i]! - h)) * 1.5;
         let dens = grassDensityAt(x + 0.5, z + 0.5, h, slopeG);
         if (dens > 0 && grassBlockedByCollider(x + 0.5, z + 0.5)) dens = 0;
+        if (dens > 0 && dryK > 0) dens *= 1 - dryK * this.dryAt(x + 0.5, z + 0.5, h, slopeG);
         const tx = wrapIdx(x);
         const tz = wrapIdx(z);
         const k = tz * REGION + tx;

@@ -30,6 +30,11 @@ export interface PaintedTheme {
   groundMix?: number;
   /** 0..1.5: bão hòa của đất sau khi đổi tông (mặc định 1). */
   groundSat?: number;
+  /**
+   * 0..1: mảng đất trần giữa cỏ. Nguồn mảng là màu đỉnh của địa hình (`terrainColor`: vùng đỏ hơn xanh, như cuuKieuArt.ts DRY/EARTH), cùng một hàm `dryAt` cho
+   * đất (tô đất painted nâu nhạt ấm, viền mềm) và cho lưới cỏ (thưa lá trên mảng đất). 0 = không (mặc định, như Vân Lam).
+   */
+  dryMix?: number;
   /** Sương thấp: dải cao độ (m) mà sương nằm dưới, từ đỉnh dải trở xuống; và cường độ 0..1. */
   mistBand: [number, number];
   mistK: number;
@@ -62,6 +67,7 @@ export const PAINTED_THEMES: Record<string, PaintedTheme> = {
     nightTint: [0.44, 0.52, 0.76],
     nightLift: 1.8,
     groundMix: 0.5,
+    dryMix: 0.9,
     groundSat: 0.7,
   },
 };
@@ -85,6 +91,7 @@ export const themeU = {
   nightTint: uniform(new THREE.Vector3(0.3, 0.46, 0.88)),
   groundMix: uniform(1),
   groundSat: uniform(1),
+  dryMix: uniform(0),
 };
 
 /** Chọn bảng cho level (gọi trước khi dựng/hiển thị địa hình). */
@@ -96,6 +103,7 @@ export function setPaintedTheme(levelId: string): void {
   themeU.nightTint.value.set(...(t?.nightTint ?? [0.3, 0.46, 0.88]));
   themeU.groundMix.value = t?.groundMix ?? 1;
   themeU.groundSat.value = t?.groundSat ?? 1;
+  themeU.dryMix.value = t?.dryMix ?? 0;
   if (t) {
     themeU.gLit.value.setHex(t.ground[0], THREE.SRGBColorSpace);
     themeU.gShade.value.setHex(t.ground[1], THREE.SRGBColorSpace);
@@ -115,3 +123,7 @@ export function paintedFarOn(levelId: string): boolean {
   if (FLAGS.style !== 'painted') return false;
   return FLAGS.far ?? PAINTED_THEMES[levelId]?.far !== undefined;
 }
+
+/** Ngưỡng độ đỏ-hơn-xanh (r − g của màu đỉnh tuyến tính) cho mảng đất trần: dưới `DRY_LO` là cỏ, trên `DRY_HI` là đất hẳn. Dùng chung shader đất và lưới cỏ. */
+export const DRY_LO = 0.02;
+export const DRY_HI = 0.07;
