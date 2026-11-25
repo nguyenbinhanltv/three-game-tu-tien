@@ -64,4 +64,12 @@ describe('isoreport', () => {
     expect(topHeavy(r, 'high', 1)[0]!.id).toBe('a/2');
     expect(toMarkdown(r)).toContain('| a/2 | 300 |');
   });
+  it('md ghi rõ khi là mô phỏng máy yếu', () => {
+    const r = { ...run([pt('a/1', 100, 2)]), emulation: { cpuThrottle: 4, igpu: true } };
+    const md = toMarkdown(r);
+    expect(md).toContain('MÔ PHỎNG');
+    expect(md).toContain('4×');
+    expect(md).toContain('iGPU');
+    expect(toMarkdown(run([pt('a/1', 100, 2)]))).not.toContain('MÔ PHỎNG');
+  });
 });

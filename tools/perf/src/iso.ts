@@ -12,6 +12,8 @@
 //                 [--only van_lam,kiem_trung,kieu_3,trib:do_kiep,fight] [--quick] [--igpu] [--noshadow] [--bots 10] [--dump-inst] [--query a=b] [--renderer webgpu|webgl2] [--channel chrome|chromium]
 // `--quick`: preset high, 2 giây/điểm, chỉ Vân Lam + một bí cảnh + một phòng cầu + cảnh đánh (cho máy người dùng tự chạy).
 // `--igpu`: ép GPU tiết kiệm điện (`--force_low_power_gpu`) để đo iGPU Intel/AMD nếu máy có.
+// `--cpu-throttle N`: làm chậm CPU N lần qua CDP (`Emulation.setCPUThrottlingRate`) để MÔ PHỎNG máy yếu (ví dụ 4 ≈ laptop tầm trung, 6 ≈ iGPU yếu).
+//   Đây là ƯỚC LƯỢNG chỉ về CPU: không mô phỏng băng thông/độ trễ GPU, nên không thay cho số đo máy thật; kết quả ghi `emulation` để khỏi nhầm.
 // Ra: iso-<ngày>.json + iso-<ngày>.md (+ so baseline) trong `--out` (mặc định bench/results). Server dev tự chạy ở cổng riêng và luôn tắt khi xong.
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
@@ -35,6 +37,7 @@ const [VW, VH] = size('1280x720');
 /** `--bots N`: chỉ đo cảnh đông người (N bot cấp 15 đánh quái quanh rừng Vân Lam, client đo đứng giữa): `van_lam/dong<N>`. */
 const BOTS = Number(opt('--bots', '0'));
 const NOSHADOW = flag('--noshadow');
+const CPU_THROTTLE = Math.max(1, Number(opt('--cpu-throttle', '1')) || 1);
 const EXTRA = opt('--query', '');
 const RENDERER = opt('--renderer', 'webgpu');
 const ONLY = list('--only', '');
@@ -473,6 +476,7 @@ async function runPreset(
   const ctx = await browser.newContext({ viewport: { width: VW, height: VH } });
   await ctx.addInitScript({ content: `globalThis.__name ??= (f) => f; (${initScript.toString()})(${JSON.stringify(preset)});` });
   const page = await ctx.newPage();
+  if (CPU_THROTTLE > 1) await (await ctx.newCDPSession(page)).send('Emulation.setCPUThrottlingRate', { rate: CPU_THROTTLE });
   watchErrors(page, { tag: preset, into: errors });
   // Byte ĐÃ GIẢI NÉN của mọi response từ Vite dev server (module TS chưa gộp, HMR, source map) tới lúc vào game: KHÔNG so được với ngân sách tải lần đầu
   // (đo bằng `pnpm bench:load` trên bản build có gzip). Ngắt listener sau khi chốt số để không giữ body suốt lần chạy.
@@ -607,6 +611,7 @@ async function main(): Promise<void> {
     backend: meta.backend ?? '?',
     viewport: `${VW}x${VH}`,
     quick: QUICK,
+    ...(CPU_THROTTLE > 1 || flag('--igpu') ? { emulation: { cpuThrottle: CPU_THROTTLE, igpu: flag('--igpu') } } : {}),
     devBytesMB: meta.devBytesMB ?? null,
     points,
     errors,
