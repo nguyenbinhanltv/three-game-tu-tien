@@ -30,7 +30,7 @@ import { LEVELS } from '@dtl/content';
 import { heightAt } from '../../base/levelCtx';
 import { getCloudNoise } from '../../render/noiseTex';
 import { DungeonFx } from './dungeonFx';
-import { frustumOf, outsideFrustum } from './reflectCull';
+import { frustumOf, mirrorOutsideFrustum } from './reflectCull';
 import { reflectionThrottle } from './reflectThrottle';
 
 /**
@@ -415,7 +415,9 @@ export class KinhNguyetArt {
         const camObj = (frame as { camera?: THREE.Camera } | undefined)?.camera;
         if (margin !== undefined && camObj && statics.length) {
           frustumOf(camObj, frustum);
-          const cull = statics.filter((s) => outsideFrustum(frustum, s.x, s.y, s.z, s.r, margin)).map((s) => s.o);
+          // Ảnh gương của vật (lật qua mặt sàn) có nằm trong khung nhìn chính không: phép thử chính xác cho phản chiếu phẳng.
+          const floorY = rf.target.position.y;
+          const cull = statics.filter((s) => mirrorOutsideFrustum(frustum, s.x, s.y, s.z, s.r, floorY, margin)).map((s) => s.o);
           if (cull.length) list = hidden.concat(cull);
         }
         const was = list.map((o) => o.visible);
