@@ -42,6 +42,12 @@ interface PropCfg {
    * xa hơn là impostor (`treeImpostor.ts`); mờ khi che giữa camera và nhân vật.
    */
   tree?: boolean;
+  /**
+   * Prop dày không phải cây (tre, dương xỉ, đá dựng/nằm): dùng cùng cơ chế từng-bản với cây (cắt khung nhìn + LOD theo khoảng cách của
+   * chính bản, pool loài × mức) thay vì LOD theo tâm ô 256 m, nơi cả ô cách camera vài chục m vẽ LOD0 kể cả phần ngoài màn hình
+   * (`dump-inst` van_lam/rung: tre + dương xỉ = 71% đỉnh instanced). Không có impostor: quá `range` thì tắt.
+   */
+  dense?: boolean;
   /** Cây/tre/tùng cao không dùng hệ cây (impostor): chỉ mờ khi che giữa camera và nhân vật/mục tiêu (camera chéo: cây khổng lồ che cả khung). */
   sight?: boolean;
 }
@@ -49,6 +55,8 @@ interface PropCfg {
 /** Ô cây cách camera dưới ngưỡng này (m, ở preset Vừa) dùng mesh 3D, xa hơn dùng impostor; impostor bỏ ở `TREE_RANGE`. */
 const TREE_START = 220;
 const TREE_RANGE = 1150;
+/** Tầm xa nhất của prop `dense` (m, preset Vừa) để chọn ô ứng viên: lớn nhất trong PROP_CFG (`prop_da_dung`). */
+const DENSE_REACH = 300;
 
 export const PROP_CFG: Record<string, PropCfg> = {
   prop_co_thu: { range: 520, lod: [55, 125], shadow: true, tree: true },
@@ -56,16 +64,16 @@ export const PROP_CFG: Record<string, PropCfg> = {
   prop_soi_nui: { range: 460, lod: [40, 100], shadow: true, tree: true },
   prop_anh_dao: { range: 460, lod: [35, 90], shadow: true, tree: true },
   prop_phong_do: { range: 460, lod: [40, 100], shadow: true, tree: true },
-  prop_truc: { range: 220, lod: [40, 100], decor: true, sight: true },
-  prop_da_dung: { range: 300, lod: [60, 140], sight: true },
-  prop_da_nam: { range: 240, lod: [45, 110], sight: true },
+  prop_truc: { range: 220, lod: [40, 100], decor: true, sight: true, dense: true },
+  prop_da_dung: { range: 300, lod: [60, 140], sight: true, dense: true },
+  prop_da_nam: { range: 240, lod: [45, 110], sight: true, dense: true },
   prop_da_phien: { range: 200, lod: [35, 90] },
   prop_den_da: { range: 260, lod: [40, 110] },
   prop_bia_da: { range: 200, lod: [35, 90] },
   prop_tuong_canh: { range: 220, lod: [40, 100] },
   prop_lu_huong: { range: 220, lod: [40, 100] },
   prop_kiem_gay: { range: 260, lod: [45, 120] },
-  prop_duong_xi: { range: 120, lod: [20, 55], decor: true },
+  prop_duong_xi: { range: 120, lod: [20, 55], decor: true, dense: true },
   prop_lau: { range: 150, lod: [25, 70], decor: true },
   // Đoạn Mạch Cổ Cốc (PROP_LIB, E2-A)
   prop_mach_tinh_tru: { range: 380, lod: [50, 120], sight: true },
@@ -254,6 +262,31 @@ interface TreeSlot {
   col: Float32Array;
 }
 
+/** Bán kính bao một cây (m, theo hệ số cỡ `s`): tán cây lớn nhất ~ 16 m ở s = 1. */
+const TREE_R = 16;
+/** Dư thêm quanh khung nhìn (m): cây ngoài khung vẫn đổ bóng vào khung khi preset có bóng, và camera chưa kịp cập nhật giữa hai lần chọn. */
+const VIEW_MARGIN = 10;
+const VIEW_MARGIN_SHADOW = 32;
+
+/**
+ * Cây có nằm trong (hoặc sát) khung nhìn không. Pool cây là InstancedMesh KHÔNG cắt theo từng instance (`frustumCulled = false`),
+ * nên cây ngoài màn hình vẫn bị GPU xử lý đỉnh và vẫn tính vào số tam giác; camera chéo khóa góc chỉ thấy vài chục mét quanh
+ * nhân vật mà ô cây 3D kéo tới ~250 m. Cắt ở đây trước khi chép ma trận vào pool.
+ */
+export function treeInView(
+  frustum: THREE.Frustum,
+  sphere: THREE.Sphere,
+  x: number,
+  y: number,
+  z: number,
+  s: number,
+  margin: number,
+): boolean {
+  sphere.center.set(x, y + TREE_R * 0.4 * s, z);
+  sphere.radius = TREE_R * s + margin;
+  return frustum.intersectsSphere(sphere);
+}
+
 /** Sức chứa mỗi InstancedMesh của pool (cây gần camera < ~1000 mỗi loài mỗi mức). */
 const POOL_CAP = 1024;
 
@@ -326,6 +359,16 @@ export class PropLayer {
   private lastVis = 0;
   /** Lần cập nhật trước đã gán đủ cây (không còn chờ asset): mới được bỏ qua khi camera đứng yên. */
   private poolReady = false;
+  private readonly frustum = new THREE.Frustum();
+  private readonly pv = new THREE.Matrix4();
+  private readonly sph = new THREE.Sphere();
+  private readonly lastView = new Float32Array(16);
+  private readonly lastProj = new Float32Array(2);
+  /** Khung nhìn dùng cho lần chọn cây trước (null = không cắt). */
+  private viewCulled = false;
+  private denseOn = false;
+  /** Số cây 3D được chép vào pool ở lần chọn gần nhất (đo hiệu quả cắt). */
+  treesDrawn = 0;
   /** Hệ số điều tiết tầm Cực cao theo tải tam giác (1 = đủ tầm, nhỏ hơn khi gần trần 2,5M). */
   private govern = 1;
   /** pool[id][k] = các InstancedMesh (mỗi mesh của asset ở mức LOD k) dùng chung cho mọi cây loài `id` ở mức k. */
@@ -340,10 +383,15 @@ export class PropLayer {
     this.group.name = 'props';
     const buckets = new Map<string, Cell>();
     const trees: PropInstance[] = [];
+    const dense: PropInstance[] = [];
     for (const p of instances) {
       if (!PROP_CFG[p.id]) continue;
       if (PROP_CFG[p.id]!.tree) {
         trees.push(p);
+        continue;
+      }
+      if (PROP_CFG[p.id]!.dense) {
+        dense.push(p);
         continue;
       }
       // Lưới ô lệch nửa ô: tâm Lạc Kiếm Tông (x = 2048) và trục đại lộ không còn nằm đúng ranh ô, nên mỗi loại prop không bị tách làm 2–4 InstancedMesh (draw call).
@@ -376,8 +424,8 @@ export class PropLayer {
       for (const p of c.items) c.radius = Math.max(c.radius, Math.hypot(p.x - c.cx, p.z - c.cz) + 12 * p.s);
       this.cells.push(c);
     }
-    if (trees.length) {
-      for (const p of trees) {
+    if (trees.length || dense.length) {
+      for (const p of [...trees, ...dense]) {
         const k = `${Math.floor(p.x / CHUNK)}|${Math.floor(p.z / CHUNK)}`;
         let ch = this.treeChunks.get(k);
         if (!ch) {
@@ -387,9 +435,12 @@ export class PropLayer {
         ch.items.push(p);
         ch.species.add(p.id);
       }
-      this.treeCount = trees.length;
-      this.impostors = new ImpostorLayer(trees);
-      this.group.add(this.impostors.group);
+      this.treeCount = trees.length + dense.length;
+      this.denseOn = dense.length > 0;
+      if (trees.length) {
+        this.impostors = new ImpostorLayer(trees);
+        this.group.add(this.impostors.group);
+      }
     }
   }
 
@@ -448,7 +499,7 @@ export class PropLayer {
   }
 
   /** Gọi mỗi khung: chọn ô trong tầm, nạp asset, đặt mức LOD. Việc nặng chạy ~4 lần/giây. */
-  update(dt: number, camX: number, camZ: number): void {
+  update(dt: number, camX: number, camZ: number, camera?: THREE.Camera): void {
     this.acc += dt;
     if (this.acc < 0.25) return;
     this.acc = 0;
@@ -472,7 +523,7 @@ export class PropLayer {
       this.setLevel(c, Math.min(lv, t.lods.length - 1));
       if (c.meshes && c.level >= 0) vis += c.meshes[c.level]!.length;
     }
-    if (this.impostors) vis += this.updateTrees(camX, camZ, scale);
+    if (this.treeChunks.size) vis += this.updateTrees(camX, camZ, scale, camera);
     this.visibleMeshes = vis;
   }
 
@@ -482,44 +533,88 @@ export class PropLayer {
    * ImpostorLayer vẽ (cùng quy tắc theo ô nên không chồng, không hở). Asset loài nào chưa nạp xong (hoặc lỗi) thì tắt
    * pool và để impostor che cả ở gần. Trả về số mesh đang hiện.
    */
-  private updateTrees(camX: number, camZ: number, scale: number): number {
+  private updateTrees(camX: number, camZ: number, scale: number, camera?: THREE.Camera): number {
     const start = TREE_START * scale;
-    if (this.poolReady && Math.hypot(camX - this.lastX, camZ - this.lastZ) < 2 && scale === this.lastScale) return this.lastVis;
+    const view = camera ? camera.matrixWorld.elements : null;
+    let viewMoved = (view !== null) !== this.viewCulled;
+    // Camera xoay/đổi FOV (cắt cảnh, rung) thì chọn lại; tịnh tiến đã có ngưỡng 2 m bên dưới.
+    if (view && !viewMoved)
+      for (const i of [0, 1, 2, 4, 5, 6, 8, 9, 10]) if (Math.abs(view[i]! - this.lastView[i]!) > 1e-3) viewMoved = true;
+    // FOV/zoom chỉ đổi ma trận chiếu (không đổi matrixWorld): so thêm các phần tử tỉ lệ x/y (0, 5).
+    if (camera && !viewMoved) {
+      const pe = camera.projectionMatrix.elements;
+      if (Math.abs(pe[0]! - this.lastProj[0]!) > 1e-4 || Math.abs(pe[5]! - this.lastProj[1]!) > 1e-4) viewMoved = true;
+    }
+    if (this.poolReady && !viewMoved && Math.hypot(camX - this.lastX, camZ - this.lastZ) < 2 && scale === this.lastScale)
+      return this.lastVis;
+    if (camera) {
+      camera.updateMatrixWorld();
+      this.pv.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
+      this.frustum.setFromProjectionMatrix(this.pv, camera.coordinateSystem);
+      this.lastView.set(camera.matrixWorld.elements);
+      this.lastProj[0] = camera.projectionMatrix.elements[0]!;
+      this.lastProj[1] = camera.projectionMatrix.elements[5]!;
+    }
+    this.viewCulled = !!camera;
+    const margin = this.shadows ? VIEW_MARGIN_SHADOW : VIEW_MARGIN;
+    this.treesDrawn = 0;
     const near: TreeChunk[] = [];
     let pending = false;
+    let denseWait = false;
+    const reach = this.denseOn ? Math.max(start, DENSE_REACH * scale) : start;
     for (const ch of this.treeChunks.values()) {
       const d = Math.hypot(ch.cx - camX, ch.cz - camZ);
-      if (d >= start + LOAD_MARGIN) continue;
+      if (d >= reach + LOAD_MARGIN) continue;
       // Chọn theo từng cây (khoảng cách của chính cây < start); ô có tâm trong start + nửa đường chéo ô là ứng viên.
-      for (const id of ch.species) if (!this.ensureTemplate(id, ch.cx, ch.cz, true) && d < start + CHUNK * 0.71) pending = true;
-      if (d < start + CHUNK * 0.71) near.push(ch);
+      for (const id of ch.species) {
+        const cfg = PROP_CFG[id]!;
+        if (cfg.dense) {
+          // prop dense: nạp khi ô vào tầm của loài; chưa nạp xong thì chỉ loài đó vắng, không chặn cây.
+          const inRange = d < cfg.range * scale + CHUNK * 0.71;
+          if (
+            !(cfg.decor && this.quality === 'low') &&
+            !this.ensureTemplate(id, ch.cx, ch.cz, inRange || d < cfg.range * scale + LOAD_MARGIN) &&
+            inRange
+          )
+            denseWait = true;
+        } else if (!this.ensureTemplate(id, ch.cx, ch.cz, d < start + LOAD_MARGIN) && d < start + CHUNK * 0.71) pending = true;
+      }
+      if (d < reach + CHUNK * 0.71) near.push(ch);
     }
     this.impostors?.update(camX, camZ, start, TREE_RANGE * scale, pending);
     this.lastX = camX;
     this.lastZ = camZ;
     this.lastScale = scale;
-    this.poolReady = !pending;
+    this.poolReady = !pending && !denseWait;
     // Mọi slot về 0 trước khi gán lại.
     const counts = new Map<TreeSlot, number>();
     for (const levels of this.pool.values()) for (const slots of levels) for (const sl of slots) counts.set(sl, 0);
-    if (!pending) {
-      for (const ch of near) {
-        if (!ch.mat) this.bakeTreeChunk(ch);
-        for (let i = 0; i < ch.items.length; i++) {
-          const p = ch.items[i]!;
-          const levels = this.poolOf(p.id);
-          if (!levels) continue;
-          const cfg = PROP_CFG[p.id]!;
-          const d = Math.hypot(p.x - camX, p.z - camZ);
-          if (d >= start) continue;
-          const k = Math.min(d < cfg.lod[0] * scale ? 0 : d < cfg.lod[1] * scale ? 1 : 2, levels.length - 1);
-          for (const sl of levels[k]!) {
-            const n = counts.get(sl) ?? 0;
-            if (n >= POOL_CAP) continue;
-            sl.mat.set((ch.mat as Float32Array).subarray(i * 16, i * 16 + 16), n * 16);
-            sl.col.set((ch.col as Float32Array).subarray(i * 3, i * 3 + 3), n * 3);
-            counts.set(sl, n + 1);
-          }
+    for (const ch of near) {
+      if (!ch.mat) this.bakeTreeChunk(ch);
+      if (camera) {
+        // Cả ô ngoài khung: bỏ qua (bán kính 128 m phủ nửa đường chéo ô + chênh cao địa hình).
+        this.sph.center.set(ch.cx, ch.items[0]!.y, ch.cz);
+        this.sph.radius = CHUNK + margin;
+        if (!this.frustum.intersectsSphere(this.sph)) continue;
+      }
+      for (let i = 0; i < ch.items.length; i++) {
+        const p = ch.items[i]!;
+        if (camera && !treeInView(this.frustum, this.sph, p.x, p.y, p.z, p.s, margin)) continue;
+        const cfg = PROP_CFG[p.id]!;
+        if (cfg.dense ? cfg.decor && this.quality === 'low' : pending) continue;
+        const levels = this.poolOf(p.id);
+        if (!levels) continue;
+        const d = Math.hypot(p.x - camX, p.z - camZ);
+        if (d >= (cfg.dense ? cfg.range * scale : start)) continue;
+        const l0 = cfg.lod[0] * scale * (cfg.dense ? FLAGS.propLod0 : 1);
+        const k = Math.min(d < l0 ? 0 : d < cfg.lod[1] * scale ? 1 : 2, levels.length - 1);
+        for (const sl of levels[k]!) {
+          const n = counts.get(sl) ?? 0;
+          if (n >= POOL_CAP) continue;
+          sl.mat.set((ch.mat as Float32Array).subarray(i * 16, i * 16 + 16), n * 16);
+          sl.col.set((ch.col as Float32Array).subarray(i * 3, i * 3 + 3), n * 3);
+          counts.set(sl, n + 1);
+          if (sl === levels[k]![0]) this.treesDrawn++;
         }
       }
     }
