@@ -85,7 +85,7 @@ def decimate_body(o, target):
     return sum(len(p.vertices) - 2 for p in o.data.polygons)
 
 
-ARM_RE = re.compile(r'^(upperarm|lowerarm|hand|thumb|index|middle|ring|pinky)(_|$).*_([lr])$')  # chuỗi tay Mannequin (cả xoắn, ngón), không gồm đòn gánh
+ARM_RE = re.compile(r'^(upperarm|lowerarm|hand|thumb|index|middle|ring|pinky)_(?:.*_)?([lr])$')  # chuỗi tay Mannequin (cả xoắn, ngón), không gồm đòn gánh
 
 
 def match_arms(arm, mesh, ref_mesh):
@@ -114,7 +114,7 @@ def match_arms(arm, mesh, ref_mesh):
         for vi, v in enumerate(mesh.data.vertices):
             for ge in v.groups:
                 m = ARM_RE.match(gname.get(ge.group, ''))
-                if m and m.group(3) == sd:
+                if m and m.group(2) == sd:
                     w[vi] += ge.weight
         plans.append((sd, sh, R, np.clip(w, 0, 1)))
     newP = P.copy()
@@ -130,7 +130,7 @@ def match_arms(arm, mesh, ref_mesh):
     for sd, sh, R, w in plans:
         for eb in arm.data.edit_bones:
             m = ARM_RE.match(eb.name)
-            if m and m.group(3) == sd:
+            if m and m.group(2) == sd:
                 for attr in ('head', 'tail'):
                     pw = np.array(Mw @ getattr(eb, attr))
                     setattr(eb, attr, Mi @ Vector(R @ (pw - sh) + sh))
