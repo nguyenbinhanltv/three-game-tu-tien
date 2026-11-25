@@ -25,9 +25,11 @@ describe('VFX Đao tu', () => {
     }
   });
 
-  it('không có timeline cho chiêu tư thế (mượn hình chiêu nền) hay chiêu lướt', () => {
-    for (const s of METHOD_SKILLS.filter((x) => x.method === METHOD && (x.stanceOf || x.kind === 'dash')))
+  it('chiêu tư thế mượn hình chiêu nền vẫn không có timeline; chiêu lướt Phá Phong Tiễn có timeline riêng kích theo S.FX (Họa Pháp Lô 2)', () => {
+    for (const s of METHOD_SKILLS.filter((x) => x.method === METHOD && (x.stanceOf || x.kind === 'dash') && x.id !== 'skl_pha_phong_tien'))
       expect(FX_TIMELINE.has(s.id), s.id).toBe(false);
+    const dash = FX_TIMELINE.get('skl_pha_phong_tien')!;
+    expect([dash.trigger, dash.fxKind, dash.method]).toEqual(['fx', 'dash', METHOD]);
   });
 
   it('không che camera/nhân vật/mục tiêu: khối đứng hoặc rơi cao và mọi tảng đá đều camFade; đá có trần 2,2 m', () => {

@@ -65,38 +65,6 @@ const procedural = [
     source2: 'anim/ual/ual2/Universal Animation Library 2[Standard]/Unreal-Godot/UAL2_Standard.glb',
   },
   // Nhân vật v3 (N-0): lưới nguyên khối → xương UE5 Mannequin (chr_v3.py). `extra` = đối số thêm, `template` = UAL1 để lấy bộ xương mẫu.
-  // Lạc Kiếm Môn Phục v3 (N-3): hai model Tripo toàn thân không xương (người dùng dựng), tự ước lượng mốc (`--auto`), lò xo vạt (`repo:` = đường dẫn trong repo).
-  ...['nam', 'nu'].map((g) => ({
-    id: `chr_v3_lac_kiem_${g}`,
-    script: 'tools/blender/chr_v3.py',
-    source: `3d/nhan-vat/set_lac_kiem/tripo/raw_v3_${g}.glb`,
-    template: 'anim/ual/ual1/Universal Animation Library[Standard]/Unreal-Godot/UAL1_Standard.glb',
-    extra: [
-      '--id',
-      `chr_v3_lac_kiem_${g}`,
-      '--auto',
-      '--height',
-      g === 'nam' ? '1.84' : '1.70',
-      '--springs',
-      'repo:tools/blender/skins/v3_lac_kiem_springs.json',
-    ],
-  })),
-  // Lạc Kiếm Môn Phục v3b: vạt xẻ hai bên đối xứng (concept v3b), cùng cấu hình lò xo/vạt với v3; asset v3 cũ giữ để so.
-  ...['nam', 'nu'].map((g) => ({
-    id: `chr_v3b_lac_kiem_${g}`,
-    script: 'tools/blender/chr_v3.py',
-    source: `3d/nhan-vat/set_lac_kiem/tripo/raw_v3b_${g}.glb`,
-    template: 'anim/ual/ual1/Universal Animation Library[Standard]/Unreal-Godot/UAL1_Standard.glb',
-    extra: [
-      '--id',
-      `chr_v3b_lac_kiem_${g}`,
-      '--auto',
-      '--height',
-      g === 'nam' ? '1.84' : '1.70',
-      '--springs',
-      'repo:tools/blender/skins/v3_lac_kiem_springs.json',
-    ],
-  })),
   // Lạc Kiếm Môn Phục v3b2: cùng model Tripo v3b, vạt 12 chuỗi lò xo (v3b giữ nguyên để so); phần còn lại ở client (`mannequin.ts`, cờ theo tiền tố `chr_v3b2`).
   ...['nam', 'nu'].map((g) => ({
     id: `chr_v3b2_lac_kiem_${g}`,

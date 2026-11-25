@@ -22,6 +22,7 @@ import {
 } from '../lib/game';
 import type { Scenario } from '../lib/scenario';
 import { snap, snapSizes, UI_SIZES, writeJson } from '../lib/shot';
+import { at } from '@dtl/shared';
 
 interface View {
   name: string;
@@ -229,7 +230,7 @@ export default {
       await gm(page, `tp ${c.x} ${c.z}`, 600);
       await cam(page, { yaw: yawTo(0, -1), pitch: 0.42, dist: 26 });
       for (const sz of sizes) {
-        const [width, height] = UI_SIZES[sz] ?? UI_SIZES['1080p'];
+        const [width, height] = UI_SIZES[sz] ?? at(UI_SIZES, '1080p', 'UI_SIZES');
         await page.setViewportSize({ width, height });
         await sleep(700);
         await page.evaluate('window.__game?.doKiepArt?.strike(); window.__game?.post?.flash(0.3)');
