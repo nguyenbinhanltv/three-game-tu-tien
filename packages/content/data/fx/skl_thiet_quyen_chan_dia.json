@@ -155,6 +155,23 @@
    "tier": 1
   },
   {
+   "type": "decal",
+   "tex": "crack",
+   "t": 0.06,
+   "r": 6,
+   "dur": 1.4,
+   "at": "target",
+   "offset": [
+    0,
+    0,
+    0
+   ],
+   "grow": 0.25,
+   "tone": "core",
+   "alpha": 0.41,
+   "tier": 1
+  },
+  {
    "type": "mesh",
    "t": -0.28,
    "dur": 0.28,
@@ -174,8 +191,8 @@
     4.4,
     0
    ],
-   "scale": 1.12,
-   "scaleTo": 1.61
+   "scale": 0.98,
+   "scaleTo": 1.41
   },
   {
    "type": "particles",
@@ -216,8 +233,8 @@
     4,
     0
    ],
-   "scale": 3.02,
-   "scaleTo": 3.68,
+   "scale": 2.64,
+   "scaleTo": 3.22,
    "move": {
     "to": "target",
     "offset": [
@@ -242,7 +259,7 @@
    ],
    "grow": 0.25,
    "tone": "core",
-   "alpha": 0.41,
+   "alpha": 0.31,
    "tier": 1
   },
   {
@@ -265,8 +282,8 @@
     0.4,
     0
    ],
-   "scale": 5.25,
-   "scaleTo": 6.4
+   "scale": 4.59,
+   "scaleTo": 5.6
   },
   {
    "type": "mesh",
@@ -288,8 +305,8 @@
     1.6,
     0
    ],
-   "scale": 4,
-   "scaleTo": 4
+   "scale": 3.5,
+   "scaleTo": 3.5
   },
   {
    "type": "mesh",
@@ -311,14 +328,31 @@
     1.2,
     0
    ],
-   "scale": 1.92,
-   "scaleTo": 2.4
+   "scale": 1.68,
+   "scaleTo": 2.1
   },
   {
    "type": "decal",
    "tex": "scorch",
    "t": 0.04,
    "r": 3,
+   "dur": 2,
+   "at": "target",
+   "offset": [
+    0,
+    0.02,
+    0
+   ],
+   "grow": 0.1,
+   "tone": "shadow",
+   "alpha": 0.78,
+   "tier": 0
+  },
+  {
+   "type": "decal",
+   "tex": "scorch",
+   "t": 0.05,
+   "r": 3.4,
    "dur": 2,
    "at": "target",
    "offset": [
@@ -351,8 +385,8 @@
     1.4,
     0
    ],
-   "scale": 2.72,
-   "scaleTo": 2.72,
+   "scale": 2.38,
+   "scaleTo": 2.38,
    "move": {
     "to": "target",
     "offset": [
@@ -416,8 +450,8 @@
      0.4,
      0
     ],
-    "scale": 8.8,
-    "scaleTo": 8.8
+    "scale": 7.7,
+    "scaleTo": 7.7
    }
   ],
   "slow": [
@@ -441,8 +475,8 @@
      0.8,
      0
     ],
-    "scale": 3.2,
-    "scaleTo": 3.2
+    "scale": 2.8,
+    "scaleTo": 2.8
    }
   ]
  }

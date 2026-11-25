@@ -25,15 +25,15 @@ const mesh = (o) => ({
 let K = 1;
 const SCALE = {
   skl_thiet_bich_xung: 0.68,
-  skl_tran_son_an: 0.65,
+  skl_tran_son_an: 0.58,
   skl_kim_cuong_bat_hoai: 1,
-  skl_thiet_quyen_chan_dia: 0.8,
+  skl_thiet_quyen_chan_dia: 0.7,
   skl_kim_chung_tran: 1,
   skl_son_nhac_hoa_than: 0.92,
   skl_dich_son_xung: 0.55,
   skl_anh_thiet_than: 1,
   skl_thuan_di_ho_the: 0.82,
-  skl_thien_kim_phap_tuong: 0.68,
+  skl_thien_kim_phap_tuong: 0.6,
 };
 /** Hệ số alpha thân theo chiêu (không áp cho chớp `hp_flash`). */
 let A = 1;
@@ -113,7 +113,7 @@ const scorch = (at, off, r, t = 0, dur = 1.6) => ({
   alpha: 0.78,
   tier: 0,
 });
-/** Mép vùng tác dụng THẬT (server `radius`): decal nứt đất mờ trải tới bán kính `r` m để người chơi đọc đúng tầm; alpha 0,41 làm dấu để chạy lại không nhân đôi. */
+/** Mép vùng tác dụng THẬT (server `radius`): decal nứt đất mờ trải tới bán kính `r` m để người chơi đọc đúng tầm; alpha 0,31 làm dấu để chạy lại không nhân đôi. */
 const zoneEdge = (at, r, t = 0.05) => ({
   type: 'decal',
   tex: 'crack',
@@ -124,7 +124,7 @@ const zoneEdge = (at, r, t = 0.05) => ({
   offset: [0, 0, 0],
   grow: 0.25,
   tone: 'core',
-  alpha: 0.41,
+  alpha: 0.31,
   tier: 1,
 });
 const ground = (at, off, size, t = 0.02, o = {}) =>
@@ -177,6 +177,7 @@ const SPEC = {
     sprite('hp_rubble', { t: 0.08, dur: 0.8, off: [0, 1.6, 0], size: 5, alpha: 0.85, erodeFrom: 0.3 }),
     flash('target', [0, 1.2, 0], 2.4, 0.04, { dur: 0.14 }),
     scorch('target', [0, 0.02, 0], 3, 0.04, 2),
+    scorch('target', [0, 0.02, 0], 3.4, 0.05, 2),
     after('target', [0, 1.4, 0], 3.4, 0.22, 1.4),
     sparks('target', [0, 1.3, 0], 12, 0.02),
   ],
@@ -216,6 +217,7 @@ const SPEC = {
     scorch('ahead', [0, 0.02, 3], 3.4, 0, 1.4),
     scorch('ahead', [0, 0.02, 3], 2.89, 0, 1.4),
     scorch('ahead', [0, 0.02, 6], 3.6, 0.03, 1.4),
+    scorch('ahead', [0, 0.02, 4.5], 4.2, 0.02, 1.4),
     after('ahead', [0, 1.1, 6], 3, 0.22, 1),
   ],
   // Anh Thiết Thân: bóng giáp trụ cổ phong trong suốt đứng che sau lưng, mắt xích vàng nối tới đồng đội.
@@ -319,7 +321,7 @@ for (const id of ids) {
       e.type !== 'mesh' &&
       !(e.type === 'decal' && e.tex === 'rune') &&
       !(e.type === 'decal' && e.tex === 'scorch' && e.alpha === 0.78) &&
-      !(e.type === 'decal' && e.tex === 'crack' && e.alpha === 0.41) &&
+      !(e.type === 'decal' && e.tex === 'crack' && e.alpha === 0.31) &&
       !(e.type === 'particles' && e.tier === 1 && e.tone === 'rim' && e.kind === 'spark'),
   );
   for (const e of t.events) if (e.type === 'flash' && FLASH_CAP[id] !== undefined) e.amount = Math.min(e.amount, FLASH_CAP[id]);
