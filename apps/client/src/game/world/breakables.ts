@@ -1,5 +1,5 @@
 import * as THREE from 'three/webgpu';
-import { tierRank, type HitTier } from '@dtl/shared';
+import { tierRank, TC_ORIGIN, type HitTier } from '@dtl/shared';
 import { heightAt } from '../../base/levelCtx';
 
 /**
@@ -13,7 +13,7 @@ import { heightAt } from '../../base/levelCtx';
  * - Điểm va chạm do nơi gọi đưa vào (`hit(x, z, r, tier)`): đòn trúng quái thì tại quái; chiêu ra đòn thì tại điểm trước mặt người đánh.
  */
 
-export type BreakKind = 'jar' | 'dummy' | 'stake';
+export type BreakKind = 'jar' | 'dummy' | 'stake' | 'rock';
 
 export interface BreakKindDef {
   /** Bán kính thân (m) cộng vào bán kính đòn khi xét trúng. */
@@ -32,6 +32,7 @@ export const BREAK_KINDS: Record<BreakKind, BreakKindDef> = {
   jar: { radius: 0.45, minTier: 'medium', respawn: 25, debris: 12, color: '#8a6a4a' },
   dummy: { radius: 0.6, minTier: 'medium', respawn: 30, debris: 16, color: '#6b4a30' },
   stake: { radius: 0.35, minTier: 'medium', respawn: 20, debris: 8, color: '#7a5a3a' },
+  rock: { radius: 0.5, minTier: 'medium', respawn: 30, debris: 10, color: '#7d7a72' },
 };
 
 export interface BreakableSpec {
@@ -42,7 +43,15 @@ export interface BreakableSpec {
   yaw: number;
 }
 
-/** Vật vỡ theo level. Lạc Kiếm Tông (sân luyện võ phía đông bệ trung tâm, quanh điểm xuất hiện 2048, 2088). */
+/** Tọa độ thế giới từ tọa độ tương đối tâm tông môn (cùng hệ với `SCENE_GLB`). */
+const rel = (x: number, z: number): { x: number; z: number } => ({ x: TC_ORIGIN.x + x, z: TC_ORIGIN.z + z });
+const brk = (id: string, kind: BreakKind, x: number, z: number, yaw: number): BreakableSpec => ({ id, kind, ...rel(x, z), yaw });
+
+/**
+ * Vật vỡ theo level (M5: bố cục). Lạc Kiếm Tông: sân luyện võ phía đông bệ trung tâm (quanh điểm xuất hiện), rồi rải theo các tiểu cảnh
+ * để chỗ nào đánh nhau cũng có thứ vỡ: vò bên đại lộ gần cổng bài, đá nhỏ bờ ao sen, cọc quanh kiếm bia, đá nhỏ thạch lâm, đá bên lối men vách.
+ * Không va chạm (chỉ hình), nên đặt cách lối đi chính và prop ≥ 1,2 m cho khỏi chồng hình (test `breakables.test.ts`).
+ */
 export const BREAKABLES_BY_LEVEL: Record<string, BreakableSpec[]> = {
   van_lam: [
     { id: 'vl_jar_a', kind: 'jar', x: 2052.2, z: 2092.6, yaw: 0.4 },
@@ -50,6 +59,25 @@ export const BREAKABLES_BY_LEVEL: Record<string, BreakableSpec[]> = {
     { id: 'vl_jar_c', kind: 'jar', x: 2051.6, z: 2093.9, yaw: 3.1 },
     { id: 'vl_dummy', kind: 'dummy', x: 2044.2, z: 2092.8, yaw: 0.6 },
     { id: 'vl_stake', kind: 'stake', x: 2046.6, z: 2094.4, yaw: 0 },
+    // cổng bài: vò bên ngoài hàng đèn đá (x = ±6,5)
+    brk('vl_cb_jar_a', 'jar', -9.5, 106, 0.8),
+    brk('vl_cb_jar_b', 'jar', -10.7, 107.3, 2.4),
+    brk('vl_cb_jar_c', 'jar', 9.8, 104, 1.3),
+    // ao sen: đá nhỏ bờ nam và vò bờ đông bắc
+    brk('vl_as_rock_a', 'rock', -66, 80, 0.5),
+    brk('vl_as_rock_b', 'rock', -58.5, 81, 2.2),
+    brk('vl_as_jar', 'jar', -49.5, 53, 0.3),
+    // kiếm bia: ba cọc tập và một bia người rơm quanh bãi kiếm gãy
+    brk('vl_kb_stake_a', 'stake', 60, 54, 0),
+    brk('vl_kb_stake_b', 'stake', 66.5, 50, 0),
+    brk('vl_kb_stake_c', 'stake', 72.5, 52, 0),
+    brk('vl_kb_dummy', 'dummy', 79, 59, 3.5),
+    // thạch lâm: đá nhỏ lẫn giữa đá tảng
+    brk('vl_tl_rock_a', 'rock', 91, -9.5, 0.2),
+    brk('vl_tl_rock_b', 'rock', 99.5, -9.5, 1.7),
+    brk('vl_tl_rock_c', 'rock', 94, 1, 4.1),
+    // lối men vách
+    brk('vl_lv_rock', 'rock', -101, 52, 2.9),
   ],
 };
 
@@ -192,7 +220,11 @@ export class Breakables {
     const body = new THREE.CylinderGeometry(0.28, 0.32, 0.9, 10);
     const arm = new THREE.BoxGeometry(1.0, 0.1, 0.1);
     const stake = new THREE.CylinderGeometry(0.1, 0.14, 1.1, 8);
-    this.geos.push(jar, jarBand, post, body, arm, stake, this.shardGeo);
+    const rock = new THREE.IcosahedronGeometry(0.42, 0);
+    rock.scale(1, 0.7, 0.9);
+    const stone = new THREE.MeshStandardMaterial({ color: BREAK_KINDS.rock.color, roughness: 0.95, flatShading: true });
+    this.mats.push(stone);
+    this.geos.push(jar, jarBand, post, body, arm, stake, rock, this.shardGeo);
     for (const spec of specs) {
       const g = new THREE.Group();
       g.position.set(spec.x, heightAt(spec.x, spec.z), spec.z);
@@ -213,6 +245,10 @@ export class Breakables {
         const a = new THREE.Mesh(arm, wood);
         a.position.y = 1.25;
         g.add(a);
+      } else if (spec.kind === 'rock') {
+        const r = new THREE.Mesh(rock, stone);
+        r.position.y = 0.26;
+        g.add(r);
       } else {
         const s = new THREE.Mesh(stake, wood);
         s.position.y = 0.55;
