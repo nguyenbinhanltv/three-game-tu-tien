@@ -4,6 +4,7 @@ import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import { ROOT } from './lib/devserver';
+import { at } from '@dtl/shared';
 
 const argv = process.argv.slice(2);
 const take = (n: string, d: string): string => {
@@ -16,7 +17,12 @@ const take = (n: string, d: string): string => {
 const RUNS = Number(take('--runs', '5'));
 const TAG = take('--tag', 'run');
 const pass = argv.length ? argv : ['--bots', '50', '--scenes', 'rung', '--renderers', 'webgpu', '--presets', 'medium', '--seconds', '12'];
-const med = (a: number[]): number => [...a].sort((x, y) => x - y)[Math.floor(a.length / 2)];
+const med = (a: number[]): number =>
+  at(
+    [...a].sort((x, y) => x - y),
+    Math.floor(a.length / 2),
+    'bảng',
+  );
 const p95s: number[] = [];
 const p50s: number[] = [];
 const draws: number[] = [];

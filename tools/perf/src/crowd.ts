@@ -35,7 +35,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
-import { C, FOREST, KIEM_TRUNG, MS_DEAD, PF_DEAD, PORTAL_POS, SPAWN_POINT } from '@dtl/shared';
+import { C, FOREST, KIEM_TRUNG, MS_DEAD, PF_DEAD, PORTAL_POS, SPAWN_POINT, at } from '@dtl/shared';
 import type { Browser, Page } from 'playwright';
 import { createDevServer, ROOT, sleep } from './lib/devserver';
 import { args, env, opt, ports } from './lib/env';
@@ -58,7 +58,9 @@ const PRESETS = opt('--presets', 'medium,high').split(',').filter(Boolean);
 const BOT_ARGS = opt('--botargs', '').split(' ').filter(Boolean);
 const SECONDS = Number(opt('--seconds', '10'));
 const WARMUP = Number(opt('--warmup', '5'));
-const [VW, VH] = opt('--size', '1280x720').split('x').map(Number);
+const SIZE = opt('--size', '1280x720').split('x').map(Number);
+const VW = SIZE[0] ?? 1280;
+const VH = SIZE[1] ?? 720;
 const DPR = Number(opt('--dpr', '1'));
 const CHANNEL = opt('--channel', env('BENCH_CHANNEL', 'chrome'));
 const HEADED = args.includes('--headed');
@@ -455,7 +457,8 @@ function initScript(preset: string, port: number): void {
   });
 }
 
-const quant = (sorted: number[], q: number) => (sorted.length ? sorted[Math.min(sorted.length - 1, Math.floor(q * sorted.length))] : 0);
+const quant = (sorted: number[], q: number) =>
+  sorted.length ? (sorted[Math.min(sorted.length - 1, Math.floor(q * sorted.length))] ?? 0) : 0;
 const round = (n: number, d = 2) => Math.round(n * 10 ** d) / 10 ** d;
 
 type Point = {
@@ -516,7 +519,7 @@ function topSelf(p: CpuProfile, n: number): [string, number][] {
   const byId = new Map(p.nodes.map((x) => [x.id, x]));
   const acc = new Map<string, number>();
   for (let i = 0; i < p.samples.length; i++) {
-    const cf = byId.get(p.samples[i])?.callFrame;
+    const cf = byId.get(at(p.samples, i, 'p.samples'))?.callFrame;
     if (!cf) continue;
     const file = cf.url.split('/').pop()?.split('?')[0] ?? '';
     const k = `${cf.functionName || '(anon)'} ${file}:${cf.lineNumber + 1}`;
