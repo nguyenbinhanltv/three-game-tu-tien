@@ -1,0 +1,34 @@
+{
+  "monId": "boss_tu_quang_duc_chu",
+  "move": "line",
+  "idea": "Tử Quang Dực Chủ phóng một tia tàn quang mảnh dọc đường 22 m, rộng 3 m (vạch báo ĐỎ); nổ ra tia quang tím lõi trắng xuyên suốt, tàn quang rơi lả tả hai bên.",
+  "element": "thuy",
+  "palette": {
+    "core": "160d28",
+    "body": "6b3fa0",
+    "rim": "e2d4f7",
+    "accent": "ff1f3d"
+  },
+  "shapeLang": [
+    "line",
+    "beam"
+  ],
+  "zone": {
+    "shape": "rect",
+    "r": 22,
+    "w": 3,
+    "at": "forward"
+  },
+  "timing": {
+    "anticipationMs": 1300,
+    "impactMs": 150,
+    "lingerMs": 800
+  },
+  "readability": "Vạch báo ĐỎ đặc đúng vùng dài 22 m, rộng 3 m, đọc rõ trên nền đá sáng cả ngày lẫn đêm, ngoài vùng hoàn toàn sạch; thân hiệu ứng nổ màu hệ (tím (không ngả hồng-đỏ)), tuyệt đối không đỏ/cam, không che người chơi.",
+  "budget": {
+    "drawCalls": 8,
+    "particles": 300,
+    "screenCover": 0.3,
+    "overdraw": 5
+  }
+}

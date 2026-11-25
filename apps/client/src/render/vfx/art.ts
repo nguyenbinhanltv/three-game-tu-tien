@@ -35,6 +35,9 @@ export const SPRITE_GROUPS = {
   lam: { file: 'hoa-truc/vfx_sprites_lam.0c7b3f53ef.webp', cols: 4, rows: 3 },
   // Đan sư (24 sprite `dan_*`: lò đan, khói, lửa thuốc lục, sen, lá, hạc, đan khổng lồ). Tên file sẽ đổi theo hash khi đóng atlas.
   dan: { file: 'hoa-truc/vfx_sprites_dan.04e3c91a7f.webp', cols: 4, rows: 6 },
+  guong: { file: 'hoa-truc/vfx_sprites_guong.ab4d31a334.webp', cols: 4, rows: 4 },
+  dong: { file: 'hoa-truc/vfx_sprites_dong.508bc97f8f.webp', cols: 4, rows: 6 },
+  kieu: { file: 'hoa-truc/vfx_sprites_kieu.27c9c1ffe4.webp', cols: 4, rows: 6 },
 } as const;
 export type SpriteGroup = keyof typeof SPRITE_GROUPS;
 /** Hướng tu (`PATHS[].id`) → nhóm atlas của nó. Thêm một dòng khi thêm hướng mới. */
@@ -61,6 +64,12 @@ const PREFIX_GROUP: Record<string, SpriteGroup> = {
   tim: 'tinh',
   lua: 'lam',
   ham: 'lam',
+  // A6: nhóm gương (guong_ + mac_), nhóm đồng đỉnh (dong_ + phu_ + tuq_), nhóm cầu đá (kieu_ + sa_ + may_)
+  mac: 'guong',
+  phu: 'dong',
+  tuq: 'dong',
+  sa: 'kieu',
+  may: 'kieu',
 };
 export const spriteGroupOf = (name: string): SpriteGroup => {
   const pre = name.split('_')[0]!;
