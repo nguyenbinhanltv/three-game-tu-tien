@@ -1,0 +1,34 @@
+{
+  "monId": "boss_thien_khuyet_thu_linh",
+  "move": "line",
+  "idea": "Thiên Khuyết Thú Linh bắn dải thẳng: vạch báo là dải ĐỎ dài 20 m rộng 4 m (viền sáng + tô mờ lấp dần) tô dần theo nhịp 1,8 s; nổ ra thân đá nâu, vết nứt sáng hổ phách, bụi nâu xám (không đỏ/cam, không tia điện).",
+  "element": "tho",
+  "palette": {
+    "core": "2a1a10",
+    "body": "7a4a2c",
+    "rim": "f2d28a",
+    "accent": "ff1f3d"
+  },
+  "shapeLang": [
+    "spike",
+    "ring"
+  ],
+  "zone": {
+    "shape": "rect",
+    "r": 20,
+    "at": "forward",
+    "w": 4
+  },
+  "timing": {
+    "anticipationMs": 1800,
+    "impactMs": 140,
+    "lingerMs": 800
+  },
+  "readability": "Vạch báo đỏ chuẩn kẻ địch đúng dải dài 20 m rộng 4 m đọc rõ trên nền sáng; thân đá nâu, vết nứt sáng hổ phách, bụi nâu xám (không đỏ/cam, không tia điện).",
+  "budget": {
+    "drawCalls": 10,
+    "particles": 300,
+    "screenCover": 0.2,
+    "overdraw": 5
+  }
+}

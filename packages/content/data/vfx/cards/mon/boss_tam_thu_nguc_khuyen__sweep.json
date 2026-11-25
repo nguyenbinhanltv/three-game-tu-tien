@@ -1,0 +1,34 @@
+{
+  "monId": "boss_tam_thu_nguc_khuyen",
+  "move": "sweep",
+  "idea": "Tam Thủ Ngục Khuyển quét quạt: vạch báo là quạt ĐỎ dài 11 m nửa góc 70° (viền sáng + tô mờ lấp dần) tô dần theo nhịp 1,2 s; nổ ra thân lửa ma ám tím lõi đen, viền trắng-tím, khói tím (không đỏ/cam).",
+  "element": "hoa",
+  "palette": {
+    "core": "140a1e",
+    "body": "6a3fa0",
+    "rim": "f0d8ff",
+    "accent": "ff1f3d"
+  },
+  "shapeLang": [
+    "cloud",
+    "burst"
+  ],
+  "zone": {
+    "shape": "cone",
+    "r": 11,
+    "at": "forward",
+    "w": 70
+  },
+  "timing": {
+    "anticipationMs": 1200,
+    "impactMs": 140,
+    "lingerMs": 800
+  },
+  "readability": "Vạch báo đỏ chuẩn kẻ địch đúng quạt dài 11 m nửa góc 70° đọc rõ trên nền sáng; thân lửa ma ám tím lõi đen, viền trắng-tím, khói tím (không đỏ/cam).",
+  "budget": {
+    "drawCalls": 10,
+    "particles": 300,
+    "screenCover": 0.2,
+    "overdraw": 5
+  }
+}
