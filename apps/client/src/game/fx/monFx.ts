@@ -102,10 +102,11 @@ export class MonFx {
 
   /**
    * Màu vạch báo theo hệ (A4): nếu chiêu có timeline vạch báo RIÊNG mà bảng màu của nó có `accent` KHÔNG đỏ/cam (hue 36°–345°, vd. tím-hồng, hổ phách)
-   * thì trả màu đó để vạch báo cũ (pháp trận quạt/dải, luôn vẽ) cũng đổi theo, không còn đỏ. Không có thì undefined (giữ đỏ như mọi quái khác).
+   * thì trả màu đó; khi đó `room.ts` BỎ hẳn pháp trận quạt/dải cũ (vạch riêng của chiêu đã đủ rõ). Không có thì undefined (giữ vạch cũ đỏ như mọi quái khác).
    */
-  warnTint(h: Pick<HazardMsg, 'r' | 'delay' | 'sh'>, src: MonLike | undefined): number | undefined {
-    if (!src) return undefined;
+  warnTint(h: Pick<HazardMsg, 'x' | 'z' | 'r' | 'delay' | 'sh'>, src: MonLike | undefined): number | undefined {
+    // Chỉ khi vạch riêng THẬT SỰ phát được (gần, atlas decal đã nạp): nếu không giữ vạch cũ đỏ để người chơi vẫn thấy hitbox.
+    if (!src || !this.near(h.x, h.z) || !forgeTexLoaded('decal_atlas')) return undefined;
     const key = !h.sh ? 'mon_warn' : h.sh === 'rect' ? 'mon_warn_line' : 'mon_warn_cone';
     const mv = moveOfHazard(MONSTER.get(src.s.t), h);
     const tl = (mv ? this.tl(`${key}__${src.s.t}__${mv}`) : undefined) ?? this.tl(`${key}__${src.s.t}`);

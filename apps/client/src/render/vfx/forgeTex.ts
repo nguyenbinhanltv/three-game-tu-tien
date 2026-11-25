@@ -122,7 +122,9 @@ export function mapDecalNodes(U: FxUniforms): { color: N; opacity: N } {
   const warnLum = s.r.mul(0.3).add(s.g.mul(0.59)).add(s.b.mul(0.11));
   const srcRgb = mix(s.rgb, U.color.mul(warnLum.mul(2.6).add(0.15)), nonRed);
   const base = srcRgb.mul(tint).mul(heat.mul(0.55).add(0.7)).mul(bright);
-  const lit = mix(base, U.b.xyz.mul(1.6), edge.mul(1.0));
+  // Vạch báo theo màu hệ: viền dùng màu bảng màu (tím-hồng/hổ phách) thay vì màu viền nhạt gần trắng (trắng bệch trên nền đá sáng).
+  const edgeCol = mix(U.b.xyz.mul(1.6), U.color.mul(1.9), nonRed);
+  const lit = mix(base, edgeCol, edge.mul(1.0));
   // Nền đặc dưới vân (các khe của ảnh Codex trong suốt): vạch báo = đĩa đỏ, mỗi hệ một màu thẫm; đọc được trên nền sáng ban ngày.
   let fillCol: N = U.color.mul(0.8);
   FORGE_DECALS.forEach((id, i) => {

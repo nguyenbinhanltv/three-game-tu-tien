@@ -90,15 +90,10 @@ export function onHazard(eng: Game, m: HazardMsg): void {
     // Chiêu quái có timeline vạch báo riêng (V-P9): vẫn dùng pháp trận quạt/chữ nhật (hình đúng hitbox, tiến độ quét) nhưng vẽ đè lên thân boss.
     // `own` ở nhánh này chỉ đổi cách vẽ (đè lên thân boss); pháp trận quạt/chữ nhật luôn được vẽ nên không mất vạch báo khi `warn` bị bỏ qua.
     const own = !!eng.monFx?.ownWarn(m, m.src ? eng.ents?.monsters.get(m.src) : undefined);
-    if (Math.hypot(m.x - eng.renderPos.x, m.z - eng.renderPos.z) < 90)
-      telegraph(
-        eng.vfx,
-        m,
-        isBossSrc(eng, m.src),
-        hazardDangerOf(eng, m),
-        own,
-        eng.monFx?.warnTint(m, m.src ? eng.ents?.monsters.get(m.src) : undefined),
-      );
+    const tint = eng.monFx?.warnTint(m, m.src ? eng.ents?.monsters.get(m.src) : undefined);
+    // Chiêu báo theo màu hệ (A4: tím-hồng, hổ phách): vạch riêng đủ rõ, BỎ pháp trận quạt/dải cũ (vệt trắng nhạt phủ thêm); các quái khác giữ nguyên.
+    if (tint === undefined && Math.hypot(m.x - eng.renderPos.x, m.z - eng.renderPos.z) < 90)
+      telegraph(eng.vfx, m, isBossSrc(eng, m.src), hazardDangerOf(eng, m), own);
     // Vạch pháp trận cũ giữ nguyên; boss thêm nhấp nháy dọc vạch (`mon_warn_line|cone`, V5).
     eng.monFx?.warn(m, m.src ? eng.ents?.monsters.get(m.src) : undefined);
   } else if (m.mv === 'trail') eng.vfx?.trailPool(m.x, m.z, m.r, m.delay, m.dur ?? 8);
