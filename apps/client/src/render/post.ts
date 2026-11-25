@@ -270,6 +270,7 @@ export class PostPipeline {
         paint: FLAGS.paint ?? 3,
         exposure: 1,
         vignette: 0.14,
+        tint: [0.92, 0.975, 0.97],
         // phản hồi chiến đấu giữ nguyên (hit/flash/impact/punch/pulse/mực chết); quang sai màu khi trúng đòn lấy mẫu lệch R/B của ảnh gốc
         mask: (uv) => max(max(vfxTex.sample(uv).r, vfxTex.sample(uv).g), vfxTex.sample(uv).b),
         aberration: postParams.hit.mul(0.012),

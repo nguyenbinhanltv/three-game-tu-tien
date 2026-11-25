@@ -33,6 +33,8 @@ export const paintedNight = uniform(0);
 export const vfxMaskOn = uniform(1);
 
 export interface PaintedOutputOpts {
+  /** Cân bằng màu nhân vào ảnh (chỉ game; cảnh thử đo khớp để trống). Kéo màu cỏ trong game về painted-valley (đo ΔE). */
+  tint?: readonly [number, number, number];
   /** `?paint=` của nguồn: 0 tắt, 3 là mặc định của bản demo (bán kính hiệu dụng 2, còn 1 ở rất gần/rất xa). */
   paint: number;
   exposure: number;
@@ -139,12 +141,16 @@ export function paintedOutput(scenePass: N, o: PaintedOutputOpts): N {
     c = vec3(c.r.add(hdr(uv.add(ca)).r.sub(c0.r).mul(0.6)), c.g, c.b.add(hdr(uv.sub(ca)).b.sub(c0.b).mul(0.6)));
   }
   c = c.mul(o.exposure);
+  if (o.tint) c = c.mul(vec3(...o.tint));
   // đêm Họa Cảnh: giữ ít tông (sáng/tối của bản vẽ), nhuộm lam ánh trăng, tối rõ nhưng còn đọc được hình
   const ln: N = dot(c, vec3(0.2126, 0.7152, 0.0722));
   const moon: N = mix(vec3(ln, ln, ln), c, 0.4)
     .mul(vec3(0.3, 0.46, 0.88))
     .mul(0.62);
-  c = mix(c, moon, paintedNight);
+  // vùng tối (nhân vật, quái, bóng) được nâng sàn lam để còn đọc được hình; điểm sáng HDR (đèn, VFX) không bị nhuộm trăng: giữ màu và độ chói của chúng
+  const floorLift: N = vec3(0.04, 0.062, 0.115).mul(float(1).sub(smoothstep(0.0, 0.2, ln)));
+  const hot: N = smoothstep(0.7, 1.5, ln);
+  c = mix(c, moon.add(floorLift), paintedNight.mul(float(1).sub(hot)));
   // a painter's curve: what is below white stays as it was mixed, and only the brightest lights are eased in
   const hi: N = c.sub(0.62).max(0);
   c = c.min(0.62).add(float(0.38).mul(float(1).sub(exp(hi.negate().div(0.38)))));
