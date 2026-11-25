@@ -8,7 +8,7 @@
     "burst"
   ],
   "timing": {
-    "anticipationMs": 300,
+    "anticipationMs": 0,
     "impactMs": 80,
     "lingerMs": 600
   },
@@ -35,5 +35,10 @@
       "kind": "flipbook"
     }
   ],
-  "silhouette": "hàng dấu chân khổng lồ lõm xuống đất, bụi cuộn, đá văng"
+  "silhouette": "hàng dấu chân khổng lồ lõm xuống đất, bụi cuộn, đá văng",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles"
+  ]
 }

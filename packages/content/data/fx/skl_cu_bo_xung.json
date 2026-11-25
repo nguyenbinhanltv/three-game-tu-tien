@@ -1,0 +1,208 @@
+{
+ "skill": "skl_cu_bo_xung",
+ "trigger": "fx",
+ "fxKind": "dash",
+ "method": "co_than_quyet",
+ "events": [
+  {
+   "type": "mesh",
+   "t": 0,
+   "dur": 0.9,
+   "at": "ahead",
+   "sweep": 0,
+   "erodeFrom": 0.4,
+   "ragged": 0.5,
+   "tone": "body",
+   "alpha": 0.7,
+   "tier": 0,
+   "seed": 1000,
+   "shape": "sprite",
+   "sprite": "cth_smear",
+   "billboard": true,
+   "offset": [
+    0,
+    0.3,
+    3.4
+   ],
+   "scale": 6,
+   "scaleTo": 6
+  },
+  {
+   "type": "mesh",
+   "t": 0,
+   "dur": 0.9,
+   "at": "ahead",
+   "sweep": 0,
+   "erodeFrom": 0.4,
+   "ragged": 0.5,
+   "tone": "body",
+   "alpha": 0.95,
+   "tier": 0,
+   "seed": 1001,
+   "shape": "sprite",
+   "sprite": "cth_footprints",
+   "billboard": true,
+   "offset": [
+    0,
+    0.5,
+    3.6
+   ],
+   "scale": 6.56,
+   "scaleTo": 8,
+   "align": "aim"
+  },
+  {
+   "type": "mesh",
+   "t": 0.03,
+   "dur": 0.9,
+   "at": "ahead",
+   "sweep": 0,
+   "erodeFrom": 0.3,
+   "ragged": 0.5,
+   "tone": "body",
+   "alpha": 0.6,
+   "tier": 0,
+   "seed": 1002,
+   "shape": "sprite",
+   "sprite": "cth_dust",
+   "billboard": true,
+   "offset": [
+    0,
+    0.9,
+    3.4
+   ],
+   "scale": 5,
+   "scaleTo": 5
+  },
+  {
+   "type": "mesh",
+   "t": 0.05,
+   "dur": 0.6,
+   "at": "ahead",
+   "sweep": 0,
+   "erodeFrom": 0.3,
+   "ragged": 0.5,
+   "tone": "body",
+   "alpha": 0.85,
+   "tier": 0,
+   "seed": 1003,
+   "shape": "sprite",
+   "sprite": "cth_boulders",
+   "billboard": true,
+   "offset": [
+    0,
+    1.2,
+    5
+   ],
+   "scale": 4,
+   "scaleTo": 4
+  },
+  {
+   "type": "mesh",
+   "t": 0.03,
+   "dur": 0.1,
+   "at": "ahead",
+   "sweep": 0,
+   "erodeFrom": 0.3,
+   "ragged": 0.5,
+   "tone": "body",
+   "alpha": 0.9,
+   "tier": 0,
+   "seed": 1004,
+   "shape": "sprite",
+   "sprite": "cth_spark",
+   "billboard": true,
+   "offset": [
+    0,
+    0.8,
+    6
+   ],
+   "scale": 1.2,
+   "scaleTo": 1.5
+  },
+  {
+   "type": "decal",
+   "tex": "scorch",
+   "t": 0,
+   "r": 3,
+   "dur": 1.6,
+   "at": "ahead",
+   "offset": [
+    0,
+    0.02,
+    2
+   ],
+   "grow": 0.1,
+   "tone": "shadow",
+   "alpha": 0.78,
+   "tier": 0
+  },
+  {
+   "type": "decal",
+   "tex": "scorch",
+   "t": 0.03,
+   "r": 3.2,
+   "dur": 1.6,
+   "at": "ahead",
+   "offset": [
+    0,
+    0.02,
+    5.5
+   ],
+   "grow": 0.1,
+   "tone": "shadow",
+   "alpha": 0.78,
+   "tier": 0
+  },
+  {
+   "type": "mesh",
+   "t": 0.2,
+   "dur": 0.6,
+   "at": "ahead",
+   "sweep": 0,
+   "erodeFrom": 0.2,
+   "ragged": 0.5,
+   "tone": "body",
+   "alpha": 0.75,
+   "tier": 0,
+   "seed": 1005,
+   "shape": "sprite",
+   "sprite": "cth_dust",
+   "billboard": true,
+   "offset": [
+    0,
+    1,
+    5
+   ],
+   "scale": 3,
+   "scaleTo": 3,
+   "move": {
+    "to": "ahead",
+    "offset": [
+     0,
+     1.9,
+     5
+    ],
+    "ease": "out"
+   }
+  },
+  {
+   "type": "particles",
+   "kind": "spark",
+   "t": 0.04,
+   "n": 8,
+   "speed": 3.5,
+   "spread": 1,
+   "life": 0.35,
+   "size": 0.07,
+   "at": "ahead",
+   "offset": [
+    0,
+    1,
+    5
+   ],
+   "tone": "rim",
+   "tier": 1
+  }
+ ]
+}

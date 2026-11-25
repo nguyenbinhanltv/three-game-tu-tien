@@ -35,5 +35,10 @@
       "kind": "flipbook"
     }
   ],
-  "silhouette": "nắm đấm đá nhiều tầng vỉa có mạch hổ phách đấm thẳng, sóng nén đất theo sau"
+  "silhouette": "nắm đấm đá nhiều tầng vỉa có mạch hổ phách đấm thẳng, sóng nén đất theo sau",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles"
+  ]
 }

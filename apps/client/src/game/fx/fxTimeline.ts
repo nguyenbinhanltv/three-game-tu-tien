@@ -71,6 +71,7 @@ const SPRITE_STYLE: Record<string, number> = {
   lua_: 8,
   ham_: 8,
   dao_: 9,
+  cth_: 10,
   dan_: 10,
 };
 
@@ -574,7 +575,15 @@ export class FxRunner {
       ? cell.group === 'hon'
         ? 'sprite'
         : (`sprite_${cell.group}` as
-            'sprite_loi' | 'sprite_kiem' | 'sprite_hp' | 'sprite_dao' | 'sprite_hai' | 'sprite_tinh' | 'sprite_lam' | 'sprite_dan')
+            | 'sprite_loi'
+            | 'sprite_kiem'
+            | 'sprite_hp'
+            | 'sprite_dao'
+            | 'sprite_cth'
+            | 'sprite_hai'
+            | 'sprite_tinh'
+            | 'sprite_lam'
+            | 'sprite_dan')
       : kind0;
     const isSprite = cell !== null;
     if (cell) useSpriteGroup(cell.group);

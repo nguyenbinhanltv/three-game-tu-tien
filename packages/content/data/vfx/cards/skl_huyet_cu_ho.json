@@ -35,5 +35,10 @@
       "kind": "flipbook"
     }
   ],
-  "silhouette": "bia đá cổ khắc phù văn đứng sau lưng, rễ hóa thạch ôm thân, phù văn hổ phách chạy dọc"
+  "silhouette": "bia đá cổ khắc phù văn đứng sau lưng, rễ hóa thạch ôm thân, phù văn hổ phách chạy dọc",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles"
+  ]
 }

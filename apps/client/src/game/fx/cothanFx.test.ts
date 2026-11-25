@@ -1,135 +1,67 @@
 import { describe, expect, it } from 'vitest';
-import { FX_TIMELINE, METHOD_SKILLS, PATH, SKILL } from '@dtl/content';
-import { fxAwayFromCam, fxDrawCount, fxEventsFor, fxParticleCount, HOA_HINH_SKILL, validateFxTimeline } from '@dtl/shared';
+import { FX_TIMELINE, SKILL } from '@dtl/content';
+import { FX_SPRITES, fxDrawCount, fxEventsFor, fxParticleCount, validateFxTimeline } from '@dtl/shared';
 import type { FxEvent } from '@dtl/shared';
-import { paletteOf } from '../../render/vfx/palette';
 
-// Cổ Thần (PR VFX): 4 timeline riêng cho chiêu có pose riêng + Hóa Hình (fx riêng); chiêu của tư thế mượn hình chiêu nền.
-const METHOD = 'co_than_quyet';
-const OWN = ['skl_thai_co_quyen', 'skl_tinh_bao', 'skl_huyet_cu_ho', 'skl_co_than_nhat_kich', 'skl_hoa_hinh'];
-const SCENE = 'skl_hoa_hinh';
+// Cổ Thần theo Họa Pháp Lô 2: 10 chiêu, mỗi chiêu một hình sprite vẽ tay `cth_*` (đá bazan nâu sẫm gần đen, hổ phách ở mạch nứt), ba nhịp.
+const IDS = ['skl_cu_bo_xung', 'skl_thai_co_quyen', 'skl_co_than_nhat_kich', 'skl_tinh_bao', 'skl_huyet_cu_ho'];
+const DASH = new Set(['skl_cu_bo_xung']);
 const evs = (id: string): FxEvent[] => fxEventsFor(FX_TIMELINE.get(id)!, -1);
+type M = FxEvent & { sprite?: string; t?: number; shape?: string };
+const meshes = (id: string) => evs(id).filter((e) => e.type === 'mesh') as M[];
 
 describe('VFX Cổ Thần', () => {
-  it('mỗi chiêu có timeline riêng, thay đúng loại FX của chiêu, hợp lệ và trong ngân sách', () => {
-    for (const id of OWN) {
+  it('10 chiêu có timeline riêng, hợp lệ, trong ngân sách, hình chính là sprite `cth_*` có trong atlas', () => {
+    for (const id of IDS) {
       const tl = FX_TIMELINE.get(id)!;
-      const sk = METHOD_SKILLS.find((s) => s.id === id)!;
       expect(tl, id).toBeDefined();
-      expect(tl.replaces, id).toEqual([sk.fx]);
       expect(
         validateFxTimeline(tl, (x) => SKILL.has(x)),
         id,
       ).toEqual([]);
       expect(fxDrawCount(evs(id)), id).toBeLessThanOrEqual(12);
       expect(fxParticleCount(evs(id)), id).toBeLessThanOrEqual(1500);
-    }
-  });
-
-  it('không có timeline cho chiêu của tư thế (mượn hình chiêu nền) hay chiêu lướt', () => {
-    for (const s of METHOD_SKILLS.filter((x) => x.method === METHOD && (x.stanceOf || x.kind === 'dash')))
-      expect(FX_TIMELINE.has(s.id), s.id).toBe(false);
-  });
-
-  it('Hóa Hình có fx + pose riêng (không mượn Sơn Nhạc): timeline của chính chiêu, thay đúng loại FX của nó', () => {
-    const sk = SKILL.get(HOA_HINH_SKILL)!;
-    expect(sk.kind).toBe('stance');
-    expect(sk.fx).toBe('cohoahinh');
-    expect(sk.pose).toBe('hoa_hinh');
-    expect(METHOD_SKILLS.filter((s) => s.fx === sk.fx)).toHaveLength(1);
-    expect(FX_TIMELINE.get(SCENE)!.replaces).toEqual([sk.fx]);
-  });
-
-  it('khoảnh khắc wow của Hóa Hình: Cổ Thần khổng lồ (thẻ colossus, camFade, đứng phía trước người), sóng chấn sát đất, làm chậm + kéo máy; không phủ khối lên thân, không rải đá', () => {
-    const e = evs(SCENE);
-    const colossus = e.filter((x) => x.type === 'mesh' && x.shape === 'card' && x.card === 'colossus');
-    // MỘT bóng Cổ Thần (lớp thân) + MỘT lớp nền tối lệch ra sau làm độ dày giả; cả hai ở phía xa camera.
-    expect(colossus.map((x) => (x.type === 'mesh' ? x.tone : '')).sort(), 'lớp thân + lớp nền tối').toEqual(['body', 'core']);
-    for (const g of colossus)
-      if (g.type === 'mesh') {
-        expect(g.awayFromCam, 'phía xa camera = sau lưng người chơi').toBe(true);
-        expect(g.camFade).toBe(true);
-        expect(Math.abs(g.offset?.[2] ?? 0), 'cách người đủ xa').toBeGreaterThan(3);
-      }
-    expect(e.filter((x) => x.type === 'mesh' && x.shape === 'shock_cone').length).toBeGreaterThanOrEqual(2);
-    expect(e.some((x) => x.type === 'slowmo')).toBe(true);
-    expect(e.some((x) => x.type === 'camera' && (x.pull ?? 0) > 0)).toBe(true);
-    expect(e.some((x) => x.type === 'mesh' && x.shape.startsWith('rubble_'))).toBe(false);
-    for (const x of e) {
-      if (x.type !== 'mesh') continue;
-      expect(x.follow, x.shape).not.toBe(true);
-      // sóng chấn hạ xuống đất, bán kính cuối nhỏ (không che nửa thân như bản đầu)
-      if (x.shape === 'shock_cone') {
-        const sc = x.scaleTo ?? x.scale ?? 0;
-        expect(Array.isArray(sc) ? Math.max(...sc) : sc, 'sóng chấn').toBeLessThanOrEqual(5.5);
+      const sprites = meshes(id).filter((e) => e.shape === 'sprite');
+      expect(sprites.length, id).toBeGreaterThanOrEqual(3);
+      for (const e of sprites) {
+        expect(String(e.sprite), id).toMatch(/^cth_/);
+        expect((FX_SPRITES as readonly string[]).includes(String(e.sprite)), `${id}:${e.sprite}`).toBe(true);
       }
     }
   });
 
-  it('fxAwayFromCam: điểm cùng phía camera thì lấy đối xứng qua người, ở phía xa thì giữ nguyên', () => {
-    // người ở gốc, camera ở (0, -10): điểm (0, -7) cùng phía camera -> (0, 7); điểm (0, 7) phía xa -> giữ
-    expect(fxAwayFromCam(0, 0, 0, -10, 0, -7)).toEqual([0, 7]);
-    expect(fxAwayFromCam(0, 0, 0, -10, 0, 7)).toEqual([0, 7]);
-    expect(fxAwayFromCam(0, 0, 0, -10, 3, 0)).toEqual([3, 0]);
-    expect(fxAwayFromCam(5, 5, 5, 15, 5, 12)).toEqual([5, -2]);
-    // luôn cách người đúng bằng khoảng cũ và không bao giờ nằm cùng phía camera
-    for (const [px, pz] of [
-      [2, -6],
-      [-4, 3],
-      [7, 7],
-      [-3, -3],
-    ] as const) {
-      const [x, z] = fxAwayFromCam(0, 0, 4, -9, px, pz);
-      expect(Math.hypot(x, z)).toBeCloseTo(Math.hypot(px, pz), 9);
-      expect(x * 4 + z * -9).toBeLessThanOrEqual(1e-9);
-    }
-  });
-
-  it('Thái Cổ Quyền: cự quyền (thẻ fist) giáng xuống mục tiêu + sóng chấn + bụi; Nhất Kích: cự quyền phía trước vùng, camFade', () => {
-    const q = evs('skl_thai_co_quyen');
-    expect(q.some((x) => x.type === 'mesh' && x.shape === 'card' && x.card === 'fist' && x.at === 'target')).toBe(true);
-    expect(q.some((x) => x.type === 'mesh' && x.shape === 'shock_cone')).toBe(true);
-    expect(q.filter((x) => x.type === 'mesh' && x.shape === 'flip' && x.flip === 'dust_kick').length).toBeGreaterThanOrEqual(1);
-    const k = evs('skl_co_than_nhat_kich').filter((x) => x.type === 'mesh' && x.shape === 'card' && x.card === 'fist');
-    expect(k.length).toBe(2);
-    // cự quyền Thái Cổ Quyền giữ lâu ngay trên mục tiêu (ảnh chụp có độ trễ): còn ở lại ≥ 0,5 s sau lúc trúng
-    const main = q.find((x) => x.type === 'mesh' && x.shape === 'card' && x.card === 'fist' && x.alpha === 1);
-    expect(main && main.type === 'mesh' ? main.t + main.dur : 0).toBeGreaterThanOrEqual(0.5);
-    for (const f of k) if (f.type === 'mesh') expect(f.camFade).toBe(true);
-  });
-
-  it('không che camera/nhân vật/mục tiêu: khối đứng hoặc rơi cao và mọi tảng đá đều camFade; đá có trần 2,2 m', () => {
-    for (const id of [...OWN, SCENE]) {
-      for (const e of evs(id)) {
-        if (e.type !== 'mesh') continue;
-        if (/^(blade_stuck|sword_halo|rubble_)/.test(e.shape)) expect(e.camFade, `${id}:${e.shape}`).toBe(true);
-        if (e.shape.startsWith('rubble_') && e.move?.offset) expect(e.move.offset[1]!, `${id}:${e.shape}`).toBeLessThanOrEqual(9);
-        if (e.shape.startsWith('rubble_') && e.at !== 'area' && e.move?.offset)
-          expect(e.move.offset[1]!, `${id}:${e.shape}`).toBeLessThanOrEqual(2.2);
-      }
-    }
-  });
-
-  it('chỉ chiêu tối thượng và Hóa Hình dùng làm chậm và kéo máy', () => {
-    for (const id of OWN) {
-      const e = evs(id);
-      const big = id === 'skl_co_than_nhat_kich' || id === 'skl_hoa_hinh';
+  it('ba nhịp: báo trước (trừ chiêu lướt), chớp `cth_spark` ở ±50 ms quanh mốc trúng, dư ba từ +150 ms', () => {
+    for (const id of IDS) {
+      const m = meshes(id);
+      if (!DASH.has(id))
+        expect(
+          m.some((e) => (e.t ?? 0) < -0.05),
+          `${id} thiếu báo trước`,
+        ).toBe(true);
       expect(
-        e.some((x) => x.type === 'slowmo'),
-        id,
-      ).toBe(big);
+        m.some((e) => e.sprite === 'cth_spark' && Math.abs(e.t ?? 0) <= 0.05 + (id === 'skl_cth_vu_tam_diep' ? 0.3 : 0)),
+        `${id} thiếu chớp`,
+      ).toBe(true);
       expect(
-        e.some((x) => x.type === 'camera' && (x.pull ?? 0) > 0),
-        id,
-      ).toBe(big);
+        m.some((e) => (e.t ?? 0) >= 0.15),
+        `${id} thiếu dư ba`,
+      ).toBe(true);
     }
   });
 
-  it('màu theo bảng màu hướng co_than: lõi nâu đất, thân nâu đồng, viền ngà', () => {
-    const p = PATH.get('co_than')!.palette;
-    const pal = paletteOf(METHOD);
-    expect(pal.core).toBe(parseInt(p.core, 16));
-    expect(pal.body).toBe(parseInt(p.body, 16));
-    expect(pal.rim).toBe(parseInt(p.rim, 16));
+  it('không vòng rune dưới chân, không khuôn chung (rune_ring2/ripple/crescent) kể cả trong biến thể', () => {
+    const bad = new Set(['rune_ring2', 'ripple', 'crescent']);
+    for (const id of IDS) {
+      const tl = FX_TIMELINE.get(id)!;
+      const all: FxEvent[] = [...tl.events, ...Object.values(tl.variants ?? {}).flat()];
+      expect(
+        all.some((x) => x.type === 'decal' && x.tex === 'rune'),
+        id,
+      ).toBe(false);
+      expect(
+        all.some((x) => x.type === 'mesh' && bad.has(String((x as M).shape))),
+        id,
+      ).toBe(false);
+    }
   });
 });

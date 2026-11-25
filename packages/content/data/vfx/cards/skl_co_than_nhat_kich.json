@@ -35,5 +35,10 @@
       "kind": "flipbook"
     }
   ],
-  "silhouette": "cánh tay đá bazan khổng lồ từ trời bổ xuống, hố lõm đường đứt gãy tỏa vỉa"
+  "silhouette": "cánh tay đá bazan khổng lồ từ trời bổ xuống, hố lõm đường đứt gãy tỏa vỉa",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles"
+  ]
 }

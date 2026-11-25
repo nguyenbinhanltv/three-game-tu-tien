@@ -35,5 +35,10 @@
       "kind": "flipbook"
     }
   ],
-  "silhouette": "khối đá nhân hổ phách nổ thành chùm mảnh hổ phách nhọn tỏa như sao"
+  "silhouette": "khối đá nhân hổ phách nổ thành chùm mảnh hổ phách nhọn tỏa như sao",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles"
+  ]
 }
