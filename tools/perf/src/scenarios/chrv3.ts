@@ -11,12 +11,11 @@ import { cam, gm } from '../lib/game';
 import { centerClip, snap } from '../lib/shot';
 import type { Scenario } from '../lib/scenario';
 
-/** `v3`/`v3b` = Lạc Kiếm v3b (mặc định của ?chr=v3), `v3a` = bản v3 cũ (`?v3model=a`). `v3raw` = v3 không bảng màu (`?v3pal=0`), để so trước/sau chỉnh màu. */
+/** `v3`/`v3b` = Lạc Kiếm mặc định của ?chr=v3 (bản v3/v3b cũ `?v3model=a|b` đã gỡ ở A2). `v3raw` = v3 không bảng màu (`?v3pal=0`), để so trước/sau chỉnh màu. */
 const QUERY: Record<string, Record<string, string>> = {
   v1: { chr: 'v1' },
   v3: { chr: 'v3' },
   v3b: { chr: 'v3' },
-  v3a: { chr: 'v3', v3model: 'a' },
   v3a0: { chr: 'v3', armfit: '0' },
   v3a5: { chr: 'v3', armfit: '5' },
   v3new: { chr: 'v3' },
