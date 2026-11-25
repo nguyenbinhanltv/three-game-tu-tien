@@ -32,7 +32,7 @@ const SCALE = {
   skl_liet_dia_tram: 0.95,
   skl_thuan_dao_tram: 1,
   skl_huyet_chien_the: 1,
-  skl_doan_thien_dao: 0.42,
+  skl_doan_thien_dao: 0.3,
 };
 /** Hệ số alpha thân theo chiêu (không áp cho chớp `dao_flash`). */
 let A = 1;
@@ -247,7 +247,7 @@ const SPEC = {
     shade('target', [0, 0.3, 0], 7, 0.04, { dur: 1.2 }),
     strike('dao_skyslash', { size: 8.4, off: [0, 5.4, 0], dur: 0.8, erodeFrom: 0.4 }),
     strike('dao_cleft', { size: 9, off: [0, 0.4, 0], t: 0.08, dur: 1.1, erodeFrom: 0.45 }),
-    sprite('dao_dust', { t: 0.1, dur: 1, off: [0, 0.9, 0], size: 5, alpha: 0.5, erodeFrom: 0.3 }),
+    sprite('dao_dust', { t: 0.1, dur: 1, off: [0, 0.9, 0], size: 3, alpha: 0.5, erodeFrom: 0.3 }),
     flash('target', [0, 1.4, 0], 2.4, 0.05, { dur: 0.14 }),
     scorch('target', [0, 0.02, 0], 3.8, 0.04, 2.6),
     after('target', [0, 1.6, 0], 3.6, 0.24, 1.4),
