@@ -1,3 +1,4 @@
+import type { FarBackdrop } from '../render/painted/farBackdrop';
 import { AutoQuality, isQuality } from '../base/quality';
 import * as THREE from 'three/webgpu';
 import { Client, type Room } from 'colyseus.js';
@@ -263,6 +264,8 @@ export class Game {
   env!: Environment;
   /** Cỏ tương tác quanh người chơi (V4); preset Thấp tắt. */
   grass!: GrassLayer;
+  /** Họa Cảnh P3: vùng xa nướng một lần (chỉ Vân Lam, WebGPU). */
+  farBackdrop: FarBackdrop | null = null;
   props: PropLayer | null = null;
   /** Cột linh quang ở các điểm đáng chú ý (M-5); chỉ hiện ở thế giới chính. */
   beacons: Beacons | null = null;
@@ -1514,6 +1517,7 @@ export class Game {
     }
     this.levelObjs.length = 0;
     this.grass?.dispose();
+    this.farBackdrop?.dispose();
     this.mapVis?.dispose();
     this.soulVis?.dispose();
     this.soulVis = null;
