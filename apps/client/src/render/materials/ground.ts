@@ -677,7 +677,9 @@ export function applyGroundShader(mat: THREE.MeshStandardNodeMaterial, tex: Grou
     );
     // bảng theo level (theme.ts): đổi tông đất vẽ sang hai màu của level, giữ nét cọ; `themeU.on` = 0 (Vân Lam) giữ nguyên
     const ink: Node = dot(painted, vec3(0.299, 0.587, 0.114));
-    const gTone: Node = mix(vec3(themeU.gShade), vec3(themeU.gLit), smoothstep(0.05, 0.3, ink));
+    // mảng sáng/tối vài chục mét (như mảng lớn của painted-valley) nhân vào độ chói để tuyết/đất không thành một màu phẳng
+    const patch: Node = smoothstep(0.3, 0.7, F.noise(positionWorld.xz.div(17), false).a);
+    const gTone: Node = mix(vec3(themeU.gShade), vec3(themeU.gLit), smoothstep(0.09, 0.26, ink).mul(patch.mul(0.6).add(0.4)));
     const paintedT: Node = mix(painted, gTone, themeU.on);
     // đá/vách/tuyết đổi tông ở ALBEDO (vẫn qua đèn, bóng và pháp tuyến như Vân Lam), không đi qua emissive
     const rockInk: Node = dot(col.rgb, vec3(0.299, 0.587, 0.114));

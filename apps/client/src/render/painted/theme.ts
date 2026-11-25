@@ -18,6 +18,8 @@ export interface PaintedTheme {
   mist: number;
   /** Vùng xa nướng một lần (P3): bật mặc định ở level này; [sáng, tối] của dải núi. Bỏ trống = không có (Vân Lam: thung lũng kín). */
   far?: PaintPair;
+  /** 0..1: mức đổi tông vật thể tĩnh (cây, đá, tàn tích) sang cặp `rock` theo độ chói của màu gốc; 0 = giữ màu gốc (mặc định). */
+  propMix?: number;
   /** Sương thấp: dải cao độ (m) mà sương nằm dưới, từ đỉnh dải trở xuống; và cường độ 0..1. */
   mistBand: [number, number];
   mistK: number;
@@ -26,12 +28,13 @@ export interface PaintedTheme {
 export const PAINTED_THEMES: Record<string, PaintedTheme> = {
   // Bắc Hoang Tẫn Nguyên (MAP-5): tuyết trắng lam, bóng tím chàm, đá đen tím, sương lam lạnh
   bac_hoang: {
-    ground: [0xe4ecf6, 0x8a98c4],
+    ground: [0xe2eaf6, 0x7482b6],
     rock: [0x6a6585, 0x2a2540],
     mist: 0xc4d0ea,
     mistBand: [10, 60],
     mistK: 0.6,
     far: [0xdce6f6, 0x5c6896],
+    propMix: 0.85,
   },
 };
 
@@ -49,12 +52,14 @@ export const themeU = {
   mistLo: uniform(DEFAULT_MIST.band[0]),
   mistHi: uniform(DEFAULT_MIST.band[1]),
   mistK: uniform(DEFAULT_MIST.k),
+  propMix: uniform(0),
 };
 
 /** Chọn bảng cho level (gọi trước khi dựng/hiển thị địa hình). */
 export function setPaintedTheme(levelId: string): void {
   const t = PAINTED_THEMES[levelId];
   themeU.on.value = t ? 1 : 0;
+  themeU.propMix.value = t?.propMix ?? 0;
   if (t) {
     themeU.gLit.value.setHex(t.ground[0], THREE.SRGBColorSpace);
     themeU.gShade.value.setHex(t.ground[1], THREE.SRGBColorSpace);
