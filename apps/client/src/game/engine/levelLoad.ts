@@ -634,7 +634,7 @@ export function buildLevelB(eng: Game, id: string, q: (typeof QUALITY)[string]):
   }
   // Họa Cảnh: cỏ lá mảnh thay bụi cỏ thường ở level dùng bụi lá thủ tục (level dùng thẻ cỏ khô/đảo giữ nguyên)
   const cards = levelAssets(id).grassCards;
-  eng.grass = FLAGS.style === 'painted' && !cards ? new PaintedGameField() : new Grass(cards);
+  eng.grass = FLAGS.style === 'painted' && !cards ? new PaintedGameField(get().quality) : new Grass(cards);
   eng.grass.setQuality(get().quality, q.shadows);
   eng.grass.setEnabled(F.grass);
   eng.grass.mesh.visible = F.grass;

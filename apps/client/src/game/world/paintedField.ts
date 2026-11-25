@@ -5,7 +5,7 @@ import { createBlades } from '../../render/painted/lab/blades';
 import { createFlowers, FLOWER_RING } from '../../render/painted/lab/flowers';
 import {
   CT,
-  GAME_RINGS,
+  gameRingsFor,
   getPaintedLattice,
   getPaintedRefField,
   HEIGHT,
@@ -36,12 +36,12 @@ export class PaintedGameField implements GrassLayer {
   private filled = 0;
   private readonly slotKey = new Int32Array(SLOTS * SLOTS * 2).fill(-2147483648);
 
-  constructor() {
+  constructor(quality = 'high') {
     this.mesh.name = 'env-grass-painted';
     this.mesh.visible = false;
     Object.assign(FLOWER_RING, { tiles: 3, cell: 0.7 });
     const groundAt = (x: number, z: number): number => heightAt(x, z);
-    this.blades = createBlades(this.F, { height: HEIGHT, seed: SEED, density: 1, rings: GAME_RINGS }, groundAt);
+    this.blades = createBlades(this.F, { height: HEIGHT, seed: SEED, density: 1, rings: gameRingsFor(baseOf(quality)) }, groundAt);
     this.blades.init();
     this.flowers = createFlowers(this.F, { height: HEIGHT, seed: SEED }, groundAt);
     this.mesh.add(this.blades.group, this.flowers.group);

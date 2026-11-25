@@ -22,6 +22,14 @@ export interface PaintedTheme {
   propMix?: number;
   /** Tương phản đêm Họa Cảnh quanh mức tối (1 = như Vân Lam; >1 kéo sáng/tối xa nhau để nhân vật, vách, tàn tích còn khối). */
   nightContrast?: number;
+  /** Màu nhuộm trăng (nhân, tuyến tính) của đêm Họa Cảnh; mặc định [0,3, 0,46, 0,88] của Vân Lam. Bớt xanh dương để nhân vật và vòng chọn không chìm. */
+  nightTint?: [number, number, number];
+  /** Nhân đèn trời/trăng của đêm Họa Cảnh (mặc định 1): nhân vật và quái là phần duy nhất nhận đèn, tăng để đọc rõ. */
+  nightLift?: number;
+  /** 0..1: mức ánh xạ đất vẽ vào cặp `ground` (mặc định 1). Thấp hơn giữ biến thiên màu gốc (mảng đất nhạt, đổi sắc theo vùng). */
+  groundMix?: number;
+  /** 0..1.5: bão hòa của đất sau khi đổi tông (mặc định 1). */
+  groundSat?: number;
   /** Sương thấp: dải cao độ (m) mà sương nằm dưới, từ đỉnh dải trở xuống; và cường độ 0..1. */
   mistBand: [number, number];
   mistK: number;
@@ -38,17 +46,23 @@ export const PAINTED_THEMES: Record<string, PaintedTheme> = {
     far: [0xdce6f6, 0x5c6896],
     propMix: 0.85,
     nightContrast: 2.1,
+    nightTint: [0.34, 0.48, 0.85],
+    nightLift: 1.4,
   },
   // Thiên Lộ Giới / Cửu Kiều (TN-7): cao nguyên đá rêu trên biển mây, bình minh vàng hồng; đất rêu xanh lam, đá xám ấm, sương hồng nhạt ở rìa
   cuu_kieu: {
-    ground: [0x7fae5c, 0x35604f],
+    ground: [0x8fab6e, 0x445f52],
     rock: [0xbdb5a4, 0x5a5878],
     mist: 0xf2e2da,
     mistBand: [66, 90],
     mistK: 0.55,
     far: [0xe6d8d8, 0x6a6a96],
     propMix: 0.35,
-    nightContrast: 1.9,
+    nightContrast: 1.8,
+    nightTint: [0.44, 0.52, 0.76],
+    nightLift: 1.8,
+    groundMix: 0.5,
+    groundSat: 0.7,
   },
 };
 
@@ -68,6 +82,9 @@ export const themeU = {
   mistK: uniform(DEFAULT_MIST.k),
   propMix: uniform(0),
   nightContrast: uniform(1),
+  nightTint: uniform(new THREE.Vector3(0.3, 0.46, 0.88)),
+  groundMix: uniform(1),
+  groundSat: uniform(1),
 };
 
 /** Chọn bảng cho level (gọi trước khi dựng/hiển thị địa hình). */
@@ -76,6 +93,9 @@ export function setPaintedTheme(levelId: string): void {
   themeU.on.value = t ? 1 : 0;
   themeU.propMix.value = t?.propMix ?? 0;
   themeU.nightContrast.value = t?.nightContrast ?? 1;
+  themeU.nightTint.value.set(...(t?.nightTint ?? [0.3, 0.46, 0.88]));
+  themeU.groundMix.value = t?.groundMix ?? 1;
+  themeU.groundSat.value = t?.groundSat ?? 1;
   if (t) {
     themeU.gLit.value.setHex(t.ground[0], THREE.SRGBColorSpace);
     themeU.gShade.value.setHex(t.ground[1], THREE.SRGBColorSpace);
