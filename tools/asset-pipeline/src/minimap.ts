@@ -17,6 +17,7 @@ import {
   mulberry32,
   terrainOf,
   TRAILS,
+  at,
 } from '@dtl/shared';
 import { ensureLevel } from '@dtl/content/fixtures';
 import { ROOT } from './config.js';
@@ -75,7 +76,7 @@ export function buildMinimapPixels(levelId = 'van_lam'): { data: Uint8ClampedArr
   const { x0, z0, size } = minimapBounds(levelId);
   const step = size / N;
   const H = new Float32Array((N + 2) * (N + 2));
-  const hAt = (i: number, j: number) => H[(j + 1) * (N + 2) + (i + 1)];
+  const hAt = (i: number, j: number) => H[(j + 1) * (N + 2) + (i + 1)] ?? 0;
   for (let j = -1; j <= N; j++)
     for (let i = -1; i <= N; i++) H[(j + 1) * (N + 2) + (i + 1)] = heightAt(x0 + (i + 0.5) * step, z0 + (j + 0.5) * step);
 
@@ -84,9 +85,9 @@ export function buildMinimapPixels(levelId = 'van_lam'): { data: Uint8ClampedArr
   const put = (i: number, j: number, c: RGB, a: number) => {
     if (i < 0 || j < 0 || i >= N || j >= N || a <= 0) return;
     const o = (j * N + i) * 3;
-    out[o] += (c[0] - out[o]) * a;
-    out[o + 1] += (c[1] - out[o + 1]) * a;
-    out[o + 2] += (c[2] - out[o + 2]) * a;
+    out[o] = (out[o] ?? 0) + (c[0] - (out[o] ?? 0)) * a;
+    out[o + 1] = (out[o + 1] ?? 0) + (c[1] - (out[o + 1] ?? 0)) * a;
+    out[o + 2] = (out[o + 2] ?? 0) + (c[2] - (out[o + 2] ?? 0)) * a;
   };
 
   // 1) giấy + bóng nổi khối nhẹ + chấm nâu theo độ cao
@@ -104,7 +105,7 @@ export function buildMinimapPixels(levelId = 'van_lam'): { data: Uint8ClampedArr
       k *= 1 - 0.2 * Math.max(0, shade) - 0.06 * Math.max(0, -shade) + 0.04 * Math.max(0, -shade);
       const hi = Math.max(0, Math.min(1, (h - 60) / 260));
       const o = (j * N + i) * 3;
-      for (let c = 0; c < 3; c++) out[o + c] = PAPER[c] * k * (1 - 0.1 * hi) - hi * (c === 2 ? 8 : 4);
+      for (let c = 0; c < 3; c++) out[o + c] = at(PAPER, c, 'PAPER') * k * (1 - 0.1 * hi) - hi * (c === 2 ? 8 : 4);
       const w = h < WATER_Y && inLakeWater(x, z);
       water[j * N + i] = w ? 1 : 0;
     }
@@ -195,8 +196,8 @@ export function buildMinimapPixels(levelId = 'van_lam'): { data: Uint8ClampedArr
     let run = 0;
     const rnd = mulberry32(SEED + pts.length);
     for (let s = 0; s + 1 < pts.length; s++) {
-      const [ax, az] = pt(...pts[s]);
-      const [bx, bz] = pt(...pts[s + 1]);
+      const [ax, az] = pt(...at(pts, s, 'pts'));
+      const [bx, bz] = pt(...at(pts, s + 1, 'pts'));
       const len = Math.hypot(bx - ax, bz - az);
       for (let d = 0; d < len; d += 0.6) {
         const on = run % (dash + gap) < dash;
@@ -208,20 +209,21 @@ export function buildMinimapPixels(levelId = 'van_lam'): { data: Uint8ClampedArr
       }
     }
   };
-  for (const zn of zones) stroke([...zn.poly, zn.poly[0]], 1.5, INK, 0.8, 14, 8);
+  for (const zn of zones) stroke([...zn.poly, at(zn.poly, 0, 'zn.poly')], 1.5, INK, 0.8, 14, 8);
   // Đường mòn: bezier bậc hai giữa các điểm, nét chấm nâu.
   const hub: [number, number] | undefined =
     tr.def.play && !zones.some((z) => inPoly(z.poly, tr.def.play!.cx, tr.def.play!.cz)) ? [tr.def.play.cx, tr.def.play.cz] : undefined;
   for (const tr of levelId === 'van_lam' ? TRAILS : autoTrails(zones, hub)) {
     const pts: [number, number][] = [];
     for (let s = 0; s + 1 < tr.length; s++) {
-      const [a, b] = [tr[s], tr[s + 1]];
+      const a = at(tr, s, 'tr');
+      const b = at(tr, s + 1, 'tr');
       const mx = (a[0] + b[0]) / 2 + (hash01(a[0], b[1], SEED + 5) - 0.5) * 30;
       const mz = (a[1] + b[1]) / 2 + (hash01(a[1], b[0], SEED + 6) - 0.5) * 30;
       for (let t = 0; t < 1; t += 0.04)
         pts.push([(1 - t) ** 2 * a[0] + 2 * (1 - t) * t * mx + t * t * b[0], (1 - t) ** 2 * a[1] + 2 * (1 - t) * t * mz + t * t * b[1]]);
     }
-    pts.push(tr[tr.length - 1]);
+    pts.push(at(tr, tr.length - 1, 'tr'));
     stroke(pts, 1.3, TRAIL, 0.85, 5, 5, 0.6);
   }
   // Vòng mực quanh tông môn và bệ cổng.
@@ -288,9 +290,9 @@ export function buildMinimapPixels(levelId = 'van_lam'): { data: Uint8ClampedArr
       const v = 1 - 0.18 * Math.max(0, 1 - e / 70);
       const o = (j * N + i) * 3;
       const q = (j * N + i) * 4;
-      data[q] = out[o] * v;
-      data[q + 1] = out[o + 1] * v;
-      data[q + 2] = out[o + 2] * v;
+      data[q] = at(out, o, 'out') * v;
+      data[q + 1] = at(out, o + 1, 'out') * v;
+      data[q + 2] = at(out, o + 2, 'out') * v;
       data[q + 3] = 255;
     }
   }
