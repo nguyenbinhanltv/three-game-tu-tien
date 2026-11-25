@@ -1,3 +1,4 @@
+import { paintedProp } from '../../render/painted/props';
 import { FLAGS } from '../../base/flags';
 import { levelId } from '../../base/levelCtx';
 import { baseOf } from '../../base/quality';
@@ -608,8 +609,7 @@ export class PropLayer {
 
   private templateOf(handle: AssetHandle): Template {
     const cfg = handle.id ? PROP_CFG[handle.id] : undefined;
-    const mats = adoptGltfMaterials(
-      handle.scene,
+    const baseWrap: ((m: THREE.MeshStandardNodeMaterial) => THREE.MeshStandardNodeMaterial) | undefined =
       cfg?.crystal && cfg.sight
         ? (m) => withSightFade(propCrystal(m)) // tinh thể cao (cột tà Dị Vực): vừa phát sáng vừa mờ khi che người
         : cfg?.tree || cfg?.sight
@@ -618,8 +618,9 @@ export class PropLayer {
             ? bannerSway
             : cfg?.crystal
               ? propCrystal
-              : undefined,
-    );
+              : undefined;
+    // Họa Cảnh: cây và nhà tô hai tông (render/painted/props.ts); mặc định giữ nguyên
+    const mats = adoptGltfMaterials(handle.scene, FLAGS.style === 'painted' ? (m) => paintedProp(baseWrap ? baseWrap(m) : m) : baseWrap);
     handle.scene.updateMatrixWorld(true);
     const lods: LodMesh[][] = [];
     handle.scene.traverse((o) => {
