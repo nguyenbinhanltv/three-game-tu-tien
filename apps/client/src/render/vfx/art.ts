@@ -118,6 +118,20 @@ export function sweepSpriteGroups(now = performance.now()): void {
   }
 }
 
+/** Phòng thử (`?vfxlab=1`): giải phóng NGAY mọi nhóm đang giữ (kể cả của người chơi) để kiểm vòng nạp lại; trả tên các nhóm đã giải phóng. */
+export function evictSpriteGroups(): SpriteGroup[] {
+  const out: SpriteGroup[] = [];
+  for (const [g, st] of groupState) {
+    if (st.state === 0) continue;
+    st.token++;
+    st.tex.dispose();
+    st.tex.image = undefined as unknown as HTMLImageElement;
+    st.state = 0;
+    out.push(g);
+  }
+  return out;
+}
+
 /** Bộ nhớ GPU ước tính (byte, RGBA8 + chuỗi mipmap) của một nhóm / của mọi nhóm đang giữ: dùng cho số đo và test. */
 export const spriteGroupBytes = (g: SpriteGroup): number =>
   Math.round(SPRITE_GROUPS[g].cols * 512 * SPRITE_GROUPS[g].rows * 512 * 4 * (4 / 3));
