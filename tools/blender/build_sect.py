@@ -602,7 +602,7 @@ def inspect(path):
 
 if __name__ == '__main__':
     args = sys.argv[sys.argv.index('--') + 1:] if '--' in sys.argv else []
-    out = args[0] if args else 'sect.glb'
+    out = args[0] if args else 'arch_sect.glb'
     make_textures()
     b = build()
     nv, nf, keys = export(b, out)

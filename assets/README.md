@@ -32,7 +32,7 @@ pnpm assets:optimize           # chỉ bước tối ưu từ assets/build/raw/
 pnpm assets:validate           # kiểm theo manifest + sổ khóa khớp đĩa + mọi file có trên R2 (cần VITE_ASSET_BASE); có lỗi thì exit 1 và in lý do
 pnpm assets:push               # SAU build: cập nhật assets/asset-lock.json rồi đẩy file mới lên R2 (cần khóa R2 trong .env.local), commit sổ khóa cùng manifest
 pnpm assets:pull               # máy mới / sau khi merge main: tải nhị phân về apps/client/public theo sổ khóa (không cần khóa)
-pnpm --filter @dtl/asset-pipeline test   # test pipeline (sect.glb + nhân vật có xương sinh bằng Blender headless)
+pnpm --filter @dtl/asset-pipeline test   # test pipeline (GLB kiến trúc tổng hợp dựng trong test + nhân vật có xương sinh bằng Blender headless)
 ```
 
 Không có Blender: bước sinh GLB thô bị bỏ qua có cảnh báo, bước tối ưu vẫn chạy với file thô đang có. Không có `toktx`: `assets:build`/`assets:optimize` **dừng với lỗi** và in cách cài (mọi asset đã commit dùng KTX2, build thiếu `toktx` sẽ làm manifest lẫn hai định dạng). Xem mục "Cài toktx" bên dưới; `--no-ktx` chỉ dùng khi cố ý thử không nén.
@@ -125,7 +125,7 @@ SFX và âm môi trường không đi qua pipeline GLB mà qua `pnpm audio:build
 
 ## Chưa có
 
-- Client chọn LOD theo khoảng cách (M2-9): `AssetCache` (`apps/client/src/game/assets.ts`, M2-8) đã nạp theo manifest nhưng chỉ hiện LOD0. `public/assets/sect.glb` (bản chép GLB thô của job Blender) chỉ còn làm đầu vào cho test pipeline, client không nạp.
+- Client chọn LOD theo khoảng cách (M2-9): `AssetCache` (`apps/client/src/game/assets.ts`, M2-8) đã nạp theo manifest nhưng chỉ hiện LOD0.
 - `rig_human_base.py` (M2-3, đổi tên xương Tripo/mixamo); ảnh xem trước tự động `assets/build/previews/`.
 - `import_tripo.py` mới kiểm nhánh có xương bằng fixture (`build_fixture_rig.py --legs --tripo`); chưa chạy với GLB rig thật của Tripo.
 
