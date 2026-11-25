@@ -130,7 +130,8 @@ export function mapDecalNodes(U: FxUniforms): { color: N; opacity: N } {
     if (f) fillCol = mix(fillCol, vec3(f[0], f[1], f[2]), step(i - 0.5, idx).mul(step(idx, i + 0.5)));
   });
   // Vạch báo (0) nền mờ 0,5 để thấy mặt đất; vùng nổ các hệ nền đặc 0,8 (alpha ảnh suy từ độ sáng nên vùng đất/đá sẫm vốn trong suốt).
-  const fillA = mix(float(0.92), float(0.5), step(idx, 0.5))
+  // Vạch báo theo màu hệ: nền tô mờ (0,2) thay vì 0,5 để chỉ viền + vân đọc rõ, phần tô lấp dần.
+  const fillA = mix(float(0.92), mix(float(0.5), float(0.2), nonRed), step(idx, 0.5))
     .mul(mask)
     .mul(mix(float(1).sub(smoothstep(0.93, 0.985, r)), float(1), strip));
   const top = max(min(s.a.mul(1.6), 1), edge);
