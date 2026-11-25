@@ -4,7 +4,7 @@ import { compareListing } from './verify.js';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { hasContentHash, type Lock, pruneStale, unhashedBinaries } from './lock.js';
+import { hasContentHash, type Lock, pruneStale, trackedIn, unhashedBinaries } from './lock.js';
 
 const sha = (c: string) => c.repeat(64).slice(0, 64);
 const lock = (files: Record<string, { sha256: string; bytes: number }>): Lock => ({ version: 1, files });
@@ -161,15 +161,26 @@ describe('prune: dọn nhị phân cache ngoài sổ khóa (CI)', () => {
 
   it('chạy thử chỉ liệt kê, không xóa', () => {
     const { dir } = setup();
-    expect(pruneStale(L, false, dir)).toEqual(['hoa-truc/vfx_sprites.0fe2efa754.webp']);
+    expect(pruneStale(L, false, dir, new Set())).toEqual(['hoa-truc/vfx_sprites.0fe2efa754.webp']);
     expect(fs.existsSync(path.join(dir, 'hoa-truc/vfx_sprites.0fe2efa754.webp'))).toBe(true);
   });
   it('--apply xóa nhị phân ngoài sổ, giữ file trong sổ, json và font', () => {
     const { dir } = setup();
-    pruneStale(L, true, dir);
+    pruneStale(L, true, dir, new Set());
     expect(fs.existsSync(path.join(dir, 'hoa-truc/vfx_sprites.0fe2efa754.webp'))).toBe(false);
     for (const keep of ['hoa-truc/vfx_sprites.aaaaaaaaaa.webp', 'assets/manifest.json', 'fonts/a.woff2'])
       expect(fs.existsSync(path.join(dir, keep)), keep).toBe(true);
-    expect(pruneStale(L, true, dir)).toEqual([]);
+    expect(pruneStale(L, true, dir, new Set())).toEqual([]);
+  });
+  it('KHÔNG xóa file git đang theo dõi dù không có trong sổ khóa (favicon, file tĩnh commit)', () => {
+    const { dir, put } = setup();
+    put('favicon.png');
+    const tracked = new Set(['favicon.png']);
+    expect(pruneStale(L, true, dir, tracked)).toEqual(['hoa-truc/vfx_sprites.0fe2efa754.webp']);
+    expect(fs.existsSync(path.join(dir, 'favicon.png'))).toBe(true);
+  });
+  it('trackedIn đọc git ls-files thật: file đã commit trong public/ được nhận ra', () => {
+    const t = trackedIn(path.resolve(__dirname, '../../../../apps/client/public'));
+    expect(t.size).toBeGreaterThan(0);
   });
 });
