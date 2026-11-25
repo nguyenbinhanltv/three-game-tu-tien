@@ -1,3 +1,4 @@
+import { paintedProp } from '../../render/painted/props';
 import * as THREE from 'three/webgpu';
 import { hash01 } from '@dtl/shared';
 import { withSightFade } from './occlusion';
@@ -187,7 +188,7 @@ export class CardForest {
   /** `trees`: các instance cây (id thuộc `CARD_TREE_IDS`). */
   constructor(trees: readonly PropInstance[], tex: SkyTextures) {
     this.group.name = 'cardForest';
-    this.mat = withSightFade(foliageMaterial(tex)); // cây thẻ cũng mờ khi che nhân vật/rìa khung (camera chéo)
+    this.mat = paintedProp(withSightFade(foliageMaterial(tex))); // cây thẻ cũng mờ khi che nhân vật/rìa khung (camera chéo)
     const templates: [Map<string, Template>, Map<string, Template>] = [new Map(), new Map()];
     let seed = 11;
     for (const [id, sp] of Object.entries(SPECIES)) {
