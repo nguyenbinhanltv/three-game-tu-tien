@@ -154,7 +154,7 @@
    "billboard": true,
    "offset": [
     0,
-    0.6,
+    1.47848,
     0
    ],
    "scale": 3.2,
@@ -213,7 +213,7 @@
    "billboard": true,
    "offset": [
     0,
-    0.4,
+    3.274,
     0
    ],
    "scale": 8.53,

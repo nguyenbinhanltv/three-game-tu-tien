@@ -75,7 +75,7 @@
    "billboard": true,
    "offset": [
     0,
-    1.35,
+    2.158,
     -0.4
    ],
    "scale": 6.8,
@@ -85,7 +85,7 @@
     "to": "target",
     "offset": [
      0,
-     1.25,
+     2.158,
      -4.2
     ],
     "ease": "out"

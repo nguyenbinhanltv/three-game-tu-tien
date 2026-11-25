@@ -642,10 +642,10 @@ function spriteNodesImpl(U: FxUniforms, group: SpriteGroup): { color: N; opacity
   // Kiểu "đan" (`fxA.x` = 9, Đan sư): viền mực lục thẫm gần đen, thân XANH LÁ CÂY ngả lục vàng (hue ~135–150°, ÍT lam: tách khỏi ngọc lam của Kiếm tu), viền lục vàng nhạt, lõi vàng chanh nhạt (không cam).
   // Phần ấm của tranh (đốm vàng, cánh hoa hồng nhạt: r > 0,9·g) giữ màu Codex vẽ để điểm vàng/cánh hoa không bị nhuộm lục.
   const dCore = vec3(0.004, 0.03, 0.008);
-  const dBody = vec3(0.07, 0.5, 0.09);
-  const dRim = vec3(0.5, 0.88, 0.32);
-  const dWhite = vec3(0.92, 1.0, 0.62);
-  const dT = smoothstep(0.1, 0.78, spLum.sqrt());
+  const dBody = vec3(0.04, 0.42, 0.06);
+  const dRim = vec3(0.34, 0.76, 0.2);
+  const dWhite = vec3(0.86, 0.98, 0.5);
+  const dT = pow(smoothstep(0.2, 1.0, spLum.sqrt()), float(1.35));
   const dRamp = mix(mix(mix(dCore, dBody, smoothstep(0.04, 0.4, dT)), dRim, smoothstep(0.4, 0.8, dT)), dWhite, smoothstep(0.9, 1.0, dT));
   const dWarm = smoothstep(0.0, 0.08, ts.r.sub(ts.g.mul(0.9)));
   const dHybrid = mix(dRamp, min(ts.rgb.mul(1.12), vec3(1.0, 0.95, 0.6)), dWarm);

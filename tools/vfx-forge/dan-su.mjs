@@ -53,7 +53,14 @@ const ALPHA = {
 };
 /** Sprite vẽ tay (billboard). `size` mét (ô vuông), `off` offset tâm. */
 const sprite = (name, o) => {
-  const { size, sizeTo, off = [0, 0, 0], ...rest } = o;
+  const { size, sizeTo, ...rest0 } = o;
+  let { off = [0, 0, 0], ...rest } = rest0;
+  // Tấm billboard nghiêng theo camera chéo: mép dưới tụt dưới đất một đoạn ≈ 0,62 × nửa cạnh, làm tranh bị mặt đất cắt phẳng. Nâng tâm đủ cao để mép dưới không xuống dưới sàn.
+  const lift = (y, sz) => Math.max(y, 0.62 * ((sz * K) / 2) + 0.05);
+  const big = Math.max(size, sizeTo ?? size);
+  off = [off[0], lift(off[1], big), off[2]];
+  if (rest.move?.offset)
+    rest = { ...rest, move: { ...rest.move, offset: [rest.move.offset[0], lift(rest.move.offset[1], big), rest.move.offset[2]] } };
   return mesh({
     shape: 'sprite',
     sprite: name,
