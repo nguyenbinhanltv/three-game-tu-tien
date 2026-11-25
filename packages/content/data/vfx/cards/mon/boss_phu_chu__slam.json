@@ -1,0 +1,33 @@
+{
+  "monId": "boss_phu_chu",
+  "move": "slam",
+  "idea": "Pha 2: Phủ Chủ lật bàn tay, phòng đổi mặt dưới chân người chơi: vòng tròn 4,5 m chia đôi sáng/tối (vạch báo ĐỎ), rồi lật mặt nổ ra, nửa vòng sáng nửa vòng tối bật tung bụi.",
+  "element": "tho",
+  "palette": {
+    "core": "131b2a",
+    "body": "4a6a8c",
+    "rim": "dfe8f2",
+    "accent": "ff1f3d"
+  },
+  "shapeLang": [
+    "ring",
+    "burst"
+  ],
+  "zone": {
+    "shape": "circle",
+    "r": 4.5,
+    "at": "target"
+  },
+  "timing": {
+    "anticipationMs": 1300,
+    "impactMs": 130,
+    "lingerMs": 800
+  },
+  "readability": "Vạch báo ĐỎ đặc đúng vùng tròn bán kính 4,5 m, đọc rõ trên nền đá sáng cả ngày lẫn đêm, ngoài vùng hoàn toàn sạch; thân hiệu ứng nổ màu hệ (lam xám và vàng nhạt), tuyệt đối không đỏ/cam, không che người chơi.",
+  "budget": {
+    "drawCalls": 8,
+    "particles": 300,
+    "screenCover": 0.3,
+    "overdraw": 5
+  }
+}

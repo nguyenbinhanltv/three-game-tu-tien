@@ -1,0 +1,33 @@
+{
+  "monId": "boss_thach_tuong",
+  "move": "slam",
+  "idea": "Thạch Tượng nện xuống: giáp đá nứt theo nhịp thở của núi, khe vàng đá tỏa từ tâm bán kính 5 m (vạch báo ĐỎ), rồi tảng đá tróc ra bay lên, bụi mỏng.",
+  "element": "tho",
+  "palette": {
+    "core": "1e1c16",
+    "body": "a29d8c",
+    "rim": "f4eed8",
+    "accent": "ff1f3d"
+  },
+  "shapeLang": [
+    "ring",
+    "spike"
+  ],
+  "zone": {
+    "shape": "circle",
+    "r": 5,
+    "at": "target"
+  },
+  "timing": {
+    "anticipationMs": 1300,
+    "impactMs": 130,
+    "lingerMs": 900
+  },
+  "readability": "Vạch báo ĐỎ đặc đúng vùng tròn bán kính 5 m, đọc rõ trên nền đá sáng cả ngày lẫn đêm, ngoài vùng hoàn toàn sạch; thân hiệu ứng nổ màu hệ (xám đá và vàng đá nhạt), tuyệt đối không đỏ/cam, không che người chơi.",
+  "budget": {
+    "drawCalls": 8,
+    "particles": 300,
+    "screenCover": 0.3,
+    "overdraw": 5
+  }
+}
