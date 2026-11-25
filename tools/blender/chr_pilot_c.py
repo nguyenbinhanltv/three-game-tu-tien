@@ -32,6 +32,7 @@ REPORT = opt('--report')
 SKIN_R = float(opt('--skin-r', 0.02))  # m, model cao 1,7
 COVER = float(opt('--cover', 0.08))
 SKIN_COL = float(opt('--skin-col', 0.12))  # khoảng cách RGB (0-1) tới màu da thân nền
+BASE_TRIS = int(opt('--base-tris', 0))  # >0: giảm mặt thân nền về cỡ này trước khi mask (đầu giữ nguyên bằng nhóm đỉnh Head); LOD0 cả hai lưới còn ≤ 110k
 HEAD_Z = float(opt('--head-z', 1.38))  # m: trên mức này (đầu/cổ) luôn giữ thân nền
 if not (BASE and CLOTH and OUT):
     raise SystemExit('thiếu --base/--cloth/--out')
@@ -60,6 +61,26 @@ def import_glb(path, tag):
 bpy.ops.wm.read_factory_settings(use_empty=True)
 b_arm, b_mesh = import_glb(BASE, 'base')
 c_arm, c_mesh = import_glb(CLOTH, 'cloth')
+
+
+def decimate_body(o, target):
+    """Giảm mặt (Collapse, đối xứng X); đỉnh nhóm `Head` được bảo vệ để mặt không méo."""
+    n0 = sum(len(p.vertices) - 2 for p in o.data.polygons)
+    if target <= 0 or n0 <= target:
+        return n0
+    bpy.context.view_layer.objects.active = o
+    dec = o.modifiers.new('dec', 'DECIMATE')
+    dec.decimate_type = 'COLLAPSE'
+    dec.ratio = target / n0
+    dec.use_collapse_triangulate = True
+    dec.use_symmetry = True
+    dec.symmetry_axis = 'X'
+    if 'Head' in o.vertex_groups:
+        dec.vertex_group = 'Head'
+        dec.invert_vertex_group = True
+        dec.vertex_group_factor = 1.0
+    bpy.ops.object.modifier_apply(modifier=dec.name)
+    return sum(len(p.vertices) - 2 for p in o.data.polygons)
 
 
 def world_verts(o):
@@ -105,9 +126,12 @@ for n in common:
     hc = np.array(c_arm.matrix_world @ c_arm.data.bones[n].head_local)
     dev[n] = float(np.linalg.norm(hb - hc)) * 100.0
 worst = sorted(dev.items(), key=lambda kv: -kv[1])[:6]
+core = [v for k, v in dev.items() if not any(f in k for f in ('thumb', 'index', 'middle', 'ring', 'pinky'))]
+REP['bone_dev_cm_core'] = {'n': len(core), 'max': round(max(core), 2), 'mean': round(sum(core) / len(core), 2)}
 REP['bone_dev_cm'] = {'common': len(common), 'max': round(max(dev.values()), 2), 'mean': round(sum(dev.values()) / len(dev), 2), 'worst': [(k, round(v, 2)) for k, v in worst]}
 log(f'xương chung {len(common)}, lệch đầu xương max {REP["bone_dev_cm"]["max"]} cm, trung bình {REP["bone_dev_cm"]["mean"]} cm')
 
+REP['base_decimate'] = {'before': sum(len(p.vertices) - 2 for p in b_mesh.data.polygons), 'after': decimate_body(b_mesh, BASE_TRIS)}
 VB, VC = world_verts(b_mesh), world_verts(c_mesh)
 TB, TC = tris_of(b_mesh), tris_of(c_mesh)
 H = float(VB[:, 2].max() - VB[:, 2].min())
@@ -125,7 +149,8 @@ near = np.zeros(len(VC))
 for i in range(len(VC)):
     loc, nrm, fi, dd = bvh_b.find_nearest(Vector(VC[i]), 0.2)
     near[i] = dd if fi is not None else 9.0
-skin_like = (np.linalg.norm(tx_c - skin_ref, axis=1) < SKIN_COL) & (near <= SKIN_R * sk)
+# Đầu: mặt/cổ/tai của B' (khác hình với thân nền) bỏ theo màu da bất kể khoảng cách (thân nền giữ nguyên đầu); thân/tay/chân: phải trùng mặt thân nền.
+skin_like = (np.linalg.norm(tx_c - skin_ref, axis=1) < SKIN_COL) & ((near <= SKIN_R * sk) | (VC[:, 2] > HEAD_Z * sk))
 cut_faces = [i for i, t in enumerate(TC) if all(skin_like[v] for v in t)]
 REP['cloth'] = {'verts': len(VC), 'tris': len(TC), 'skin_like_verts': int(skin_like.sum()), 'tris_removed': len(cut_faces)}
 log(f'lớp đồ: {int(skin_like.sum())} đỉnh da trùng thân nền, bỏ {len(cut_faces)}/{len(TC)} tam giác')
@@ -189,6 +214,7 @@ def rigid_hands(o):
             continue
         w0 = np.array(b_arm.matrix_world @ hb.head_local)
         w1 = np.array(b_arm.matrix_world @ tip.tail_local)
+        log(f'DBG tay {sd}: cổ tay {w0.round(3).tolist()}, ngọn {w1.round(3).tolist()}, đỉnh trong 0,15 m quanh cổ tay {int((np.linalg.norm(V - w0, axis=1) < 0.15 * sk).sum())}')
         ax = w1 - w0
         axl = float(np.linalg.norm(ax))
         axu = ax / max(axl, 1e-9)
