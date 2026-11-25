@@ -6,7 +6,7 @@ Cùng quy trình PR #93–#95 (`docs/codex-assets/`): `node tools/codex-assets/g
 
 ## Kiểm kê trên origin/main (trước khi làm)
 
-`node tools/codex-assets/missing.mjs` (mới) liệt kê def có `icon` mà chưa có ô trong atlas. `pnpm icons:check` trước: **92/141** có tranh, 49 dùng emoji `iconFallback`; sau: **141/141**.
+`node archive/codex-assets/missing.mjs` (mới) liệt kê def có `icon` mà chưa có ô trong atlas. `pnpm icons:check` trước: **92/141** có tranh, 49 dùng emoji `iconFallback`; sau: **141/141**.
 
 | Nhóm | Thiếu (trước) | Số |
 | --- | --- | --- |
@@ -38,7 +38,7 @@ Chưa có trên main nên chưa gắn (ảnh đã vẽ, để sẵn): NPC chươ
 ## Chạy lại
 
 ```
-node tools/codex-assets/missing.mjs            # liệt kê icon thiếu
+node archive/codex-assets/missing.mjs            # liệt kê icon thiếu
 node tools/codex-assets/gen.mjs icons|portraits|loading [id…] [--jobs 4]
 node tools/codex-assets/pack.mjs portraits loading
 pnpm icons:build && pnpm icons:check

@@ -323,8 +323,13 @@ for (const levelId of Object.keys(SCENES)) {
 const prev = fs.existsSync(OUT) ? fs.readFileSync(OUT, 'utf8') : '';
 const keep: Record<string, string> = {};
 if (ONLY) for (const m of prev.matchAll(/^ {2}(\w+): \[\n([\s\S]*?)^ {2}\],$/gm)) keep[m[1]!] = m[2]!;
-const fmt = (p: TcProp) =>
-  `    { id: '${p.id}', x: ${p.x}, z: ${p.z}, yaw: ${p.yaw}, s: ${p.s}${p.col ? `, col: [${p.col.map((c) => `[${c.x}, ${c.z}, ${c.r}]`).join(', ')}]` : ''} },\n`;
+// Mỗi prop một hàng gọn: [id, x, z, yaw, s] hoặc thêm cột thứ sáu `col`: số = một vòng va chạm bán kính đó đặt đúng tại (x, z); mảng = các vòng [x, z, r] tự khai.
+const fmt = (p: TcProp) => {
+  const c = p.col;
+  const own = c?.length === 1 && c[0]!.x === p.x && c[0]!.z === p.z;
+  const col = !c ? '' : own ? `, ${c[0]!.r}` : `, [${c.map((q) => `[${q.x}, ${q.z}, ${q.r}]`).join(', ')}]`;
+  return `    ['${p.id}', ${p.x}, ${p.z}, ${p.yaw}, ${p.s}${col}],\n`;
+};
 let body = '';
 for (const id of Object.keys(SCENES)) {
   const list = out[id];
@@ -340,8 +345,18 @@ export interface TcProp extends HandProp {
   col?: readonly (readonly [number, number, number])[];
 }
 
-export const THIEN_CONG_PROPS: Record<string, readonly TcProp[]> = {
+/** Hàng dữ liệu gọn: [id, x, z, yaw, s, col?]; col = bán kính một vòng tại (x, z), hoặc danh sách [x, z, r]. */
+type TcRow = readonly [string, number, number, number, number, (number | readonly (readonly [number, number, number])[])?];
+
+const expand = ([id, x, z, yaw, s, c]: TcRow): TcProp =>
+  c === undefined ? { id, x, z, yaw, s } : { id, x, z, yaw, s, col: typeof c === 'number' ? [[x, z, c]] : c };
+
+const ROWS: Record<string, readonly TcRow[]> = {
 ${body}};
+
+export const THIEN_CONG_PROPS: Record<string, readonly TcProp[]> = Object.fromEntries(
+  Object.entries(ROWS).map(([level, rows]) => [level, rows.map(expand)]),
+);
 
 /** Vòng va chạm của prop PROP-1 trong level. */
 export function thienCongColliders(levelId: string): { x: number; z: number; r: number }[] {
