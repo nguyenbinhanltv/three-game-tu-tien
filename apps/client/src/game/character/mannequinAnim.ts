@@ -13,11 +13,13 @@ export const LOCO = {
 } as const;
 
 export type LocoBand = keyof typeof LOCO;
+/** Bảng dải tốc độ (clip, tốc độ gốc, độ dài chu kỳ); mặc định `LOCO` (UAL), Thân Pháp thay jog/sprint bằng clip Patch (`patchLoop.ts`). */
+export type LocoTable = Readonly<Record<LocoBand, { clip: string; speed: number; stride: number }>>;
 export type LocoDirKey = 'f' | 'b' | 'l' | 'r';
 
 /** Tên clip theo dải tốc độ và hướng (đi lùi/ngang dựng thủ tục, tools/blender/ual_loco.py). */
-export function locoClipName(band: LocoBand, dir: LocoDirKey): string {
-  if (dir === 'f') return LOCO[band].clip;
+export function locoClipName(band: LocoBand, dir: LocoDirKey, table: LocoTable = LOCO): string {
+  if (dir === 'f') return table[band].clip;
   const b = band === 'walk' ? 'Walk' : band === 'jog' ? 'Jog' : 'Sprint';
   return `${b}_${dir === 'b' ? 'Bwd' : dir === 'l' ? 'StrafeL' : 'StrafeR'}_Loop`;
 }
@@ -58,13 +60,16 @@ export interface LocoMix {
 }
 
 /** Trọng số đi/chạy/chạy nhanh theo tốc độ thật. Tổng trọng số = 1. */
-export function locoMix(speed: number): LocoMix {
+export function locoMix(speed: number, table: LocoTable = LOCO, fwd = 1): LocoMix {
   const wJog = smooth((speed - 1.4) / 1.0);
-  const wSpr = smooth((speed - LOCO.jog.speed) / (LOCO.sprint.speed - LOCO.jog.speed));
+  const wSpr = smooth((speed - table.jog.speed) / (table.sprint.speed - table.jog.speed));
   const sprint = wJog * wSpr;
   const jog = wJog * (1 - wSpr);
   const walk = 1 - wJog;
-  const stride = walk * LOCO.walk.stride + jog * LOCO.jog.stride + sprint * LOCO.sprint.stride;
+  // Hướng tới dùng clip của `table`; lùi/ngang luôn là clip UAL dựng thủ tục (`LOCO`): độ dài chu kỳ trộn theo trọng số hướng tới `fwd`, nếu không clip lùi/ngang
+  // của UAL phát theo chu kỳ của clip Patch (ngắn hơn ~25%) và chân trụ chạy nhanh hơn thân.
+  const st = (b: LocoBand): number => fwd * table[b].stride + (1 - fwd) * LOCO[b].stride;
+  const stride = walk * st('walk') + jog * st('jog') + sprint * st('sprint');
   // Tốc độ gốc của hỗn hợp: chu kỳ/giây = tốc độ / độ dài chu kỳ, kẹp để không quá chậm khi trộn.
   return { walk, jog, sprint, cycles: Math.max(0.35, speed / Math.max(0.5, stride)) };
 }
