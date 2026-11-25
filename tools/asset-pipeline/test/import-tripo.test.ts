@@ -11,6 +11,7 @@ import { findBlender, runBlender } from '../../blender/find-blender.mjs';
 import { ROOT, createIO, loadBudgets } from '../src/config.js';
 import { optimizeAsset } from '../src/optimize.js';
 import { countTriangles, lodLevel, measurePoses } from '../src/stats.js';
+import { at } from '@dtl/shared';
 
 const blender = findBlender();
 const SCRIPT = path.join(ROOT, 'tools/blender/import_tripo.py');
@@ -54,7 +55,7 @@ describe.skipIf(!blender)('import_tripo.py (Blender headless)', () => {
   afterAll(() => fs.rmSync(dir, { recursive: true, force: true }));
 
   it('đầu vào đúng là kiểu Tripo: cao 1 m, gốc ở tâm', async () => {
-    const d = measurePoses(await (await createIO()).read(src)).rest;
+    const d = at(measurePoses(await (await createIO()).read(src)), 'rest', 'poses');
     expect(d.height).toBeCloseTo(1, 3);
     expect(d.minY).toBeCloseTo(-0.5, 3);
   });
@@ -65,7 +66,7 @@ describe.skipIf(!blender)('import_tripo.py (Blender headless)', () => {
 
   it('cao đúng meta, đáy ở Y = 0, tâm X/Z ở gốc, transform đã áp', async () => {
     const doc = await (await createIO()).read(out(1));
-    const d = measurePoses(doc).rest;
+    const d = at(measurePoses(doc), 'rest', 'poses');
     expect(d.height).toBeCloseTo(1.7, 3);
     expect(d.minY).toBeCloseTo(0, 3);
     expect(d.width).toBeCloseTo(d.depth, 2);
@@ -87,8 +88,8 @@ describe.skipIf(!blender)('import_tripo.py (Blender headless)', () => {
         .find((n) => n.getName() === name)!;
     const l = worldPos(joint('thigh_l'));
     const r = worldPos(joint('thigh_r'));
-    expect(l[0] - r[0]).toBeCloseTo(0.18, 3);
-    expect(l[2] - r[2]).toBeCloseTo(0, 4);
+    expect(at(l, 0, 'l') - at(r, 0, 'r')).toBeCloseTo(0.18, 3);
+    expect(at(l, 2, 'l') - at(r, 2, 'r')).toBeCloseTo(0, 4);
   });
 
   it('đặt tên theo asset id, giữ skin và trọng số, socket gắn vào xương ở đúng vị trí', async () => {
@@ -98,8 +99,8 @@ describe.skipIf(!blender)('import_tripo.py (Blender headless)', () => {
     expect(root.listMaterials().map((m) => m.getName())).toEqual([`${id}_mat`]);
     expect(root.listTextures().map((t) => t.getName())).toEqual([`${id}_color`]);
     expect(root.listSkins()).toHaveLength(1);
-    expect(root.listSkins()[0].listJoints()).toHaveLength(7);
-    const prim = root.listMeshes()[0].listPrimitives()[0];
+    expect(at(root.listSkins(), 0, 'bảng').listJoints()).toHaveLength(7);
+    const prim = at(at(root.listMeshes(), 0, 'bảng').listPrimitives(), 0, 'bảng');
     expect(prim.getAttribute('JOINTS_0')).not.toBeNull();
     expect(prim.getAttribute('WEIGHTS_0')).not.toBeNull();
     const socket = root.listNodes().find((n) => n.getName() === 'socket_hand_r')!;
@@ -113,14 +114,14 @@ describe.skipIf(!blender)('import_tripo.py (Blender headless)', () => {
 
   it('clip giữ đúng quãng dịch chuyển: root nhấc 0,1 m ở giữa clip sau chuẩn hóa', async () => {
     const poses = measurePoses(await (await createIO()).read(out(1)));
-    expect(poses['breathe@start'].minY).toBeCloseTo(0, 3);
-    expect(poses['breathe@mid'].minY).toBeCloseTo(0.1, 3);
+    expect(at(poses, 'breathe@start', 'poses').minY).toBeCloseTo(0, 3);
+    expect(at(poses, 'breathe@mid', 'poses').minY).toBeCloseTo(0.1, 3);
   });
 
   it('optimize hạ LOD0 về trần faceLimit, mesh có xương giữ trọng số và chiều cao', async () => {
     const outDir = path.join(dir, 'build');
     fs.mkdirSync(outDir);
-    const spec = loadBudgets().classes.player;
+    const spec = at(loadBudgets().classes, 'player', 'classes');
     const warns: string[] = [];
     const e = await optimizeAsset(out(1), id, 'player', spec, outDir, null, (m) => warns.push(m), meta.budget.faceLimit);
     expect(e.rawTriangles).toBeGreaterThan(1200);

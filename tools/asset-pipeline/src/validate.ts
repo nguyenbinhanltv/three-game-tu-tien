@@ -14,6 +14,7 @@ import { Ajv2020 } from 'ajv/dist/2020.js';
 import { ASSET_ID, DEFAULTS, type Budgets, createIO, loadBudgets, rel, textureLimit } from './config.js';
 import { type Manifest, readManifest } from './optimize.js';
 import { type Dims, countTriangles, isSkinned, listTextures, lodCount, lodLevel, maxBones, measurePoses } from './stats.js';
+import { at } from '@dtl/shared';
 
 export interface Issue {
   id: string;
@@ -47,7 +48,7 @@ export function licensedIds(file: string): Set<string> {
   if (!fs.existsSync(file)) return ids;
   for (const line of fs.readFileSync(file, 'utf8').split(/\r?\n/)) {
     const m = /^\|\s*`([a-z0-9_]+)`\s*\|/.exec(line);
-    if (m) ids.add(m[1]);
+    if (m) ids.add(at(m, 1, 'm'));
   }
   return ids;
 }

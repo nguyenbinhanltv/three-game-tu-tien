@@ -10,6 +10,7 @@ import { isMutableKey, listBucket } from '../push.js';
 import { makeClient } from './client.js';
 import { loadR2Env } from './env.js';
 import { type Lock, pool, readGrace, readLock, scanLock, unhashedBinaries } from './lock.js';
+import { at } from '@dtl/shared';
 
 export interface VerifyReport {
   checked: number;
@@ -116,8 +117,8 @@ export async function verifyRemote(base: string, lock: Lock = readLock(), only?:
       else {
         const len = Number(res.headers.get('content-length'));
         // CDN có thể nén/bỏ content-length: chỉ báo lỗi khi có số và lệch.
-        if (Number.isFinite(len) && len > 0 && len !== lock.files[key].bytes && !isMutableKey(key))
-          rep.errors.push(`${key}: kích thước R2 ${len} ≠ sổ khóa ${lock.files[key].bytes}`);
+        if (Number.isFinite(len) && len > 0 && len !== at(lock.files, key, 'lock.files').bytes && !isMutableKey(key))
+          rep.errors.push(`${key}: kích thước R2 ${len} ≠ sổ khóa ${at(lock.files, key, 'lock.files').bytes}`);
       }
     } catch {
       network++;
