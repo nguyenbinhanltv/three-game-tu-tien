@@ -29,6 +29,7 @@ import { gameUrl, launchChrome, reportErrors, watchErrors } from './lib/browser'
 import { drawSources } from './lib/drawsrc';
 import { enterLevel, gm, skipCutscene, tp, waitInGame, waitLevel } from './lib/game';
 import { levelPoints } from './lib/levelpoints';
+import { BASELINE_METHOD } from './lib/gate';
 import { bucketGroups, compareRuns, stat, toMarkdown, type IsoPoint, type IsoRun, round } from './lib/isoreport';
 
 const QUICK = flag('--quick');
@@ -648,6 +649,7 @@ async function main(): Promise<void> {
     backend: meta.backend ?? '?',
     viewport: `${VW}x${VH}`,
     quick: QUICK,
+    ...(SETTLE_MAX > 0 ? { method: BASELINE_METHOD } : {}),
     devBytesMB: meta.devBytesMB ?? null,
     points,
     errors,

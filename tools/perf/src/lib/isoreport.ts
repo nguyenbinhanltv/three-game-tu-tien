@@ -116,6 +116,8 @@ export interface IsoRun {
   backend: string;
   viewport: string;
   quick: boolean;
+  /** Cách đo của lần chạy này: `settled-v1` = đã chờ cảnh nạp xong trước mỗi điểm (`--settle-max` > 0). Thiếu = đo non (bản trước #675 hoặc `--settle-max 0`). */
+  method?: string;
   /** Byte đã giải nén từ Vite dev server tới lúc vào game (+6 s stream); KHÔNG phải tải lần đầu của bản build, không so với ngân sách 30 MB (dùng `pnpm bench:load`). */
   devBytesMB: number | null;
   points: IsoPoint[];

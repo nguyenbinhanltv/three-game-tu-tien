@@ -68,7 +68,8 @@ export interface Baseline {
 export function toBaseline(run: IsoRun, note?: string): Baseline {
   return {
     version: 1,
-    method: BASELINE_METHOD,
+    // Nhãn chép từ chính lần chạy (không phải từ mã ghi baseline): chạy cũ/`--settle-max 0` không có nhãn thì baseline cũng không có.
+    ...(run.method ? { method: run.method } : {}),
     date: run.date,
     ...(note ? { note } : {}),
     backend: run.backend,
