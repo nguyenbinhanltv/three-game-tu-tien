@@ -1,3 +1,4 @@
+import { themeU } from './theme';
 import {
   abs,
   clamp,
@@ -146,9 +147,11 @@ export function paintedOutput(scenePass: N, o: PaintedOutputOpts): N {
   if (o.tint) c = c.mul(vec3(...o.tint));
   // đêm Họa Cảnh: giữ ít tông (sáng/tối của bản vẽ), nhuộm lam ánh trăng, tối rõ nhưng còn đọc được hình
   const ln: N = dot(c, vec3(0.2126, 0.7152, 0.0722));
-  const moon: N = mix(vec3(ln, ln, ln), c, 0.4)
+  const moonBase: N = mix(vec3(ln, ln, ln), c, 0.4)
     .mul(vec3(0.3, 0.46, 0.88))
     .mul(0.62);
+  // tương phản đêm theo level (theme.ts; 1 = giữ nguyên Vân Lam): kéo sáng/tối xa nhau quanh 0,1 để vách, nhân vật còn khối
+  const moon: N = moonBase.sub(0.1).mul(themeU.nightContrast).add(0.1).max(0);
   // vùng tối (nhân vật, quái, bóng) được nâng sàn lam để còn đọc được hình; điểm sáng HDR (đèn, VFX) không bị nhuộm trăng: giữ màu và độ chói của chúng
   const floorLift: N = vec3(0.02, 0.03, 0.055).mul(float(1).sub(smoothstep(0.0, 0.2, ln)));
   const hot: N = smoothstep(0.7, 1.5, ln);

@@ -20,6 +20,8 @@ export interface PaintedTheme {
   far?: PaintPair;
   /** 0..1: mức đổi tông vật thể tĩnh (cây, đá, tàn tích) sang cặp `rock` theo độ chói của màu gốc; 0 = giữ màu gốc (mặc định). */
   propMix?: number;
+  /** Tương phản đêm Họa Cảnh quanh mức tối (1 = như Vân Lam; >1 kéo sáng/tối xa nhau để nhân vật, vách, tàn tích còn khối). */
+  nightContrast?: number;
   /** Sương thấp: dải cao độ (m) mà sương nằm dưới, từ đỉnh dải trở xuống; và cường độ 0..1. */
   mistBand: [number, number];
   mistK: number;
@@ -35,6 +37,18 @@ export const PAINTED_THEMES: Record<string, PaintedTheme> = {
     mistK: 0.6,
     far: [0xdce6f6, 0x5c6896],
     propMix: 0.85,
+    nightContrast: 1.5,
+  },
+  // Thiên Lộ Giới / Cửu Kiều (TN-7): cao nguyên đá rêu trên biển mây, bình minh vàng hồng; đất rêu xanh lam, đá xám ấm, sương hồng nhạt ở rìa
+  cuu_kieu: {
+    ground: [0x8cbc62, 0x3c6860],
+    rock: [0xbdb5a4, 0x5a5878],
+    mist: 0xf2e2da,
+    mistBand: [66, 90],
+    mistK: 0.55,
+    far: [0xe6d8d8, 0x6a6a96],
+    propMix: 0.35,
+    nightContrast: 1.35,
   },
 };
 
@@ -53,6 +67,7 @@ export const themeU = {
   mistHi: uniform(DEFAULT_MIST.band[1]),
   mistK: uniform(DEFAULT_MIST.k),
   propMix: uniform(0),
+  nightContrast: uniform(1),
 };
 
 /** Chọn bảng cho level (gọi trước khi dựng/hiển thị địa hình). */
@@ -60,6 +75,7 @@ export function setPaintedTheme(levelId: string): void {
   const t = PAINTED_THEMES[levelId];
   themeU.on.value = t ? 1 : 0;
   themeU.propMix.value = t?.propMix ?? 0;
+  themeU.nightContrast.value = t?.nightContrast ?? 1;
   if (t) {
     themeU.gLit.value.setHex(t.ground[0], THREE.SRGBColorSpace);
     themeU.gShade.value.setHex(t.ground[1], THREE.SRGBColorSpace);
