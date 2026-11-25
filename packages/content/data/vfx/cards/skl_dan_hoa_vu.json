@@ -1,6 +1,6 @@
 {
   "skillId": "skl_dan_hoa_vu",
-  "idea": "Đan Hỏa Vũ: Chiêu tư thế. Mưa lửa đan quanh mục tiêu gây 120% công kích hệ hỏa trong 6 mét và thiêu đốt 3 giây, mỗi giây 15% công kích.",
+  "idea": "Đan Hỏa Vũ: mưa những viên đan lửa xanh ngọc hình giọt nước từ trên rơi xuống quanh mục tiêu trong vòng 6 m, mỗi viên chạm đất để lại một vệt mực tan và một bông lửa nhỏ; không có vòng tròn dưới chân. Màu: lõi lục thẫm gần đen (hue 150–165°), thân xanh ngọc lục bão hòa, viền ngọc nhạt, vàng nhạt chỉ là điểm nhỏ; đan hỏa là LỬA XANH NGỌC lõi vàng nhạt, KHÔNG đỏ, KHÔNG cam.",
   "element": "hoa",
   "path": "dan_su",
   "shapeLang": [
@@ -26,5 +26,10 @@
     "overdraw": 6
   },
   "textures": [],
-  "impactFrame": true
+  "impactFrame": true,
+  "silhouette": "mưa giọt đan hình giọt nước rơi từ trên, mỗi giọt chạm đất nở bông lửa nhỏ và vệt mực",
+  "materials": [
+    "sprite",
+    "particles"
+  ]
 }

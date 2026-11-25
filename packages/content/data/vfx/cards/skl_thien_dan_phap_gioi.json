@@ -1,6 +1,6 @@
 {
   "skillId": "skl_thien_dan_phap_gioi",
-  "idea": "Thiên Đan Pháp Giới: Thần thông tối thượng: mở pháp giới 14 mét trong 12 giây, mỗi giây hồi 8% khí huyết và giải hiệu ứng xấu cho đạo hữu. Cần cảnh giới Hóa Thần.",
+  "idea": "Thiên Đan Pháp Giới (chiêu tối thượng): mở một khu vườn đan dược 14 m: những viên đan khổng lồ bóng ngọc lơ lửng xoay quanh như tinh tú, sương vàng nhạt trôi giữa các cây linh thảo mọc quanh mép vùng; ánh sáng dịu, đọc được cả ngày và đêm. Màu: lõi lục thẫm gần đen (hue 150–165°), thân xanh ngọc lục bão hòa, viền ngọc nhạt, vàng nhạt chỉ là điểm nhỏ; đan hỏa là LỬA XANH NGỌC lõi vàng nhạt, KHÔNG đỏ, KHÔNG cam.",
   "element": "moc",
   "path": "dan_su",
   "shapeLang": [
@@ -30,5 +30,10 @@
       "id": "proc:spark_burst",
       "kind": "flipbook"
     }
+  ],
+  "silhouette": "vườn đan dược 14 m: đan khổng lồ lơ lửng xoay quanh, cây linh thảo mọc quanh mép, sương vàng nhạt",
+  "materials": [
+    "sprite",
+    "smoke"
   ]
 }

@@ -1,6 +1,6 @@
 {
   "skillId": "skl_dan_hoa_chi",
-  "idea": "Đan Hỏa Chỉ: Chiêu tư thế. Điểm một tia đan hỏa gây 105% công kích hệ hỏa, tích 6 Đan hỏa.",
+  "idea": "Đan Hỏa Chỉ: một tia lửa xanh ngọc mảnh bắn thẳng từ ngón tay tới mục tiêu: đầu tia là một viên đan tròn sáng vàng nhạt, đuôi là dải khói mực xanh lục dài như đuôi nòng nọc; điểm trúng nở hoa lửa nhỏ. Màu: lõi lục thẫm gần đen (hue 150–165°), thân xanh ngọc lục bão hòa, viền ngọc nhạt, vàng nhạt chỉ là điểm nhỏ; đan hỏa là LỬA XANH NGỌC lõi vàng nhạt, KHÔNG đỏ, KHÔNG cam.",
   "element": "hoa",
   "path": "dan_su",
   "shapeLang": [
@@ -26,5 +26,10 @@
     "overdraw": 4
   },
   "textures": [],
-  "impactFrame": true
+  "impactFrame": true,
+  "silhouette": "viên đan tròn sáng kéo đuôi khói mực dài như đuôi nòng nọc, điểm trúng nở hoa lửa nhỏ",
+  "materials": [
+    "sprite",
+    "smoke"
+  ]
 }

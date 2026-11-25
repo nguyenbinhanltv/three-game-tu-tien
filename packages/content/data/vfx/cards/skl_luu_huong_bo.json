@@ -1,6 +1,6 @@
 {
   "skillId": "skl_luu_huong_bo",
-  "idea": "Lưu Hương Bộ: Nhẹ bước lùi nhanh 8 mét theo làn hương lá, kéo giãn khoảng cách với kẻ địch. Không xuyên vách, không dùng được khi ngự kiếm.",
+  "idea": "Lưu Hương Bộ: lùi nhanh 8 m để lại một dải khói hương hình chữ S kèm những chiếc lá nhỏ rơi dọc đường lùi, đầu dải còn một bóng mờ của người tu tan dần; thanh nhẹ, không quá sáng. Màu: lõi lục thẫm gần đen (hue 150–165°), thân xanh ngọc lục bão hòa, viền ngọc nhạt, vàng nhạt chỉ là điểm nhỏ; đan hỏa là LỬA XANH NGỌC lõi vàng nhạt, KHÔNG đỏ, KHÔNG cam.",
   "element": "vo",
   "path": "dan_su",
   "shapeLang": [
@@ -30,5 +30,10 @@
       "id": "proc:ink_smoke",
       "kind": "flipbook"
     }
+  ],
+  "silhouette": "dải khói hương hình chữ S dọc đường lùi 8 m, lá nhỏ rơi, bóng mờ tan dần",
+  "materials": [
+    "smoke",
+    "sprite"
   ]
 }

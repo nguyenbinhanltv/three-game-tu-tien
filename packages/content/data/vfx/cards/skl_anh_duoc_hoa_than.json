@@ -1,6 +1,6 @@
 {
   "skillId": "skl_anh_duoc_hoa_than",
-  "idea": "Anh Dược Hóa Thân: Nguyên anh bay tới đồng đội, hồi 40% khí huyết tối đa trong 4 giây. Cần cảnh giới Nguyên Anh.",
+  "idea": "Anh Dược Hóa Thân: một con hạc kết bằng lá thuốc và ánh ngọc (cánh là lá, thân là khói thuốc) bay vút tới đồng đội để lại dải lá và sương, đáp xuống thành những vòng sóng ngọc nhẹ rồi tan; không có mặt người. Màu: lõi lục thẫm gần đen (hue 150–165°), thân xanh ngọc lục bão hòa, viền ngọc nhạt, vàng nhạt chỉ là điểm nhỏ; đan hỏa là LỬA XANH NGỌC lõi vàng nhạt, KHÔNG đỏ, KHÔNG cam.",
   "element": "moc",
   "path": "dan_su",
   "shapeLang": [
@@ -30,5 +30,10 @@
       "id": "proc:spark_burst",
       "kind": "flipbook"
     }
+  ],
+  "silhouette": "hạc kết bằng lá thuốc bay vút để lại dải lá và sương, đáp xuống thành sóng ngọc",
+  "materials": [
+    "sprite",
+    "smoke"
   ]
 }

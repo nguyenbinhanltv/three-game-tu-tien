@@ -1,6 +1,6 @@
 {
   "skillId": "skl_hoi_thien_dan_lo",
-  "idea": "Hồi Thiên Đan Lộ: Chiêu tối thượng. Hồi sinh đạo hữu ngã gần nhất trong 14 mét với 50% khí huyết; đạo hữu còn đứng quanh đó được hồi 20%. Cần đầy vòng sạc linh khí.",
+  "idea": "Hồi Thiên Đan Lộ (chiêu tối thượng): một lò đan khổng lồ bằng đồng xanh ngọc hiện trên cao rót xuống đạo hữu ngã một dòng đan dịch xanh ngọc-vàng nhạt, dưới đó nở ra bông sen lớn nhiều lớp hồi sinh; khói thuốc cuộn quanh lò. Phủ lớn nhưng không che người. Màu: lõi lục thẫm gần đen (hue 150–165°), thân xanh ngọc lục bão hòa, viền ngọc nhạt, vàng nhạt chỉ là điểm nhỏ; đan hỏa là LỬA XANH NGỌC lõi vàng nhạt, KHÔNG đỏ, KHÔNG cam.",
   "element": "vo",
   "path": "dan_su",
   "shapeLang": [
@@ -30,5 +30,10 @@
       "id": "proc:spark_burst",
       "kind": "flipbook"
     }
+  ],
+  "silhouette": "lò đan khổng lồ trên cao rót dòng đan dịch xuống bông sen nở dưới đất",
+  "materials": [
+    "sprite",
+    "smoke"
   ]
 }

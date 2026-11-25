@@ -1,6 +1,6 @@
 {
   "skillId": "skl_dan_hoa_phong_tran",
-  "idea": "Đan Hỏa Phong Tràn: Ném đan hỏa xuống mục tiêu, nổ trong 6 mét gây 260% công kích và thiêu đốt 4 giây, mỗi giây 30% công kích. Xả hết Đan hỏa, mỗi điểm tăng 0,6% sát thương. Tiêu Mộc ấn của ngươi: quanh mỗi người mang ấn nổ một vòng 5 mét gây 120% công kích.",
+  "idea": "Đan Hỏa Phong Tràn: ném một viên đan lớn xuống mục tiêu, viên đan vỡ bung thành một bông mẫu đơn lửa xanh ngọc nhiều lớp cánh dày (bán kính 6 m), cánh ngoài cuộn khói mực, để lại vết cháy tan trên đất; chiêu mạnh, hình to nhưng không che mục tiêu. Màu: lõi lục thẫm gần đen (hue 150–165°), thân xanh ngọc lục bão hòa, viền ngọc nhạt, vàng nhạt chỉ là điểm nhỏ; đan hỏa là LỬA XANH NGỌC lõi vàng nhạt, KHÔNG đỏ, KHÔNG cam.",
   "element": "hoa",
   "path": "dan_su",
   "shapeLang": [
@@ -35,5 +35,10 @@
       "id": "proc:spark_burst",
       "kind": "flipbook"
     }
+  ],
+  "silhouette": "viên đan ném xuống vỡ thành bông mẫu đơn lửa nhiều lớp cánh dày, cánh ngoài cuộn khói mực",
+  "materials": [
+    "sprite",
+    "smoke"
   ]
 }

@@ -1,6 +1,6 @@
 {
   "skillId": "skl_ngung_dan_ho_the",
-  "idea": "Ngưng Đan Hộ Thế: Thần thông: ngưng đan quang thành quầng sáng, cả đội trong 12 mét nhận khiên bằng 15% khí huyết tối đa trong 10 giây.",
+  "idea": "Ngưng Đan Hộ Thế: một quả cầu đan quang khổng lồ trong mờ như viên đan thuốc bóng ngọc bao cả đội (12 m), mặt cầu có vân mây xoáy vàng nhạt và những vệt sáng như vỏ bọc sáp ong; mép sáng, lõi tối rõ. Màu: lõi lục thẫm gần đen (hue 150–165°), thân xanh ngọc lục bão hòa, viền ngọc nhạt, vàng nhạt chỉ là điểm nhỏ; đan hỏa là LỬA XANH NGỌC lõi vàng nhạt, KHÔNG đỏ, KHÔNG cam.",
   "element": "moc",
   "path": "dan_su",
   "shapeLang": [
@@ -30,5 +30,10 @@
       "id": "proc:spark_burst",
       "kind": "flipbook"
     }
+  ],
+  "silhouette": "viên đan khổng lồ bóng ngọc có vân mây xoáy, bao cả đội",
+  "materials": [
+    "sprite",
+    "distort"
   ]
 }

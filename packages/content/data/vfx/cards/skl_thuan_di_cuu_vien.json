@@ -1,6 +1,6 @@
 {
   "skillId": "skl_thuan_di_cuu_vien",
-  "idea": "Thuấn Di Cứu Viện: Thuấn di tới đồng đội ngã gần nhất và hồi sinh với 40% khí huyết. Cần cảnh giới Nguyên Anh.",
+  "idea": "Thuấn Di Cứu Viện: chỗ xuất phát tan thành xoáy lá xanh ngọc cuốn vào trong, chỗ đến (bên đồng đội ngã) bùng một cột sáng ngọc hình búp sen cùng xoáy lá tỏa ra; một vệt lá mỏng nối hai điểm. Màu: lõi lục thẫm gần đen (hue 150–165°), thân xanh ngọc lục bão hòa, viền ngọc nhạt, vàng nhạt chỉ là điểm nhỏ; đan hỏa là LỬA XANH NGỌC lõi vàng nhạt, KHÔNG đỏ, KHÔNG cam.",
   "element": "moc",
   "path": "dan_su",
   "shapeLang": [
@@ -30,5 +30,10 @@
       "id": "proc:spark_burst",
       "kind": "flipbook"
     }
+  ],
+  "silhouette": "xoáy lá cuốn vào ở chỗ đi, cột sáng búp sen và xoáy lá tỏa ra ở chỗ đến",
+  "materials": [
+    "sprite",
+    "particles"
   ]
 }
