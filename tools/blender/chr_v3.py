@@ -404,6 +404,9 @@ log(f'tam giác {tris0} → {len(BODY.data.polygons)}')
 
 # ---------- 2. bộ xương khớp F ----------
 LMs = {k: v for k, v in LM.items()}
+if opt('--landmarks-out'):  # PILOT C: ghi mốc (m, hệ nhân vật sau co theo --height) để so tỉ lệ giữa các model
+    json.dump({k: [[round(float(x), 4) for x in v[0]], [round(float(x), 4) for x in v[1]]] for k, v in LM.items()} | {'_height': float(max(v.co.z for v in BODY.data.vertices))}, open(opt('--landmarks-out'), 'w'), indent=1)
+
 
 
 def head_of(man):
