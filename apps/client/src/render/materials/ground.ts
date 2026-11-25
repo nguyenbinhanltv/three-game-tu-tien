@@ -700,6 +700,11 @@ export function applyGroundShader(mat: THREE.MeshStandardNodeMaterial, tex: Grou
     // + sương thấp sát đáy thung lũng (render/painted/lowMist.ts), chỉ trên phần đất tô phẳng
     const groundBase = paintedT.mul(grassW).add(pavTone.mul(pavW));
     mat.emissiveNode = withLowMist(F, groundBase, positionWorld.xz, positionWorld.y, grassW.add(pavW).min(1));
+    if (FLAGS.paintDbg === 'dry') {
+      // gỡ lỗi: R = (r−g)×10 của màu đỉnh, G = dryW (mặt nạ dùng để tô), B = dryMix của level
+      mat.colorNode = vec3(0);
+      mat.emissiveNode = vec3(clamp(vc.r.sub(vc.g).mul(10), 0, 1), dryW, themeU.dryMix);
+    }
     // vũng sáng đèn đêm: ghi vào đích MRT `lamp`, pass cuối cộng SAU bước nhuộm trăng (giữ tông hổ phách)
     (mat as unknown as { mrtNode: unknown }).mrtNode = mrt({ lamp: vec4(lampPoolAt(positionWorld.xz), 1) });
   }
