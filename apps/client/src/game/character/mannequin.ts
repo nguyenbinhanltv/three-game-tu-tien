@@ -1652,7 +1652,7 @@ export class MannequinCharacter implements CharacterView {
     this.stepPatch(dt, a);
     if (this.loco) {
       // Trộn đi/chạy/chạy nhanh theo tốc độ thật; pha chung nên chân trụ không trượt khi đổi nhịp.
-      const m = locoMix(a.speed, this.locoTable);
+      const m = locoMix(a.speed, this.locoTable, this.dir.f);
       const k = Math.min(1, realDt * 12);
       this.mix.walk += (m.walk - this.mix.walk) * k;
       this.mix.jog += (m.jog - this.mix.jog) * k;

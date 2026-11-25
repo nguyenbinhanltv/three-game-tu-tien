@@ -43,4 +43,17 @@ describe('vòng chạy Patch: bảng và pha', () => {
     expect(clipTimeAt('Jog_Fwd_Loop', 0.933, 0)).toBe(0);
     expect(clipTimeAt('PM_Run', 1, 0.029)).toBeCloseTo(0, 6);
   });
+
+  it('chu kỳ theo hướng: chạy tới theo clip Patch, lùi/ngang (clip UAL) theo chu kỳ UAL, chéo trộn; bảng UAL không đổi theo hướng', () => {
+    const v = 5.4;
+    const fwd = locoMix(v, PATCH_TABLE, 1).cycles;
+    const side = locoMix(v, PATCH_TABLE, 0).cycles;
+    const diag = locoMix(v, PATCH_TABLE, 0.5).cycles;
+    expect(fwd).toBeCloseTo(v / PATCH_TABLE.jog.stride, 1);
+    expect(side).toBeCloseTo(v / LOCO.jog.stride, 1);
+    expect(diag).toBeLessThan(fwd);
+    expect(diag).toBeGreaterThan(side);
+    // UAL: không phụ thuộc hướng
+    expect(locoMix(v, LOCO, 0).cycles).toBeCloseTo(locoMix(v, LOCO, 1).cycles, 9);
+  });
 });

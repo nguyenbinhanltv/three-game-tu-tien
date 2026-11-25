@@ -64,6 +64,27 @@ describe('clip chạy Patch: pha chạm đất khớp Jog_Fwd_Loop sau độ l�
   }, 60_000);
 });
 
+describe('hướng chéo: clip ngang UAL chung pha với PM_Run sau độ lệch', () => {
+  // Jog_Bwd_Loop lệch ~0,23 chu kỳ so với Jog_Fwd_Loop sẵn có (đo cùng cách) nên không đưa vào ngưỡng tuyệt đối; PM_Run căn theo Jog_Fwd_Loop nên không làm tệ thêm.
+  it('chân trái/phải chạm đất của Jog_StrafeL/StrafeR lệch ≤ 0,06 chu kỳ so với PM_Run (đọc tại pha chung + lệch)', async () => {
+    const ual = await cache.acquire('anim_ual_native');
+    const pm = await cache.acquire('anim_patch_move');
+    const run = pm.animations.find((c) => c.name === 'PM_Run')!;
+    const rows: string[] = [];
+    for (const name of ['Jog_StrafeL_Loop', 'Jog_StrafeR_Loop']) {
+      const clip = ual.animations.find((c) => c.name === name)!;
+      for (const side of ['l', 'r'] as const) {
+        const mine = touchdownPhase(ual.scene, clip, side);
+        // chạm đất của PM_Run (chân cùng bên) quy về pha chung
+        const ref = (((touchdownPhase(pm.scene, run, side) - PATCH_PHASE.PM_Run!) % 1) + 1) % 1;
+        const d = Math.abs(((mine - ref + 1.5) % 1) - 0.5);
+        rows.push(`${name} ${side}: ${mine.toFixed(3)} vs ${ref.toFixed(3)} (lệch ${d.toFixed(3)})`);
+        expect(d, rows[rows.length - 1]).toBeLessThanOrEqual(0.06);
+      }
+    }
+  }, 60_000);
+});
+
 /**
  * Tốc độ chân trụ (m/s, chiều tiến) của clip: hồi quy vị trí chân (thế giới của clip, thân không dịch) theo thời gian trên đoạn tiếp đất dài nhất (cổ chân
  * trong 3 cm trên điểm thấp nhất), bỏ 20% đầu/cuối đoạn (lăn gót/mũi). Thân phải chạy đúng tốc độ này thì chân dính đất.

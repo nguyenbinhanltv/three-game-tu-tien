@@ -60,13 +60,16 @@ export interface LocoMix {
 }
 
 /** Trọng số đi/chạy/chạy nhanh theo tốc độ thật. Tổng trọng số = 1. */
-export function locoMix(speed: number, table: LocoTable = LOCO): LocoMix {
+export function locoMix(speed: number, table: LocoTable = LOCO, fwd = 1): LocoMix {
   const wJog = smooth((speed - 1.4) / 1.0);
   const wSpr = smooth((speed - table.jog.speed) / (table.sprint.speed - table.jog.speed));
   const sprint = wJog * wSpr;
   const jog = wJog * (1 - wSpr);
   const walk = 1 - wJog;
-  const stride = walk * table.walk.stride + jog * table.jog.stride + sprint * table.sprint.stride;
+  // Hướng tới dùng clip của `table`; lùi/ngang luôn là clip UAL dựng thủ tục (`LOCO`): độ dài chu kỳ trộn theo trọng số hướng tới `fwd`, nếu không clip lùi/ngang
+  // của UAL phát theo chu kỳ của clip Patch (ngắn hơn ~25%) và chân trụ chạy nhanh hơn thân.
+  const st = (b: LocoBand): number => fwd * table[b].stride + (1 - fwd) * LOCO[b].stride;
+  const stride = walk * st('walk') + jog * st('jog') + sprint * st('sprint');
   // Tốc độ gốc của hỗn hợp: chu kỳ/giây = tốc độ / độ dài chu kỳ, kẹp để không quá chậm khi trộn.
   return { walk, jog, sprint, cycles: Math.max(0.35, speed / Math.max(0.5, stride)) };
 }
