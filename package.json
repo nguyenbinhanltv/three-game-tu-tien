@@ -15,6 +15,7 @@
     "test:all": "pnpm test && pnpm test:slow",
     "content:check": "pnpm --filter @dtl/content check && pnpm icons:check && pnpm calli:check && pnpm vfx:check",
     "sim:progress": "pnpm --filter @dtl/content sim",
+    "i18n:orphans": "pnpm --filter @dtl/content i18n:orphans",
     "map:report": "pnpm --filter @dtl/content map:report",
     "bots": "pnpm --filter @dtl/bot-client start",
     "ledger:check": "pnpm --filter @dtl/server ledger:check",
