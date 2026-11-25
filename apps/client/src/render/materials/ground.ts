@@ -35,6 +35,7 @@ import { GROUND_LAYER as L, type GroundTextures } from '../../base/groundTexture
 import { FLAGS } from '../../base/flags';
 import { isoTerrainDetail } from './isoDetail';
 import { lampPoolAt } from '../painted/lampPools';
+import { withLowMist } from '../painted/lowMist';
 import { paintedColor } from '../painted/palette';
 import { getPaintedRefField } from '../painted/fieldShared';
 import { flatTextures, groundColor } from '../painted/lab/ground';
@@ -674,7 +675,9 @@ export function applyGroundShader(mat: THREE.MeshStandardNodeMaterial, tex: Grou
       smoothstep(0.14, 0.26, dot(col.rgb, vec3(0.299, 0.587, 0.114))),
     );
     mat.colorNode = col.mul(keep);
-    mat.emissiveNode = painted.mul(grassW).add(pavTone.mul(pavW));
+    // + sương thấp sát đáy thung lũng (render/painted/lowMist.ts), chỉ trên phần đất tô phẳng
+    const groundBase = painted.mul(grassW).add(pavTone.mul(pavW));
+    mat.emissiveNode = withLowMist(F, groundBase, positionWorld.xz, positionWorld.y, grassW.add(pavW).min(1));
     // vũng sáng đèn đêm: ghi vào đích MRT `lamp`, pass cuối cộng SAU bước nhuộm trăng (giữ tông hổ phách)
     (mat as unknown as { mrtNode: unknown }).mrtNode = mrt({ lamp: vec4(lampPoolAt(positionWorld.xz), 1) });
   }
