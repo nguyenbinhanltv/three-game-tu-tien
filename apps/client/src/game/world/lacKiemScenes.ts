@@ -425,9 +425,11 @@ function loiVach(o: Out, pts: [number, number][]): void {
       const z = az + dz * d;
       const slope = (gy(x + dx * 0.8, z + dz * 0.8) - gy(x - dx * 0.8, z - dz * 0.8)) / 1.6;
       // phiến lát nối tiếp (dài 1,6 m, cách 1,5 m), nghiêng theo dốc, mặt hơi nổi để không chìm vào sườn
+      // độ cao theo điểm THẤP nhất dưới phiến (giữa + hai mép ngang): trên sườn nghiêng ngang mép cao chìm vào đất thay vì mép thấp chìa lơ lửng
+      const lowY = Math.min(gy(x, z), gy(x - dz * 0.95, z + dx * 0.95), gy(x + dz * 0.95, z - dx * 0.95));
       o.stone.box(
         x + (hash01(acc, 1, 8) - 0.5) * 0.2,
-        gy(x, z) + 0.07,
+        lowY + 0.07,
         z,
         1.9,
         0.16,
