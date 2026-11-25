@@ -132,22 +132,21 @@ function hueOf(hex: string): number {
 }
 
 /**
- * Luật màu của vạch báo trong concept quái. Mặc định (accent đỏ) là đỏ-cam đặc. Thẻ có `palette.accent` KHÔNG ở vùng đỏ/cam (hue ngoài 345°–36°; hổ phách ~40° vẫn là màu hệ) là thẻ
- * "báo theo màu hệ" (A4: tinh anh hỏa ám tím, thổ hổ phách): vạch báo đọc rõ bằng màu accent đó, tuyệt đối không đỏ/cam.
+ * Luật màu trong concept quái (chuẩn HPL2, quyết định người dùng 24/11): đỏ/cam DÀNH RIÊNG cho cảnh báo của kẻ địch. Vạch báo (khung 1–2) LUÔN đỏ-cam
+ * theo `palette.accent`; luật "không đỏ/cam" chỉ áp cho THÂN hiệu ứng (khung 3–4) khi màu thân (`body`) của hệ không phải đỏ/cam (vd. hỏa ám tím, thổ hổ phách).
  */
 export function warnColorRule(p: { accent: string; rim: string; core: string; body: string }): string {
   const H = (x: string) => `#${x.toUpperCase()}`;
-  const hue = hueOf(p.accent);
-  const redOrange = hue >= 345 || hue <= 36;
-  const warn = redOrange
-    ? `the WARNING (frames 1 and 2) uses vivid RED-ORANGE only, accent ${H(p.accent)} with a hot rim ${H(p.rim)}; red is reserved for enemy warnings and must read clearly on a bright stone floor and on dark floors.`
-    : `the WARNING (frames 1 and 2) uses the element's own warning color ${H(p.accent)} (solid, saturated, with a bright rim ${H(p.rim)}); it must NOT be red and NOT orange anywhere (no red fill, no orange outline, no red-orange flame edges), and it must read clearly on a bright stone floor and on dark floors.`;
-  return `${warn} The HIT effect (frames 3 and 4) uses the element palette: core ${H(p.core)} (darkest, 15-25%), body ${H(p.body)} (50-60%), rim ${H(p.rim)} (10-20%); also no red or orange in the hit effect.`;
+  const hue = hueOf(p.body);
+  const bodyWarm = hue >= 345 || hue <= 36;
+  const warn = `the WARNING (frames 1 and 2) uses vivid RED-ORANGE only, accent ${H(p.accent)} with a hot rim ${H(p.rim)}; red is reserved for enemy warnings and must read clearly on a bright stone floor and on dark floors.`;
+  const hit = `The HIT effect (frames 3 and 4) uses the element palette: core ${H(p.core)} (darkest, 15-25%), body ${H(p.body)} (50-60%), rim ${H(p.rim)} (10-20%)${bodyWarm ? '.' : '; the hit effect itself must contain NO red and NO orange (red-orange belongs to the warning only).'}`;
+  return `${warn} ${hit}`;
 }
 
 /**
  * Concept VFX của QUÁI/BOSS (V-P9): 4 khung trong một ảnh lưới 2×2 — vạch báo vừa hiện, vạch báo đã nạp ~60%, lúc nổ, +150 ms dư ba.
- * Vạch báo ĐỎ/CAM (accent đỏ, luật màu: đỏ/cam chỉ dành cho cảnh báo địch) hoặc màu hệ khi accent của thẻ không đỏ/cam (`warnColorRule`), đúng HÌNH và CỠ vùng server; vùng nổ/dư ba theo màu hệ.
+ * Vạch báo ĐỎ/CAM (luật màu: đỏ/cam chỉ dành cho cảnh báo địch; `warnColorRule` cấm đỏ/cam ở THÂN hiệu ứng khi hệ không phải lửa), đúng HÌNH và CỠ vùng server; vùng nổ/dư ba theo màu hệ.
  */
 export function monConceptPrompt(card: MonVfxCard, style: StyleSheet): string {
   const t = card.timing;
