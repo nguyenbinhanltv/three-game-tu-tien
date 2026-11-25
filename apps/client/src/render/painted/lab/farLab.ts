@@ -8,7 +8,7 @@ import { FAR_SPAN, farHeightAt } from './farHeight';
  */
 declare global {
   interface Window {
-    __farLab?: { stats(): Promise<{ min: number; max: number; mean: number }> };
+    __farLab?: { stats(): Promise<{ min: number; max: number; mean: number }>; readback(n: number): Promise<{ n: number; b64: string }> };
   }
 }
 
@@ -33,7 +33,26 @@ export async function startFarLab(host: HTMLElement): Promise<void> {
   quad.render(renderer);
 
   // số liệu: dựng lại vào RT float 256² rồi đọc về
+  const readN = async (n: number): Promise<Float32Array> => {
+    const rt = new THREE.RenderTarget(n, n, { type: THREE.FloatType, format: THREE.RGBAFormat });
+    const m2 = new THREE.MeshBasicNodeMaterial();
+    m2.colorNode = vec4(h, 0, 0, 1);
+    const q2 = new THREE.QuadMesh(m2);
+    renderer.setRenderTarget(rt);
+    q2.render(renderer);
+    renderer.setRenderTarget(null);
+    return (await renderer.readRenderTargetPixelsAsync(rt, 0, 0, n, n)) as Float32Array;
+  };
   window.__farLab = {
+    async readback(n: number) {
+      const data = await readN(n);
+      const out = new Float32Array(n * n);
+      for (let i = 0; i < n * n; i++) out[i] = data[i * 4]!;
+      let bin = '';
+      const bytes = new Uint8Array(out.buffer);
+      for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+      return { n, b64: btoa(bin) };
+    },
     async stats() {
       const n = 256;
       const rt = new THREE.RenderTarget(n, n, { type: THREE.FloatType, format: THREE.RGBAFormat });
