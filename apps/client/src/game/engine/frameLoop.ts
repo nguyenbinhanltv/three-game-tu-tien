@@ -272,7 +272,7 @@ export function runFrame(eng: Game): void {
   eng.aurora?.update(eng.camera.position);
   updateEclipse(eng, dt);
   eng.lanterns?.update(_v.set(rp.x, rp.y, rp.z));
-  if (FLAGS.style === 'painted' && eng.lanterns) updateLampPools(eng.lanterns.lights);
+  if (FLAGS.style === 'painted') updateLampPools(eng.lanterns?.lights ?? []); // level không có đèn: xóa vũng của level trước
   if (me) eng.ambient.update(dt, eng.camera.position, rp);
   if (me) eng.butterflies?.update(dt, rp);
   eng.lacKiemBirds?.update(rp.x, rp.y, rp.z, eng.camera.position);

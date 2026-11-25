@@ -30,6 +30,7 @@ import type { Node } from 'three/webgpu';
 import { getCloudNoise } from './noiseTex';
 import { FLAGS } from '../base/flags';
 import { paintedOutput, vfxMaskOn } from './painted/frame';
+import { lampPoolAt } from './painted/lampPools';
 import { BLOOM, GRAIN, VIGNETTE, type GradingPreset } from './grading';
 
 /**
@@ -271,6 +272,7 @@ export class PostPipeline {
         exposure: 1,
         vignette: 0.14,
         tint: [0.92, 0.975, 0.97],
+        lampGlow: lampPoolAt,
         // phản hồi chiến đấu giữ nguyên (hit/flash/impact/punch/pulse/mực chết); quang sai màu khi trúng đòn lấy mẫu lệch R/B của ảnh gốc
         mask: (uv) => max(max(vfxTex.sample(uv).r, vfxTex.sample(uv).g), vfxTex.sample(uv).b),
         aberration: postParams.hit.mul(0.012),
