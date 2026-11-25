@@ -6,19 +6,8 @@ import { gm, tp } from '../lib/game';
 import type { Scenario } from '../lib/scenario';
 import { snap } from '../lib/shot';
 
-/** Đường qua cụm tre (2400,2160) → (2520,2040) → (2580,2100) của Vân Lam, bước ~15 m. */
-const PATH: [number, number][] = [
-  [2380, 2180],
-  [2400, 2160],
-  [2420, 2140],
-  [2440, 2120],
-  [2460, 2090],
-  [2480, 2070],
-  [2500, 2050],
-  [2520, 2040],
-  [2550, 2070],
-  [2580, 2100],
-];
+/** Đường ngang qua cụm tre/dương xỉ dày nhất Vân Lam (tâm ~(2500, 2012), tính từ `allProps`: 24 bản tre+dương xỉ trong 20–30 m), bước 7 m. */
+const PATH: [number, number][] = Array.from({ length: 10 }, (_, i) => [2470 + i * 7, 2012]);
 
 export default {
   name: 'densefly',
@@ -37,7 +26,7 @@ export default {
       await snap(page, r.out, `p${String(i).padStart(2, '0')}-b.png`);
     }
     // Chạy nhanh: bay + giữ phím tiến, chụp liên tiếp (không cố định vị trí giữa hai bản, chỉ để soi mép).
-    await tp(page, PATH[0]![0], PATH[0]![1]);
+    await tp(page, 2460, 2012);
     await sleep(1500);
     await page.evaluate(() => (window.__game as unknown as { toggleFly(): void }).toggleFly());
     await page.keyboard.down('KeyD');
