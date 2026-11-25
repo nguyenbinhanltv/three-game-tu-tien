@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { bucketGroups, type IsoPoint, type IsoRun } from './isoreport';
-import { classify, failed, findingsToMarkdown, gate, toBaseline, ZONE_BUDGETS, type Baseline } from './gate';
+import { classify, defaultPresets, failed, findingsToMarkdown, gate, toBaseline, ZONE_BUDGETS, type Baseline } from './gate';
 
 const pt = (
   id: string,
@@ -208,5 +208,35 @@ describe('toBaseline', () => {
     const b = toBaseline(run([pt('a/x', 'map', { dc: 90, tris: 123_000, tex: 150, cpu: 5, heap: 220 })]), 'ghi chú');
     expect(b).toMatchObject({ version: 1, note: 'ghi chú', backend: 'WebGPU', viewport: '1280x720' });
     expect(b.points[0]).toEqual({ id: 'a/x', preset: 'high', dc: 90, tris: 123_000, texMB: 150, heapMB: 220, cpu95: 5 });
+  });
+});
+
+describe('lọc preset không được báo ĐẠT im lặng (review #694)', () => {
+  const med = (id: string, o = {}) => pt(id, 'map', { preset: 'medium', ...o });
+
+  it('baseline và lần chạy đều medium nhưng cổng lọc high: CHẶN, không im lặng', () => {
+    const base = toBaseline(run([med('van_hai/giua')]));
+    const f = gate(run([med('van_hai/giua', { dc: 9999 })]), base); // presets mặc định của gate() = high
+    expect(failed(f)).toBe(true);
+    expect(f[0]).toMatchObject({ why: 'không điểm nào khớp preset', severity: 'fail' });
+    expect(f[0]!.metric).toContain('medium');
+  });
+
+  it('đúng preset thì xét bình thường (vi phạm vẫn bị bắt)', () => {
+    const base = toBaseline(run([med('van_hai/giua')]));
+    const f = gate(run([med('van_hai/giua', { dc: 9999 })]), base, { presets: ['medium'] });
+    expect(f.some((x) => x.metric === 'draw call (max)')).toBe(true);
+    expect(f.some((x) => x.why === 'không điểm nào khớp preset')).toBe(false);
+  });
+
+  it('lần chạy không có điểm nào cũng chặn', () => {
+    expect(failed(gate(run([]), null))).toBe(true);
+  });
+
+  it('defaultPresets: chỉ định thì theo đó; không thì lấy từ baseline; không baseline thì high', () => {
+    const base = toBaseline(run([med('a/b')]));
+    expect(defaultPresets('high,medium', base)).toEqual(['high', 'medium']);
+    expect(defaultPresets(undefined, base)).toEqual(['medium']);
+    expect(defaultPresets(undefined, null)).toEqual(['high']);
   });
 });
