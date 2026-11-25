@@ -1,4 +1,6 @@
 import { paintedNight } from './painted/frame';
+import { PAINTED_THEMES } from './painted/theme';
+import { levelId } from '../base/levelCtx';
 import { FLAGS } from '../base/flags';
 import * as THREE from 'three/webgpu';
 import {
@@ -135,8 +137,9 @@ export function tuneAtmosphere(scene: THREE.Scene, env: EnvLike, p: GradingPrese
   if (FLAGS.style === 'painted' && /night/.test(name)) {
     // Họa Cảnh đêm: đất/cỏ/cây không dùng đèn (tô phẳng + nhuộm trăng ở pass cuối) nên chỉ nhân vật/quái nhận đèn của mood: nâng đèn trời và đèn trăng
     // để họ còn đọc được (hình khối + sáng tối) thay vì thành bóng đen
-    env.hemi.intensity *= 3.2;
-    env.sun.intensity *= 2.2;
+    const lift = PAINTED_THEMES[levelId()]?.nightLift ?? 1;
+    env.hemi.intensity *= 3.2 * lift;
+    env.sun.intensity *= 2.2 * lift;
   }
   haloParams.intensity.value = HALO_INTENSITY[name] ?? HALO_INTENSITY.day!;
   beaconParams.intensity.value = BEACON_INTENSITY[name] ?? BEACON_INTENSITY.day!;
