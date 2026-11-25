@@ -13,6 +13,19 @@ from mon_helpers import *  # noqa: E402,F401,F403
 
 LIFT = 0.35
 
+# Sprite xương trắng (`cot_*`) và nước (`thuy_*`) sáng/đặc hơn đá và lửa tím: giảm độ đậm sprite theo bảng màu để không phủ dày (độ phủ ≤ ~0,2).
+GAIN = {'mon_kim': 0.5, 'mon_thuy': 0.5}
+_write = write
+
+
+def write(name, events, pal):  # noqa: F811
+    g = GAIN.get(pal)
+    if g:
+        for e in events:
+            if e.get('type') == 'mesh' and 'alpha' in e:
+                e['alpha'] = round(e['alpha'] * g, 2)
+    _write(name, events, pal)
+
 THEMES = {
     # hệ → (palette timeline, tên sprite, decal nền tối)
     'tho': (
