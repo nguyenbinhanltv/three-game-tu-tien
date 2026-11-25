@@ -18,12 +18,12 @@ và mục `hires` trong `manifest.json` (`mat`, `slots`, `file`, `width`, `bytes
 - `index.ts`: `startHires()` ở `main.tsx`; chỉ chạy khi đã vào game 8 s và trung bình 30 khung gần nhất ≤ 22 ms. `?hires=0` tắt, `__hires()` đọc `{tier, loaded, memMB}`.
 - `AssetCache` (`game/assets.ts`): `applyHires` thay `material[slot]` cho vật liệu cùng tên (mọi bản sao dùng chung vật liệu nên đổi một lần), giữ texture cũ để trả lại; `release()` cuối cùng tự trả và dispose.
 
-Đo ảnh: `pnpm shots hires [--ids a,b|all] --out <thư mục>`: trang xem asset, clip dừng khung 0, cùng camera, `__viewer.setHires(id, bật/tắt)`; `--ids all` quét 42 asset (lệch màu trung bình ≤ 0,5/255). Preset `ultra` (Cực cao) chưa có ở PR này (làm sau chuỗi tách `engine.ts`); chính sách đã sẵn bậc 2 cho khi có.
+Đo ảnh: `pnpm shots hires [--ids a,b|all] --out <thư mục>` (kịch bản đã chuyển vào `tools/perf/archive/scenarios/`, cách đưa lại ở README đó): trang xem asset, clip dừng khung 0, cùng camera, `__viewer.setHires(id, bật/tắt)`; `--ids all` quét 42 asset (lệch màu trung bình ≤ 0,5/255). Preset `ultra` (Cực cao) chưa có ở PR này (làm sau chuỗi tách `engine.ts`); chính sách đã sẵn bậc 2 cho khi có.
 
 ## Giới hạn đã biết
 - Thứ tự "gần camera" dùng vị trí các bản sao do `AssetCache.acquire` cấp; nhân vật/quái dùng một bản mẫu rồi tự clone lưới nên với nhóm đó khoảng cách có thể lệch (chưa ưu tiên chính xác theo thực thể).
 - `gpuBytes` đếm cộng dồn (texture GLB cũ được giữ để trả lại khi hạ preset); normal map giải ra RGBA8 trên WebGPU còn giữ thêm bản trong RAM JS, chưa tính vào trần.
-- Chưa đo khung dài nhất quanh lúc áp dụng (`mat.needsUpdate`, upload 2048–4096): `pnpm shots hires --perf` là việc tiếp theo.
+- Chưa đo khung dài nhất quanh lúc áp dụng (`mat.needsUpdate`, upload 2048–4096): `pnpm shots hires --perf` (kịch bản đã chuyển vào `tools/perf/archive/scenarios/`, cách đưa lại ở README đó) là việc tiếp theo.
 - `assets:build` ghi lại manifest và làm mất mục `hires`: chạy lại `pnpm assets:hires`.
 
 ## HIRES-2: bản 4096 cho boss — không làm được (đo 2026-11-19)
