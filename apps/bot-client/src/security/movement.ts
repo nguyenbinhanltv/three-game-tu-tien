@@ -17,7 +17,16 @@ export async function runMovement(ctx: Ctx): Promise<void> {
       target = id;
     }
   });
-  const m0 = mons().get(target)!;
+  const m0 = mons().get(target);
+  if (!m0) {
+    // Không có quái còn sống trong tầm thấy: thường do mất phòng (bài 11 làm cạn xô /matchmake, chờ ≥ 1 phút rồi chạy lại cả bộ) hoặc quái chưa đồng bộ.
+    check(
+      'movement: có quái còn sống để làm mục tiêu (nếu không: chạy lại sau ≥ 1 phút, xem đầu security-check.ts)',
+      false,
+      `mons=${mons().size}`,
+    );
+    return;
+  }
   await gm(`tp ${m0.x.toFixed(0)} ${m0.z.toFixed(0)}`);
   let seq = 1000;
   // Bay lên khoảng 20m.

@@ -14,4 +14,5 @@ import './checkparts/portals';
 import './checkparts/trib';
 import './checkparts/fabao';
 import './checkparts/credits';
+import './checkparts/i18nOrphans';
 import './checkparts/final';
