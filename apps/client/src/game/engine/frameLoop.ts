@@ -333,7 +333,7 @@ export function runFrame(eng: Game): void {
   eng.fpsAcc += dt;
   eng.fpsFrames++;
   const cpu = performance.now() - now;
-  if (eng.started && downgradeOf(get().quality)) eng.autoQuality.frame(now, cpu); // Vừa/Thấp không tự hạ: khỏi ghi mẫu
+  if (eng.started && downgradeOf(get().quality)) eng.autoQuality.frame(now, cpu); // chỉ Thấp (đáy) không tự hạ: khỏi ghi mẫu
   autoQualityTick(eng, now);
   eng.cpuAcc += cpu;
   if (cpu > eng.cpuMax) eng.cpuMax = cpu;
@@ -831,7 +831,7 @@ export function watchGpuDevice(eng: Game): void {
   });
 }
 
-/** Một lần/giây: nghẽn ở Cực cao thì hạ xuống Cao và báo; Cao/Vừa/Thấp là lựa chọn của người chơi nên không tự hạ; bị khóa cũng thôi. */
+/** Một lần/giây: tụt khung kéo dài thì hạ MỘT bậc (Cực cao → Cao → Vừa → Thấp) và báo (B13); bị khóa ("Giữ mức cố định") thì không hạ. */
 function autoQualityTick(eng: Game, now: number): void {
   if (!eng.started || now - eng.autoAt < 1000) return;
   eng.autoAt = now;

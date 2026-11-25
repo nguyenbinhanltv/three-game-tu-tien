@@ -12,10 +12,11 @@ export const isQuality = (v: unknown): v is Quality => typeof v === 'string' && 
 export const baseOf = (q: string): 'low' | 'medium' | 'high' => (q === 'ultra' ? 'high' : q === 'low' || q === 'high' ? q : 'medium');
 
 /**
- * Bậc tự hạ khi nghẽn: chỉ **Cực cao → Cao** (preset mới, có ngân sách riêng 12 ms). Cao/Vừa/Thấp là lựa chọn của người chơi,
- * không tự hạ (một đợt nặng ngắn ở rừng đông hay boss không được đổi lựa chọn đã lưu).
+ * Bậc tự hạ khi khung tụt KÉO DÀI (B13): Cực cao → Cao → Vừa → Thấp (Thấp là đáy). Bật mặc định, có thông báo, người chơi
+ * tắt được bằng "Khóa mức đồ họa" ở Cài đặt. Một đợt nặng ngắn (rừng đông, boss) không đủ để hạ: xem `optionsFor`.
  */
-export const downgradeOf = (q: string): Quality | null => (q === 'ultra' ? 'high' : null);
+export const downgradeOf = (q: string): Quality | null =>
+  q === 'ultra' ? 'high' : q === 'high' ? 'medium' : q === 'medium' ? 'low' : null;
 
 /** Thông tin GPU đọc từ adapter WebGPU (`describeGpu` ở game/engine/frameLoop.ts). */
 export interface GpuHint {
@@ -68,18 +69,28 @@ interface AutoOptions {
   cooldownMs: number;
 }
 
-const AUTO_DEFAULTS: AutoOptions = { windowMs: 10_000, cpuP95: 12, minFps: 40, cooldownMs: 15_000 };
+/** Cực cao: ngưỡng chặt (preset mới, ngân sách riêng 12 ms), cửa sổ 10 s. */
+const AUTO_ULTRA: AutoOptions = { windowMs: 10_000, cpuP95: 12, minFps: 40, cooldownMs: 15_000 };
+/**
+ * Cao/Vừa: mục tiêu 60 fps nên hạ khi CPU p95 > 14 ms hoặc fps < 45, nhưng phải KÉO DÀI 20 s liền và cách nhau 30 s,
+ * để một trận boss/rừng đông ngắn không đổi lựa chọn của người chơi.
+ */
+const AUTO_SUSTAINED: AutoOptions = { windowMs: 20_000, cpuP95: 14, minFps: 45, cooldownMs: 30_000 };
+
+/** Ngưỡng tự hạ theo preset đang dùng. */
+export const optionsFor = (current: string): AutoOptions => (current === 'ultra' ? AUTO_ULTRA : AUTO_SUSTAINED);
+const MAX_WINDOW_MS = AUTO_SUSTAINED.windowMs;
 
 /**
- * Tự hạ preset khi nghẽn: trong cửa sổ 10 s, CPU p95 của khung > 12 ms hoặc fps trung bình < 40 thì hạ một bậc
- * (chỉ Cực cao → Cao). Khung cách nhau > 1 s (tab ẩn, màn tải) làm cửa sổ bắt đầu lại để không hạ oan.
+ * Tự hạ preset khi nghẽn kéo dài (xem `optionsFor`): hạ MỘT bậc rồi chờ cooldown. Khung cách nhau > 1 s (tab ẩn, màn tải)
+ * làm cửa sổ bắt đầu lại để không hạ oan.
  */
 export class AutoQuality {
   private t: number[] = [];
   private cpu: number[] = [];
   private since = 0;
 
-  constructor(private o: AutoOptions = AUTO_DEFAULTS) {}
+  constructor(private o: AutoOptions | null = null) {}
 
   /** Gọi mỗi khung: `now` (ms) và thời gian CPU của khung (ms). */
   frame(now: number, cpuMs: number): void {
@@ -87,7 +98,7 @@ export class AutoQuality {
     if (n > 0 && now - this.t[n - 1]! > 1000) this.reset(now);
     this.t.push(now);
     this.cpu.push(cpuMs);
-    const from = now - this.o.windowMs;
+    const from = now - MAX_WINDOW_MS;
     let drop = 0;
     while (drop < this.t.length && this.t[drop]! < from) drop++;
     if (drop > 0) {
@@ -103,25 +114,31 @@ export class AutoQuality {
     this.since = since;
   }
 
-  /** CPU p95 và fps trong cửa sổ hiện tại; null nếu chưa đủ mẫu (cửa sổ chưa đầy hoặc đang cooldown). */
-  stats(now: number): { p95: number; fps: number } | null {
-    const n = this.t.length;
-    if (n < 30 || now < this.since || this.t[n - 1]! - this.t[0]! < this.o.windowMs * 0.9) return null;
-    const sorted = [...this.cpu].sort((a, b) => a - b);
+  /** CPU p95 và fps trong `windowMs` gần nhất; null nếu chưa đủ mẫu (cửa sổ chưa đầy hoặc đang cooldown). */
+  stats(now: number, windowMs: number = AUTO_ULTRA.windowMs): { p95: number; fps: number } | null {
+    const from = now - windowMs;
+    let i = 0;
+    while (i < this.t.length && this.t[i]! < from) i++;
+    const t = this.t.slice(i);
+    const cpu = this.cpu.slice(i);
+    const n = t.length;
+    if (n < 30 || now < this.since || t[n - 1]! - t[0]! < windowMs * 0.9) return null;
+    const sorted = [...cpu].sort((a, b) => a - b);
     const p95 = sorted[Math.min(n - 1, Math.floor(n * 0.95))] ?? 0;
-    const fps = (n - 1) / ((this.t[n - 1]! - this.t[0]!) / 1000);
+    const fps = (n - 1) / ((t[n - 1]! - t[0]!) / 1000);
     return { p95, fps };
   }
 
-  /** Preset nên hạ xuống, hoặc null (đủ tốt, bị khóa, chưa đủ mẫu, Vừa/Thấp). Gọi khoảng 1 lần/giây. */
+  /** Preset nên hạ xuống, hoặc null (đủ tốt, bị khóa, chưa đủ mẫu, đã Thấp). Gọi khoảng 1 lần/giây. */
   check(now: number, current: string, locked: boolean): Quality | null {
     if (locked) return null;
     const next = downgradeOf(current);
     if (!next) return null;
-    const s = this.stats(now);
+    const o = this.o ?? optionsFor(current);
+    const s = this.stats(now, o.windowMs);
     if (!s) return null;
-    if (s.p95 > this.o.cpuP95 || s.fps < this.o.minFps) {
-      this.reset(now + this.o.cooldownMs); // chờ hết cooldown rồi đủ thêm một cửa sổ mới
+    if (s.p95 > o.cpuP95 || s.fps < o.minFps) {
+      this.reset(now + o.cooldownMs); // chờ hết cooldown rồi đủ thêm một cửa sổ mới
       return next;
     }
     return null;
