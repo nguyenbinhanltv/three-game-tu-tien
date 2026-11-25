@@ -32,7 +32,7 @@ export default {
     });
     await gm(page, 'level 12', 1500);
     await gm(page, 'god on', 1200);
-    await gm(page, `set ${setId}`, 1500);
+    await gm(page, `outfit ${setId} ${gender}`, 3500);
     await gm(page, 'killall', 800);
     await gm(page, 'tp 2048 2088', 1500);
     await page.waitForFunction(() => !!window.__game!.ents?.players.get(window.__game!.sid)?.model?.v3, undefined, {
