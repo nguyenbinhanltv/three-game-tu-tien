@@ -49,3 +49,42 @@ describe('HitFx hồi linh lực (HPL2 A)', () => {
     expect(sprites).not.toContain('chung_lotus');
   });
 });
+
+describe('HitFx mảnh vụn theo chất liệu (HPL2 B)', () => {
+  it('mỗi chất liệu một timeline + bảng màu riêng, không tông đỏ/cam', () => {
+    const t = setup();
+    for (const [i, m] of (['flesh', 'stone', 'metal'] as const).entries()) t.fx.debris({ ...pt, id: 'm' + i }, { x: 1, z: 1 }, m, true);
+    expect(t.calls).toEqual([
+      { skill: 'fx_debris_flesh', palette: 'deb_flesh' },
+      { skill: 'fx_debris_stone', palette: 'deb_stone' },
+      { skill: 'fx_debris_metal', palette: 'deb_metal' },
+    ]);
+    for (const k of ['deb_flesh', 'deb_stone', 'deb_metal']) {
+      const pal = FX_PALETTE[k]!;
+      for (const c of [pal.core, pal.body, pal.rim, pal.accent]) {
+        const r = (c >> 16) & 255;
+        const g = (c >> 8) & 255;
+        const b = c & 255;
+        // Đỏ/cam = kênh đỏ trội hẳn hai kênh kia.
+        expect(r - Math.max(g, b) > 40 && g < r * 0.8).toBe(false);
+      }
+    }
+  });
+
+  it('chỉ phát cho đòn dính tới mình và giãn cách theo quái', () => {
+    const t = setup();
+    t.fx.debris(pt, null, 'stone', false);
+    expect(t.calls.length).toBe(0);
+    t.fx.debris(pt, null, 'stone', true);
+    t.fx.debris(pt, null, 'stone', true);
+    expect(t.calls.length).toBe(1);
+  });
+
+  it('ngân sách: mỗi timeline mảnh vụn tối đa 2 sprite (thân + điểm nhấn 70 ms), đều ở tier 1', () => {
+    for (const m of ['flesh', 'stone', 'metal']) {
+      const sp = FX_TIMELINE.get('fx_debris_' + m)!.events.filter((e) => 'sprite' in e && e.sprite);
+      expect(sp.length).toBeLessThanOrEqual(2);
+      for (const e of sp) expect((e as { tier?: number }).tier).toBe(1);
+    }
+  });
+});

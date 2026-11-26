@@ -1,0 +1,44 @@
+{
+  "skillId": "fx_debris_flesh",
+  "idea": "MẢNH VỤN THỊT (quái thân thịt/lông trúng đòn): một vệt mực sẫm văng lệch về phía sau nạn nhân như mực hắt lên giấy, vài giọt mực rơi xuống. Mực đen tím, mép xám lạnh; KHÔNG máu đỏ. Rất nhỏ, tan trong 0,3 giây.",
+  "element": "vo",
+  "path": "",
+  "scene": {
+    "palette": {
+      "core": "0c0c10",
+      "body": "5a5068",
+      "rim": "d6d0e4",
+      "accent": "e8e2f0",
+      "shadow": "050507"
+    },
+    "impactAt": 0
+  },
+  "shapeLang": [
+    "burst"
+  ],
+  "timing": {
+    "anticipationMs": 0,
+    "impactMs": 50,
+    "lingerMs": 300
+  },
+  "footprint": {
+    "lengthM": 1.6,
+    "widthM": 1,
+    "heightM": 1.4
+  },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": {
+    "drawCalls": 2,
+    "particles": 12,
+    "screenCover": 0.015,
+    "overdraw": 2
+  },
+  "textures": [],
+  "silhouette": "một vệt mực hắt lệch ra sau thân, vài giọt mực rơi",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles"
+  ]
+}

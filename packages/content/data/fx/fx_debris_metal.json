@@ -1,0 +1,97 @@
+{
+  "skill": "fx_debris_metal",
+  "trigger": "fx",
+  "fxKind": "~debris_metal",
+  "palette": "deb_metal",
+  "events": [
+    {
+      "type": "mesh",
+      "shape": "sprite",
+      "sprite": "chung_chips",
+      "billboard": true,
+      "at": "target",
+      "t": 0.02,
+      "dur": 0.24,
+      "offset": [
+        0,
+        0.2,
+        0
+      ],
+      "scale": 0.8,
+      "scaleTo": 1.25,
+      "sweep": 0,
+      "erodeFrom": 0.35,
+      "ragged": 0.5,
+      "tone": "rim",
+      "alpha": 0.9,
+      "tier": 1,
+      "seed": 2660,
+      "align": "aim"
+    },
+    {
+      "type": "mesh",
+      "shape": "sprite",
+      "sprite": "chung_spear",
+      "billboard": true,
+      "at": "target",
+      "t": 0.03,
+      "dur": 0.07,
+      "offset": [
+        0,
+        0.2,
+        0
+      ],
+      "scale": 1.01,
+      "scaleTo": 1.17,
+      "sweep": 0,
+      "erodeFrom": 0.2,
+      "ragged": 0.5,
+      "tone": "accent",
+      "alpha": 0.85,
+      "tier": 1,
+      "seed": 2661,
+      "align": "aim"
+    },
+    {
+      "type": "particles",
+      "kind": "spark",
+      "t": 0,
+      "n": 8,
+      "speed": 8,
+      "spread": 0.35,
+      "life": 0.22,
+      "size": 0.07,
+      "at": "target",
+      "tone": "rim",
+      "tier": 0
+    },
+    {
+      "type": "particles",
+      "kind": "spark",
+      "t": 0.03,
+      "n": 4,
+      "speed": 4,
+      "spread": 0.6,
+      "life": 0.3,
+      "size": 0.05,
+      "at": "target",
+      "tone": "accent",
+      "tier": 1,
+      "grav": 6
+    },
+    {
+      "type": "particles",
+      "kind": "dust",
+      "t": 0.15,
+      "n": 1,
+      "speed": 0.6,
+      "spread": 0.5,
+      "life": 0.25,
+      "size": 0.1,
+      "at": "target",
+      "tone": "shadow",
+      "tier": 1,
+      "grav": 2
+    }
+  ]
+}

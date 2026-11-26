@@ -1,0 +1,44 @@
+{
+  "skillId": "fx_debris_stone",
+  "idea": "MẢNH VỤN ĐÁ (vượn đá, quái hệ thổ trúng đòn): chùm mảnh đá góc cạnh bật ra sau thân rồi rơi nhanh, kèm làn bụi đá ngà. Xám ngà, lõi mực nâu. Rất nhỏ, tan trong 0,35 giây.",
+  "element": "tho",
+  "path": "",
+  "scene": {
+    "palette": {
+      "core": "1c1a16",
+      "body": "8a8272",
+      "rim": "e8e2d0",
+      "accent": "f0e6a8",
+      "shadow": "0c0b09"
+    },
+    "impactAt": 0
+  },
+  "shapeLang": [
+    "burst"
+  ],
+  "timing": {
+    "anticipationMs": 0,
+    "impactMs": 50,
+    "lingerMs": 300
+  },
+  "footprint": {
+    "lengthM": 1.6,
+    "widthM": 1,
+    "heightM": 1.4
+  },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": {
+    "drawCalls": 2,
+    "particles": 12,
+    "screenCover": 0.015,
+    "overdraw": 2
+  },
+  "textures": [],
+  "silhouette": "chùm mảnh đá góc cạnh bật ra sau thân rồi rơi, làn bụi ngà",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles"
+  ]
+}

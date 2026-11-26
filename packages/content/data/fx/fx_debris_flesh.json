@@ -1,0 +1,84 @@
+{
+  "skill": "fx_debris_flesh",
+  "trigger": "fx",
+  "fxKind": "~debris_flesh",
+  "palette": "deb_flesh",
+  "events": [
+    {
+      "type": "mesh",
+      "shape": "sprite",
+      "sprite": "chung_splat",
+      "billboard": true,
+      "at": "target",
+      "t": 0.02,
+      "dur": 0.32,
+      "offset": [
+        0,
+        0.1,
+        0
+      ],
+      "scale": 1.1,
+      "scaleTo": 1.55,
+      "sweep": 0,
+      "erodeFrom": 0.4,
+      "ragged": 0.5,
+      "tone": "body",
+      "alpha": 0.9,
+      "tier": 1,
+      "seed": 2620,
+      "align": "aim"
+    },
+    {
+      "type": "mesh",
+      "shape": "sprite",
+      "sprite": "chung_splat",
+      "billboard": true,
+      "at": "target",
+      "t": 0.03,
+      "dur": 0.07,
+      "offset": [
+        0,
+        0.1,
+        0
+      ],
+      "scale": 1.23,
+      "scaleTo": 1.43,
+      "sweep": 0,
+      "erodeFrom": 0.2,
+      "ragged": 0.5,
+      "tone": "rim",
+      "alpha": 0.85,
+      "tier": 1,
+      "seed": 2621,
+      "align": "aim"
+    },
+    {
+      "type": "particles",
+      "kind": "dust",
+      "t": 0.03,
+      "n": 4,
+      "speed": 2.6,
+      "spread": 0.6,
+      "life": 0.4,
+      "size": 0.12,
+      "at": "target",
+      "tone": "rim",
+      "tier": 0,
+      "grav": 7
+    },
+    {
+      "type": "particles",
+      "kind": "dust",
+      "t": 0.15,
+      "n": 1,
+      "speed": 0.6,
+      "spread": 0.5,
+      "life": 0.25,
+      "size": 0.1,
+      "at": "target",
+      "tone": "shadow",
+      "tier": 1,
+      "grav": 2
+    }
+  ]
+}

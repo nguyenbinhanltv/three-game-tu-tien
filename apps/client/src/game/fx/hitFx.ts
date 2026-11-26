@@ -12,7 +12,7 @@ import { OTHERS_FX_LIVE_MAX } from './fxBudget';
 /** Xa hơn mức này (m, tới camera) thì không phát. */
 export const HIT_FX_DIST = 55;
 /** Giãn cách tối thiểu (giây) giữa hai lần cùng loại trên cùng một nạn nhân. */
-export const HIT_GAP = { hit: 0.12, crit: 0.25, block: 0.3, mon: 0.3, brk: 0.5, evade: 0.4, heal: 1.2, tick: 0.9 } as const;
+export const HIT_GAP = { debris: 0.35, hit: 0.12, crit: 0.25, block: 0.3, mon: 0.3, brk: 0.5, evade: 0.4, heal: 1.2, tick: 0.9 } as const;
 /** Lượng hồi từ chừng này phần máu tối đa trở lên thì nở búp sen (`fx_heal`); nhỏ hơn chỉ là chùm cánh sen (`fx_heal_tick`). */
 export const HEAL_BIG_FRAC = 0.08;
 
@@ -115,6 +115,16 @@ export class HitFx {
     if (!crit) return;
     const ct = this.ok('fx_hit_crit', v, HIT_GAP.crit, mine, force);
     if (ct) this.play(ct, v, from, pal, mine);
+  }
+
+  /**
+   * Mảnh vụn theo CHẤT LIỆU thân quái (thịt: vệt mực; đá: mảnh đá + bụi; kim: tia lửa thép), văng theo hướng đòn. Lớp phụ của vết va:
+   * chỉ phát cho đòn dính tới mình (`mine`), giãn 0,35 s mỗi quái.
+   */
+  debris(v: HitPoint, from: { x: number; z: number } | null, material: 'flesh' | 'stone' | 'metal', mine: boolean, force = false): void {
+    if (!mine && !force) return;
+    const tl = this.ok('fx_debris_' + material, v, HIT_GAP.debris, mine, force);
+    if (tl) this.play(tl, v, from, 'deb_' + material, mine);
   }
 
   /** Đòn bị chặn/hấp thụ hết (sát thương 0): tấm khiên nứt trước ngực nạn nhân. */
