@@ -41,6 +41,29 @@ export const trailRate = (fast: number): number => 1.25 - 0.5 * Math.min(1, Math
 export const trailWidth = (fast: number): number => 0.36 + 0.2 * Math.min(1, Math.max(0, fast));
 /** Vệt của người khác mờ còn một nửa để đông người không rối. */
 export const TRAIL_OTHERS = 0.5;
+/** Số chỗ trong pool đuôi mây luôn dành cho người chơi (người khác không được chiếm): mình nhả ~8 cụm/s × 0,7 s ≈ 6 cụm sống. */
+export const PUFF_RESERVE_MINE = 6;
+export interface PuffSlot {
+  live: boolean;
+  mine: boolean;
+  age: number;
+}
+/**
+ * Chọn chỗ cho một cụm đuôi mây mới. Trả về `{ idx, evict }`: `idx` = chỗ dùng (có thể bằng `slots.length` = thêm chỗ mới), `evict` = chỗ đang bị cụm của
+ * người khác chiếm và phải `drop` trước khi dùng lại; `null` = bỏ không nhả.
+ * Ưu tiên của mình: người khác chỉ được giữ tối đa `max − PUFF_RESERVE_MINE` cụm sống; hết chỗ mà là của mình thì lấy lại cụm già nhất của người khác.
+ */
+export function pickPuffSlot(slots: readonly PuffSlot[], mine: boolean, max: number): { idx: number; evict: boolean } | null {
+  if (!mine && slots.filter((q) => q.live && !q.mine).length >= max - PUFF_RESERVE_MINE) return null;
+  const free = slots.findIndex((q) => !q.live);
+  if (free >= 0) return { idx: free, evict: false };
+  if (slots.length < max) return { idx: slots.length, evict: false };
+  if (!mine) return null;
+  let old = -1;
+  for (let i = 0; i < slots.length; i++) if (!slots[i]!.mine && (old < 0 || slots[i]!.age > slots[old]!.age)) old = i;
+  return old >= 0 ? { idx: old, evict: true } : null;
+}
+
 /** Đuôi mây vẽ tay: số cụm tối đa cùng lúc (cho mọi người), tuổi (s), nhịp sinh (s) khi bay nhanh. */
 const MAX_PUFFS = 10;
 const PUFF_LIFE = 0.7;
@@ -275,7 +298,7 @@ export class Trails {
   private state = new Map<string, ActorState>();
   private frame = 0;
   /** Đuôi mây sprite: pool cố định, mỗi cụm trôi ra sau rồi tan. */
-  private puffs: { m: FxMesh | null; age: number; vx: number; vy: number; vz: number; size: number; alpha: number }[] = [];
+  private puffs: { m: FxMesh | null; mine: boolean; age: number; vx: number; vy: number; vz: number; size: number; alpha: number }[] = [];
   private puffAcc = new Map<string, number>();
 
   constructor(
@@ -541,12 +564,21 @@ export class Trails {
       return;
     }
     this.puffAcc.set(id, acc - PUFF_EVERY);
-    let p = this.puffs.find((q) => !q.m);
+    const pick = pickPuffSlot(
+      this.puffs.map((q) => ({ live: !!q.m, mine: q.mine, age: q.age })),
+      mine,
+      MAX_PUFFS,
+    );
+    if (!pick) return;
+    let p = this.puffs[pick.idx];
     if (!p) {
-      if (this.puffs.length >= MAX_PUFFS) return;
-      p = { m: null, age: 0, vx: 0, vy: 0, vz: 0, size: 1, alpha: 1 };
+      p = { m: null, mine, age: 0, vx: 0, vy: 0, vz: 0, size: 1, alpha: 1 };
       this.puffs.push(p);
+    } else if (pick.evict && p.m) {
+      this.src.drop(p.m);
+      p.m = null;
     }
+    p.mine = mine;
     useSpriteGroup('ngu');
     const pal = FX_PALETTE.ngu_kiem!;
     const wisp = Math.random() < 0.4;
