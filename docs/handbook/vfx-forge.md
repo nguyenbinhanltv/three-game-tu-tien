@@ -58,6 +58,13 @@ Hiệu ứng không thuộc chiêu hay hướng tu nào (đột phá, độ ki�
 - Tấm sprite là quad 2×2 (`scale` 0,5 = ô 1 m) quay mặt về camera chéo 52°: mép dưới thấp hơn tâm 0,31 × cạnh ô. Tâm thấp hơn mức đó thì nền cắt ngang hình; phiến đá Trúc Cơ dùng chính điều này để "trồi lên".
 - Atlas `dp` nạp sẵn khi vào game (lên tầng chỉ dài ~1 s) nhưng không được miễn giải phóng; runner cũng nạp atlas của mọi sprite ngay lúc timeline `trigger: fx` bắt đầu.
 
+### Ngự kiếm (V-P10 đợt 3)
+
+- **Cất cánh** `fx_fly_on` và **hạ cánh** `fx_fly_off` (MỚI) sinh bằng `node tools/vfx-forge/ngu-kiem.mjs` (ghi đè cả file; công thức cũ trong `tools/vfx/recipes_e.py` đã bỏ). Sprite nhóm `ngu` (8 ô đơn sắc, kiểu tô 12), bảng màu `ngu_kiem` (lam ngọc, bạc hà, không cam). Cất cánh: phi kiếm phóng to trượt vào dưới chân → vành bụi gió rách bung ra ở mốc nhấn (+30 ms vệt kiếm sáng) → hai vệt gió xoắn quấn lên. Hạ cánh: kiếm thu về lưng thành vệt ngắn, vành gió ép xuống và bụi thấp rách.
+- Tranh nằm bẹt (vành bụi) vẫn là tấm billboard nên tâm đặt ở `FEET + GROUND × size × 0,55` (cắt một ít đáy trống thay vì nhấc vành lên ngang ngực).
+- **Cất cánh của mình** phát ngay ở `Game.toggleFly` (dự đoán). **Hạ cánh của mình và cả hai cảnh của người khác** suy từ cờ `PF_FLYING` đổi (`EntityManager.onFlyChange` → `flyFx` ở `apps/client/src/game/engine/fxMsgs.ts`), trong 60 m, bỏ qua lần đầu thấy người đó; không đổi giao thức.
+- Phòng thử: `pnpm shots vfxlab --skill fx_fly_on,fx_fly_off --at -200,0,30,150,400`.
+
 ## Bảng phong cách
 
 `tools/vfx-forge/style-sheet.json`: ramp ba tông (lõi tối 15–25%, thân 50–60%, viền sáng 10–20%), nét không mảnh hơn 3% khung, tương phản lõi/viền ≥ 4:1, nền đen thuần cho flipbook, cấm đỏ/cam. Script đưa bảng này, bảng màu hướng tu và phối cảnh camera chéo vào MỌI prompt; luôn đính ảnh mẫu đã duyệt gần nhất bằng `--ref` để các chiêu cùng phong cách.

@@ -199,6 +199,23 @@
       }
     },
     {
+      "type": "decal",
+      "tex": "scorch",
+      "t": 0.15,
+      "r": 2.8,
+      "dur": 1.4,
+      "at": "self",
+      "offset": [
+        0,
+        -1.15,
+        0
+      ],
+      "grow": 0.15,
+      "tone": "shadow",
+      "alpha": 0.9,
+      "tier": 0
+    },
+    {
       "type": "particles",
       "kind": "dust",
       "t": 0.25,
