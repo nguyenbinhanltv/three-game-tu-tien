@@ -24,6 +24,8 @@ export interface AnimFxFlags {
   cutin: boolean;
   /** T2: xung bắt đầu/dừng/pivot (`LocoImpulse`); tắt riêng để so sánh với phần còn lại của lớp loco. */
   impulse: boolean;
+  /** T2: nhịp đảo chiều gấp khi đang chạy (`PivotTurn`: phanh, hạ hông, xoay có gia tốc, đạp đi); tắt riêng để so. */
+  pivot: boolean;
   /** T5: ragdoll nhẹ (khớp lò xo lỏng) khi trúng đòn/ngã/chết. */
   ragdoll: boolean;
   /** Clip Patch (`anim_patch_move`, CC0): bắt đầu/dừng chạy, chạy nhanh, thở dốc sau chạy dài; nạp thư viện chỉ khi bật. */
@@ -43,6 +45,7 @@ export const ANIM_FX: AnimFxFlags = {
   idle: FLAGS.thanPhap,
   cutin: FLAGS.thanPhap,
   impulse: FLAGS.thanPhap,
+  pivot: FLAGS.thanPhap,
   ragdoll: FLAGS.thanPhap,
   patch: FLAGS.thanPhap,
   patchLoop: FLAGS.thanPhap && FLAGS.patchLoop,

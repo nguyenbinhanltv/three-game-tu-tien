@@ -545,7 +545,10 @@ export class EntityManager {
       h.push({ t: this.time, x: v.x, z: v.z });
       while (h.length > 1 && this.time - h[0]!.t > HIST_SEC) h.shift();
       const lookMon = isLocal && targetId ? this.monsters.get(targetId) : undefined;
+      const stepX = prev ? v.x - prev.x : 0;
+      const stepZ = prev ? v.z - prev.z : 0;
       v.model.update(isLocal ? myAnimDt : dt, {
+        heading: stepX * stepX + stepZ * stepZ > 1e-8 ? Math.atan2(stepX, stepZ) : undefined,
         lookAt: lookMon ? { x: lookMon.x, y: lookMon.y + 1.2, z: lookMon.z } : undefined,
         moveDir: v.speed > 0.3 ? locoDirOf(v.yaw, v.mvx, v.mvz) : undefined,
         moveAngle: v.speed > 0.3 ? locoAngleOf(v.yaw, v.mvx, v.mvz) : undefined,

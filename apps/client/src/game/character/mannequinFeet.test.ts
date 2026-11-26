@@ -10,6 +10,8 @@ import {
   MqFeet,
   needStep,
   resetFeetSlots,
+  smoothGround,
+  supportY,
   stepArc,
   walkableGround,
   wrapAngle,
@@ -69,6 +71,33 @@ function rig() {
 const flat = () => 0;
 const worldY = (root: THREE.Object3D, n: string) => root.getObjectByName(n)!.getWorldPosition(new THREE.Vector3()).y;
 
+describe('mannequinFeet: mặt đứng dưới chân', () => {
+  it('smoothGround: NaN hoặc chênh > groundSnap thì lấy ngay', () => {
+    expect(smoothGround(Number.NaN, 0.4, 1 / 60)).toBe(0.4);
+    expect(smoothGround(0, FEET.groundSnap + 0.1, 1 / 60)).toBe(FEET.groundSnap + 0.1);
+    expect(smoothGround(0, -FEET.groundSnap - 0.1, 1 / 60)).toBe(-FEET.groundSnap - 0.1);
+  });
+  it('smoothGround: lên tối đa groundUp·dt, xuống tối đa groundDown·dt, tới đích thì dừng', () => {
+    const dt = 1 / 240;
+    expect(smoothGround(0, 0.5, dt)).toBeCloseTo(FEET.groundUp * dt);
+    expect(smoothGround(0, -0.5, dt)).toBeCloseTo(-FEET.groundDown * dt);
+    expect(smoothGround(0, 0.001, dt)).toBe(0.001);
+    expect(smoothGround(0, -0.001, dt)).toBe(-0.001);
+  });
+  it('hằng số tốc độ đổi mặt đứng được khóa (đổi phải có đo tpmove)', () => {
+    expect(FEET.groundUp).toBe(40);
+    expect(FEET.groundDown).toBe(9);
+    expect(FEET.groundSnap).toBe(0.7);
+    expect(FEET.maxDown).toBe(0.3);
+  });
+  it('supportY: kẹp ở level − maxDown, không thấp hơn', () => {
+    expect(supportY(-1, 0)).toBeCloseTo(-FEET.maxDown);
+    expect(supportY(-0.1, 0)).toBeCloseTo(-0.1);
+    expect(supportY(0.5, 0)).toBe(0.5);
+    expect(supportY(-1, 0, 0.5)).toBeCloseTo(-0.5);
+  });
+});
+
 describe('MqFeet', () => {
   it('thiếu xương chân thì null', () => {
     expect(MqFeet.from(new THREE.Group(), new THREE.Group(), 1.8)).toBeNull();
@@ -92,6 +121,18 @@ describe('MqFeet', () => {
       return p.y - ground(p.x);
     };
     expect(Math.abs(clear('foot_l') - clear('foot_r'))).toBeLessThan(0.02);
+  });
+  it('drop > 0: chân chưa khóa được nâng đúng bằng drop', () => {
+    const a = rig();
+    const b = rig();
+    for (let i = 0; i < 30; i++) {
+      a.feet.update(1 / 60, { active: true, standing: false }, flat);
+      b.feet.update(1 / 60, { active: true, standing: false, drop: 0.1 }, flat);
+    }
+    a.root.updateMatrixWorld(true);
+    b.root.updateMatrixWorld(true);
+    expect(worldY(b.root, 'foot_l') - worldY(a.root, 'foot_l')).toBeCloseTo(0.1, 2);
+    expect(worldY(b.root, 'foot_r') - worldY(a.root, 'foot_r')).toBeCloseTo(0.1, 2);
   });
   it('thôi hoạt động thì trả hông và chân về chỗ cũ', () => {
     const { root, feet } = rig();

@@ -35,7 +35,7 @@ import { GROUND_LAYER as L, type GroundTextures } from '../../base/groundTexture
 import { FLAGS } from '../../base/flags';
 import { isoTerrainDetail } from './isoDetail';
 import { lampPoolAt } from '../painted/lampPools';
-import { withLowMist } from '../painted/lowMist';
+import { lowMistAt } from '../painted/lowMist';
 import { DRY_HI, DRY_LO, themeU } from '../painted/theme';
 import { paintedColor } from '../painted/palette';
 import { paintedNight } from '../painted/frame';
@@ -723,6 +723,18 @@ export function applyGroundShader(mat: THREE.MeshStandardNodeMaterial, tex: Grou
       float(1).sub(smoothstep(themeU.slab.z.sub(6), themeU.slab.z, distance(p, themeU.slab.xy))),
     );
     const grassy: Node = mix(grassyV, slabTone.mul(mix(float(1), detail, 0.35)), slabW);
+    // albedo thủ tục của level làm nền (theme.albedoMix; Vấn Đỉnh: tấm đá phiến mặt Âm và đất nung nứt mặt Dương dựng bằng Voronoi theo toạ độ thế giới, không
+    // phải ảnh chụp): bỏ đèn, nâng sáng có nén (mặt Dương vốn sáng không cháy), hai tông theo mảng lớn vài chục mét: sáng ngả ấm, tối ngả lam; khe nứt giữ nét
+    const aL: Node = dot(col.rgb, vec3(0.299, 0.587, 0.114));
+    const aGain: Node = float(2.3).div(aL.mul(2.2).add(1));
+    const aTone: Node = col.rgb.mul(aGain).mul(mix(vec3(0.5, 0.57, 0.84), vec3(1.12, 1.04, 0.9), patch.mul(0.8).add(0.2)));
+    // level hai mặt (theme.face): đất vẽ không nhận đèn nên mood từng mặt (Âm tối lạnh, Dương sáng ấm) phải nằm trong màu
+    const aFace: Node = mix(
+      vec3(themeU.faceW),
+      vec3(themeU.faceE),
+      smoothstep(themeU.face.y.negate(), themeU.face.y, positionWorld.x.sub(themeU.face.x)),
+    );
+    const grassyA: Node = mix(grassy, aTone.mul(aFace), themeU.albedoMix);
     // mảng đất trần (theme.dryMix): vùng màu đỉnh đỏ hơn xanh; tô đất painted nâu nhạt ấm (hai tông, giữ nét cọ), viền mềm, không nhiễu
     const dryW: Node = smoothstep(DRY_LO, DRY_HI, col.r.sub(col.g)).mul(themeU.dryMix).mul(float(1).sub(pathW));
     const earthLit = paintedColor('earth', 0);
@@ -732,14 +744,21 @@ export function applyGroundShader(mat: THREE.MeshStandardNodeMaterial, tex: Grou
       vec3(earthLit.r, earthLit.g, earthLit.b),
       smoothstep(0.09, 0.26, ink).mul(0.5).add(0.4),
     );
-    const paintedT: Node = mix(grassy, earthTone, dryW);
+    const paintedT: Node = mix(grassyA, earthTone, dryW);
     // đá/vách/tuyết đổi tông ở ALBEDO (vẫn qua đèn, bóng và pháp tuyến như Vân Lam), không đi qua emissive
     const rockInk: Node = dot(col.rgb, vec3(0.299, 0.587, 0.114));
     const rTone: Node = mix(vec3(themeU.rShade), vec3(themeU.rLit), smoothstep(0.1, 0.6, rockInk));
-    mat.colorNode = mix(col, rTone.mul(float(1).add(paintedNight.mul(themeU.nightSplit).mul(0.7))), themeU.on).mul(keep);
     // + sương thấp sát đáy thung lũng (render/painted/lowMist.ts), chỉ trên phần đất tô phẳng
     const groundBase = paintedT.mul(grassW).add(pavTone.mul(pavW));
-    mat.emissiveNode = withLowMist(F, groundBase, positionWorld.xz, positionWorld.y, grassW.add(pavW).min(1));
+    // bóng mặt trời trên đất (theme.albedoMix; Vấn Đỉnh): đất vẽ phát sáng nên không nhận bóng, vật thể như lơ lửng. Cho một phần màu đất đi qua đèn (albedo, chỉ ban ngày; đêm giữ như cũ, nhận bóng
+    // đổ của cột, đá, cổng, viền mềm theo bản đồ bóng), phần còn lại vẫn phát sáng; tổng giữ độ sáng của bản vẽ khi không có bóng. 0 = như cũ (mọi level khác)
+    const lit: Node = themeU.albedoMix.mul(0.85).mul(float(1).sub(paintedNight));
+    // sương thấp tính một lần: phần qua đèn nhân (1 − sương), phần phát sáng trộn về màu sương, nên khi không bóng tổng vẫn là mix(đất, sương, m) như cũ
+    const mist: Node = lowMistAt(F, positionWorld.xz, positionWorld.y).mul(grassW.add(pavW).min(1));
+    mat.colorNode = mix(col, rTone.mul(float(1).add(paintedNight.mul(themeU.nightSplit).mul(0.7))), themeU.on.mul(themeU.rockMix))
+      .mul(keep)
+      .add(groundBase.mul(lit).mul(float(1).sub(mist)));
+    mat.emissiveNode = mix(groundBase.mul(float(1).sub(lit)), vec3(themeU.mist), mist);
     if (FLAGS.paintDbg === 'vc') {
       // gỡ lỗi: màu đỉnh thô (tuyến tính) ×2
       mat.colorNode = vec3(0);
