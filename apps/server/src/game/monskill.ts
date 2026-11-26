@@ -18,6 +18,7 @@ import {
   MF_BURROW,
   MF_FACE,
   MF_FACE_T,
+  MF_DISP_MASK,
   MF_MX_MASK,
   MF_REAL,
   MF_REFLECT,
@@ -510,7 +511,7 @@ export class MonSkills {
     }
     rt.bits = bits;
     rt.ce = ce;
-    const low = m.s.mf & ~MF_MX_MASK;
+    const low = m.s.mf & ~MF_MX_MASK & ~MF_DISP_MASK;
     this.h.setFlags(m, low, low ? m.s.ce : 0);
   }
 

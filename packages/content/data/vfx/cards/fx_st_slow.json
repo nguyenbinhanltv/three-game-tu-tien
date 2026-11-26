@@ -1,0 +1,45 @@
+{
+  "skillId": "fx_st_slow",
+  "idea": "LÀM CHẬM (quái bị đòn băng/Hàn Giao Lân): vòng xích sắt quấn quanh cổ chân kèm vệt mực kéo lùi và vài mảnh băng; lam thép, lõi mực chàm, mép trắng lạnh. Lặp mỗi giây khi còn trạng thái.",
+  "element": "thuy",
+  "path": "",
+  "scene": {
+    "palette": {
+      "core": "10202e",
+      "body": "6fa8d0",
+      "rim": "eaf6ff",
+      "accent": "f0e6a8",
+      "shadow": "070d14"
+    },
+    "impactAt": 0
+  },
+  "shapeLang": [
+    "ring",
+    "line"
+  ],
+  "timing": {
+    "anticipationMs": 0,
+    "impactMs": 50,
+    "lingerMs": 900
+  },
+  "footprint": {
+    "lengthM": 2.2,
+    "widthM": 2.2,
+    "heightM": 2.4
+  },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": {
+    "drawCalls": 2,
+    "particles": 6,
+    "screenCover": 0.02,
+    "overdraw": 2
+  },
+  "textures": [],
+  "silhouette": "vòng xích quấn chân, vệt mực kéo lùi phía sau, vài mảnh băng",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles"
+  ]
+}

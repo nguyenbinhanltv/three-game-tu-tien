@@ -404,6 +404,20 @@ export const FX_SPRITES = [
   'chung_snap',
   'chung_puff',
   'chung_splat',
+  // Trạng thái kéo dài (HPL2 PR2): chậm (sương băng), độc (bọt), bỏng (than hồng), choáng (đốm mực xoáy), đâm dày, khiên mai rùa, yếu điểm, mắt soi.
+  'chung_frost',
+  'chung_bubble',
+  'chung_coal',
+  'chung_dizzy',
+  'chung_spear',
+  'chung_ward',
+  'chung_crack',
+  'chung_eye',
+  // Dấu trạng thái đọc rõ ở 720p: xích kéo lùi (chậm), lưỡi mực-than (bỏng), vòng sao + chim mực (choáng), lá + giọt ngọc (hồi dần).
+  'chung_chain',
+  'chung_flame',
+  'chung_halo',
+  'chung_leaf',
   // V-P10: nhóm atlas `ngu` (ngự kiếm: cất cánh, hạ cánh, vệt bay). Tranh đơn sắc, kiểu tô 12.
   'ngu_blade',
   'ngu_ring',
