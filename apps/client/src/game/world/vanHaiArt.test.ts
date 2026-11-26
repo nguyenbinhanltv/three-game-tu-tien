@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { terrainOf } from '@dtl/shared';
-import { VH_PALETTES, vanHaiArt } from './vanHaiArt';
+import { VH_PALETTES, vanHaiArt, vhPaintedGrass } from './vanHaiArt';
 import { scatterVanHai, vhPick } from './vanHaiScatter';
 
 const def = terrainOf('van_hai').def;
@@ -79,5 +79,45 @@ describe('scatterVanHai theo bản sắc đảo', () => {
   });
   it('vhPick không trả prop cho ô trống (r cao)', () => {
     expect(vhPick('tung_dai_dao', 0, 0, 0, 999, 0.99, 0.5)).toBeNull();
+  });
+});
+
+describe('vhPaintedGrass (Họa Cảnh P9: cỏ lá mảnh theo đảo)', () => {
+  const out = { k: 0, dry: 0 };
+  const mean = (kind: string, pick: 'k' | 'dry'): number => {
+    const isl = art.islands.find((i) => i.kind === kind)!;
+    let sum = 0;
+    let n = 0;
+    for (let a = 0; a < 64; a++) {
+      const r = isl.r * (0.2 + (0.6 * ((a * 37) % 64)) / 64);
+      vhPaintedGrass(def, isl.x + Math.cos(a) * r, isl.z + Math.sin(a) * r, 0, out);
+      sum += out[pick];
+      n++;
+    }
+    return sum / n;
+  };
+
+  it('không cỏ ngoài đảo, trên lối mòn và trong lòng hồ', () => {
+    vhPaintedGrass(def, 20, 20, 0, out);
+    expect(out.k).toBe(0);
+    const hub = art.islands.find((i) => i.kind === 'hub')!;
+    vhPaintedGrass(def, hub.trail[10]!, hub.trail[11]!, 0, out);
+    expect(out.k).toBeLessThan(0.15);
+    const p = art.ponds[0]!;
+    vhPaintedGrass(def, p.x, p.z, 0, out);
+    expect(out.k).toBe(0);
+  });
+
+  it('Tùng Đài rậm hơn Lôi Vân; Lôi Vân khô (úa) hơn Kính Hồ; giá trị trong 0..1', () => {
+    expect(mean('tung_dai_dao', 'k')).toBeGreaterThan(mean('loi_van_dao', 'k'));
+    expect(mean('loi_van_dao', 'dry')).toBeGreaterThan(0.7);
+    expect(mean('kinh_ho_dao', 'dry')).toBeLessThan(0.3);
+    for (const i of art.islands) {
+      vhPaintedGrass(def, i.x + 11, i.z - 7, 0.4, out);
+      expect(out.k).toBeGreaterThanOrEqual(0);
+      expect(out.k).toBeLessThanOrEqual(1);
+      expect(out.dry).toBeGreaterThanOrEqual(0);
+      expect(out.dry).toBeLessThanOrEqual(1);
+    }
   });
 });

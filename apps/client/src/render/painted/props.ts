@@ -67,6 +67,15 @@ export function paintedPaving<M extends THREE.MeshStandardNodeMaterial>(m: M): M
   return m;
 }
 
+/**
+ * Vật liệu chuẩn cho lưới dựng bằng code (ván cầu, đá trôi, xương...): mặc định trả đúng `MeshStandardMaterial` như trước; với `?style=painted` trả bản node
+ * đã qua `paintedProp` (hai tông theo hướng mặt, không đèn). Màu theo instance (`instanceColor`) và màu đỉnh vẫn là màu gốc.
+ */
+export function paintedStd(opts: THREE.MeshStandardMaterialParameters): THREE.Material {
+  if (FLAGS.style !== 'painted') return new THREE.MeshStandardMaterial(opts);
+  return paintedProp(new THREE.MeshStandardNodeMaterial(opts));
+}
+
 export function paintedProp<M extends THREE.MeshStandardNodeMaterial>(m: M): M {
   if (FLAGS.style !== 'painted') return m;
   const tint = sunTint();

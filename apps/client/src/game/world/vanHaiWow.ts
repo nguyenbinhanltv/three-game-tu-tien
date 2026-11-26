@@ -3,6 +3,7 @@ import { clamp, float, instanceIndex, mix, normalView, positionLocal, smoothstep
 import { fbm, hash01, type TerrainDef } from '@dtl/shared';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { createWorldMaterial } from '../../render/materials/world';
+import { paintedProp } from '../../render/painted/props';
 import { beaconParams } from '../../render/atmosphere';
 import { getCloudNoise } from '../../render/noiseTex';
 
@@ -769,7 +770,7 @@ export class VanHaiWow {
     // Thuyền tiên
     const parts = shipHull();
     const hullGeo = track(parts.hull);
-    const hullMat = track(createWorldMaterial({ vertexColors: true, roughness: 0.55, metalness: 0.15 }));
+    const hullMat = track(paintedProp(createWorldMaterial({ vertexColors: true, roughness: 0.55, metalness: 0.15 })));
     this.hulls = new THREE.InstancedMesh(hullGeo, hullMat, SHIPS.length);
     this.hulls.name = 'van-hai-ships';
     this.hulls.castShadow = true;
@@ -829,7 +830,10 @@ export class VanHaiWow {
     }
     const stoneGeo = track(mergeGeometries(stones, false));
     for (const g of stones) g.dispose();
-    const stoneMesh = new THREE.Mesh(stoneGeo, track(createWorldMaterial({ vertexColors: true, roughness: 0.78, metalness: 0.02 })));
+    const stoneMesh = new THREE.Mesh(
+      stoneGeo,
+      track(paintedProp(createWorldMaterial({ vertexColors: true, roughness: 0.78, metalness: 0.02 }))),
+    );
     stoneMesh.name = 'van-hai-towers';
     stoneMesh.castShadow = true;
     stoneMesh.receiveShadow = true;
