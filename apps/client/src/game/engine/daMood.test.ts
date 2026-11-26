@@ -23,6 +23,12 @@ describe('daPreset (mood Dạ Cảnh theo loại trận)', () => {
     expect(p.exposure).toBeGreaterThanOrEqual(base.exposure);
   });
 
+  it('nền lùi lại: nắng trăng và ánh trời yếu hơn đêm gốc', () => {
+    const p = daPreset(base, 0, 0);
+    expect(p.sunIntensity).toBeLessThan(base.sunIntensity * 0.75);
+    expect(p.skyIntensity).toBeLessThan(base.skyIntensity * 0.8);
+  });
+
   it('boss: sương ngả đỏ sẫm và dày hơn; tinh anh nhẹ hơn boss', () => {
     const n = daPreset(base, 0, 0);
     const e = daPreset(base, 1, 0);
