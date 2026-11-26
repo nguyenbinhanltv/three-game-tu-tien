@@ -404,6 +404,15 @@ export const FX_SPRITES = [
   'chung_snap',
   'chung_puff',
   'chung_splat',
+  // V-P10: nhóm atlas `kiep` (độ kiếp: mở kiếp, kiếp vân, chỗ sét đánh). Tranh đơn sắc, kiểu tô 12.
+  'kiep_rift',
+  'kiep_cloud',
+  'kiep_cloud2',
+  'kiep_eye',
+  'kiep_impact',
+  'kiep_smoke',
+  'kiep_arcs',
+  'kiep_knot',
 ] as const;
 export type FxSprite = (typeof FX_SPRITES)[number];
 
@@ -630,6 +639,8 @@ export interface FxBoltEvent extends FxBase {
   thick?: number;
   tone?: FxTone;
   seed?: number;
+  /** Lõi mực dưới thân sáng (V-P10): thiên lôi của độ kiếp đọc được trên nền sáng; chiêu người chơi không dùng. */
+  ink?: boolean;
 }
 
 /**

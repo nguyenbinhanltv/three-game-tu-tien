@@ -86,6 +86,7 @@ export const SPRITE_STYLE: Record<string, number> = {
   dp_: 12,
   // Trúng đòn chung: cũng tranh đơn sắc tô theo bảng màu lúc phát (hướng tu người đánh / hệ của quái).
   chung_: 12,
+  kiep_: 12,
 };
 
 export interface FxTarget {
@@ -526,6 +527,7 @@ export class FxRunner {
           0,
           ev.thick ?? 1,
           FLAGS.isoFxCompress ? BOLT_HEIGHT * ISO_BOLT_HEIGHT : BOLT_HEIGHT,
+          !!ev.ink,
         );
         break;
       }
@@ -603,7 +605,8 @@ export class FxRunner {
             | 'sprite_dong'
             | 'sprite_kieu'
             | 'sprite_dp'
-            | 'sprite_chung')
+            | 'sprite_chung'
+            | 'sprite_kiep')
       : kind0;
     const isSprite = cell !== null;
     if (cell) useSpriteGroup(cell.group);

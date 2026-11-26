@@ -41,6 +41,7 @@ import points from './scenarios/points';
 import propstc from './scenarios/propstc';
 import huyenkiep from './scenarios/huyenkiep';
 import kiepch6 from './scenarios/kiepch6';
+import kiepsan from './scenarios/kiepsan';
 import ual from './scenarios/ual';
 import chrv3 from './scenarios/chrv3';
 import chrv3anim from './scenarios/chrv3anim';
@@ -125,6 +126,7 @@ const SCENARIOS: Scenario[] = [
   thiengiai,
   huyenkiep,
   kiepch6,
+  kiepsan,
   ual,
   chrv3,
   chrv3anim,

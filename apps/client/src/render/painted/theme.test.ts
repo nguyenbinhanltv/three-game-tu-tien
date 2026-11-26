@@ -53,6 +53,26 @@ describe('bảng Họa Cảnh theo level', () => {
     }
   });
 
+  it('Vấn Đỉnh: nền là albedo thủ tục hai mặt, mặt Âm tối và lạnh hơn mặt Dương; rời level thì về mặc định', () => {
+    const t = PAINTED_THEMES.van_dinh!;
+    setPaintedTheme('van_dinh');
+    expect(themeU.albedoMix.value).toBe(1);
+    expect(themeU.rockMix.value).toBeLessThan(1);
+    expect(themeU.face.value.x).toBe(t.face!.x);
+    const [wr, wg, wb] = t.face!.west;
+    const [er, eg, eb] = t.face!.east;
+    expect(wr + wg + wb).toBeLessThan(er + eg + eb);
+    expect(wb / wr).toBeGreaterThan(eb / er);
+    expect(t.far).toBeUndefined();
+    for (const other of ['van_lam', 'van_hai', 'cuu_kieu', 'bac_hoang']) {
+      setPaintedTheme(other);
+      expect(themeU.albedoMix.value).toBe(0);
+      expect(themeU.rockMix.value).toBe(1);
+      expect(themeU.faceW.value.toArray()).toEqual([1, 1, 1]);
+      expect(themeU.faceE.value.toArray()).toEqual([1, 1, 1]);
+    }
+  });
+
   it('Cửu Kiều: cỏ không pastel (bão hòa cặp đất và groundSat đủ đậm), vẫn trong dải vừa phải', () => {
     const t = PAINTED_THEMES.cuu_kieu!;
     expect(sat(t.ground[0])).toBeGreaterThan(0.3);
