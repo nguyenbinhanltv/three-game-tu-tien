@@ -6,6 +6,7 @@ import * as THREE from 'three/webgpu';
 import { FX_TIMELINE, MONSTER, SKILL } from '@dtl/content';
 import type { HazardMsg } from '@dtl/shared';
 import { movesOf } from '../fx/monMove';
+import { LABELS } from '../entities/labelBatch';
 import { monScale } from '../fx/monFx';
 import { monHitPalette } from '../fx/hitFx';
 import { FxMesh } from '../../render/materials/vfx';
@@ -101,6 +102,8 @@ export interface VfxLabApi {
   castMon(mon: string, mv: string): boolean;
   /** Phòng thử quái: bật thì bỏ vạch báo/FX do server gửi (quái thật vẫn đánh nhưng không vẽ) và dùng đồng hồ trình diễn; chỉ `castMon` mới vẽ. */
   monLab(on: boolean): void;
+  /** Hiện/ẩn bảng tên và thanh máu (chụp ảnh duyệt không bị che điểm trúng). */
+  tags(show: boolean): void;
   pause(on: boolean): void;
   /** Hệ số thời gian trình diễn (0,25 = chậm gấp 4). */
   scale(x: number): void;
@@ -186,6 +189,11 @@ export function installVfxLab(g: Game, onHazard?: (g: Game, m: HazardMsg) => voi
       if (tl?.trigger === 'fx') gg.skillFx.startFromFx(gg.sid, tl);
       else gg.skillFx.handle(gg.sid, { kind: 'windup', skill, combo: -1, index: 0, t: 0, kb: false });
       return !!hit;
+    },
+    tags(show) {
+      const e = (g as unknown as { ents: { bars: { hidden: boolean } } }).ents;
+      e.bars.hidden = !show;
+      LABELS.hidden = !show;
     },
     monLab(on) {
       const mf = (g as unknown as { monFx: { lab: boolean; bypass: boolean } | null }).monFx;

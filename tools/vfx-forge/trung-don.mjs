@@ -129,8 +129,8 @@ const SCENES = [
     footprint: { lengthM: 2.0, widthM: 1.0, heightM: 1.6 },
     budget: { drawCalls: 2, particles: 14, screenCover: 0.01, overdraw: 2 },
     events: () => [
-      sprite('chung_stab', { size: 2.2, sizeTo: 3.0, align: 'aim', dur: 0.2, erodeFrom: 0.6, alpha: 1 }),
-      accent('chung_stab', 0, 2.2, { align: 'aim' }),
+      sprite('chung_stab', { size: 2.8, sizeTo: 3.7, align: 'aim', dur: 0.2, erodeFrom: 0.6, alpha: 1 }),
+      accent('chung_stab', 0, 2.6, { align: 'aim', tone: 'accent' }),
       parts('spark', 0, 10, { speed: 7, spread: 0.3, life: 0.22, size: 0.06 }),
       parts('petal', 0.03, 4, { speed: 2.2, spread: 0.8, life: 0.4, size: 0.1, tone: 'body', tier: 1 }),
     ],
@@ -148,9 +148,9 @@ const SCENES = [
     footprint: { lengthM: 1.2, widthM: 1.2, heightM: 2.4 },
     budget: { drawCalls: 3, particles: 16, screenCover: 0.02, overdraw: 3 },
     events: () => [
-      sprite('chung_crit', { size: 1.8, sizeTo: 2.4, dur: 0.26, off: [0, 0.2, 0], erodeFrom: 0.5 }),
-      accent('chung_crit', 0, 1.9, { off: [0, 0.2, 0], dur: 0.08 }),
-      sprite('chung_chips', { t: 0.03, size: 1.2, sizeTo: 2.2, dur: 0.24, tone: 'rim', alpha: 0.8, erodeFrom: 0.3, tier: 1 }),
+      sprite('chung_crit', { size: 2.9, sizeTo: 3.9, dur: 0.42, off: [0, 0.2, 0], erodeFrom: 0.65, alpha: 1 }),
+      accent('chung_crit', 0, 3.2, { off: [0, 0.2, 0], dur: 0.14, tone: 'accent', alpha: 1 }),
+      sprite('chung_chips', { t: 0.03, size: 2.0, sizeTo: 3.4, dur: 0.34, tone: 'rim', alpha: 0.8, erodeFrom: 0.3, tier: 1 }),
       parts('shard', 0, 10, { speed: 5, spread: 0.9, life: 0.45, size: 0.1, tone: 'rim', grav: 8 }),
       parts('spark', 0.03, 6, { speed: 7, spread: 1, life: 0.2, size: 0.06, tone: 'accent', tier: 1 }),
     ],
