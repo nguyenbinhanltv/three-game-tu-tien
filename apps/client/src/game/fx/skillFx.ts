@@ -9,7 +9,7 @@ import { PF_DEAD, skillTiming } from '@dtl/shared';
 import type { SkillDef } from '@dtl/shared';
 import type { FxMesh } from '../../render/materials/vfx';
 import { SIGIL_CIRCLE } from '../../render/vfx/sigil';
-import { preloadSpritesForPath, sweepSpriteGroups } from '../../render/vfx/art';
+import { preloadSpritesForPath, sweepSpriteGroups, useSpriteGroup } from '../../render/vfx/art';
 import { BladeRibbon, bladeVisible, bladeWindow } from '../../render/vfx/bladeTrail';
 import type { InkTiming } from '../../render/vfx/ink';
 import {
@@ -368,6 +368,8 @@ export class SkillFx {
     if (mm !== this.spriteMethod) {
       this.spriteMethod = mm;
       preloadSpritesForPath(pathOf(mm)?.id);
+      // Atlas cảnh đột phá (V-P10): "lên tầng" chỉ dài ~1 s nên nạp sẵn cùng lúc; không được miễn giải phóng (rỗi > 90 s khi đang giữ quá 3 nhóm thì bị thu, lần sau nạp lại lúc nhận tin).
+      useSpriteGroup('dp');
     }
     if (this.clock - this.spriteSweep > 5) {
       this.spriteSweep = this.clock;

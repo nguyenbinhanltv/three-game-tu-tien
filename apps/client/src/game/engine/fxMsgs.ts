@@ -350,7 +350,7 @@ export function handleFx(eng: Game, m: FxMsg, held = false): void {
     // Đột phá của mình: hình do timeline lo, nhưng trạng thái HUD, chớp sáng và thẻ chương vẫn phải chạy (trước đây bị bỏ qua cùng nhánh hình cũ).
     if (m.t === 'ascend' && src === eng.sid) {
       set({ tamCanh: -1, soulUntil: 0, nguHanh: null, cloneUntil: 0, steles: -1 });
-      eng.post?.flash(0.3);
+      // Chớp sáng do timeline đột phá phát đúng mốc vỡ (V-P10: nhịp tụ → vỡ → tan), không chớp ngay lúc nhận tin.
       window.setTimeout(
         () =>
           !eng.disposed &&

@@ -370,6 +370,23 @@ export const FX_SPRITES = [
   'may_tuft',
   'may_tail',
   'may_burst',
+  // V-P10: nhóm atlas `dp` (đột phá tầng/cảnh giới). Tranh vẽ ĐƠN SẮC (mực → trắng), shader tô theo bảng màu của timeline (kiểu 12).
+  'dp_ribbon',
+  'dp_leaves',
+  'dp_slab',
+  'dp_plume',
+  'dp_pill',
+  'dp_orbit',
+  'dp_swirl',
+  'dp_shell',
+  'dp_bud',
+  'dp_lotus',
+  'dp_infant',
+  'dp_petal',
+  'dp_spirit',
+  'dp_mantle',
+  'dp_wisp',
+  'dp_crack',
 ] as const;
 export type FxSprite = (typeof FX_SPRITES)[number];
 
