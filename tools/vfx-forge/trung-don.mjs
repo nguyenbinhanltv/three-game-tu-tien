@@ -80,7 +80,7 @@ const PAL = {
   st_poison: { core: '1c1230', body: '9bd05a', rim: 'f0ffd0', accent: 'c9a8ff', shadow: '0a0614' },
   // Trạng thái nhóm 2a: vàng (yếu điểm, mặt Dương, bị soi: hue > 45°, không cam) và tím mặt Âm.
   st_gold: { core: '2a2210', body: 'e0c050', rim: 'fff6cf', accent: 'ffffff', shadow: '14110a' },
-  st_yin: { core: '1a1030', body: '8a6fd0', rim: 'ece4ff', accent: 'f0e6a8', shadow: '0a0618' },
+  st_yin: { core: '1a1030', body: '7a4fe0', rim: 'b998ff', accent: 'f0e6a8', shadow: '0a0618' },
   st_burn: { core: '1a1410', body: 'd9b83c', rim: 'fff3c2', accent: 'ffffff', shadow: '0c0a06' },
 };
 
@@ -654,6 +654,7 @@ const SCENES = [
           sizeTo: 3.8,
           erodeFrom: 0.8,
           alpha: 0.9,
+          spriteStyle: 14,
         }),
         accent('chung_hexweb', 0, 3.6, { at: 'self', follow: true, off: [0, 1.3, 0], dur: 0.1 }),
         parts('dust', 0.3, 2, {
