@@ -415,7 +415,7 @@ describe('chống khai thác', () => {
     const run = (id: string, fxId: string) => {
       const { sim, join, advance, mon, fxs } = world();
       const p = join(28, 'lac_kiem_quyet');
-      const m = mon(X + 8, Z);
+      const m = mon(X + 5, Z); // trong tầm đòn thường cận chiến của Kiếm tu (Dạ Cảnh)
       m.stunUntil = Date.now() + 60_000;
       p.gcdAt = 0;
       p.cds.clear();

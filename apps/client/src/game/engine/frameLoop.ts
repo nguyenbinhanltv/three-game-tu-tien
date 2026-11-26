@@ -37,7 +37,7 @@ import {
   domainRadius,
 } from '@dtl/shared';
 import { groundAt, levelId, levelTerrain } from '../../base/levelCtx';
-import { LEVELS, MONSTER, pathOf, resolveBarSkill, SKILLS, t } from '@dtl/content';
+import { LEVELS, MONSTER, pathOf, resolveBarSkill, SKILLS, skillRangeFor, t } from '@dtl/content';
 import { collidersReady } from '@dtl/content/colliders-lazy';
 import { get, pushLog, pushToast, set } from '../../ui/store';
 import { frameStats, RENDER_FAIL_LIMIT, RENDERER_KEY, rendererChoice } from '../core/gpuGuard';
@@ -139,7 +139,10 @@ function predictSkill(eng: Game, i: number, skill: SkillDef, needTarget: boolean
   if (!me) return;
   const mon = needTarget ? eng.view.monsters.get(eng.targetId) : undefined;
   const inRange =
-    !needTarget || (!!mon && Math.hypot(mon.x - eng.cur.x, mon.z - eng.cur.z) <= skill.range + 1.5 + (MONSTER.get(mon.t)?.scale ?? 1));
+    !needTarget ||
+    (!!mon &&
+      Math.hypot(mon.x - eng.cur.x, mon.z - eng.cur.z) <=
+        skillRangeFor(skill, eng.methodOfPlayer(eng.sid)) + 1.5 + (MONSTER.get(mon.t)?.scale ?? 1));
   const ready =
     Date.now() >= eng.skillReadyAt(i) - 60 &&
     me.mp >= skill.mp &&
@@ -680,7 +683,8 @@ function tickCombat(eng: Game, now: number, me: PState | undefined): void {
       const st = get();
       const dead = (me.fl & (PF_DEAD | PF_FLYING | PF_CASTING)) !== 0;
       const dist = Math.hypot(m.x - eng.cur.x, m.z - eng.cur.z);
-      if (!dead && Date.now() >= st.gcdAt - 30 && dist < SKILLS[0]!.range + 1) {
+      // Tầm theo hướng tu: đòn thường của hướng cận chiến (Kiếm tu) chỉ tự đánh khi đã áp sát.
+      if (!dead && Date.now() >= st.gcdAt - 30 && dist < skillRangeFor(eng.bar()[0] ?? SKILLS[0]!, eng.methodOfPlayer(eng.sid)) + 1) {
         // Đòn thường của ô 1 ĐANG HIỆN (ở tư thế là chiêu thay thế): gửi đúng chiêu đã dự đoán hình, không phải luôn `SKILLS[0]`.
         const basic = eng.bar()[0] ?? SKILLS[0]!;
         predictSkill(eng, 0, basic, true);
