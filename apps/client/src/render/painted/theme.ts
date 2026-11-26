@@ -2,6 +2,7 @@ import * as THREE from 'three/webgpu';
 import { uniform } from 'three/tsl';
 import { PAINTED, type PaintPair } from './palette';
 import { LIGHT } from './fieldShared';
+import { bladeTone } from './bladeTone';
 import { FLAGS } from '../../base/flags';
 
 /**
@@ -22,6 +23,11 @@ export interface PaintedTheme {
   propMix?: number;
   /** Tương phản đêm Họa Cảnh quanh mức tối (1 = như Vân Lam; >1 kéo sáng/tối xa nhau để nhân vật, vách, tàn tích còn khối). */
   nightContrast?: number;
+  /**
+   * 0..1: ban đêm làm dải chuyển sáng↔tối của đất vẽ gắt lại (mảng sáng và mảng bóng tách bạch như nét cọ, không loang). Đêm đã mất màu (nhuộm trăng), chỉ còn độ chói:
+   * mảng chuyển mềm trên nền một tông đọc thành mây; hai tông có biên rõ đọc thành đất. 0 = không (mặc định).
+   */
+  nightSplit?: number;
   /** Màu nhuộm trăng (nhân, tuyến tính) của đêm Họa Cảnh; mặc định [0,3, 0,46, 0,88] của Vân Lam. Bớt xanh dương để nhân vật và vòng chọn không chìm. */
   nightTint?: [number, number, number];
   /** Nhân đèn trời/trăng của đêm Họa Cảnh (mặc định 1): nhân vật và quái là phần duy nhất nhận đèn, tăng để đọc rõ. */
@@ -37,6 +43,28 @@ export interface PaintedTheme {
   dryMix?: number;
   /** Đá lát (sân, mặt đường, mặt cầu): [sáng, tối]. Bỏ trống = cặp `paving` chung của bảng Họa Cảnh. */
   paving?: PaintPair;
+  /**
+   * 0..1: đất vẽ lấy MÀU ĐỈNH của địa hình làm nền (bảng màu từng vùng do level tự tô: đảo, lối mòn, bờ hồ, đá lộ), tô hai tông theo nét cọ: sáng = màu đỉnh
+   * nâng sáng ngả ấm, tối = pha lam ít bão hòa (pha tay, không phải sáng nhân cho tối). Phần còn lại (1 − vcMix) là cặp `ground`, để cả level vẫn một bảng.
+   * 0 = không (mặc định). Dùng cho level mà bản sắc vùng nằm ở màu đỉnh (Vân Hải: năm đảo năm bảng).
+   */
+  vcMix?: number;
+  /**
+   * 0..1: đất vẽ lấy ALBEDO THỦ TỤC của level làm nền (chỉ cho level mà shader đất mặc định dựng nền bằng mã, không ảnh chụp: Vấn Đỉnh hai mặt), bỏ đèn, tô hai
+   * tông theo mảng lớn. 1 = thay hẳn đất cỏ painted-valley (level không có cỏ). 0 = không (mặc định).
+   */
+  albedoMix?: number;
+  /** 0..1: mức đổi tông đá/vách/tuyết của địa hình sang cặp `rock` (mặc định 1). Thấp hơn giữ sắc riêng từng vùng của vách (Vấn Đỉnh: vách Âm tím lạnh, vách Dương vàng đồng). */
+  rockMix?: number;
+  /**
+   * Level hai mặt theo trục x (Vấn Đỉnh): vật thể tĩnh (`paintedProp`) và đất `albedoMix` nhân tông `west` ở phía tây `x`, `east` ở phía đông, đổi dần trong ±`w` m quanh `x`
+   * (vật thể tĩnh Họa Cảnh không nhận đèn nên mood hai mặt không tự nhuộm chúng). Bỏ trống = không nhuộm.
+   */
+  face?: { x: number; w: number; west: readonly [number, number, number]; east: readonly [number, number, number] };
+  /** Sân lát đá vẽ tay [x, z, bán kính m]: trong đĩa, chỗ màu đỉnh sáng (lối lát đá) vẽ thành phiến đá xếp so le theo cặp `paving`. Bỏ trống = không. */
+  slab?: readonly [number, number, number];
+  /** 0..1: lá cỏ Họa Cảnh đổi tông theo cặp `ground` (theo độ chói của lá, giữ nét sáng/tối từng lá). 0 = lá xanh painted-valley (mặc định). */
+  bladeMix?: number;
   /** Sương thấp: dải cao độ (m) mà sương nằm dưới, từ đỉnh dải trở xuống; và cường độ 0..1. */
   mistBand: [number, number];
   mistK: number;
@@ -75,6 +103,64 @@ export const PAINTED_THEMES: Record<string, PaintedTheme> = {
     dryMix: 0.9,
     groundSat: 0.95,
   },
+  // Vân Hải Phù Đảo (MAP-3): đảo cỏ trên biển mây lúc bình minh. Đồng cỏ vàng rêu ấm (nắng sớm nằm sẵn trong màu, vì đất vẽ không nhận đèn của mood), bóng lục
+  // lam; bản sắc năm đảo (Tùng Đài rêu thẫm, Thạch Quy đá cát, Kính Hồ phù sa lục nhạt, Lôi Vân đá cháy sấm, Kình Ngư trắng xương) đi qua `vcMix`
+  van_hai: {
+    ground: [0xa9ad50, 0x3d6351],
+    rock: [0xc4b9a0, 0x6e645c],
+    paving: [0xdcd3ba, 0x6c6c8c],
+    mist: 0xf4e6dc,
+    // sương chỉ ở chân đảo và sàn mây (sàn 60 m, mặt đảo 122–140 m): mặt đảo trong, không phủ lên chỗ đánh
+    mistBand: [64, 104],
+    mistK: 0.5,
+    // KHÔNG `far`: vòm núi xa nướng một lần thành dải tường xám chắn ngang trời khi ngự kiếm (đã chụp); cảnh xa của Vân Hải là biển mây + đảo giả (đã vẽ một lần)
+    propMix: 0.25,
+    nightContrast: 1.7,
+    nightTint: [0.47, 0.58, 0.68],
+    nightLift: 1.7,
+    nightSplit: 0.85,
+    groundMix: 0.75,
+    groundSat: 1,
+    vcMix: 0.6,
+    bladeMix: 0.8,
+    // Phù Đảo Các (đảo trung tâm r 85 + mép 12)
+    slab: [1024, 1024, 97],
+  },
+  // Đoạn Mạch Cổ Cốc (MAP-2): hẻm sa thạch mùa thu. Đất son vàng (nắng nằm sẵn trong màu, vì đất vẽ không nhận đèn của mood), bóng nâu mận lạnh hơn và ít bão
+  // hòa hơn (pha tay); thảm lá phong đỏ/vàng, lòng sông cạn và sa thạch lộ ở dốc vốn nằm ở màu đỉnh nên đi qua `vcMix`. Cỏ là thẻ cỏ khô của level (không lá mảnh)
+  doan_mach: {
+    ground: [0xdf8330, 0x74506a],
+    rock: [0xc98c62, 0x5a3c58],
+    paving: [0xd2bc94, 0x6c5a74],
+    mist: 0xe8c49a,
+    // bụi mù chỉ đọng ở lòng sông cạn thấp (đáy 58–70 m); bãi đánh và trạm (80–90 m) trong
+    mistBand: [58, 74],
+    mistK: 0.25,
+    propMix: 0.25,
+    // đêm: hai tông đất cách nhau rõ về độ chói (sáng 0,42 ↔ tối 0,13) + tương phản 1,8 để mặt đất còn mảng sáng/tối, không thành một tấm lam phẳng
+    nightContrast: 1.8,
+    nightTint: [0.44, 0.5, 0.8],
+    nightLift: 1.7,
+    groundMix: 1,
+    groundSat: 1,
+    vcMix: 0.2,
+  },
+  // Vấn Đỉnh Âm Dương Giới (TN-3): không cỏ. Tây = mặt Âm Hư (đá phiến tím lam lạnh), đông = mặt Dương Thực (đất nung nứt vàng đồng); nền hai mặt là albedo
+  // thủ tục của level (`albedoMix`), vách giữ sắc từng mặt (`rockMix` thấp), vật thể tĩnh nhuộm theo mặt (`face`)
+  van_dinh: {
+    ground: [0xa89f98, 0x4a4868],
+    rock: [0xa8a09c, 0x3c3854],
+    mist: 0xcfc8dc,
+    mistBand: [60, 76],
+    mistK: 0.35,
+    propMix: 0.15,
+    nightContrast: 1.6,
+    nightTint: [0.42, 0.5, 0.78],
+    nightLift: 1.6,
+    albedoMix: 1,
+    rockMix: 0.35,
+    face: { x: 1024, w: 30, west: [0.4, 0.46, 0.86], east: [1.2, 1.0, 0.74] },
+  },
 };
 
 /** Vân Lam (pilot) và level chưa có bảng: sương cũ của P4. */
@@ -95,10 +181,20 @@ export const themeU = {
   mistK: uniform(DEFAULT_MIST.k),
   propMix: uniform(0),
   nightContrast: uniform(1),
+  nightSplit: uniform(0),
   nightTint: uniform(new THREE.Vector3(0.3, 0.46, 0.88)),
   groundMix: uniform(1),
   groundSat: uniform(1),
   dryMix: uniform(0),
+  vcMix: uniform(0),
+  albedoMix: uniform(0),
+  rockMix: uniform(1),
+  /** x = toạ độ Giới Tuyến, y = nửa bề rộng vùng chuyển (m); `faceW`/`faceE` = tông nhân phía tây/đông (1,1,1 = không nhuộm). */
+  face: uniform(new THREE.Vector2(0, 1)),
+  faceW: uniform(new THREE.Vector3(1, 1, 1)),
+  faceE: uniform(new THREE.Vector3(1, 1, 1)),
+  /** xy = tâm, z = bán kính của sân lát đá vẽ tay (0 = không có). */
+  slab: uniform(new THREE.Vector3(0, 0, 0)),
 };
 
 /** Chọn bảng cho level (gọi trước khi dựng/hiển thị địa hình). */
@@ -107,16 +203,27 @@ export function setPaintedTheme(levelId: string): void {
   themeU.on.value = t ? 1 : 0;
   themeU.propMix.value = t?.propMix ?? 0;
   themeU.nightContrast.value = t?.nightContrast ?? 1;
+  themeU.nightSplit.value = t?.nightSplit ?? 0;
   themeU.nightTint.value.set(...(t?.nightTint ?? [0.3, 0.46, 0.88]));
   themeU.groundMix.value = t?.groundMix ?? 1;
   themeU.groundSat.value = t?.groundSat ?? 1;
   themeU.dryMix.value = t?.dryMix ?? 0;
+  themeU.vcMix.value = t?.vcMix ?? 0;
+  themeU.slab.value.set(...(t?.slab ?? [0, 0, 0]));
+  themeU.albedoMix.value = t?.albedoMix ?? 0;
+  themeU.rockMix.value = t?.rockMix ?? 1;
+  themeU.face.value.set(t?.face?.x ?? 0, t?.face?.w ?? 1);
+  themeU.faceW.value.set(...(t?.face?.west ?? [1, 1, 1]));
+  themeU.faceE.value.set(...(t?.face?.east ?? [1, 1, 1]));
+  bladeTone.mix.value = t?.bladeMix ?? 0;
   const pv = t?.paving ?? PAINTED.paving;
   themeU.pLit.value.setHex(pv[0], THREE.SRGBColorSpace);
   themeU.pShade.value.setHex(pv[1], THREE.SRGBColorSpace);
   if (t) {
     themeU.gLit.value.setHex(t.ground[0], THREE.SRGBColorSpace);
     themeU.gShade.value.setHex(t.ground[1], THREE.SRGBColorSpace);
+    bladeTone.lit.value.copy(themeU.gLit.value);
+    bladeTone.shade.value.copy(themeU.gShade.value);
     themeU.rLit.value.setHex(t.rock[0], THREE.SRGBColorSpace);
     themeU.rShade.value.setHex(t.rock[1], THREE.SRGBColorSpace);
   }

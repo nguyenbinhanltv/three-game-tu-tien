@@ -39,13 +39,25 @@ export interface VfxCardTextures {
   kind: 'flipbook' | 'slash' | 'decal' | 'noise' | 'ramp';
 }
 
+export interface VfxCardScene {
+  /** Hex 6 ký tự không `#`. */
+  palette: { core: string; body: string; rim: string; accent: string; shadow?: string };
+  /** Mốc nhấn (giây sau lúc kích): timeline cảnh không có `hitAt`, ba nhịp của chuẩn 2 tính quanh mốc này. */
+  impactAt: number;
+}
+
 export interface VfxCard {
   skillId: string;
   /** Ý tưởng một hai câu (nội bộ, tiếng Việt, đưa vào prompt Codex). */
   idea: string;
   element: VfxElement;
-  /** Hướng tu (khóa trong `paths.json`) quyết định bảng màu. */
+  /** Hướng tu (khóa trong `paths.json`) quyết định bảng màu. Thẻ cảnh (`scene`) để chuỗi rỗng. */
   path: string;
+  /**
+   * Thẻ CẢNH (V-P10): hiệu ứng `fx_*` kích theo S.FX hay do client tự phát (đột phá, độ kiếp, ngự kiếm), không thuộc chiêu hay hướng tu nào.
+   * `skillId` là id timeline; bảng màu khai tại chỗ và phải bằng bảng `palette` của timeline ở client (`render/vfx/palette.ts`, có test đối chiếu).
+   */
+  scene?: VfxCardScene;
   shapeLang: VfxShapeLang[];
   timing: VfxCardTiming;
   /** Độ phủ màn hình dự kiến ở camera chéo 52° (mét trên mặt đất: dài × rộng) và chiều cao tối đa. */
@@ -74,13 +86,26 @@ export type VfxMaterial = (typeof VFX_MATERIALS)[number];
 /** Trần ngân sách theo kiểu chiêu: không thẻ nào được xin quá. */
 export const VFX_CARD_CAPS: VfxCardBudget = { drawCalls: 12, particles: 1500, screenCover: 0.35, overdraw: 6 };
 
-export function validateVfxCard(c: VfxCard, isSkill: (id: string) => boolean, isPath: (id: string) => boolean): string[] {
+export function validateVfxCard(
+  c: VfxCard,
+  isSkill: (id: string) => boolean,
+  isPath: (id: string) => boolean,
+  isScene: (id: string) => boolean = () => false,
+): string[] {
   const e: string[] = [];
   const at = `vfxcard ${c.skillId}`;
-  if (!isSkill(c.skillId)) e.push(`${at}: chiêu không tồn tại`);
+  if (c.scene) {
+    if (!isScene(c.skillId)) e.push(`${at}: thẻ cảnh nhưng không có timeline fx_* cùng id`);
+    if (c.path !== '') e.push(`${at}: thẻ cảnh không thuộc hướng tu, path phải rỗng`);
+    for (const [k, hex] of Object.entries(c.scene.palette ?? {})) {
+      if (!/^[0-9a-f]{6}$/.test(hex)) e.push(`${at}: scene.palette.${k} không phải hex 6 ký tự`);
+    }
+    for (const k of ['core', 'body', 'rim', 'accent'] as const) if (!c.scene.palette?.[k]) e.push(`${at}: thiếu scene.palette.${k}`);
+    if (!(c.scene.impactAt >= 0 && c.scene.impactAt <= 3)) e.push(`${at}: scene.impactAt ngoài 0..3 s`);
+  } else if (!isSkill(c.skillId)) e.push(`${at}: chiêu không tồn tại`);
   if (!c.idea || c.idea.trim().length < 10) e.push(`${at}: thiếu idea (>= 10 ký tự)`);
   if (!VFX_ELEMENTS.includes(c.element)) e.push(`${at}: nguyên tố lạ ${c.element}`);
-  if (!isPath(c.path)) e.push(`${at}: hướng tu lạ ${c.path}`);
+  if (!c.scene && !isPath(c.path)) e.push(`${at}: hướng tu lạ ${c.path}`);
   if (!c.shapeLang?.length) e.push(`${at}: thiếu shapeLang`);
   for (const s of c.shapeLang ?? []) if (!VFX_SHAPE_LANGS.includes(s)) e.push(`${at}: shapeLang lạ ${s}`);
   const t = c.timing;
@@ -207,6 +232,8 @@ export interface Standard2Ctx {
   redTones: ReadonlySet<string>;
   /** `hitAt[0]` của chiêu (giây từ lúc bấm): đổi `t` của sự kiện `from: "start"` về mốc trúng. Không truyền = 0. */
   hitAt?: number;
+  /** Thẻ cảnh: mốc nhấn (giây sau lúc kích), trừ khỏi mọi `t`. Không truyền = 0. */
+  impactAt?: number;
 }
 
 interface TlEvent {
@@ -287,7 +314,7 @@ export function checkStandard2(c: VfxCard, events: readonly TlEvent[], ult: bool
   }
   const hit = ctx.hitAt ?? 0;
   // Mọi `t` quy về mốc trúng: `from: "start"` thì trừ `hitAt` (t tính từ lúc bấm).
-  const rel = (x: TlEvent): number => (x.t ?? 0) - (x.from === 'start' ? hit : 0);
+  const rel = (x: TlEvent): number => (x.t ?? 0) - (x.from === 'start' ? hit : 0) - (ctx.impactAt ?? 0);
   const vis = events.filter((x) => x.type === 'mesh' || x.type === 'decal' || x.type === 'particles');
   if (!vis.some((x) => rel(x) < -0.05) && c.timing.anticipationMs >= 150)
     e.push(`${at}: thiếu nhịp báo trước (không có sự kiện hình trước mốc trúng dù anticipationMs ${c.timing.anticipationMs})`);

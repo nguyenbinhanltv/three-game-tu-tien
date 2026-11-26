@@ -3,6 +3,7 @@
 // Từ N-7 đây là nhân vật MẶC ĐỊNH của người chơi; `?chr=v1` quay về model Tripo cũ (dự phòng một bản). NPC giữ rig cũ.
 import { BladeSmear, smearWindow } from '../fx/bladeSmear';
 import { PatchMove, PATCH_LIB, type PatchEventKind } from './patchMove';
+import { PivotTurn } from './pivotTurn';
 import { RagRig } from './ragdollRig';
 import {
   accelLean,
@@ -745,6 +746,8 @@ export class MannequinCharacter implements CharacterView {
   /** T2: tốc độ khung trước và gia tốc đã làm mượt; T3: thời gian đứng yên liên tục và mốc idle kế. */
   private lastSpeed = 0;
   private loco2 = new LocoImpulse();
+  /** T2: nhịp đảo chiều gấp (phanh → xoay → đạp đi), xem `pivotTurn.ts`. */
+  private pivot = new PivotTurn();
   /** Clip Patch: máy trạng thái bắt đầu/dừng/thở dốc và clip đang phát. */
   private patchMove = new PatchMove();
   private patchShot: THREE.AnimationAction | null = null;
@@ -775,6 +778,8 @@ export class MannequinCharacter implements CharacterView {
   private gearAncient = false;
   /** Hướng tu hiện tại là Thể tu (găng/giáp chỉ vẽ khi đang ở LOD gần: một người xa không đáng một draw call). */
   private gearOn = false;
+  /** Thân Pháp: lớp riêng Kiếm tu (idle xoay kiếm, lướt thấp), do entities đặt theo công pháp. */
+  private kiemTu = false;
   private disposed = false;
 
   constructor(
@@ -945,6 +950,11 @@ export class MannequinCharacter implements CharacterView {
   setGiant(k: number): void {
     if (this.disposed || this.shadow) return;
     if (this.root.scale.x !== k) this.root.scale.setScalar(k);
+  }
+
+  /** Thân Pháp: hướng Kiếm tu bật lớp riêng (idle xoay kiếm, dáng lướt thấp); `entities.ts` đặt theo công pháp mỗi khung. */
+  setKiemTu(on: boolean): void {
+    this.kiemTu = on;
   }
 
   /** Hướng tu Thể tu: tay không, găng + giáp nhẹ (dựng lần đầu khi cần). Bỏ thì ẩn, không dựng lại. */
@@ -1601,6 +1611,7 @@ export class MannequinCharacter implements CharacterView {
     const level = lodLevel(v.dist, this.lodDist, v.allowLod0, this.lods.length, v.minLod);
     this.applyLod(level, !!v.self);
     this.setParked(this.disposed || V3_OFF.has('park') ? 0 : level >= 2 ? 2 : level === 1 && !V3_OFF.has('park1') ? 1 : 0);
+    if (level !== this.lodLevel) this.pivot.reset();
     this.lodLevel = level;
     this.gear?.setVisible(gearShown(this.gearOn, level));
     this.coGear?.setVisible(gearShown(this.coOn, level));
@@ -1633,11 +1644,28 @@ export class MannequinCharacter implements CharacterView {
       const lh = this.lastHit;
       (this.rag ??= new RagRig(this.rig)).down(this.root.rotation.y, lh.dx, lh.dz);
     }
+    // Chết/hồi sinh: quên hướng chạy nhớ được, để bước nhảy vị trí lúc hồi sinh không thành cú đảo chiều giả.
+    if (a.dead !== this.dead) this.pivot.reset();
     this.dead = a.dead;
     if (this.dead && this.deathTurn.t < 1) {
       this.deathTurn.t = Math.min(1, this.deathTurn.t + realDt / DEATH_TURN_S);
       this.inner.rotation.y = this.deathTurn.to * this.deathTurn.t;
-    } else if (!this.dead && this.inner.rotation.y !== 0) this.inner.rotation.y = 0;
+    } else if (!this.dead) {
+      // T2 đảo chiều gấp: thân quay chậm hơn gốc một nhịp (gốc do engine đặt theo vận tốc), nên lệch hướng nằm ở nhóm `inner`.
+      const pv = this.pivot;
+      const pvOk =
+        ANIM_FX.pivot &&
+        this.lodLevel === 0 &&
+        !a.meditating &&
+        !a.flying &&
+        !a.sky &&
+        !a.airborne &&
+        !a.casting &&
+        !this.perf &&
+        !this.shotUpper;
+      pv.update(dt, a.speed, a.heading ?? this.root.rotation.y + (a.moveAngle ?? 0), this.root.rotation.y, pvOk);
+      this.inner.rotation.y = pv.yawOffset;
+    }
     this.lastAnim = a;
     this.updatePerform(dt, a);
     this.updateAtk(dt);
@@ -1649,8 +1677,9 @@ export class MannequinCharacter implements CharacterView {
     this.stepPatch(dt, a);
     if (this.loco) {
       // Trộn đi/chạy/chạy nhanh theo tốc độ thật; pha chung nên chân trụ không trượt khi đổi nhịp.
-      const m = locoMix(a.speed, this.locoTable, this.dir.f);
-      const k = Math.min(1, realDt * 12);
+      // Đang đảo chiều: bảng trộn nhận tốc độ đã hãm (dáng về gần đi bộ, nhịp chân chậm lại) rồi trả về đủ khi đạp đi.
+      const m = locoMix(a.speed * this.pivot.speedMul, this.locoTable, this.dir.f);
+      const k = Math.min(1, realDt * (this.pivot.active ? 22 : 12));
       this.mix.walk += (m.walk - this.mix.walk) * k;
       this.mix.jog += (m.jog - this.mix.jog) * k;
       this.mix.sprint += (m.sprint - this.mix.sprint) * k;
@@ -1697,7 +1726,12 @@ export class MannequinCharacter implements CharacterView {
         const active =
           feetSlot(this.viewDist, this.viewSelf) && this.grounded && !a.dead && !a.meditating && this.baseName !== 'Sitting_Idle_Loop';
         // Khóa chân chỉ khi đứng yên thật: đòn/chiêu/trúng đòn có chân tự di chuyển trong clip.
-        this.feet.update(this.acc, { active, standing: a.speed < 0.3 && !this.perf && !this.shot });
+        // `drop`: lớp phụ đã hạ thân bao nhiêu (lướt thấp, phanh, đảo chiều) để bàn chân vẫn nằm trên đất, gối gập thêm.
+        this.feet.update(this.acc, {
+          active,
+          standing: a.speed < 0.3 && !this.perf && !this.shot,
+          drop: Math.max(0, -this.inner.position.y),
+        });
       } else this.feet.release();
     }
     const drawNow = this.combatT > 0 || !!a.combat;
@@ -1801,7 +1835,8 @@ export class MannequinCharacter implements CharacterView {
   private procedural(dt: number, a: AnimState): void {
     this.clock += dt;
     const b = this.bones;
-    const y = this.root.rotation.y;
+    // Hướng thân đang hiển thị: gốc + độ lệch của nhịp đảo chiều (lúc chết `inner` xoay cho cú ngã, không tính).
+    const y = this.root.rotation.y + (a.dead ? 0 : this.inner.rotation.y);
     if (Number.isFinite(this.lastYaw) && dt > 1e-3) {
       let d = y - this.lastYaw;
       while (d > Math.PI) d -= 2 * Math.PI;
@@ -1835,14 +1870,14 @@ export class MannequinCharacter implements CharacterView {
     if (dt > 1e-3) this.accel += (Math.max(-40, Math.min(40, (a.speed - this.lastSpeed) / dt)) - this.accel) * Math.min(1, dt * 12);
     this.lastSpeed = a.speed;
     if (ANIM_FX.loco && free && !this.perf && !this.shotUpper && !this.patchShot) {
-      const pitch = glideLean(a.speed) + accelLean(this.accel);
+      const pitch = (this.kiemTu ? glideLean(a.speed) : 0) + accelLean(this.accel);
       rotateWorld(b.spine_01 ?? null, rgt, pitch * 0.4);
       rotateWorld(b.spine_02 ?? null, rgt, pitch * 0.35);
       rotateWorld(b.spine_03 ?? null, rgt, pitch * 0.25);
-      this.inner.position.y -= glideDip(a.speed);
+      if (this.kiemTu) this.inner.position.y -= glideDip(a.speed);
       // Xung bắt đầu/dừng/pivot (lò xo tắt dần): chúi/ngả, nghiêng, hạ hông.
       const li = this.loco2;
-      if (ANIM_FX.impulse) li.update(dt, a.speed, this.yawRate);
+      if (ANIM_FX.impulse) li.update(dt, a.speed, this.pivot.active ? 0 : this.yawRate);
       else if (li.dip !== 0) li.reset();
       const cl = (x: number, m: number) => Math.max(-m, Math.min(m, x));
       const lp = cl(li.pitch, LOCO_CLAMP.pitch);
@@ -1854,8 +1889,23 @@ export class MannequinCharacter implements CharacterView {
       rotateWorld(b.spine_03 ?? null, fwd, lr * 0.5 * this.side);
       this.inner.position.y += cl(li.dip, LOCO_CLAMP.dip);
     } else if (this.loco2.dip !== 0 || this.loco2.pitch !== 0) this.loco2.reset();
+    // T2 đảo chiều gấp: hạ hông (cắm chân), ngả về hướng mới, vai trễ sau hông còn đầu nhìn trước, hai tay dạng ra giữ thăng bằng.
+    const pv = this.pivot;
+    if (pv.active) {
+      const ax = _ax.set(pv.nz, 0, -pv.nx);
+      rotateWorld(b.spine_01 ?? null, ax, pv.lean * 0.4);
+      rotateWorld(b.spine_02 ?? null, ax, pv.lean * 0.35);
+      rotateWorld(b.spine_03 ?? null, ax, pv.lean * 0.25);
+      rotateWorld(b.spine_02 ?? null, _up, pv.twist * 0.5);
+      rotateWorld(b.spine_03 ?? null, _up, pv.twist * 0.5);
+      rotateWorld(b.neck_01 ?? null, _up, -pv.twist * 0.6);
+      rotateWorld(this.headBone, _up, -pv.twist * 0.6);
+      rotateWorld(b.upperarm_l ?? null, fwd, pv.arm * this.side);
+      rotateWorld(b.upperarm_r ?? null, fwd, -pv.arm * this.side);
+      this.inner.position.y -= pv.dip;
+    }
     // T3: đứng yên lâu thì tự chơi một idle đặc trưng (xoay kiếm khi đang cầm kiếm, chắp tay ngắm trời khi tay không); bỏ ngay khi di chuyển.
-    if (ANIM_FX.idle) {
+    if (ANIM_FX.idle && this.kiemTu) {
       const still = free && a.speed < 0.3 && !this.perf && !a.combat && !a.casting && this.baseName !== 'Sitting_Idle_Loop';
       this.stillT = still ? this.stillT + dt : 0;
       if (still && idleDue(this.stillT, this.drawn ? IDLE_DRAWN_AFTER : this.idleAfter)) {

@@ -20,6 +20,11 @@ export interface AnimState {
   moveDir?: LocoDir;
   /** Góc hướng đi so với hướng nhìn (rad, 0 = tới, +π/2 = trái, ±π = lùi), liên tục: nhân vật v3 trộn 8 hướng. Bỏ trống = 0. */
   moveAngle?: number;
+  /**
+   * Hướng vận tốc TỨC THỜI trong thế giới (rad, cùng quy ước hướng nhìn: `atan2(vx, vz)`), không làm mượt; bỏ trống khi gần như đứng yên.
+   * Nhịp đảo chiều gấp (Thân Pháp T2) cần biết ngay khung đầu, `moveAngle` đã làm mượt nên trễ ~70 ms.
+   */
+  heading?: number;
   /** Điểm nhìn (thế giới) của mục tiêu đang chọn: nhân vật v3 quay đầu nhìn theo, giới hạn góc. */
   lookAt?: { x: number; y: number; z: number };
   /** Boss bị ngắt chú hoặc mất thế (cờ MF_STUN). */
@@ -60,6 +65,8 @@ export interface CharacterView {
   setGreatBlade?(on: boolean): void;
   /** Cổ tu: sáo cổ thay kiếm + hũ cổ treo hông (model không hỗ trợ thì bỏ qua). */
   setCoGear?(on: boolean): void;
+  /** Thân Pháp: nhân vật theo hướng Kiếm tu thì bật lớp riêng (idle xoay kiếm, lướt thấp); model không hỗ trợ thì bỏ qua. */
+  setKiemTu?(on: boolean): void;
   setTranKy?(on: boolean): void;
   /** Màu ánh kiếm theo bộ trang bị (hex '#rrggbb'; '' = không); kiếm có ánh nhẹ dù chưa +7. */
   setWeaponTint?(hex: string): void;

@@ -122,10 +122,69 @@ interface BurrowCfg {
   cone: { r: number; w: number; delay: number; mul: number };
 }
 
+/**
+ * Cảnh thử độ kiếp (V-P10): không phải chiêu hay timeline mà là đường vẽ của game phát theo tin server. `delay` = giây từ lúc phát tới lúc sét đánh
+ * (kịch bản `pnpm shots vfxlab --skill lab_loi` dùng làm mốc 0).
+ */
+export const LAB_SCENES = {
+  /** Thiên lôi nhắm (`aim` của kiếp Trúc Cơ: r 4,2, báo 1,25 s), rơi lệch 3 m sang phải màn hình để không che người. */
+  lab_loi: { delay: 1.25 },
+  /** Thiên lôi pha lôi hỏa (Đan Hỏa Kiếp). */
+  lab_loi_hot: { delay: 1.25 },
+  /** Tia khóa mệnh cuối kiếp (r 9, báo 3 s), tâm tại người. */
+  lab_loi_big: { delay: 3 },
+  /** Kiếp vân trên đầu, giữ 12 s. */
+  lab_kiep_van: { delay: 0 },
+} as const;
+
+function labScene(g: Game, id: keyof typeof LAB_SCENES, onHazard?: (g: Game, m: HazardMsg) => void): boolean {
+  const gg = g as unknown as {
+    cur: { x: number; y: number; z: number };
+    sid: string;
+    camYaw: number;
+    monFx: { bypass: boolean } | null;
+    vfx: {
+      tribulationCloud(
+        pos: (out: { set(x: number, y: number, z: number): unknown }) => boolean,
+        dur: number,
+        on: () => boolean,
+        seed?: number,
+      ): void;
+    };
+  };
+  if (id === 'lab_kiep_van') {
+    gg.vfx.tribulationCloud(
+      (out) => (out.set(gg.cur.x, gg.cur.y + 1.15, gg.cur.z), true),
+      12,
+      () => true,
+      20261126,
+    );
+    return true;
+  }
+  if (!onHazard) return false;
+  if (gg.monFx) gg.monFx.bypass = true;
+  const big = id === 'lab_loi_big';
+  // Phải màn hình = vuông góc hướng nhìn của camera.
+  const off = big ? 0 : 3;
+  onHazard(g, {
+    x: gg.cur.x + Math.cos(gg.camYaw) * off,
+    z: gg.cur.z - Math.sin(gg.camYaw) * off,
+    r: big ? 9 : 4.2,
+    delay: LAB_SCENES[id].delay,
+    kind: 'lightning',
+    src: gg.sid,
+    sd: 20261126,
+    ...(big ? { big: true } : {}),
+    ...(id === 'lab_loi_hot' ? { hot: true } : {}),
+  });
+  return true;
+}
+
 /** Gắn `window.__vfxlab` (gọi một lần khi tạo Game, chỉ khi `?vfxlab=1` ở bản dev). */
 export function installVfxLab(g: Game, onHazard?: (g: Game, m: HazardMsg) => void): void {
   const api: VfxLabApi = {
     cast(skill) {
+      if (skill in LAB_SCENES) return labScene(g, skill as keyof typeof LAB_SCENES, onHazard);
       const gg = g as unknown as {
         view: { monsters: Map<string, { x: number; z: number; st: number }> };
         fxArea: Map<string, { x: number; z: number; r: number }>;

@@ -3,7 +3,7 @@ import { abs, attribute, dot, float, min, normalize, normalView, positionView, p
 import { markBloom, markVfxMask } from '../post';
 import type { FxUniforms } from '../vfx/common';
 import { inkNodes } from '../vfx/ink';
-import { boltNodes, vortexNodes, windNodes } from '../vfx/lightning';
+import { boltInkNodes, boltNodes, vortexNodes, windNodes } from '../vfx/lightning';
 import { flipNodes } from '../vfx/flipbook';
 import { mapDecalNodes, mapFlipNodes } from '../vfx/forgeTex';
 import { beamNodes } from '../vfx/loot';
@@ -62,6 +62,7 @@ export type FxKind =
   /** Như `sigil` nhưng không thử độ sâu (vạch báo của boss luôn thấy; V-P9). */
   | 'sigilTop'
   | 'bolt'
+  | 'boltInk'
   | 'vortex'
   | 'trail'
   | 'beam'
@@ -87,6 +88,8 @@ export type FxKind =
   | 'sprite_lam'
   | 'sprite_dan'
   | 'sprite_kieu'
+  | 'sprite_dp'
+  | 'sprite_kiep'
   | 'sprite_dong'
   | 'sprite_guong'
   | 'wind'
@@ -108,6 +111,7 @@ const SPEC: Record<FxKind, { blending: THREE.Blending; boost: number; bloom: num
   sigil: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.15, fog: false },
   sigilTop: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.15, fog: false },
   bolt: { blending: THREE.AdditiveBlending, boost: 1.0, bloom: 0.6, fog: false },
+  boltInk: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0, fog: false },
   vortex: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0, fog: true },
   trail: { blending: THREE.AdditiveBlending, boost: 1.0, bloom: 0.45, fog: false },
   beam: { blending: THREE.AdditiveBlending, boost: 1.0, bloom: 0.5, fog: false },
@@ -131,6 +135,8 @@ const SPEC: Record<FxKind, { blending: THREE.Blending; boost: number; bloom: num
   sprite_lam: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.2, fog: false },
   sprite_dan: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.2, fog: false },
   sprite_kieu: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.2, fog: false },
+  sprite_dp: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.2, fog: false },
+  sprite_kiep: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.2, fog: false },
   sprite_dong: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.2, fog: false },
   sprite_guong: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.2, fog: false },
   wind: { blending: THREE.AdditiveBlending, boost: 1.0, bloom: 0.2, fog: false },
@@ -146,6 +152,7 @@ const BUILDERS: Partial<Record<FxKind, (u: FxUniforms) => { color: unknown; opac
   sigil: sigilNodes,
   sigilTop: sigilNodes,
   bolt: boltNodes,
+  boltInk: boltInkNodes,
   vortex: vortexNodes,
   trail: trailNodes,
   beam: beamNodes,
@@ -168,6 +175,8 @@ const BUILDERS: Partial<Record<FxKind, (u: FxUniforms) => { color: unknown; opac
   sprite_lam: spriteNodesFor('lam'),
   sprite_dan: spriteNodesFor('dan'),
   sprite_kieu: spriteNodesFor('kieu'),
+  sprite_dp: spriteNodesFor('dp'),
+  sprite_kiep: spriteNodesFor('kiep'),
   sprite_dong: spriteNodesFor('dong'),
   sprite_guong: spriteNodesFor('guong'),
   wind: windNodes,

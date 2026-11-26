@@ -15,13 +15,13 @@ import { at as checkedAt } from '@dtl/shared';
 /** `v3`/`v3b` = Lạc Kiếm mặc định của ?chr=v3 (bản v3/v3b cũ `?v3model=a|b` đã gỡ ở A2). `v3raw` = v3 không bảng màu (`?v3pal=0`), để so trước/sau chỉnh màu. */
 const QUERY: Record<string, Record<string, string>> = {
   v1: { chr: 'v1' },
-  v3: { chr: 'v3' },
-  v3b: { chr: 'v3' },
-  v3a0: { chr: 'v3', armfit: '0' },
-  v3a5: { chr: 'v3', armfit: '5' },
-  v3new: { chr: 'v3' },
-  v3nok5: { chr: 'v3', k5: '0' },
-  v3raw: { chr: 'v3', v3pal: '0' },
+  v3: { chr: 'v3', thanphap: '0' },
+  v3b: { chr: 'v3', thanphap: '0' },
+  v3a0: { chr: 'v3', thanphap: '0', armfit: '0' },
+  v3a5: { chr: 'v3', thanphap: '0', armfit: '5' },
+  v3new: { chr: 'v3', thanphap: '0' },
+  v3nok5: { chr: 'v3', thanphap: '0', k5: '0' },
+  v3raw: { chr: 'v3', thanphap: '0', v3pal: '0' },
   // Thân Pháp: vòng chạy UAL (cũ, `?ploop=0`) so với clip Patch PM_Run/PM_Sprint (mới); cùng bắt đầu/dừng/thở dốc của Patch.
   v3tpold: { chr: 'v3', thanphap: '1', ploop: '0' },
   v3tpnew: { chr: 'v3', thanphap: '1' },

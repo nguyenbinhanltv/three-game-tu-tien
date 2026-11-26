@@ -82,6 +82,9 @@ export const SPRITE_STYLE: Record<string, number> = {
   kieu_: 8,
   sa_: 3,
   may_: 8,
+  // V-P10 đột phá: tranh đơn sắc, tô theo bảng màu của timeline (màu sự kiện = thân, `rim` của bảng = viền).
+  dp_: 12,
+  kiep_: 12,
 };
 
 export interface FxTarget {
@@ -332,6 +335,8 @@ export class FxRunner {
     const tier = fxTierFor(this.env.quality(), mine);
     const pal = paletteOf(tl.palette ?? def?.method ?? (mine ? method : undefined));
     const events = fxEventsFor(tl, -1, this.env.variantOf(sid, def?.id ?? tl.skill));
+    // Cảnh kích theo S.FX (đột phá...): nạp atlas sprite ngay lúc nhận tin, để nhịp tụ đầu timeline đủ thời gian cho ảnh về trước mốc vỡ.
+    for (const e of events) if (e.type === 'mesh' && e.shape === 'sprite' && e.sprite) useSpriteGroup(spriteCell(e.sprite).group);
     const q = scheduleEvents(events, [0], tier).map((s, idx) => ({ ...s, idx, done: false }));
     const cast: Cast = {
       sid,
@@ -520,6 +525,7 @@ export class FxRunner {
           0,
           ev.thick ?? 1,
           FLAGS.isoFxCompress ? BOLT_HEIGHT * ISO_BOLT_HEIGHT : BOLT_HEIGHT,
+          !!ev.ink,
         );
         break;
       }
@@ -595,7 +601,9 @@ export class FxRunner {
             | 'sprite_dan'
             | 'sprite_guong'
             | 'sprite_dong'
-            | 'sprite_kieu')
+            | 'sprite_kieu'
+            | 'sprite_dp'
+            | 'sprite_kiep')
       : kind0;
     const isSprite = cell !== null;
     if (cell) useSpriteGroup(cell.group);

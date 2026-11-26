@@ -286,6 +286,28 @@ export function boltNodes(U: FxUniforms) {
   };
 }
 
+/**
+ * Lõi mực dưới tia sét (V-P10, chuẩn Họa Pháp Lô 2 luật 4): cùng dải với `boltNodes` nhưng hòa trộn thường, phủ tối cả bề rộng dải (vùng quầng) để tia
+ * trắng ở giữa đọc được trên nền sáng ban ngày. Lộ dần theo tia dẫn như thân sáng, mép răng cưa nhẹ theo nhiễu.
+ */
+export function boltInkNodes(U: FxUniforms) {
+  const st = uv();
+  const one = float(1);
+  const reveal = one.sub(smoothstep(U.a.x.sub(0.04), U.a.x, st.x));
+  const x = abs(st.y.sub(0.5)).mul(2);
+  const rag = vnoise(vec2(st.x.mul(46).add(U.a.z.mul(5)), U.a.z)).mul(0.28);
+  const band = one.sub(smoothstep(float(0.16).add(rag), float(0.5).add(rag), x));
+  // Lõi tím trắng nhạt ngay trong lớp hòa trộn thường: lớp cộng sáng (`boltNodes`) gần như mất trên đá sáng ban ngày.
+  const core = exp(x.mul(x).mul(-70));
+  return {
+    color: mix(U.color, vec3(0.9, 0.84, 1), core.mul(0.9)),
+    opacity: U.opacity
+      .mul(reveal)
+      .mul(band)
+      .mul(clamp(U.a.y.mul(0.5).add(0.5), 0, 1)),
+  };
+}
+
 /** Đĩa phẳng cho mây xoáy (bán kính 1, nằm ngang, mặt nhìn xuống). */
 function vortexGeometry(): THREE.BufferGeometry {
   const g = new THREE.CircleGeometry(1, 48, 0, Math.PI * 2);

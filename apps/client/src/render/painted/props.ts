@@ -1,5 +1,17 @@
 import * as THREE from 'three/webgpu';
-import { diffuseColor, dot, faceDirection, float, materialEmissive, mix, normalWorld, smoothstep, uniform, vec3 } from 'three/tsl';
+import {
+  diffuseColor,
+  dot,
+  faceDirection,
+  float,
+  materialEmissive,
+  mix,
+  normalWorld,
+  positionWorld,
+  smoothstep,
+  uniform,
+  vec3,
+} from 'three/tsl';
 import { FLAGS } from '../../base/flags';
 import { LIGHT } from './fieldShared';
 import type { N } from './lab/field';
@@ -67,6 +79,15 @@ export function paintedPaving<M extends THREE.MeshStandardNodeMaterial>(m: M): M
   return m;
 }
 
+/**
+ * Vật liệu chuẩn cho lưới dựng bằng code (ván cầu, đá trôi, xương...): mặc định trả đúng `MeshStandardMaterial` như trước; với `?style=painted` trả bản node
+ * đã qua `paintedProp` (hai tông theo hướng mặt, không đèn). Màu theo instance (`instanceColor`) và màu đỉnh vẫn là màu gốc.
+ */
+export function paintedStd(opts: THREE.MeshStandardMaterialParameters): THREE.Material {
+  if (FLAGS.style !== 'painted') return new THREE.MeshStandardMaterial(opts);
+  return paintedProp(new THREE.MeshStandardNodeMaterial(opts));
+}
+
 export function paintedProp<M extends THREE.MeshStandardNodeMaterial>(m: M): M {
   if (FLAGS.style !== 'painted') return m;
   const tint = sunTint();
@@ -80,7 +101,13 @@ export function paintedProp<M extends THREE.MeshStandardNodeMaterial>(m: M): M {
   // bảng theo level (theme.ts): đổi tông theo độ chói sang cặp đá của level (propMix = 0 ở Vân Lam, giữ nguyên)
   const ink: N = dot(base, vec3(0.2126, 0.7152, 0.0722));
   const themed: N = mix(vec3(themeU.rShade), vec3(themeU.rLit), smoothstep(0.04, 0.4, ink));
-  const albedo: N = mix(base, themed, themeU.propMix);
+  // level hai mặt (theme.ts `face`; mặc định tông 1,1,1): nhuộm theo phía của Giới Tuyến, đổi dần quanh nó
+  const faceTint: N = mix(
+    vec3(themeU.faceW),
+    vec3(themeU.faceE),
+    smoothstep(themeU.face.y.negate(), themeU.face.y, positionWorld.x.sub(themeU.face.x)),
+  );
+  const albedo: N = mix(base, themed, themeU.propMix).mul(faceTint);
   m.emissiveNode = albedo.mul(tint).sub(diffuseColor.rgb).add(glow);
   m.needsUpdate = true;
   return m;

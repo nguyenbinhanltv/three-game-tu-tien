@@ -35,6 +35,28 @@ export const FEET = {
   tiltRate: 12,
   /** Chu kỳ lấy lại pháp tuyến (s): bốn lần dò độ cao mỗi chân là phần tốn nhất, dốc đổi chậm nên dùng lại giữa hai lần. */
   normalEvery: 0.1,
+  /**
+   * Chân với xuống tối đa (m) so với mặt đứng dưới thân. Bậc dốc (0,2–0,3 m mỗi nửa mét) đặt chân sau thấp hơn thân tới hai bậc: với hết tầm thì
+   * hông hạ ~40 cm, người ngồi xổm giữa cầu thang. Quá một bậc thì coi như chân đó không có chỗ đặt, giữ ở mức này.
+   */
+  maxDown: 0.3,
+  /**
+   * Tốc độ đổi tối đa (m/s) của mặt đứng dưới từng chân: lên 13 m/s (chân không lún vào mặt bậc nhờ `lookAhead`: bậc 0,2–0,3 m trải ra vài khung, đo tpmove), xuống chậm hơn (9). Dốc liên tục (chân vung 14 m/s trên dốc 25°
+   * ≈ 6,5 m/s) nằm dưới ngưỡng nên bám tuyệt đối; chỉ bước nhảy ở mép bậc (0,2–0,3 m trong một khung) bị trải ra vài khung.
+   */
+  groundUp: 13,
+  groundDown: 9,
+  /** Chênh quá mức này (m) giữa mặt đứng thật và giá trị đang làm mượt là đã dịch chuyển: lấy ngay. */
+  groundSnap: 0.7,
+  /**
+   * Nhìn trước (s): mặt đứng dưới chân lấy cao hơn giữa chỗ chân đang đứng và chỗ chân tới sau khoảng này theo vận tốc ngang của GỐC (không phải cổ chân clip:
+   * chân vung có thể ngược hướng chạy), để mặt đứng bắt đầu nâng trước mép bậc (không lún) mà tốc độ nâng vẫn thấp.
+   */
+  lookAhead: 0.1,
+  /** Quãng nhìn trước tối đa (m): gờ/vật cứng xa hơn không được nâng mặt đứng dưới chân trên nền phẳng. */
+  lookMax: 0.4,
+  /** Hằng số thời gian (s) ước lượng độ nhấc cố định của gốc so với mặt đứng (mây sen Nguyên Anh 0,2 m). */
+  hoverTau: 0.5,
   /** Số nhân vật tối đa chạy IK chân trong một khung (bench 50 bot: 6,6 nhân vật ≈ 0,45 ms/khung, ngưỡng 0,3 ms). */
   maxPerFrame: 4,
 };
@@ -155,6 +177,8 @@ interface Leg {
   tilt: THREE.Quaternion;
   /** Pháp tuyến lần lấy mẫu gần nhất (quay từ phương đứng). */
   nq: THREE.Quaternion;
+  /** Mặt đứng dưới chân (thế giới, đã giới hạn tốc độ đổi); NaN = chưa có. */
+  g: number;
 }
 
 const _v = new THREE.Vector3();
@@ -169,7 +193,26 @@ export interface FeetState {
   active: boolean;
   /** Đứng yên (khóa chân khi xoay). */
   standing: boolean;
+  /**
+   * Lớp phụ đã hạ cả thân bao nhiêu mét (≥ 0; Thân Pháp: lướt thấp, phanh, đảo chiều): chân chưa khóa được nâng lại đúng mức đó để
+   * bàn chân vẫn nằm trên đất còn gối gập thêm, thay vì cả người lún xuống. Bỏ trống = 0.
+   */
+  drop?: number;
 }
+
+/** Mặt đứng dưới một chân, giới hạn tốc độ đổi: `cur` (NaN = chưa có) tiến về `target` trong `dt`, lên nhanh hơn xuống, nhảy xa thì lấy ngay. */
+export function smoothGround(cur: number, target: number, dt: number): number {
+  if (!Number.isFinite(cur) || Math.abs(target - cur) > FEET.groundSnap) return target;
+  const d = target - cur;
+  const max = (d > 0 ? FEET.groundUp : FEET.groundDown) * dt;
+  return Math.abs(d) <= max ? target : cur + Math.sign(d) * max;
+}
+
+/**
+ * Chỗ đặt chân hiệu dụng (thế giới): mặt đứng dưới chân `g`, nhưng không thấp hơn mặt đứng dưới thân `level` quá `maxDown`
+ * (chân không với xuống hai bậc).
+ */
+export const supportY = (g: number, level: number, maxDown: number = FEET.maxDown): number => Math.max(g, level - maxDown);
 
 export class MqFeet {
   private legs: Leg[];
@@ -185,7 +228,12 @@ export class MqFeet {
   private hip = 0;
   private cool = 0;
   private nT = 0;
+  /** Gốc khung trước (x, z thế giới) để ước vận tốc nhìn trước; NaN = chưa có. */
+  private rx = Number.NaN;
+  private rz = Number.NaN;
   private ds = [0, 0];
+  /** Độ nhấc cố định của gốc so với mặt đứng (m), ước lượng chậm; NaN = chưa có. */
+  private hover = Number.NaN;
   /** Số lần bước chân từ lúc tạo (đo/kiểm). */
   steps = 0;
 
@@ -226,6 +274,7 @@ export class MqFeet {
         endQ: new THREE.Quaternion(),
         tilt: new THREE.Quaternion(),
         nq: new THREE.Quaternion(),
+        g: Number.NaN,
       });
     }
     return new MqFeet(root, pelvis, legs, FEET.hipLim * height);
@@ -253,11 +302,14 @@ export class MqFeet {
   release(): void {
     this.undo();
     this.hip = 0;
+    this.hover = Number.NaN;
+    this.rx = this.rz = Number.NaN;
     for (const l of this.legs) {
       l.plant.has = false;
       l.step = null;
       l.tilt.identity();
       l.nq.identity();
+      l.g = Number.NaN;
     }
   }
 
@@ -295,7 +347,12 @@ export class MqFeet {
     const yaw = this.root.rotation.y;
     const rp = this.root.position;
     ground ??= walkableGround(rp.y);
-    const base = ground(rp.x, rp.z);
+    // Mặt đứng dưới thân lấy từ cao độ GỐC trừ độ nhấc cố định (mây sen), không lấy thẳng `ground(gốc)`: qua mép bậc, `ground(gốc)` nhảy cả bậc
+    // trong một khung còn gốc được engine nội suy trong một tick, lấy thẳng thì cả hai chân giật một bậc rồi về.
+    const off = rp.y - ground(rp.x, rp.z);
+    this.hover = Number.isFinite(this.hover) ? this.hover + (off - this.hover) * (1 - Math.exp(-dt / FEET.hoverTau)) : off;
+    const base = rp.y - this.hover;
+    const drop = (st.drop ?? 0) * this.w;
     this.cool -= dt;
 
     // 1. Đo cổ chân của clip (thế giới).
@@ -343,9 +400,30 @@ export class MqFeet {
         this.steps++;
       }
     }
+    // Nhìn trước theo vận tốc ngang của gốc (12 m/s là trần: khung khựng/nhảy vị trí không được bắn mẫu đi xa), tối đa `lookMax`.
+    let ax = 0;
+    let az = 0;
+    let reach = 0;
+    if (Number.isFinite(this.rx) && dt > 1e-4) {
+      const vx = Math.max(-12, Math.min(12, (rp.x - this.rx) / dt));
+      const vz = Math.max(-12, Math.min(12, (rp.z - this.rz) / dt));
+      const sp = Math.hypot(vx, vz);
+      reach = Math.min(FEET.lookMax, sp * FEET.lookAhead);
+      if (sp > 1e-3) {
+        ax = (vx / sp) * reach;
+        az = (vz / sp) * reach;
+      }
+    }
+    this.rx = rp.x;
+    this.rz = rp.z;
     // 4. Hông theo chân thấp, đích của từng chân.
     const lim = this.lim;
-    this.legs.forEach((l, i) => (this.ds[i] = ground(l.pos.x, l.pos.z) - base));
+    this.legs.forEach((l, i) => {
+      let target = ground(l.pos.x, l.pos.z);
+      if (reach > 0) target = Math.max(target, ground(l.pos.x + ax, l.pos.z + az));
+      l.g = smoothGround(l.g, target, dt);
+      this.ds[i] = supportY(l.g, base) - base;
+    });
     const h = hipDrop(this.ds[0]!, this.ds[1]!, lim) * this.w;
     this.hip += (h - this.hip) * Math.min(1, dt * FEET.rate);
     this.pelPre.copy(this.pelvis.position);
@@ -353,7 +431,7 @@ export class MqFeet {
     this.legs.forEach((l, i) => {
       const dy = Math.max(-lim, Math.min(lim, this.ds[i]!)) * this.w;
       l.tgt.copy(l.pos);
-      l.tgt.y += dy;
+      l.tgt.y += dy + drop;
       l.endQ.copy(l.quat);
       if (l.step) {
         const s = l.step;
@@ -362,7 +440,7 @@ export class MqFeet {
         const e = ease(u);
         l.tgt.x = s.from.x + (l.pos.x - s.from.x) * e;
         l.tgt.z = s.from.z + (l.pos.z - s.from.z) * e;
-        l.tgt.y = ground(l.tgt.x, l.tgt.z) + l.plant.ankle + stepArc(u);
+        l.tgt.y = supportY(ground(l.tgt.x, l.tgt.z), base) + l.plant.ankle + stepArc(u);
         l.endQ.copy(s.fromQ).slerp(l.quat, e);
         if (u >= 1) {
           l.step = null;
@@ -371,7 +449,7 @@ export class MqFeet {
         }
       } else if (l.plant.has && this.pin > 0.001) {
         const p = l.plant;
-        _v.set(p.p.x, ground(p.p.x, p.p.z) + p.ankle, p.p.z);
+        _v.set(p.p.x, supportY(ground(p.p.x, p.p.z), base) + p.ankle, p.p.z);
         l.tgt.lerp(_v, this.pin);
         l.endQ.slerp(p.q, this.pin);
       }
@@ -404,7 +482,7 @@ export class MqFeet {
     this.ik = true;
   }
 
-  /** Khóa chân tại `p`; `ankle` = độ cao cổ chân của clip so với mặt đất dưới THÂN (không phải dưới chân, để dốc không bị tính hai lần). */
+  /** Khóa chân tại `p`; `ankle` = độ cao cổ chân của clip so với mặt đứng dưới THÂN `base` (không phải dưới chân, để dốc không bị tính hai lần). */
   private plantAt(l: Leg, p: THREE.Vector3, q: THREE.Quaternion, yaw: number, base: number): void {
     l.plant.has = true;
     l.plant.p.copy(p);

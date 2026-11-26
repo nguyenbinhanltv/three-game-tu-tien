@@ -95,11 +95,15 @@ FX_PALETTE.mon_a6_nhan = { core: 0x16132a, body: 0x55507a, rim: 0xdde3ee, accent
 FX_PALETTE.mon_a6_sa = { core: 0x231e12, body: 0xc9b878, rim: 0xfff4cc, accent: 0xff1f3d, shadow: 0x0a0a0c };
 FX_PALETTE.mon_a6_may = { core: 0x17222a, body: 0x9fc4c0, rim: 0xf6fbfa, accent: 0xff1f3d, shadow: 0x0a0a0c };
 // Cảnh lớn (VFX-V4 phần 2): đột phá theo cảnh giới và độ kiếp.
-FX_PALETTE.dotpha_tc = { core: 0x5a3a08, body: 0xe8b13c, rim: 0xfff2c4, accent: 0x3fb8d8, shadow: 0x2a1c05 };
-FX_PALETTE.dotpha_kd = { core: 0x5a1e08, body: 0xf08a3a, rim: 0xffe2b8, accent: 0xffc95a, shadow: 0x2a0f05 };
+// V-P10 (HPL2): không tông nào đỏ/cam theo `isRedOrange` (hue > 45°); Kết Đan đổi CAM → vàng chanh + ngọc lục. Phải bằng `scene.palette` của thẻ cảnh (test `sceneCards.test.ts`).
+FX_PALETTE.len_tang = { core: 0x0f3a32, body: 0x58cdb0, rim: 0xeafff6, accent: 0xf0d778, shadow: 0x08201c };
+FX_PALETTE.dotpha_tc = { core: 0x453a08, body: 0xe6c84a, rim: 0xfff4c8, accent: 0x3fb8d8, shadow: 0x221d05 };
+FX_PALETTE.dotpha_kd = { core: 0x2c3a12, body: 0xf0e06a, rim: 0xfffbd6, accent: 0x4fd6a0, shadow: 0x161d09 };
+// Đan Hỏa Kiếp (V-P10): lửa kiếp tím hồng lạnh thay cam.
+FX_PALETTE.kiep_hoa = { core: 0x2a0c3a, body: 0xc45cff, rim: 0xffeefc, accent: 0xfff0b0, shadow: 0x150620 };
 FX_PALETTE.dotpha_na = { core: 0x2a1458, body: 0x8f78e8, rim: 0xf0eaff, accent: 0x9fe0ff, shadow: 0x140a30 };
 // Hóa Thần (E4-D): vàng sao nhạt, lõi nâu trầm, điểm nhấn lam băng; dùng cho đột phá và thế thân thần niệm.
-FX_PALETTE.dotpha_hn = { core: 0x4a3a12, body: 0xe6cf86, rim: 0xfff8de, accent: 0xaee0ff, shadow: 0x221a08 };
+FX_PALETTE.dotpha_hn = { core: 0x423a12, body: 0xe6cf86, rim: 0xfff8de, accent: 0xaee0ff, shadow: 0x211d09 };
 FX_PALETTE.than_hanh = { core: 0x0a3f5e, body: 0x2cc7dc, rim: 0xdff8ff, accent: 0xf3c860, shadow: 0x08202e };
 
 /** Mặc định: bảng của hướng tu đầu tiên (Kiếm tu). */

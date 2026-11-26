@@ -21,8 +21,8 @@ export const presentDt = (slow: boolean | undefined, dt: number, scale: number):
 
 export type PosFn = (out: THREE.Vector3) => boolean;
 
-export const HOT_BOLT = 0xff9a5a;
-export const HOT_BOLT_CORE = 0xffc89a;
+/** Thân thiên lôi pha lôi hỏa (Đan Hỏa Kiếp): lửa kiếp tím hồng lạnh (V-P10: bỏ cam, đỏ/cam chỉ dành cho vạch báo). */
+export const HOT_BOLT_CORE = 0xf2b8ff;
 export const _a = new THREE.Vector3();
 export const _b = new THREE.Vector3();
 export const _c = new THREE.Vector3();

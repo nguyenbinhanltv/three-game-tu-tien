@@ -38,6 +38,8 @@ export const loadStyle = (root: string): StyleSheet =>
 
 /** Bảng màu của hướng tu trong thẻ (paths.json → palette). */
 export function paletteOfCard(card: VfxCard): PalHex {
+  // Thẻ cảnh (V-P10) khai bảng màu tại chỗ.
+  if (card.scene) return card.scene.palette as PalHex;
   const p = PATH.get(card.path);
   if (!p) throw new Error(`hướng tu lạ: ${card.path}`);
   return p.palette as PalHex;
