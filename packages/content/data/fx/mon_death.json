@@ -4,15 +4,46 @@
  "events": [
   {
    "type": "mesh",
-   "shape": "burst",
-   "t": 0.0,
-   "dur": 0.16,
-   "at": "self",
-   "scale": 1.5,
+   "shape": "sprite",
+   "sprite": "chung_puff",
    "billboard": true,
+   "t": 0.0,
+   "dur": 0.7,
    "sweep": 0.0,
-   "tone": "rim",
+   "at": "self",
+   "scale": 0.7,
+   "scaleTo": 1.5,
+   "erodeFrom": 0.3,
+   "tone": "body",
+   "alpha": 0.75,
+   "seed": 44,
+   "move": {
+    "to": "self",
+    "offset": [
+     0,
+     0.9,
+     0
+    ],
+    "ease": "out"
+   },
    "tier": 0
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "sprite": "chung_chips",
+   "billboard": true,
+   "t": 0.03,
+   "dur": 0.3,
+   "sweep": 0.0,
+   "at": "self",
+   "scale": 0.6,
+   "scaleTo": 1.2,
+   "erodeFrom": 0.3,
+   "tone": "rim",
+   "alpha": 0.85,
+   "seed": 45,
+   "tier": 1
   },
   {
    "type": "mesh",
@@ -129,14 +160,19 @@
   "boss": [
    {
     "type": "mesh",
-    "shape": "burst",
-    "t": 0.08,
-    "dur": 0.2,
-    "at": "self",
-    "scale": 3.4,
+    "shape": "sprite",
+    "sprite": "chung_snap",
     "billboard": true,
+    "t": 0.08,
+    "dur": 0.5,
     "sweep": 0.0,
-    "tone": "accent",
+    "at": "self",
+    "scale": 1.6,
+    "scaleTo": 2.4,
+    "erodeFrom": 0.4,
+    "tone": "rim",
+    "alpha": 0.9,
+    "seed": 46,
     "tier": 0
    },
    {

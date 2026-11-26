@@ -1,0 +1,118 @@
+{
+  "skill": "fx_hit_crit",
+  "trigger": "fx",
+  "fxKind": "~hit_crit",
+  "palette": "hit_chung",
+  "events": [
+    {
+      "type": "mesh",
+      "shape": "sprite",
+      "sprite": "chung_crit",
+      "billboard": true,
+      "at": "target",
+      "t": 0,
+      "dur": 0.42,
+      "offset": [
+        0,
+        0.2,
+        0
+      ],
+      "scale": 1.45,
+      "scaleTo": 1.95,
+      "sweep": 0,
+      "erodeFrom": 0.65,
+      "ragged": 0.5,
+      "tone": "body",
+      "alpha": 1,
+      "tier": 0,
+      "seed": 2060
+    },
+    {
+      "type": "mesh",
+      "shape": "sprite",
+      "sprite": "chung_crit",
+      "billboard": true,
+      "at": "target",
+      "t": 0.03,
+      "dur": 0.14,
+      "offset": [
+        0,
+        0.2,
+        0
+      ],
+      "scale": 1.79,
+      "scaleTo": 2.08,
+      "sweep": 0,
+      "erodeFrom": 0.2,
+      "ragged": 0.5,
+      "tone": "accent",
+      "alpha": 1,
+      "tier": 1,
+      "seed": 2061
+    },
+    {
+      "type": "mesh",
+      "shape": "sprite",
+      "sprite": "chung_chips",
+      "billboard": true,
+      "at": "target",
+      "t": 0.03,
+      "dur": 0.34,
+      "offset": [
+        0,
+        0,
+        0
+      ],
+      "scale": 1,
+      "scaleTo": 1.7,
+      "sweep": 0,
+      "erodeFrom": 0.3,
+      "ragged": 0.5,
+      "tone": "rim",
+      "alpha": 0.8,
+      "tier": 1,
+      "seed": 2062
+    },
+    {
+      "type": "particles",
+      "kind": "shard",
+      "t": 0,
+      "n": 2,
+      "speed": 5,
+      "spread": 0.9,
+      "life": 0.45,
+      "size": 0.1,
+      "at": "target",
+      "tone": "rim",
+      "tier": 0,
+      "grav": 8
+    },
+    {
+      "type": "particles",
+      "kind": "spark",
+      "t": 0.03,
+      "n": 1,
+      "speed": 7,
+      "spread": 1,
+      "life": 0.2,
+      "size": 0.06,
+      "at": "target",
+      "tone": "accent",
+      "tier": 1
+    },
+    {
+      "type": "particles",
+      "kind": "dust",
+      "t": 0.15,
+      "n": 1,
+      "speed": 0.6,
+      "spread": 0.5,
+      "life": 0.25,
+      "size": 0.1,
+      "at": "target",
+      "tone": "shadow",
+      "tier": 1,
+      "grav": 2
+    }
+  ]
+}

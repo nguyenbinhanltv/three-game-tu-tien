@@ -4,14 +4,19 @@
  "events": [
   {
    "type": "mesh",
-   "shape": "burst",
-   "t": 0.0,
-   "dur": 0.14,
-   "at": "ahead",
-   "scale": 0.9,
+   "shape": "sprite",
+   "sprite": "chung_puff",
    "billboard": true,
+   "t": 0.0,
+   "dur": 0.22,
    "sweep": 0.0,
-   "tone": "rim",
+   "at": "ahead",
+   "scale": 0.35,
+   "scaleTo": 0.7,
+   "erodeFrom": 0.3,
+   "tone": "body",
+   "alpha": 0.8,
+   "seed": 41,
    "tier": 0
   },
   {

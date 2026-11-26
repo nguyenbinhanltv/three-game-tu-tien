@@ -114,6 +114,7 @@ import { SuyFx } from './fx/suyFx';
 import { groundAt } from '../base/levelCtx';
 import { PF_TRIBULATION } from '@dtl/shared';
 import { MonFx } from './fx/monFx';
+import { HitFx } from './fx/hitFx';
 import { variantFor } from './fx/fxTimeline';
 import {
   auraCombatOf,
@@ -337,6 +338,8 @@ export class Game {
   pathAura: PathAuraFx | null = null;
   /** Hiệu ứng quái/tinh anh/boss (V5). */
   monFx: MonFx | null = null;
+  /** Hình trúng đòn chung (HPL2): vết va theo hướng tu, chí mạng, chặn, quái đánh người, ngắt chú, nhịp hồi. */
+  hitFx: HitFx | null = null;
   boltKinds = new Map<number, string>();
   /** Dấu trên sân mới nhất của Thiên Nhân Ngũ Suy của chính mình, theo khóa `<loại>:<ô>` (chỉ bản dev, cho Playwright: `__game.suyLog`). */
   suyLog?: Record<
@@ -800,6 +803,7 @@ export class Game {
     this.realmAura = new RealmAuraFx(this.vfx, auraEnv);
     this.pathAura = new PathAuraFx(this.vfx, auraEnv);
     this.monFx = new MonFx(this.skillFx.runner, { camera: () => this.camera, live: () => this.vfx.pool.live });
+    this.hitFx = new HitFx(this.skillFx.runner, { camera: () => this.camera, live: () => this.vfx.pool.live });
     this.suyFx = new SuyFx(this.skillFx.runner, {
       vfx: this.vfx,
       scene: this.scene,
@@ -1504,6 +1508,7 @@ export class Game {
     this.pathAura?.dispose();
     this.pathAura = null;
     this.monFx = null;
+    this.hitFx = null;
     this.suyFx?.dispose();
     this.suyFx = null;
     this.vfx?.dispose();
