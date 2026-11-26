@@ -49,6 +49,20 @@
       "tone": "rim",
       "tier": 0,
       "grav": -1.4
+    },
+    {
+      "type": "particles",
+      "kind": "dust",
+      "t": 0.15,
+      "n": 2,
+      "speed": 0.6,
+      "spread": 0.5,
+      "life": 0.25,
+      "size": 0.1,
+      "at": "target",
+      "tone": "shadow",
+      "tier": 1,
+      "grav": 2
     }
   ]
 }

@@ -303,6 +303,12 @@ const SCENES = [
   },
 ];
 
+/** Dư ba (chuẩn 2): phải có sự kiện hình BẮT ĐẦU từ +150 ms; hiệu ứng tan ≤ 200 ms nên thêm vài hạt bụi mực rất nhỏ rơi nốt. */
+const withTail = (evs, I) =>
+  evs.some((e) => (e.t ?? 0) - I >= 0.15)
+    ? evs
+    : [...evs, parts('dust', r2(I + 0.15), 2, { speed: 0.6, spread: 0.5, life: 0.25, size: 0.1, tone: 'shadow', grav: 2, tier: 1 })];
+
 for (const s of SCENES) {
   seq = 2000 + SCENES.indexOf(s) * 20;
   const tl = {
@@ -312,7 +318,7 @@ for (const s of SCENES) {
     ...(s.when ? { when: s.when } : {}),
     palette: s.pal,
     ...(s.replaces ? { replaces: s.replaces } : {}),
-    events: s.events(),
+    events: withTail(s.events(), s.I),
   };
   fs.writeFileSync(path.join(fxDir, `${s.id}.json`), JSON.stringify(tl, null, 2) + '\n');
   const card = {

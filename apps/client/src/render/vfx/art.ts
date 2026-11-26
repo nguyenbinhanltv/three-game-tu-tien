@@ -41,7 +41,7 @@ export const SPRITE_GROUPS = {
   // V-P10: cảnh đột phá (lên tầng + bốn cảnh giới), tranh đơn sắc tô theo bảng màu timeline; chỉ nạp khi có người đột phá.
   dp: { file: 'hoa-truc/vfx_sprites_dp.c0b797988b.webp', cols: 4, rows: 4 },
   // Trúng đòn chung (HPL2): vết va/chí mạng/chặn/hồi phục, tranh đơn sắc tô theo bảng màu lúc phát. Dùng liên tục khi đánh nhau nên luôn giữ (`ALWAYS_GROUPS`).
-  chung: { file: 'hoa-truc/vfx_sprites_chung.PENDING.webp', cols: 4, rows: 4 },
+  chung: { file: 'hoa-truc/vfx_sprites_chung.1741d9852c.webp', cols: 4, rows: 4 },
 } as const;
 export type SpriteGroup = keyof typeof SPRITE_GROUPS;
 /** Hướng tu (`PATHS[].id`) → nhóm atlas của nó. Thêm một dòng khi thêm hướng mới. */
