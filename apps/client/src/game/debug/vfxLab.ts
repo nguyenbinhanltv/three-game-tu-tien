@@ -174,7 +174,11 @@ export function installVfxLab(g: Game, onHazard?: (g: Game, m: HazardMsg) => voi
         const mePt = { id: gg.sid, x: me.x, y: me.y, z: me.z, chest: 1.15 };
         const onMe = labHit === 'me';
         const pal =
-          labHit === 'mon' ? (h.methodOfPlayer(gg.sid) ?? 'hit_chung') : labHit === 'me' ? monHitPalette(MONSTER.get(mon.s.t)?.elem) : labHit;
+          labHit === 'mon'
+            ? (h.methodOfPlayer(gg.sid) ?? 'hit_chung')
+            : labHit === 'me'
+              ? monHitPalette(MONSTER.get(mon.s.t)?.elem)
+              : labHit;
         return h.hitFx.labPlay(skill, onMe || labHit === 'hit_heal' ? mePt : monPt, onMe ? mon : labHit === 'hit_heal' ? null : me, pal);
       }
       // Timeline kích theo S.FX (lướt, thuấn di...): chạy đường `startFromFx` như khi nhận tin từ server; còn lại phát từ sự kiện `windup`.

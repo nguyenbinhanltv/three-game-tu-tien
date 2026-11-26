@@ -55,7 +55,18 @@ const parts = (kind, t, n, o = {}) => ({
   ...o,
 });
 /** Điểm nhấn +30 ms: cùng tranh, lớp viền sáng rất ngắn, to hơn một chút (đọc được "đã trúng" ở cỡ 60–100 px). */
-const accent = (name, I, size, o = {}) => sprite(name, { t: r2(I + 0.03), dur: 0.07, size: size * 1.12, sizeTo: size * 1.3, tone: 'rim', alpha: 0.85, erodeFrom: 0.2, tier: 1, ...o });
+const accent = (name, I, size, o = {}) =>
+  sprite(name, {
+    t: r2(I + 0.03),
+    dur: 0.07,
+    size: size * 1.12,
+    sizeTo: size * 1.3,
+    tone: 'rim',
+    alpha: 0.85,
+    erodeFrom: 0.2,
+    tier: 1,
+    ...o,
+  });
 
 /** Bảng màu mặc định của nhóm (phòng thử, và khi không biết người đánh). Lúc chơi `startAt` truyền bảng hướng tu / hệ quái. Không tông nào đỏ/cam. */
 const PAL = {
@@ -237,7 +248,18 @@ const SCENES = [
       parts('spark', 0, 14, { offset: [0, -0.5, 0], speed: 3, life: 0.14, inward: true, tone: 'body' }),
       sprite('chung_lotus', { t: 0.15, dur: 0.5, off: [0, -0.25, 0], size: 1.0, sizeTo: 2.1, erodeFrom: 0.45 }),
       accent('chung_lotus', 0.15, 1.3, { off: [0, -0.25, 0], sizeTo: 1.9 }),
-      sprite('chung_petals', { t: 0.3, dur: 0.6, off: [0, 0.3, 0], size: 1.4, sizeTo: 2.0, up: 1.1, tone: 'rim', alpha: 0.85, erodeFrom: 0.4, tier: 1 }),
+      sprite('chung_petals', {
+        t: 0.3,
+        dur: 0.6,
+        off: [0, 0.3, 0],
+        size: 1.4,
+        sizeTo: 2.0,
+        up: 1.1,
+        tone: 'rim',
+        alpha: 0.85,
+        erodeFrom: 0.4,
+        tier: 1,
+      }),
       parts('petal', 0.18, 16, { offset: [0, -0.2, 0], speed: 1.6, spread: 1, life: 0.9, size: 0.1, grav: -1.4, tone: 'rim' }),
       parts('spark', 0.3, 8, { speed: 1.2, spread: 1, life: 0.7, size: 0.06, grav: -1.2, tone: 'accent', tier: 1 }),
     ],
@@ -258,9 +280,31 @@ const SCENES = [
     budget: { drawCalls: 3, particles: 50, screenCover: 0.03, overdraw: 3 },
     events: () => [
       parts('spark', 0, 14, { at: 'self', offset: [0, -0.5, 0], speed: 3, life: 0.14, inward: true, tone: 'body' }),
-      sprite('chung_eddy', { at: 'self', t: 0.15, dur: 0.5, off: [0, -0.2, 0], size: 1.5, sizeTo: 2.3, up: 0.5, erodeFrom: 0.45, follow: true }),
+      sprite('chung_eddy', {
+        at: 'self',
+        t: 0.15,
+        dur: 0.5,
+        off: [0, -0.2, 0],
+        size: 1.5,
+        sizeTo: 2.3,
+        up: 0.5,
+        erodeFrom: 0.45,
+        follow: true,
+      }),
       accent('chung_eddy', 0.15, 1.6, { at: 'self', off: [0, -0.2, 0], sizeTo: 2.0, follow: true }),
-      sprite('chung_drops', { at: 'self', t: 0.3, dur: 0.55, off: [0, 0.4, 0], size: 1.3, sizeTo: 1.8, up: 1.2, tone: 'rim', alpha: 0.85, erodeFrom: 0.4, tier: 1 }),
+      sprite('chung_drops', {
+        at: 'self',
+        t: 0.3,
+        dur: 0.55,
+        off: [0, 0.4, 0],
+        size: 1.3,
+        sizeTo: 1.8,
+        up: 1.2,
+        tone: 'rim',
+        alpha: 0.85,
+        erodeFrom: 0.4,
+        tier: 1,
+      }),
       parts('spark', 0.2, 18, { at: 'self', offset: [0, -0.2, 0], speed: 1.8, spread: 1, life: 0.8, size: 0.07, grav: -2, tone: 'rim' }),
     ],
   },
@@ -278,7 +322,18 @@ const SCENES = [
     footprint: { lengthM: 1.6, widthM: 1.6, heightM: 2.6 },
     budget: { drawCalls: 1, particles: 30, screenCover: 0.015, overdraw: 2 },
     events: () => [
-      sprite('chung_puff', { at: 'self', t: 0, dur: 0.34, off: [0, 0, 0], size: 0.7, sizeTo: 1.6, up: 0.6, tone: 'body', alpha: 0.7, erodeFrom: 0.35 }),
+      sprite('chung_puff', {
+        at: 'self',
+        t: 0,
+        dur: 0.34,
+        off: [0, 0, 0],
+        size: 0.7,
+        sizeTo: 1.6,
+        up: 0.6,
+        tone: 'body',
+        alpha: 0.7,
+        erodeFrom: 0.35,
+      }),
       parts('spark', 0, 8, { at: 'self', speed: 2.4, life: 0.12, inward: true, tone: 'body' }),
       parts('petal', 0.12, 10, { at: 'self', speed: 1.5, spread: 1, life: 0.8, size: 0.09, grav: -1.4, tone: 'rim' }),
       parts('spark', 0.15, 6, { at: 'self', speed: 1.2, spread: 1, life: 0.6, size: 0.06, grav: -1.2, tone: 'accent', tier: 1 }),

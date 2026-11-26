@@ -124,7 +124,14 @@ export class HitFx {
   }
 
   /** QUÁI đánh trúng người: vệt cào (hoặc dấu cắn) tô theo hệ của quái. */
-  monStrike(v: HitPoint, from: { x: number; z: number } | null, elem: string | undefined, bite: boolean, mine: boolean, force = false): void {
+  monStrike(
+    v: HitPoint,
+    from: { x: number; z: number } | null,
+    elem: string | undefined,
+    bite: boolean,
+    mine: boolean,
+    force = false,
+  ): void {
     const tl = this.ok(bite ? 'fx_hit_bite' : 'fx_hit_mon', v, HIT_GAP.mon, mine, force);
     if (tl) this.play(tl, v, from, monHitPalette(elem), mine);
   }
