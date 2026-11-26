@@ -69,8 +69,14 @@ export function registerCodeShapes(level: string): void {
   if (level === 'gioi_tri')
     registerCollision(
       'gioi_tri',
-      gioiTriPillars((gioiTriLevel as unknown as { dungeon: { center: { x: number; z: number } } }).dungeon.center).map(
-        (c): Shape => ({ k: 'cyl', x: c.x, z: c.z, r: c.r, y0: -1000, y1: 1000, tag: 'gioi_tri_cot_dong' }),
-      ),
+      gioiTriPillars((gioiTriLevel as unknown as { dungeon: { center: { x: number; z: number } } }).dungeon.center).map((c): Shape => ({
+        k: 'cyl',
+        x: c.x,
+        z: c.z,
+        r: c.r,
+        y0: -1000,
+        y1: 1000,
+        tag: 'gioi_tri_cot_dong',
+      })),
     );
 }
