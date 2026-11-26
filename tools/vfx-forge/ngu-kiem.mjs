@@ -80,8 +80,8 @@ const inkFloor = (t, r, dur = 1.1) => ({
 });
 const impactAt = (id) => JSON.parse(fs.readFileSync(path.join(cardDir, `${id}.json`), 'utf8')).scene.impactAt;
 
-/** Cất cánh lặp rất thường khi đi đường: cỡ ~65% concept, tổng ≤ 0,6 s. */
-const K_ON = 0.65;
+/** Cất cánh lặp rất thường khi đi đường: cỡ ~105% concept (65% thu quá tay: kiếm khí không đọc được ở 720p), tổng ≤ 0,6 s. */
+const K_ON = 1.05;
 const T = {
   fx_fly_on(I) {
     const S = r2(3.4 * K_ON);
@@ -172,15 +172,26 @@ const T = {
           move: { to: 'self', offset: [-0.4, 0.2, -0.5], ease: 'in' },
         }),
         // Nhịp va chạm: mực/bụi bắn sát đất ở khung chạm (+30 ms), vệt mực cháy đất, rồi xoáy nét cọ đứt tan.
-        sprite('ngu_dust', { t: I, dur: 0.35, off: [0, flatY(4.8), 0], size: 2.6, sizeTo: 4.8, tone: 'core', alpha: 0.95, erodeFrom: 0.3 }),
+        sprite('ngu_dust', { t: I, dur: 0.35, off: [0, flatY(4.4), 0], size: 2.4, sizeTo: 4.4, tone: 'core', alpha: 0.95, erodeFrom: 0.3 }),
         sprite('ngu_dust', {
           t: r2(I + 0.03),
           dur: 0.2,
           off: [0, flatY(3.6), 0],
-          size: 2,
-          sizeTo: 3.6,
+          size: 2.8,
+          sizeTo: 4.4,
           tone: 'rim',
-          alpha: 0.9,
+          alpha: 1,
+          erodeFrom: 0.3,
+        }),
+        // Viền sáng lam ngọc/bạc hà cho nền tối (lõi mực giữ nguyên): vệt sáng ở khung chạm.
+        sprite('ngu_streak', {
+          t: r2(I + 0.02),
+          dur: 0.2,
+          off: [0, flatY(3.4) + 0.2, 0],
+          size: 2.8,
+          sizeTo: 3.8,
+          tone: 'rim',
+          alpha: 1,
           erodeFrom: 0.3,
         }),
         inkFloor(I, 2.4, 0.6),
@@ -188,10 +199,10 @@ const T = {
           t: r2(I + 0.06),
           dur: 0.4,
           off: [0, flatY(4), 0],
-          size: 4,
-          sizeTo: 3,
-          tone: 'body',
-          alpha: 0.8,
+          size: 3.6,
+          sizeTo: 2.8,
+          tone: 'rim',
+          alpha: 0.85,
           erodeFrom: 0.35,
         }),
         sprite('ngu_puffs', {
@@ -201,8 +212,8 @@ const T = {
           up: 0.3,
           size: 1.6,
           sizeTo: 2.2,
-          tone: 'core',
-          alpha: 0.75,
+          tone: 'body',
+          alpha: 0.8,
           erodeFrom: 0.3,
           tier: 1,
         }),
@@ -211,15 +222,16 @@ const T = {
           dur: 0.25,
           off: [0.9, 0.3, 0.2],
           up: 0.4,
-          size: 2,
-          sizeTo: 2.4,
+          size: 2.6,
+          sizeTo: 3.2,
           tone: 'rim',
-          alpha: 0.55,
+          alpha: 0.8,
           erodeFrom: 0.3,
           tier: 1,
         }),
         parts('dust', I, 28, { speed: 3.2, life: 0.45, size: 0.25, offset: [0, FEET + 0.1, 0], tone: 'core', tier: 0 }),
         parts('shard', I, 10, { speed: 2.6, life: 0.4, size: 0.1, offset: [0, FEET + 0.15, 0], tone: 'core', tier: 1 }),
+        parts('spark', I, 16, { speed: 3, life: 0.4, size: 0.08, offset: [0, FEET + 0.15, 0], tone: 'rim', tier: 0 }),
       ],
     };
   },

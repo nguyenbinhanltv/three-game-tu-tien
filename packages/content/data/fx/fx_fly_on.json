@@ -32,12 +32,12 @@
       "t": 0,
       "dur": 0.55,
       "offset": [
-        1.69,
-        -0.47,
-        -1.04
+        2.73,
+        -0.24,
+        -1.68
       ],
-      "scale": 1.11,
-      "scaleTo": 1.11,
+      "scale": 1.79,
+      "scaleTo": 1.79,
       "sweep": 0,
       "erodeFrom": 0.55,
       "ragged": 0.5,
@@ -50,7 +50,7 @@
         "to": "self",
         "offset": [
           0,
-          -0.72,
+          -0.49000000000000005,
           0.1
         ],
         "ease": "out"
@@ -66,11 +66,11 @@
       "dur": 0.35,
       "offset": [
         0,
-        -0.66,
+        -0.36,
         0
       ],
-      "scale": 0.78,
-      "scaleTo": 1.43,
+      "scale": 1.26,
+      "scaleTo": 2.31,
       "sweep": 0,
       "erodeFrom": 0.3,
       "ragged": 0.5,
@@ -89,11 +89,11 @@
       "dur": 0.15,
       "offset": [
         0,
-        -0.73,
+        -0.57,
         0
       ],
-      "scale": 0.78,
-      "scaleTo": 0.98,
+      "scale": 1.26,
+      "scaleTo": 1.58,
       "sweep": 0,
       "erodeFrom": 0.35,
       "ragged": 0.5,
@@ -115,8 +115,8 @@
         0.2,
         0
       ],
-      "scale": 1.04,
-      "scaleTo": 1.24,
+      "scale": 1.68,
+      "scaleTo": 2,
       "sweep": 0,
       "erodeFrom": 0.3,
       "ragged": 0.5,
@@ -143,12 +143,12 @@
       "t": 0.4,
       "dur": 0.2,
       "offset": [
-        0.39,
+        0.63,
         0.5,
         0
       ],
-      "scale": 0.72,
-      "scaleTo": 0.85,
+      "scale": 1.16,
+      "scaleTo": 1.37,
       "sweep": 0,
       "erodeFrom": 0.3,
       "ragged": 0.5,
@@ -159,7 +159,7 @@
       "move": {
         "to": "self",
         "offset": [
-          0.39,
+          0.63,
           1,
           0
         ],
@@ -170,7 +170,7 @@
       "type": "decal",
       "tex": "scorch",
       "t": 0.15,
-      "r": 1.82,
+      "r": 2.94,
       "dur": 0.5,
       "at": "self",
       "offset": [

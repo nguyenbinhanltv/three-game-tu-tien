@@ -47,11 +47,11 @@
       "dur": 0.35,
       "offset": [
         0,
-        -0.33,
+        -0.4,
         0
       ],
-      "scale": 1.3,
-      "scaleTo": 2.4,
+      "scale": 1.2,
+      "scaleTo": 2.2,
       "sweep": 0,
       "erodeFrom": 0.3,
       "ragged": 0.5,
@@ -73,15 +73,38 @@
         -0.54,
         0
       ],
-      "scale": 1,
-      "scaleTo": 1.8,
+      "scale": 1.4,
+      "scaleTo": 2.2,
       "sweep": 0,
       "erodeFrom": 0.3,
       "ragged": 0.5,
       "tone": "rim",
-      "alpha": 0.9,
+      "alpha": 1,
       "tier": 0,
       "seed": 1002
+    },
+    {
+      "type": "mesh",
+      "shape": "sprite",
+      "sprite": "ngu_streak",
+      "billboard": true,
+      "at": "self",
+      "t": 0.22,
+      "dur": 0.2,
+      "offset": [
+        0,
+        -0.36999999999999994,
+        0
+      ],
+      "scale": 1.4,
+      "scaleTo": 1.9,
+      "sweep": 0,
+      "erodeFrom": 0.3,
+      "ragged": 0.5,
+      "tone": "rim",
+      "alpha": 1,
+      "tier": 0,
+      "seed": 1003
     },
     {
       "type": "decal",
@@ -113,15 +136,15 @@
         -0.47,
         0
       ],
-      "scale": 2,
-      "scaleTo": 1.5,
+      "scale": 1.8,
+      "scaleTo": 1.4,
       "sweep": 0,
       "erodeFrom": 0.35,
       "ragged": 0.5,
-      "tone": "body",
-      "alpha": 0.8,
+      "tone": "rim",
+      "alpha": 0.85,
       "tier": 0,
-      "seed": 1003
+      "seed": 1004
     },
     {
       "type": "mesh",
@@ -141,10 +164,10 @@
       "sweep": 0,
       "erodeFrom": 0.3,
       "ragged": 0.5,
-      "tone": "core",
-      "alpha": 0.75,
+      "tone": "body",
+      "alpha": 0.8,
       "tier": 1,
-      "seed": 1004,
+      "seed": 1005,
       "move": {
         "to": "self",
         "offset": [
@@ -168,15 +191,15 @@
         0.3,
         0.2
       ],
-      "scale": 1,
-      "scaleTo": 1.2,
+      "scale": 1.3,
+      "scaleTo": 1.6,
       "sweep": 0,
       "erodeFrom": 0.3,
       "ragged": 0.5,
       "tone": "rim",
-      "alpha": 0.55,
+      "alpha": 0.8,
       "tier": 1,
-      "seed": 1005,
+      "seed": 1006,
       "move": {
         "to": "self",
         "offset": [
@@ -222,6 +245,24 @@
       ],
       "tone": "core",
       "tier": 1
+    },
+    {
+      "type": "particles",
+      "kind": "spark",
+      "t": 0.2,
+      "n": 16,
+      "speed": 3,
+      "spread": 1,
+      "life": 0.4,
+      "size": 0.08,
+      "at": "self",
+      "offset": [
+        0,
+        -0.9999999999999999,
+        0
+      ],
+      "tone": "rim",
+      "tier": 0
     }
   ]
 }
