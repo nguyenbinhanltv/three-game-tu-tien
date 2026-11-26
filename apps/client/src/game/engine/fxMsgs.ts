@@ -411,9 +411,13 @@ export function handleFx(eng: Game, m: FxMsg, held = false): void {
       break;
     }
     case 'heal':
-    case 'potion':
-      v.pillar(posSrc, tint(0x7dffa0), 1.0, 0.9, 4);
+      // Hình hồi máu do `hitVisual` (DmgMsg heal → `HitFx.heal`) phát; không vẽ thêm trụ sáng.
       break;
+    case 'potion': {
+      const pp = hitPointOf(eng, src);
+      if (pp) eng.hitFx?.potion(pp, src === eng.sid);
+      break;
+    }
     case 'art': {
       // Pháp bảo phụ (P3-8): pháp bảo bay lên theo animation thủ tục; thêm một vòng sáng nhỏ dưới chân, không trụ sáng, không chớp toàn cảnh.
       if (m.s === BONDED_ARTIFACT_ID) e.players.get(src)?.lo?.trigger(m.d ?? 1.4);

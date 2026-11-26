@@ -28,7 +28,7 @@
       "tone": "body",
       "alpha": 0.7,
       "tier": 0,
-      "seed": 2200,
+      "seed": 2180,
       "move": {
         "to": "self",
         "offset": [
