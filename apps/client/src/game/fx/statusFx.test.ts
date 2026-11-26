@@ -92,12 +92,26 @@ describe('trạng thái nhóm 2a (cờ quái mở rộng, khiên)', () => {
       }
     }
   });
-  it('phản đòn xoay, khiên đứng yên (phân biệt bằng mắt)', () => {
-    const spin = (k: StatusKind) =>
-      (FX_TIMELINE.get(STATUS_DEF[k].key)!.events.find((e) => e.type === 'mesh') as { spin?: number }).spin ?? 0;
-    expect(spin('reflect')).toBeGreaterThan(0);
-    expect(spin('ward')).toBe(0);
-    expect(spin('yin')).toBe(0);
+  it('phản đòn: 4–6 mảnh gương xoay quanh thân (orbit, pha khác nhau, không vòm); khiên/mặt Âm là lưới lục giác rỗng đứng yên', () => {
+    const ev = (k: StatusKind) =>
+      FX_TIMELINE.get(STATUS_DEF[k].key)!.events as { type: string; sprite?: string; orbit?: { r: number; w: number; phase?: number } }[];
+    const shards = ev('reflect').filter((e) => e.sprite === 'chung_mirror');
+    expect(shards.length).toBeGreaterThanOrEqual(4);
+    expect(shards.length).toBeLessThanOrEqual(6);
+    expect(new Set(shards.map((e) => e.orbit?.phase)).size).toBe(shards.length);
+    for (const e of shards) expect(e.orbit?.w).toBeGreaterThan(1);
+    expect(ev('reflect').some((e) => e.sprite === 'chung_ward' || e.sprite === 'chung_hexweb')).toBe(false);
+    for (const k of ['ward', 'yin'] as StatusKind[]) {
+      expect(
+        ev(k).some((e) => e.sprite === 'chung_hexweb'),
+        k,
+      ).toBe(true);
+      expect(
+        ev(k).some((e) => e.orbit),
+        k,
+      ).toBe(false);
+    }
+    expect(ev('real').some((e) => e.sprite === 'chung_pool')).toBe(true);
   });
 });
 

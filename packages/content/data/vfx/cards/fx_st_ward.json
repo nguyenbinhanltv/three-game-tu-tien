@@ -1,6 +1,6 @@
 {
   "skillId": "fx_st_ward",
-  "idea": "HỘ THỂ / KHIÊN (người chơi): khiên mai rùa lục giác lam thép trùm quanh thân, khe mực, viền trắng lạnh; đứng yên (khác phản đòn xoay). Lặp khi còn cờ.",
+  "idea": "HỘ THỂ / KHIÊN (người chơi): lưới lục giác lam thép viền sáng trùm quanh thân, giữa trong suốt (kiểu fresnel); đứng yên (khác phản đòn có mảnh gương xoay). Lặp khi còn cờ.",
   "element": "kim",
   "path": "",
   "scene": {
@@ -35,7 +35,7 @@
     "overdraw": 2
   },
   "textures": [],
-  "silhouette": "khiên mai rùa lục giác lam thép trùm quanh thân",
+  "silhouette": "lưới lục giác lam thép viền sáng trùm thân, giữa trong suốt",
   "standard": 2,
   "materials": [
     "sprite",

@@ -1,6 +1,6 @@
 {
   "skillId": "fx_st_reflect",
-  "idea": "PHẢN ĐÒN (quái đang phản lại sát thương): mảnh gương mai rùa bạc xoay chậm trước ngực, mép trắng lạnh; xoay để phân biệt với khiên đứng yên. Lặp khi còn cờ.",
+  "idea": "PHẢN ĐÒN (quái đang phản lại sát thương): năm mảnh gương bạc xoay quanh thân ngang ngực, không có vòm; mép trắng lạnh. Lặp khi còn cờ.",
   "element": "kim",
   "path": "",
   "scene": {
@@ -29,13 +29,13 @@
   "colorRole": "own",
   "telegraph": false,
   "budget": {
-    "drawCalls": 2,
+    "drawCalls": 5,
     "particles": 6,
-    "screenCover": 0.02,
-    "overdraw": 2
+    "screenCover": 0.03,
+    "overdraw": 3
   },
   "textures": [],
-  "silhouette": "mảnh gương lục giác bạc xoay trước ngực",
+  "silhouette": "năm mảnh gương bạc xoay quanh thân ngang ngực",
   "standard": 2,
   "materials": [
     "sprite",

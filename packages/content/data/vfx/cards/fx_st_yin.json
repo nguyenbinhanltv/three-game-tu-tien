@@ -1,6 +1,6 @@
 {
   "skillId": "fx_st_yin",
-  "idea": "MẶT ÂM (boss hai mặt, không đánh được): khiên mai rùa mờ tím bao quanh thân, lõi mực, viền trắng tím; đứng yên, không nở. Lặp khi còn cờ.",
+  "idea": "MẶT ÂM (boss hai mặt, không đánh được): lưới lục giác tím viền sáng bao quanh thân, giữa trong suốt (kiểu fresnel); đứng yên, không nở. Lặp khi còn cờ.",
   "element": "vo",
   "path": "",
   "scene": {
@@ -35,7 +35,7 @@
     "overdraw": 2
   },
   "textures": [],
-  "silhouette": "khiên mai rùa lục giác tím mờ bao quanh thân",
+  "silhouette": "lưới lục giác tím viền sáng, giữa trong suốt, bao quanh thân",
   "standard": 2,
   "materials": [
     "sprite",

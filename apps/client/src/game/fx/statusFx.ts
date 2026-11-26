@@ -43,7 +43,7 @@ export const STATUS_DEF: Record<StatusKind, { key: string; pal: string; period: 
   slow: { key: 'fx_st_slow', pal: 'hit_guard', period: 1.0 },
   hot: { key: 'fx_st_hot', pal: 'hit_heal', period: 1.2 },
   yin: { key: 'fx_st_yin', pal: 'st_yin', period: 1.1 },
-  reflect: { key: 'fx_st_reflect', pal: 'hit_guard', period: 1.0 },
+  reflect: { key: 'fx_st_reflect', pal: 'hit_guard', period: 0.95 },
   weak: { key: 'fx_st_weak', pal: 'st_gold', period: 1.0 },
   yang: { key: 'fx_st_yang', pal: 'st_gold', period: 1.0 },
   sensed: { key: 'fx_st_sensed', pal: 'st_gold', period: 1.1 },

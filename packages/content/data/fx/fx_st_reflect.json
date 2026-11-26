@@ -7,7 +7,7 @@
     {
       "type": "mesh",
       "shape": "sprite",
-      "sprite": "chung_ward",
+      "sprite": "chung_mirror",
       "billboard": true,
       "at": "self",
       "t": 0,
@@ -17,41 +17,137 @@
         1.2,
         0
       ],
-      "scale": 1.4,
-      "scaleTo": 1.5,
+      "scale": 0.5,
+      "scaleTo": 0.5,
       "sweep": 0,
-      "erodeFrom": 0.75,
+      "erodeFrom": 0.9,
       "ragged": 0.5,
       "tone": "body",
       "alpha": 1,
       "tier": 0,
       "seed": 2460,
       "follow": true,
-      "spin": 90
+      "orbit": {
+        "r": 1.15,
+        "w": 6.2832,
+        "phase": 0
+      }
     },
     {
       "type": "mesh",
       "shape": "sprite",
-      "sprite": "chung_ward",
+      "sprite": "chung_mirror",
       "billboard": true,
       "at": "self",
-      "t": 0.03,
-      "dur": 0.1,
+      "t": 0,
+      "dur": 1,
       "offset": [
         0,
         1.2,
         0
       ],
-      "scale": 1.57,
-      "scaleTo": 1.82,
+      "scale": 0.5,
+      "scaleTo": 0.5,
       "sweep": 0,
-      "erodeFrom": 0.2,
+      "erodeFrom": 0.9,
       "ragged": 0.5,
-      "tone": "accent",
-      "alpha": 0.85,
-      "tier": 1,
+      "tone": "body",
+      "alpha": 1,
+      "tier": 0,
       "seed": 2461,
-      "follow": true
+      "follow": true,
+      "orbit": {
+        "r": 1.15,
+        "w": 6.2832,
+        "phase": 1.2566370614359172
+      }
+    },
+    {
+      "type": "mesh",
+      "shape": "sprite",
+      "sprite": "chung_mirror",
+      "billboard": true,
+      "at": "self",
+      "t": 0,
+      "dur": 1,
+      "offset": [
+        0,
+        1.2,
+        0
+      ],
+      "scale": 0.5,
+      "scaleTo": 0.5,
+      "sweep": 0,
+      "erodeFrom": 0.9,
+      "ragged": 0.5,
+      "tone": "body",
+      "alpha": 1,
+      "tier": 0,
+      "seed": 2462,
+      "follow": true,
+      "orbit": {
+        "r": 1.15,
+        "w": 6.2832,
+        "phase": 2.5132741228718345
+      }
+    },
+    {
+      "type": "mesh",
+      "shape": "sprite",
+      "sprite": "chung_mirror",
+      "billboard": true,
+      "at": "self",
+      "t": 0,
+      "dur": 1,
+      "offset": [
+        0,
+        1.2,
+        0
+      ],
+      "scale": 0.5,
+      "scaleTo": 0.5,
+      "sweep": 0,
+      "erodeFrom": 0.9,
+      "ragged": 0.5,
+      "tone": "body",
+      "alpha": 1,
+      "tier": 0,
+      "seed": 2463,
+      "follow": true,
+      "orbit": {
+        "r": 1.15,
+        "w": 6.2832,
+        "phase": 3.7699111843077517
+      }
+    },
+    {
+      "type": "mesh",
+      "shape": "sprite",
+      "sprite": "chung_mirror",
+      "billboard": true,
+      "at": "self",
+      "t": 0,
+      "dur": 1,
+      "offset": [
+        0,
+        1.2,
+        0
+      ],
+      "scale": 0.5,
+      "scaleTo": 0.5,
+      "sweep": 0,
+      "erodeFrom": 0.9,
+      "ragged": 0.5,
+      "tone": "body",
+      "alpha": 1,
+      "tier": 0,
+      "seed": 2464,
+      "follow": true,
+      "orbit": {
+        "r": 1.15,
+        "w": 6.2832,
+        "phase": 5.026548245743669
+      }
     },
     {
       "type": "particles",

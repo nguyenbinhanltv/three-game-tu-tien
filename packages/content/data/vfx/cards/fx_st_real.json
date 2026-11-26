@@ -1,6 +1,6 @@
 {
   "skillId": "fx_st_real",
-  "idea": "THỂ THẬT (Kính Nguyệt Chân Quân, bóng giả không có): gợn nước mực lam ngọc quanh chân, mờ, suốt trận. Lặp.",
+  "idea": "THỂ THẬT (Kính Nguyệt Chân Quân, bóng giả không có): gợn nước viền mực đậm, lõi lam ngọc quanh chân, suốt trận. Lặp.",
   "element": "thuy",
   "path": "",
   "scene": {
@@ -35,7 +35,7 @@
     "overdraw": 2
   },
   "textures": [],
-  "silhouette": "gợn nước mực lam ngọc quanh chân",
+  "silhouette": "gợn nước viền mực đậm lõi lam ngọc quanh chân",
   "standard": 2,
   "materials": [
     "sprite",
