@@ -453,6 +453,8 @@ export class EntityManager {
     view.players.forEach((s, sid) => {
       const isLocal = sid === this.mySid;
       let v = this.players.get(sid);
+      // Người vừa vào tầm nhìn khung này: `v.fl` còn 0 nên không được coi là "vừa đổi cờ bay".
+      const fresh = !v;
       if (!v) {
         if (!isLocal) {
           const d2 = (s.x - local.x) ** 2 + (s.z - local.z) ** 2;
@@ -509,7 +511,7 @@ export class EntityManager {
         v.speed += (sp - v.speed) * Math.min(1, dt * 8);
       }
       // Cờ bay đổi (không tính lần đầu thấy người này): engine phát cảnh cất/hạ cánh (V-P10).
-      if (((v.fl ^ s.fl) & PF_FLYING) !== 0) this.onFlyChange?.(sid, (s.fl & PF_FLYING) !== 0, v.x, v.z);
+      if (!fresh && ((v.fl ^ s.fl) & PF_FLYING) !== 0) this.onFlyChange?.(sid, (s.fl & PF_FLYING) !== 0, v.x, v.z);
       v.fl = s.fl;
       v.mt = s.mt ?? '';
       // Pháp bảo phụ: chỉ dựng cho người trong tầm nhìn gần (nhỏ, không đáng nạp xa).
