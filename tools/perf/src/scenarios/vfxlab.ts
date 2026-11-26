@@ -1,7 +1,7 @@
 // Phòng thử VFX (V-P0): chụp một chiêu ở 0 / +30 / +150 / +400 ms sau khung trúng đòn, 720p + 1080p cùng góc camera chéo, dừng thời gian
 // bằng `window.__vfxlab` để các khung đúng từng mili giây; đo ngân sách (draw call, hạt, phủ màn hình, overdraw), so với thẻ chiêu
 // (`packages/content/data/vfx/cards/<id>.json`) và (tùy chọn) đặt ảnh concept cạnh khung +30 ms.
-// Dùng: pnpm shots vfxlab --skill <id> --out <thư mục tuyệt đối> [--dummies 1..5] [--mon <id quái>] [--concept <ảnh>] [--sizes 720p,1080p] [--at 0,30,150,400] [--clean] [--nomon] [--reload] [--maskcmp] [--fxcover]
+// Dùng: pnpm shots vfxlab --skill <id> --out <thư mục tuyệt đối> [--dummies 1..5] [--mon <id quái>] [--concept <ảnh>] [--sizes 720p,1080p] [--at 0,30,150,400] [--clean] [--notags] [--nomon] [--reload] [--maskcmp] [--fxcover]
 import fs from 'node:fs';
 import path from 'node:path';
 import sharp from 'sharp';
@@ -126,6 +126,22 @@ async function run(r: Run, skills: string[], sizes: string[], at: number[]): Pro
   );
   // `--clean`: bỏ vạch báo/FX do server gửi (tinh anh hình nộm vẫn đánh: vòng báo ĐỎ của kẻ địch có thể rơi vào khung chụp chiêu người chơi và làm sai số/ảnh).
   if (process.argv.includes('--clean')) await page.evaluate(() => window.__vfxlab!.monLab(true));
+  // `--notags`: ẩn bảng tên + thanh máu (không che điểm trúng khi chụp ảnh duyệt).
+  if (process.argv.includes('--notags')) await page.evaluate(() => window.__vfxlab!.tags(false));
+  if (process.argv.includes('--dbgpos'))
+    console.log(
+      'DBGPOS',
+      JSON.stringify(
+        await page.evaluate(() => {
+          const g = window.__game as unknown as {
+            sid: string;
+            ents: { monsters: Map<string, { x: number; z: number; s: { t: string } }>; players: Map<string, { x: number; z: number }> };
+          };
+          const me = g.ents.players.get(g.sid);
+          return { me: me ? { x: me.x, z: me.z } : null, mons: [...g.ents.monsters.values()].map((m) => ({ t: m.s.t, x: m.x, z: m.z })) };
+        }),
+      ),
+    );
   await sleep(600);
   if (opt('--clip', '')) {
     // Clip thời gian thật (không tạm dừng): mỗi chiêu ra hai lần, cách nhau 3 s; video webm nằm ở <out>/clip.
@@ -155,6 +171,16 @@ async function run(r: Run, skills: string[], sizes: string[], at: number[]): Pro
     for (const tag of sizes) {
       const [w, h] = UI_SIZES[tag] ?? UI_SIZES['1080p']!;
       await page.setViewportSize({ width: w, height: h });
+      if (process.argv.includes('--notags')) {
+        // Tách người chơi khỏi quái ~3 m (quái đuổi tới đứng chồng lên người chơi thì nhân vật che điểm trúng): chạy tiếp ngắn, dịch người sang +x của quái, dừng ngay.
+        await page.evaluate(() => window.__vfxlab!.pause(false));
+        const mp = await page.evaluate(() => {
+          const g = window.__game as unknown as { ents: { monsters: Map<string, { x: number; z: number }> } };
+          const m = [...g.ents.monsters.values()][0];
+          return m ? { x: m.x, z: m.z } : null;
+        });
+        if (mp) await gm(page, `tp ${(mp.x + 3.2).toFixed(1)} ${mp.z.toFixed(1)}`, 220);
+      }
       await page.evaluate(() => {
         window.__vfxlab!.pause(true);
       });

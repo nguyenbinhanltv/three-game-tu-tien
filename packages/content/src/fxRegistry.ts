@@ -13,8 +13,6 @@ import fx_mon_cast from '../data/fx/mon_cast.json';
 import fx_mon_death from '../data/fx/mon_death.json';
 import fx_mon_face from '../data/fx/mon_face.json';
 import fx_mon_face_warn from '../data/fx/mon_face_warn.json';
-import fx_mon_hit from '../data/fx/mon_hit.json';
-import fx_mon_strike from '../data/fx/mon_strike.json';
 import fx_mon_warn from '../data/fx/mon_warn.json';
 import fx_mon_warn_cone from '../data/fx/mon_warn_cone.json';
 import fx_mon_warn_line from '../data/fx/mon_warn_line.json';
@@ -170,6 +168,18 @@ import fx_fx_dotpha_tc from '../data/fx/fx_dotpha_tc.json';
 import fx_fx_fly_off from '../data/fx/fx_fly_off.json';
 import fx_fx_fly_on from '../data/fx/fx_fly_on.json';
 import fx_fx_levelup from '../data/fx/fx_levelup.json';
+import fx_fx_hit_cut from '../data/fx/fx_hit_cut.json';
+import fx_fx_hit_smash from '../data/fx/fx_hit_smash.json';
+import fx_fx_hit_stab from '../data/fx/fx_hit_stab.json';
+import fx_fx_hit_crit from '../data/fx/fx_hit_crit.json';
+import fx_fx_hit_block from '../data/fx/fx_hit_block.json';
+import fx_fx_hit_mon from '../data/fx/fx_hit_mon.json';
+import fx_fx_hit_bite from '../data/fx/fx_hit_bite.json';
+import fx_fx_break from '../data/fx/fx_break.json';
+import fx_fx_evade from '../data/fx/fx_evade.json';
+import fx_fx_heal from '../data/fx/fx_heal.json';
+import fx_fx_potion from '../data/fx/fx_potion.json';
+import fx_fx_heal_tick from '../data/fx/fx_heal_tick.json';
 import fx_fx_kiep_kd from '../data/fx/fx_kiep_kd.json';
 import fx_fx_kiep_hn from '../data/fx/fx_kiep_hn.json';
 import fx_fx_kiep_na from '../data/fx/fx_kiep_na.json';
@@ -443,6 +453,18 @@ export const FX_TIMELINES = [
   fx_fx_dotpha_na,
   fx_fx_dotpha_tc,
   fx_fx_levelup,
+  fx_fx_hit_cut,
+  fx_fx_hit_smash,
+  fx_fx_hit_stab,
+  fx_fx_hit_crit,
+  fx_fx_hit_block,
+  fx_fx_hit_mon,
+  fx_fx_hit_bite,
+  fx_fx_break,
+  fx_fx_evade,
+  fx_fx_heal,
+  fx_fx_potion,
+  fx_fx_heal_tick,
   fx_fx_fly_on,
   fx_fx_fly_off,
   fx_fx_kiep_hn,
@@ -567,8 +589,6 @@ export const MON_FX_TIMELINES = [
   fx_mon_death,
   fx_mon_face,
   fx_mon_face_warn,
-  fx_mon_hit,
-  fx_mon_strike,
   fx_mon_warn_cone,
   fx_mon_warn_line,
   fx_mon_warn,
