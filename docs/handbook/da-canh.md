@@ -7,6 +7,8 @@ Mục tiêu: trận đánh đọc rõ và đã tay ở góc camera 52°. Nền l
 ## Đã có
 
 - Cờ `?style=da` (`base/flags.ts`, loại trừ `painted`): mọi level lấy biến thể đêm của bộ mood riêng (`moodOf` ở `game/engine/levelLoad.ts`).
+- Mood theo loại trận (`game/engine/daMood.ts`, gọi từ `frameLoop.ts`): `daPreset` lấy preset đêm của level rồi hạ tương phản/bão hòa và nâng đáy đen (sàn sáng cho máy không có đèn lồng thật); tinh anh còn sống trong `DA_ELITE_R` m ngả đỏ sẫm nhẹ, boss trong `DA_BOSS_R` m đỏ sẫm rõ và sương dày hơn. Chỉ chỉnh uniform. Level có mood động riêng (khe Bắc Hoang, Vấn Đỉnh, Giới Trì) giữ cơ chế cũ.
+- Chụp so: `pnpm shots camiso --level van_lam --query style=da --out <thư mục>` (kịch bản `tieucanh` tự gắn `mood=` nên đè cờ).
 - Đòn thường là chuỗi hành động (bật cho mọi người, không sau cờ): mỗi đòn khóa theo `ComboHit.lock`, server giữ một lệnh bấm sớm `COMBO_BUFFER_MS`, phòng ngự nhân theo `comboDefScale` (`packages/shared/src/skillrules.ts`, `apps/server/src/game/combat/index.ts`).
 
 - Bài security riêng: `SECURITY_ONLY=combo pnpm --filter @dtl/bot-client security [http://localhost:<PORT>]` (`apps/bot-client/src/security/combo.ts`): bấm dồn không vượt nhịp khóa, bộ đệm không cộng dồn, né xóa đòn đệm, lệnh rác không sập. Cũng chạy trong bộ đầy đủ.
