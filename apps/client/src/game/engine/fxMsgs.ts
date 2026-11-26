@@ -1396,11 +1396,15 @@ export function onSys(eng: Game, m: SysMsg): void {
 /** Cất/hạ cánh ngự kiếm (V-P10): cảnh `fx_fly_on`/`fx_fly_off` tại người đổi cờ bay. Cất cánh của mình đã phát ở `toggleFly` (dự đoán) nên bỏ qua. */
 export function flyFx(eng: Game, sid: string, flying: boolean, x: number, z: number): void {
   if (!eng.skillFx || (flying && sid === eng.sid) || Math.hypot(x - eng.renderPos.x, z - eng.renderPos.z) > 60) return;
+  const tl = flyTimeline(flying, sid === eng.sid);
+  if (tl) eng.skillFx.startFromFx(sid, tl);
+}
+
+/** Timeline cảnh cất/hạ cánh: người khác mờ còn ~50% để đông người cất/hạ cánh không rối (bản của mình giữ nguyên). */
+export function flyTimeline(flying: boolean, mine: boolean): FxTimeline | undefined {
   const id = flying ? 'fx_fly_on' : 'fx_fly_off';
   const tl = FX_TIMELINE.get(id);
-  if (!tl) return;
-  // Người khác: mờ còn ~50% để đông người cất/hạ cánh không rối (bản của mình giữ nguyên).
-  eng.skillFx.startFromFx(sid, sid === eng.sid ? tl : (dimmedFly.get(id) ?? dimFly(id, tl)));
+  return !tl || mine ? tl : (dimmedFly.get(id) ?? dimFly(id, tl));
 }
 
 const dimmedFly = new Map<string, FxTimeline>();

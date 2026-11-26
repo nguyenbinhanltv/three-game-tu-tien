@@ -10,6 +10,7 @@ import { FxMesh } from '../../render/materials/vfx';
 import { PARTICLES } from '../../render/vfx/particles';
 import { evictSpriteGroups, residentSpriteGroups } from '../../render/vfx/art';
 import type { Game } from '../engine';
+import { flyTimeline } from '../engine/fxMsgs';
 
 /** Trạng thái điều khiển thời gian, đọc bởi vòng khung (`labDt`). */
 const state = { scale: 1, paused: false, stepSec: 0 };
@@ -135,6 +136,9 @@ export const LAB_SCENES = {
   lab_loi_big: { delay: 3 },
   /** Kiếp vân trên đầu, giữ 12 s. */
   lab_kiep_van: { delay: 0 },
+  /** Cất/hạ cánh của NGƯỜI KHÁC (bản mờ ~50%), cách người chơi 3 m sang phải màn hình; mốc 0 = lúc phát. */
+  lab_fly_on_other: { delay: 0 },
+  lab_fly_off_other: { delay: 0 },
 } as const;
 
 function labScene(g: Game, id: keyof typeof LAB_SCENES, onHazard?: (g: Game, m: HazardMsg) => void): boolean {
@@ -143,6 +147,7 @@ function labScene(g: Game, id: keyof typeof LAB_SCENES, onHazard?: (g: Game, m: 
     sid: string;
     camYaw: number;
     monFx: { bypass: boolean } | null;
+    skillFx: { runner: { startAt(tl: object, o: object): void } } | null;
     vfx: {
       tribulationCloud(
         pos: (out: { set(x: number, y: number, z: number): unknown }) => boolean,
@@ -159,6 +164,18 @@ function labScene(g: Game, id: keyof typeof LAB_SCENES, onHazard?: (g: Game, m: 
       () => true,
       20261126,
     );
+    return true;
+  }
+  if (id === 'lab_fly_on_other' || id === 'lab_fly_off_other') {
+    const tl = flyTimeline(id === 'lab_fly_on_other', false);
+    if (!tl) return false;
+    gg.skillFx?.runner.startAt(tl, {
+      actor: { x: gg.cur.x + Math.cos(gg.camYaw) * 3, y: gg.cur.y, z: gg.cur.z - Math.sin(gg.camYaw) * 3, yaw: 0, model: {} },
+      palette: tl.palette,
+      tgt: null,
+      mul: 1,
+      mine: false,
+    });
     return true;
   }
   if (!onHazard) return false;

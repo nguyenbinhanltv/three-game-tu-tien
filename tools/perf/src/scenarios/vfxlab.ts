@@ -19,7 +19,14 @@ const DEFAULT_MON = 'elite_liet_cot_bao';
 const STEP_MS = 10;
 
 /** Mốc 0 (giây sau lúc phát) của các cảnh thử độ kiếp; GIỮ KHỚP `LAB_SCENES` ở client (tools/perf không import mã client). */
-const LAB_DELAY: Record<string, number> = { lab_loi: 1.25, lab_loi_hot: 1.25, lab_loi_big: 3, lab_kiep_van: 0 };
+const LAB_DELAY: Record<string, number> = {
+  lab_loi: 1.25,
+  lab_loi_hot: 1.25,
+  lab_loi_big: 3,
+  lab_kiep_van: 0,
+  lab_fly_on_other: 0,
+  lab_fly_off_other: 0,
+};
 
 interface CardBudget {
   budget: { drawCalls: number; particles: number; screenCover: number; overdraw: number };
