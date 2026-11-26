@@ -1,0 +1,46 @@
+{
+  "skillId": "fx_dotpha_tc",
+  "idea": "Đột phá Trúc Cơ \"dựng nền\": linh khí như khói mực xoáy thu vào người, rồi BỐN phiến đá mực nhọn trồi nghiêng lên quanh chân như móng đài vừa đúc (mỗi phiến một cỡ, khe nứt phát sáng vàng kim), giữa các phiến một cuộn khói mực vàng bốc thẳng lên cao gấp ba người rồi rách mỏng dần. Lõi mực nâu-ô liu rất tối, thân vàng kim, mép kem sáng, điểm lam ngọc trong khe nứt. Không vòng rune, không sao tỏa tia.",
+  "element": "tho",
+  "path": "",
+  "scene": {
+    "palette": {
+      "core": "453a08",
+      "body": "e6c84a",
+      "rim": "fff4c8",
+      "accent": "3fb8d8",
+      "shadow": "221d05"
+    },
+    "impactAt": 0.55
+  },
+  "shapeLang": [
+    "spike",
+    "cloud"
+  ],
+  "timing": {
+    "anticipationMs": 550,
+    "impactMs": 90,
+    "lingerMs": 1800
+  },
+  "footprint": {
+    "lengthM": 6,
+    "widthM": 6,
+    "heightM": 6
+  },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": {
+    "drawCalls": 11,
+    "particles": 400,
+    "screenCover": 0.1,
+    "overdraw": 6
+  },
+  "textures": [],
+  "silhouette": "bốn phiến đá mực nhọn trồi nghiêng quanh chân như móng đài, giữa là một cuộn khói mực bốc thẳng đứng",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles",
+    "crack"
+  ]
+}

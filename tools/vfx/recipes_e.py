@@ -14,40 +14,7 @@ def register(R, H):
             e['thick'] = thick
         return e
 
-    # ---------- Đột phá cảnh giới ----------
-    def dotpha(tid, pal, when, r, col_h, halo):
-        def make():
-            ev = [
-                decal('rune', -0.2, r, 3.2, at='self', offset=[0, -1.15, 0], grow=0.5, tone='core', alpha=0.95, tier=0),
-                decal('rune', -0.1, r * 0.7, 3.0, at='self', offset=[0, -1.15, 0], grow=0.6, tone='body', alpha=0.6, yaw=17, tier=1),
-                mesh('ripple', 0.0, 1.3, at='self', offset=[0, -1.1, 0], scale=0.3, scaleTo=min(r * 0.75, 5.5), sweep=0.4, erodeFrom=0.45, ragged=0.5, tone='core', alpha=0.9, seed=2, tier=0),
-                mesh('ripple', 0.12, 1.1, at='self', offset=[0, -1.0, 0], scale=0.3, scaleTo=min(r * 0.55, 4.5), sweep=0.4, erodeFrom=0.45, tone='rim', alpha=0.75, seed=3, tier=1),
-                # Cột sáng có lõi sẫm: hai dải xoắn ngược chiều (lõi sẫm + thân sáng) dựng quanh người.
-                mesh('helix', 0.0, 2.8, at='self', offset=[0, -1.1, 0], rot=[-90, 0, 0], scale=[1.6, 1.6, col_h], sweep=0.3, erodeFrom=0.6, spin=260, follow=True, tone='core', alpha=0.9, seed=4, tier=0),
-                mesh('helix', 0.05, 2.7, at='self', offset=[0, -1.1, 0], rot=[-90, 0, 0], scale=[2.2, 2.2, col_h * 0.85], sweep=0.3, erodeFrom=0.6, spin=-200, follow=True, tone='body', alpha=0.85, seed=5, tier=0),
-                mesh('helix', 0.1, 2.5, at='self', offset=[0, -1.1, 0], rot=[-90, 0, 0], scale=[3.0, 3.0, col_h * 0.6], sweep=0.3, erodeFrom=0.6, spin=140, follow=True, tone='rim', alpha=0.6, seed=6, tier=1),
-                mesh('burst', 0.0, 0.11, at='self', scale=2.2, billboard=True, sweep=0.0, tone='rim', tier=0),
-                *ring_spikes(8, r * 0.28, 0.0, 'self', 0.6, 1.6, tier=1, y=-1.15, tilt=-12, stagger=0.04),
-                parts('spark', 0.0, 80, 3.2, 1, 2.2, 0.08, at='self', offset=[0, -0.5, 0], grav=-2.2, tone='accent', tier=0),
-                parts('spark', 0.1, 50, 1.8, 1, 2.4, 0.07, at='self', offset=[0, -0.5, 0], grav=-3.0, tone='rim', tier=1),
-                flash(0.0, 0.1, tier=1),
-                shake(0.0, 0.2, tier=1),
-                cam(-0.1, 0.1, 2.4),
-            ]
-            if halo:
-                ev += [mesh('ripple', 0.2, 2.4, at='self', offset=[0, 3.6, 3.5], rot=[90, 0, 0], scale=halo, sweep=0.4, erodeFrom=0.7, ragged=0.2, tone='accent', alpha=0.85, seed=7, tier=0),
-                       mesh('ripple', 0.3, 2.3, at='self', offset=[0, 3.6, 3.6], rot=[90, 0, 0], scale=halo * 0.7, sweep=0.4, erodeFrom=0.7, ragged=0.2, tone='rim', alpha=0.8, seed=8, tier=1)]
-            tl = {'skill': tid, 'trigger': 'fx', 'fxKind': 'ascend', 'palette': pal, 'replaces': ['ascend'], 'events': ev}
-            if when:
-                tl['when'] = when
-            return tl
-        return make
-
-    R['fx_dotpha_tc'] = dotpha('fx_dotpha_tc', 'dotpha_tc', None, 7.0, 14.0, 0)
-    R['fx_dotpha_kd'] = dotpha('fx_dotpha_kd', 'dotpha_kd', 'ket_dan', 9.0, 18.0, 2.0)
-    R['fx_dotpha_na'] = dotpha('fx_dotpha_na', 'dotpha_na', 'nguyen_anh', 11.0, 22.0, 2.6)
-    # Hóa Thần (E4-D): vàng sao nhạt (bảng dotpha_hn), vòng trận lớn hơn một chút, vầng hào quang sau gáy.
-    R['fx_dotpha_hn'] = dotpha('fx_dotpha_hn', 'dotpha_hn', 'hoa_than', 12.0, 24.0, 3.0)
+    # Đột phá cảnh giới + lên tầng: từ V-P10 do `node tools/vfx-forge/dot-pha.mjs` sinh (sprite vẽ tay Họa Pháp Lô 2); không còn ở đây.
 
     # ---------- Độ kiếp: khởi vòng trận lôi văn + sét mảnh nối tiếp (mây kiếp cũ giữ nguyên) ----------
     def kiep(tid, pal, when, r, nbolt):

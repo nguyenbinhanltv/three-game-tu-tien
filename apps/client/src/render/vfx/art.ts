@@ -38,6 +38,8 @@ export const SPRITE_GROUPS = {
   guong: { file: 'hoa-truc/vfx_sprites_guong.ab4d31a334.webp', cols: 4, rows: 4 },
   dong: { file: 'hoa-truc/vfx_sprites_dong.508bc97f8f.webp', cols: 4, rows: 6 },
   kieu: { file: 'hoa-truc/vfx_sprites_kieu.27c9c1ffe4.webp', cols: 4, rows: 6 },
+  // V-P10: cảnh đột phá (lên tầng + bốn cảnh giới), tranh đơn sắc tô theo bảng màu timeline; chỉ nạp khi có người đột phá.
+  dp: { file: 'hoa-truc/vfx_sprites_dp.c0b797988b.webp', cols: 4, rows: 4 },
 } as const;
 export type SpriteGroup = keyof typeof SPRITE_GROUPS;
 /** Hướng tu (`PATHS[].id`) → nhóm atlas của nó. Thêm một dòng khi thêm hướng mới. */
