@@ -2,7 +2,7 @@
 // 720p + 1080p, dừng thời gian bằng `window.__animlab` để khung đúng từng mili giây; đo CPU xương (mục `anim` của FrameBudget) lúc đứng yên và lúc chạy;
 // tùy chọn đặt ảnh tham chiếu cạnh khung đỉnh đòn, và quay clip thời gian thật (đứng, chạy, từng chiêu) để so trước/sau (`--thanphap 0|1`).
 // Dùng: pnpm shots animlab --out <thư mục tuyệt đối> [--pose kiem_khi_tram,phi_kiem,thien_kiem_vu] [--cams iso,close] [--sizes 720p,1080p] [--thanphap 1]
-//        [--ref <ảnh>] [--clip 1] [--cpu 1] [--gender m|f] [--times 0.1,0.2,...] [--clip-size 720p|1080p] [--fx impulse=0,loco=0,...] [--stills tp1b|tp2|tp2mon|b3|ref] [--set <bộ>] [--stills-size 720p|1080p] [--cutin <id chiêu> [--cutin-at 0.12,0.3,...]]
+//        [--ref <ảnh>] [--clip 1] [--cpu 1] [--gender m|f] [--method <id công pháp>] [--times 0.1,0.2,...] [--clip-size 720p|1080p] [--fx impulse=0,loco=0,...] [--stills tp1b|tp2|tp2mon|b3|ref] [--set <bộ>] [--stills-size 720p|1080p] [--cutin <id chiêu> [--cutin-at 0.12,0.3,...]]
 import path from 'node:path';
 import sharp from 'sharp';
 import { list, opt } from '../lib/env';
@@ -42,7 +42,7 @@ async function run(r: Run, poses: string[], cams: string[], sizes: string[]): Pr
     seenIntro: true,
     look: { g: opt('--gender', 'm') },
     extra: opt('--query', ''),
-    query: { realm: 'nk12', god: 1, chr: 'v3', animlab: 1, quiet: 1, thanphap: opt('--thanphap', '0') === '1' ? 1 : undefined },
+    query: { realm: 'nk12', god: 1, chr: 'v3', animlab: 1, quiet: 1, thanphap: opt('--thanphap', '1') === '1' ? 1 : 0 },
     ...(clip ? { video: path.join(r.out, 'clip') } : {}),
     hide: opt('--cutin', '') ? undefined : 'hud',
   });
@@ -55,8 +55,10 @@ async function run(r: Run, poses: string[], cams: string[], sizes: string[]): Pr
   await gm(page, 'level 32', 1500);
   await gm(page, 'tp 2048 2095', 1800);
   await gm(page, 'spawn clear', 1400);
+  // `--method <id công pháp>`: chọn hướng tu (vd. bat_dong_kim_than = Thể tu) để chụp pose của hướng khác.
+  if (opt('--method', '')) await gm(page, `method ${opt('--method', '')}`, 1500);
   await gm(page, 'cd', 1300);
-  const out: Record<string, unknown> = { thanphap: opt('--thanphap', '0') === '1', poses: {} };
+  const out: Record<string, unknown> = { thanphap: opt('--thanphap', '1') === '1', poses: {} };
   const stillsMode = opt('--stills', '');
   if (stillsMode) {
     // Ảnh tĩnh PNG (không quay video: video Playwright của game WebGPU ra khung trắng). Cắt quanh nhân vật ở tâm khung, phóng ×2.

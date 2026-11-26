@@ -165,6 +165,7 @@ import fx_fx_dotpha_kd from '../data/fx/fx_dotpha_kd.json';
 import fx_fx_dotpha_hn from '../data/fx/fx_dotpha_hn.json';
 import fx_fx_dotpha_na from '../data/fx/fx_dotpha_na.json';
 import fx_fx_dotpha_tc from '../data/fx/fx_dotpha_tc.json';
+import fx_fx_fly_off from '../data/fx/fx_fly_off.json';
 import fx_fx_fly_on from '../data/fx/fx_fly_on.json';
 import fx_fx_levelup from '../data/fx/fx_levelup.json';
 import fx_fx_hit_cut from '../data/fx/fx_hit_cut.json';
@@ -182,7 +183,6 @@ import fx_fx_st_burn from '../data/fx/fx_st_burn.json';
 import fx_fx_st_poison from '../data/fx/fx_st_poison.json';
 import fx_fx_st_slow from '../data/fx/fx_st_slow.json';
 import fx_fx_heal from '../data/fx/fx_heal.json';
-import fx_fx_mana from '../data/fx/fx_mana.json';
 import fx_fx_potion from '../data/fx/fx_potion.json';
 import fx_fx_heal_tick from '../data/fx/fx_heal_tick.json';
 import fx_fx_kiep_kd from '../data/fx/fx_kiep_kd.json';
@@ -473,10 +473,10 @@ export const FX_TIMELINES = [
   fx_fx_st_poison,
   fx_fx_st_slow,
   fx_fx_heal,
-  fx_fx_mana,
   fx_fx_potion,
   fx_fx_heal_tick,
   fx_fx_fly_on,
+  fx_fx_fly_off,
   fx_fx_kiep_hn,
   fx_fx_kiep_kd,
   fx_fx_kiep_na,

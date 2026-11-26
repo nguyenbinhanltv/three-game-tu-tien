@@ -148,6 +148,12 @@ export class HitFx {
     if (tl) this.play(tl, v, null, method ?? 'hit_chung', mine);
   }
 
+  /** Uống đan / nhận hồi từ vật phẩm (`FxMsg` `potion`): sen mực nhỏ nở ở chân, nhịp riêng với hồi theo chiêu. */
+  potion(v: HitPoint, mine: boolean, force = false): void {
+    const tl = this.ok('fx_potion', v, HIT_GAP.heal, mine, force);
+    if (tl) this.play(tl, v, null, 'hit_heal', mine);
+  }
+
   /** `v` vừa nhận hồi máu: lượng lớn nở búp sen (mốc nhấn 0,15 s), nhỏ chỉ chùm cánh sen. */
   heal(v: HitPoint, big: boolean, mine: boolean, force = false): void {
     const tl = big ? this.ok('fx_heal', v, HIT_GAP.heal, mine, force) : this.ok('fx_heal_tick', v, HIT_GAP.tick, mine, force);

@@ -413,6 +413,15 @@ export const FX_SPRITES = [
   'chung_ward',
   'chung_crack',
   'chung_eye',
+  // V-P10: nhóm atlas `ngu` (ngự kiếm: cất cánh, hạ cánh, vệt bay). Tranh đơn sắc, kiểu tô 12.
+  'ngu_blade',
+  'ngu_ring',
+  'ngu_gust',
+  'ngu_wake',
+  'ngu_puffs',
+  'ngu_dust',
+  'ngu_streak',
+  'ngu_wisp',
   // V-P10: nhóm atlas `kiep` (độ kiếp: mở kiếp, kiếp vân, chỗ sét đánh). Tranh đơn sắc, kiểu tô 12.
   'kiep_rift',
   'kiep_cloud',

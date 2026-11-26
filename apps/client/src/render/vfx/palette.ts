@@ -109,11 +109,11 @@ FX_PALETTE.dotpha_hn = { core: 0x423a12, body: 0xe6cf86, rim: 0xfff8de, accent: 
 FX_PALETTE.hit_chung = { core: 0x14161c, body: 0xb9c6d6, rim: 0xffffff, accent: 0xf0e6a8, shadow: 0x08090c };
 FX_PALETTE.hit_guard = { core: 0x10202e, body: 0x6fa8d0, rim: 0xeaf6ff, accent: 0xf0e6a8, shadow: 0x070d14 };
 FX_PALETTE.hit_heal = { core: 0x0c3324, body: 0x4fd69a, rim: 0xeafff2, accent: 0xf4e9a0, shadow: 0x06160f };
-FX_PALETTE.hit_mana = { core: 0x0c1c4a, body: 0x4f8cf0, rim: 0xe2efff, accent: 0xb9a8ff, shadow: 0x060c22 };
 FX_PALETTE.st_poison = { core: 0x1c1230, body: 0x9bd05a, rim: 0xf0ffd0, accent: 0xc9a8ff, shadow: 0x0a0614 };
 FX_PALETTE.st_burn = { core: 0x1a1410, body: 0xe8d27a, rim: 0xfff6d0, accent: 0xffffff, shadow: 0x0c0a06 };
 FX_PALETTE.hit_dich = { core: 0x2a1030, body: 0xa04ad8, rim: 0xf3e2ff, accent: 0xf0e6a8, shadow: 0x12061a };
 FX_PALETTE.than_hanh = { core: 0x0a3f5e, body: 0x2cc7dc, rim: 0xdff8ff, accent: 0xf3c860, shadow: 0x08202e };
+FX_PALETTE.ngu_kiem = { core: 0x0a3f5e, body: 0x2cc7dc, rim: 0xdff8ff, accent: 0x9fe8c8, shadow: 0x08202e };
 
 /** Mặc định: bảng của hướng tu đầu tiên (Kiếm tu). */
 const FX_PALETTE_DEFAULT = FX_PALETTE[PATHS[0]!.methods[0]!]!;
