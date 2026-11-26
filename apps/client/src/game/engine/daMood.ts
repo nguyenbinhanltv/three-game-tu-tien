@@ -12,6 +12,12 @@ import type { Game } from '../engine';
 /** Bán kính (m) quanh người chơi để một tinh anh/boss còn sống đổi mood. */
 export const DA_ELITE_R = 28;
 export const DA_BOSS_R = 45;
+/** Màu "lửa lạnh" của đèn đá ở Dạ Cảnh và hệ số cường độ đèn thật so với đêm gốc. */
+export const DA_FLAME = 0x8fc4ff;
+export const DA_LAMP_K = 0.45;
+/** Hệ số nắng trăng và ánh trời của nền Dạ Cảnh so với đêm gốc của level. */
+export const DA_SUN = 0.62;
+export const DA_SKY = 0.7;
 /** Màu sương/trời của trận tinh anh và boss (đỏ sẫm, không phải đỏ vạch báo: rất tối, chỉ nhuộm nền). */
 const ELITE_FOG = 0x2a1420;
 const BOSS_FOG = 0x30080f;
@@ -24,8 +30,11 @@ const BOSS_SKY = 0x3a0e16;
 export function daPreset(base: GradingPreset, wElite: number, wBoss: number): GradingPreset {
   const p = mixPreset(base, base, 0);
   p.contrast *= 0.92;
-  p.saturation *= 0.88;
-  p.exposure *= 1.04;
+  p.saturation *= 0.82;
+  // Nền lùi lại: bớt nắng trăng và ánh trời (nhân vật tô chia bậc theo MÀU GỐC nên không tối theo, tự nổi lên trên nền).
+  p.sunIntensity *= DA_SUN;
+  p.skyIntensity *= DA_SKY;
+  p.exposure *= 1.02;
   p.blackLift = mixHex(p.blackLift, 0x1a2436, 0.35);
   const e = Math.min(1, Math.max(0, wElite)) * (1 - Math.min(1, Math.max(0, wBoss)));
   const b = Math.min(1, Math.max(0, wBoss));

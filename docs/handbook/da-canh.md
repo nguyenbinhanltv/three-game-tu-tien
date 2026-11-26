@@ -15,6 +15,19 @@ Mục tiêu: trận đánh đọc rõ và đã tay ở góc camera 52°. Nền l
 
 - Bài security riêng: `SECURITY_ONLY=combo pnpm --filter @dtl/bot-client security [http://localhost:<PORT>]` (`apps/bot-client/src/security/combo.ts`): bấm dồn không vượt nhịp khóa, bộ đệm không cộng dồn, né xóa đòn đệm, lệnh rác không sập. Cũng chạy trong bộ đầy đủ.
 
+## Lạc Kiếm Tông (bản đồ đầu tiên được thiết kế lại để so sánh)
+
+Người dùng chốt 27/11: thiết kế lại MỘT bản đồ theo chất game tham khảo trước khi làm rộng. Đề cương, đánh dấu phần đã làm:
+
+1. [x] Nền lùi lại: `daPreset` bớt nắng trăng (`DA_SUN`) và ánh trời (`DA_SKY`), hạ bão hòa; nhân vật tô chia bậc theo màu gốc nên tự nổi trên nền.
+2. [x] Đèn đá thành "lửa lạnh" (`DA_FLAME`, quầng nhỏ, đèn thật × `DA_LAMP_K`): điểm sáng dẫn đường, không rọi ấm cả sân.
+3. [ ] Lớp tối quanh trận (mặt đất quanh vùng đánh hạ tương phản thêm) để vạch báo và chiêu nổi.
+4. [ ] Rim + fill cho đạo cụ và kiến trúc xa để khối không chìm vào nền.
+5. [ ] Bố cục: phía gần camera chỉ để vật thấp; thêm điểm nhấn phát sáng (đốm linh khí, rêu sáng) theo bảng màu hẹp của khu.
+6. [ ] Quái ở Vân Lam: tô chia bậc + mắt hoặc điểm phát sáng làm dấu nhận diện.
+
+Số đo viền mực (27/11, `pnpm shots herolight --bots 8 --view 1080p`, một mẫu): draw call 129 → 137, tam giác 1,01 → 1,24 triệu, thời gian khung 10,2 → 10,7 ms. Việc cần làm: cho vỏ viền dùng lưới LOD thấp hơn để bớt tam giác.
+
 ## Lộ trình
 
 D0 mood đêm và trang thử → D1 lát cắt (Lạc Kiếm Tông đêm, Kiếm tu, một tinh anh, boss Kiếm Trủng: viền mực, rim theo trạng thái, lớp tối quanh trận, vệt chém theo vùng trúng, rung, số sát thương, đòn thường cận chiến) → D2 chuỗi đòn cho 8 lối tu còn lại → D3 mood mọi bản đồ → D4 UI và âm thanh → D5 thành mặc định.
