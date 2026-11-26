@@ -641,7 +641,8 @@ export function buildLevelB(eng: Game, id: string, q: (typeof QUALITY)[string]):
     eng.scene.add(eng.godRays.mesh);
   }
   // Họa Cảnh: cỏ lá mảnh thay bụi cỏ thường ở level dùng bụi lá thủ tục (level dùng thẻ cỏ khô/đảo giữ nguyên)
-  const cards = levelAssets(id).grassCards;
+  // Thiên Khuyết (Họa Cảnh): thẻ `grass-night` xanh lam sẫm lạc tông với đất ocher (đêm thành xanh hoàng gia): dùng thẻ cỏ khô `grass-ochre` của Đoạn Mạch
+  const cards = FLAGS.style === 'painted' && id === 'thien_khuyet' ? 'grass-ochre' : levelAssets(id).grassCards;
   eng.grass = FLAGS.style === 'painted' && !cards ? new PaintedGameField() : new Grass(cards);
   eng.grass.setQuality(get().quality, q.shadows);
   eng.grass.setEnabled(F.grass);
