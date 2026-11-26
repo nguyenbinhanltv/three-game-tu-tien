@@ -51,7 +51,8 @@ export function telegraph(v: Vfx, m: HazardMsg, boss = false, danger: 0 | 1 | 2 
         _p.y = groundAt(_p.x, _p.z) + 0.6;
         v.burst(_p, light, rect ? (m.w ?? 2) * 0.9 : 1 + d * 0.35, 0.35);
         // Tia quét của thiên kiếp (vạch sét): mỗi chớp kèm một tia đánh thật; lôi hỏa nhuốm cam.
-        if (m.kind === 'lightning') v.lightning(_p.x, _p.y - 0.6, _p.z, m.hot ? HOT_BOLT_CORE : 0xe2d4ff, 0.9, (m.sd ?? 7) + i * 131, 0, 1, undefined, true);
+        if (m.kind === 'lightning')
+          v.lightning(_p.x, _p.y - 0.6, _p.z, m.hot ? HOT_BOLT_CORE : 0xe2d4ff, 0.9, (m.sd ?? 7) + i * 131, 0, 1, undefined, true);
       }
     },
   );
