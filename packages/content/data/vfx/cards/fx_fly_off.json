@@ -1,0 +1,45 @@
+{
+  "skillId": "fx_fly_off",
+  "idea": "Ngự kiếm hạ cánh: kiếm thu về lưng thành một vệt sáng ngắn, vành gió ép xuống đất bung ra thành vòng bụi thấp rách, vài cụm mây bụi tan nhanh. Lõi mực lam thẫm, thân lam ngọc, mép trắng lạnh. Không rune, không sao tỏa tia.",
+  "element": "kim",
+  "path": "",
+  "scene": {
+    "palette": {
+      "core": "0a3f5e",
+      "body": "2cc7dc",
+      "rim": "dff8ff",
+      "accent": "9fe8c8",
+      "shadow": "08202e"
+    },
+    "impactAt": 0.2
+  },
+  "shapeLang": [
+    "line",
+    "cloud"
+  ],
+  "timing": {
+    "anticipationMs": 200,
+    "impactMs": 90,
+    "lingerMs": 600
+  },
+  "footprint": {
+    "lengthM": 4.5,
+    "widthM": 4.5,
+    "heightM": 2
+  },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": {
+    "drawCalls": 9,
+    "particles": 200,
+    "screenCover": 0.15,
+    "overdraw": 5
+  },
+  "textures": [],
+  "silhouette": "vòng bụi gió thấp rách quanh chân, một vệt kiếm ngắn bay về lưng",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles"
+  ]
+}

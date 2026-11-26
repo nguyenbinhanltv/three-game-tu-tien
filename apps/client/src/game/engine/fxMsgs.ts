@@ -31,7 +31,7 @@ import {
   strikeTier,
 } from '@dtl/shared';
 import { groundAt } from '../../base/levelCtx';
-import { ITEM, METHOD_SKILLS, MONSTER, t } from '@dtl/content';
+import { FX_TIMELINE, ITEM, METHOD_SKILLS, MONSTER, t } from '@dtl/content';
 import {
   MON_AURA_DUONG,
   MON_AURA_FACE,
@@ -1390,4 +1390,11 @@ export function onSys(eng: Game, m: SysMsg): void {
     eng.wantFly = false;
     set({ wantFly: false });
   }
+}
+
+/** Cất/hạ cánh ngự kiếm (V-P10): cảnh `fx_fly_on`/`fx_fly_off` tại người đổi cờ bay. Cất cánh của mình đã phát ở `toggleFly` (dự đoán) nên bỏ qua. */
+export function flyFx(eng: Game, sid: string, flying: boolean, x: number, z: number): void {
+  if (!eng.skillFx || (flying && sid === eng.sid) || Math.hypot(x - eng.renderPos.x, z - eng.renderPos.z) > 60) return;
+  const tl = FX_TIMELINE.get(flying ? 'fx_fly_on' : 'fx_fly_off');
+  if (tl) eng.skillFx.startFromFx(sid, tl);
 }

@@ -103,6 +103,7 @@ FX_PALETTE.dotpha_na = { core: 0x2a1458, body: 0x8f78e8, rim: 0xf0eaff, accent: 
 // Hóa Thần (E4-D): vàng sao nhạt, lõi nâu trầm, điểm nhấn lam băng; dùng cho đột phá và thế thân thần niệm.
 FX_PALETTE.dotpha_hn = { core: 0x423a12, body: 0xe6cf86, rim: 0xfff8de, accent: 0xaee0ff, shadow: 0x211d09 };
 FX_PALETTE.than_hanh = { core: 0x0a3f5e, body: 0x2cc7dc, rim: 0xdff8ff, accent: 0xf3c860, shadow: 0x08202e };
+FX_PALETTE.ngu_kiem = { core: 0x0a3f5e, body: 0x2cc7dc, rim: 0xdff8ff, accent: 0x9fe8c8, shadow: 0x08202e };
 
 /** Mặc định: bảng của hướng tu đầu tiên (Kiếm tu). */
 const FX_PALETTE_DEFAULT = FX_PALETTE[PATHS[0]!.methods[0]!]!;

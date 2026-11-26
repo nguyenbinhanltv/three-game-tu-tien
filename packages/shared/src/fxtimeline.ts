@@ -387,6 +387,15 @@ export const FX_SPRITES = [
   'dp_mantle',
   'dp_wisp',
   'dp_crack',
+  // V-P10: nhóm atlas `ngu` (ngự kiếm: cất cánh, hạ cánh, vệt bay). Tranh đơn sắc, kiểu tô 12.
+  'ngu_blade',
+  'ngu_ring',
+  'ngu_gust',
+  'ngu_wake',
+  'ngu_puffs',
+  'ngu_dust',
+  'ngu_streak',
+  'ngu_wisp',
 ] as const;
 export type FxSprite = (typeof FX_SPRITES)[number];
 
