@@ -23,6 +23,13 @@ def parts(kind, t, n, speed, spread, life, size, **k):
     return e
 
 
+def sprite(name, t, dur, **k):
+    # Sprite vẽ tay nhóm `chung` (HPL2, tranh đơn sắc tô theo bảng màu của quái): thay hình `burst` (sao tỏa tia) ở đạn nổ / quái gục. `scale` = nửa cạnh ô (m).
+    e = {'type': 'mesh', 'shape': 'sprite', 'sprite': name, 'billboard': True, 't': t, 'dur': dur, 'sweep': 0.0}
+    e.update(k)
+    return e
+
+
 def decal(tex, t, r, dur, **k):
     e = {'type': 'decal', 'tex': tex, 't': t, 'r': r, 'dur': dur}
     e.update(k)
@@ -76,12 +83,6 @@ BOSS['mon_boom_cone'] = [
     parts('shard', 0.02, 16, 7.0, 0.5, 0.6, 0.14, at='area', offset=[0, 0.4, 1.0], tone='rim', grav=8, tier=1),
 ]
 
-# Đòn đánh người của boss: thêm vệt cào lớn viền sáng + mảnh.
-BOSS['mon_strike'] = [
-    mesh('crescent', -0.06, 0.26, at='target', rot=[0, 0, 18], scale=[2.2, 1.0, 2.9], scaleTo=[2.6, 1.0, 3.3], sweep=0.45, erodeFrom=0.4, ragged=0.95, tone='rim', alpha=0.9, seed=21, tier=1),
-    parts('shard', 0.0, 8, 4.5, 0.9, 0.5, 0.14, at='target', tone='accent', grav=8, tier=1),
-]
-
 # Niệm/chant của boss (2,4 s): triện văn lớn, gợn lặp, cột sáng tụ, khí hút vào dày.
 BOSS['mon_cast'] = [
     decal('rune', 0.0, 4.6, 2.4, at='self', grow=0.4, tone='core', alpha=1.0, yaw=15, tier=0, **START),
@@ -93,7 +94,7 @@ BOSS['mon_cast'] = [
 
 # Boss gục: ba gợn lớn, vòng gai vỡ, cột sáng bay lên, tro + cánh linh quang nhiều, vết nứt lớn.
 BOSS['mon_death'] = [
-    mesh('burst', 0.08, 0.2, at='self', scale=3.4, billboard=True, sweep=0.0, tone='accent', tier=0),
+    sprite('chung_snap', 0.08, 0.5, at='self', scale=1.6, scaleTo=2.4, erodeFrom=0.4, tone='rim', alpha=0.9, seed=46, tier=0),
     mesh('ripple', 0.2, 0.9, at='self', offset=[0, -1.0, 0], scale=0.3, scaleTo=3.6, sweep=0.4, erodeFrom=0.3, ragged=0.9, tone='rim', alpha=0.85, seed=18, tier=0),
     mesh('ripple', 0.4, 0.9, at='self', offset=[0, -1.0, 0], scale=0.3, scaleTo=4.4, sweep=0.4, erodeFrom=0.3, ragged=0.9, tone='accent', alpha=0.7, seed=19, tier=1),
     mesh('kite', 0.1, 1.2, at='self', offset=[0, -1.0, 0], rot=[-90, 0, 0], scale=[0.6, 0.6, 7.0], sweep=0.3, erodeFrom=0.4, tone='rim', alpha=0.7, seed=22, tier=1),
@@ -104,23 +105,7 @@ BOSS['mon_death'] = [
 ] + ring(6, 2.4, lambda i, x, z: mesh('spike', round(0.08 + 0.02 * i, 3), 0.8, at='self', offset=[x, -1.0, z], rot=[-90 if i % 2 else -78, 0, 0], scale=0.45, sweep=0.2, erodeFrom=0.5, tone='body', seed=120 + i, tier=1))
 
 
-# 1) Quái bị đánh: chớp nhỏ + tia + mảnh tinh thể theo hệ (rẻ: người chơi đánh liên tục).
-write('mon_hit', [
-    mesh('burst', 0.0, 0.14, at='target', scale=1.0, scaleTo=1.6, billboard=True, sweep=0.0, tone='rim', tier=0),
-    parts('spark', 0.0, 12, 5.5, 0.85, 0.35, 0.12, at='target', tone='rim', tier=0),
-    parts('shard', 0.0, 6, 3.8, 0.9, 0.55, 0.15, at='target', tone='body', grav=8, tier=1),
-])
-
-# 2) Đòn của quái trúng người: ba vệt cào mảnh mép rách (đỏ son là chủ, thân theo hệ nằm trong) khác hẳn vệt chém tròn to của người chơi;
-# chớp đỏ + tia + vết cháy nhẹ. Nhỏ hơn đòn người chơi để không lẫn.
-write('mon_strike', [
-    mesh('crescent', -0.04, 0.2, at='target', rot=[0, 0, 24], scale=[1.4, 1.0, 1.75], scaleTo=[1.6, 1.0, 2.0], sweep=0.45, erodeFrom=0.4, ragged=0.9, tone='accent', alpha=0.95, seed=3, tier=0),
-    mesh('crescent', -0.02, 0.2, at='target', offset=[0.25, 0.1, 0], rot=[0, 0, 36], scale=[1.1, 1.0, 1.45], scaleTo=[1.3, 1.0, 1.7], sweep=0.45, erodeFrom=0.4, ragged=0.9, tone='body', alpha=0.9, seed=5, tier=0),
-    mesh('crescent', 0.0, 0.18, at='target', offset=[-0.25, -0.05, 0], rot=[0, 0, 12], scale=[1.0, 1.0, 1.3], scaleTo=[1.2, 1.0, 1.5], sweep=0.45, erodeFrom=0.4, ragged=0.9, tone='accent', alpha=0.85, seed=9, tier=1),
-    mesh('burst', 0.0, 0.12, at='target', scale=0.9, billboard=True, sweep=0.0, tone='accent', tier=0),
-    parts('spark', 0.0, 10, 6.0, 0.7, 0.3, 0.08, at='target', tone='accent', tier=0),
-    decal('scorch', 0.0, 1.2, 1.2, at='target', grow=0.08, tone='core', alpha=0.5, tier=2),
-])
+# 1–2) Quái bị đánh / quái đánh trúng người: chuyển sang hình trúng đòn chung HPL2 (`fx_hit_*`, `tools/vfx-forge/trung-don.mjs`, `game/fx/hitFx.ts`).
 
 # 3) Quái niệm/tụ lực (chant, cast): triện văn dưới chân + khí hút vào tâm.
 write('mon_cast', [
@@ -176,19 +161,20 @@ write('mon_boom_cone', [
 
 # 8) Đạn đánh xa của quái: miệng nòng lúc bắn, và va chạm lúc tan.
 write('mon_bolt_muzzle', [
-    mesh('burst', 0.0, 0.14, at='ahead', scale=0.9, billboard=True, sweep=0.0, tone='rim', tier=0),
+    sprite('chung_puff', 0.0, 0.22, at='ahead', scale=0.35, scaleTo=0.7, erodeFrom=0.3, tone='body', alpha=0.8, seed=41, tier=0),
     parts('spark', 0.0, 8, 4.0, 0.5, 0.3, 0.08, at='ahead', tone='body', tier=0),
 ])
 write('mon_bolt_impact', [
-    mesh('burst', 0.0, 0.14, at='target', scale=1.1, billboard=True, sweep=0.0, tone='rim', tier=0),
-    mesh('ripple', 0.0, 0.4, at='target', offset=[0, -1.0, 0], scale=0.3, scaleTo=1.3, sweep=0.5, erodeFrom=0.4, ragged=0.7, tone='body', alpha=0.85, seed=4, tier=1),
+    sprite('chung_splat', 0.0, 0.26, at='target', scale=0.55, scaleTo=0.95, erodeFrom=0.4, tone='body', alpha=0.9, seed=42, tier=0),
+    sprite('chung_puff', 0.03, 0.4, at='target', offset=[0, 0.2, 0], scale=0.4, scaleTo=0.85, erodeFrom=0.3, tone='core', alpha=0.6, seed=43, tier=1),
     parts('spark', 0.0, 10, 5.0, 0.9, 0.35, 0.08, at='target', tone='rim', tier=0),
     parts('shard', 0.0, 6, 3.5, 0.9, 0.5, 0.1, at='target', tone='accent', grav=8, tier=1),
 ])
 
 # 9) Quái chết: tan thành hạt (tro bay lên, mảnh tinh thể rơi, cánh linh quang) + gợn + vết cháy; mực có sẵn (`monsterInk`) vẽ thêm. mul theo chiều cao.
 write('mon_death', [
-    mesh('burst', 0.0, 0.16, at='self', scale=1.5, billboard=True, sweep=0.0, tone='rim', tier=0),
+    sprite('chung_puff', 0.0, 0.7, at='self', scale=0.7, scaleTo=1.5, erodeFrom=0.3, tone='body', alpha=0.75, seed=44, move={'to': 'self', 'offset': [0, 0.9, 0], 'ease': 'out'}, tier=0),
+    sprite('chung_chips', 0.03, 0.3, at='self', scale=0.6, scaleTo=1.2, erodeFrom=0.3, tone='rim', alpha=0.85, seed=45, tier=1),
     mesh('ripple', 0.0, 0.6, at='self', offset=[0, -1.0, 0], scale=0.4, scaleTo=1.2, sweep=0.4, erodeFrom=0.4, ragged=0.8, tone='body', alpha=0.9, seed=6, tier=0),
     mesh('ripple', 0.12, 0.7, at='self', offset=[0, -1.0, 0], scale=0.3, scaleTo=1.6, sweep=0.4, erodeFrom=0.3, ragged=0.9, tone='accent', alpha=0.75, seed=7, tier=1),
     parts('dust', 0.0, 40, 1.8, 0.8, 1.5, 0.34, at='self', tone='body', grav=-1.4, tier=0),

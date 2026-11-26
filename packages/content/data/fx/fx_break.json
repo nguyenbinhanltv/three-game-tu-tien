@@ -1,0 +1,127 @@
+{
+  "skill": "fx_break",
+  "trigger": "fx",
+  "fxKind": "~break",
+  "palette": "hit_chung",
+  "events": [
+    {
+      "type": "mesh",
+      "shape": "sprite",
+      "sprite": "chung_snap",
+      "billboard": true,
+      "at": "target",
+      "t": 0,
+      "dur": 0.36,
+      "offset": [
+        0,
+        0,
+        0
+      ],
+      "scale": 1,
+      "scaleTo": 1.4,
+      "sweep": 0,
+      "erodeFrom": 0.5,
+      "ragged": 0.5,
+      "tone": "body",
+      "alpha": 0.95,
+      "tier": 0,
+      "seed": 2140
+    },
+    {
+      "type": "mesh",
+      "shape": "sprite",
+      "sprite": "chung_snap",
+      "billboard": true,
+      "at": "target",
+      "t": 0.03,
+      "dur": 0.09,
+      "offset": [
+        0,
+        0,
+        0
+      ],
+      "scale": 1.18,
+      "scaleTo": 1.37,
+      "sweep": 0,
+      "erodeFrom": 0.2,
+      "ragged": 0.5,
+      "tone": "rim",
+      "alpha": 0.85,
+      "tier": 1,
+      "seed": 2141
+    },
+    {
+      "type": "mesh",
+      "shape": "sprite",
+      "sprite": "chung_puff",
+      "billboard": true,
+      "at": "target",
+      "t": 0.03,
+      "dur": 0.4,
+      "offset": [
+        0,
+        0,
+        0
+      ],
+      "scale": 0.5,
+      "scaleTo": 0.95,
+      "sweep": 0,
+      "erodeFrom": 0.3,
+      "ragged": 0.5,
+      "tone": "core",
+      "alpha": 0.6,
+      "tier": 1,
+      "seed": 2142,
+      "move": {
+        "to": "target",
+        "offset": [
+          0,
+          0.4,
+          0
+        ],
+        "ease": "out"
+      }
+    },
+    {
+      "type": "particles",
+      "kind": "shard",
+      "t": 0,
+      "n": 2,
+      "speed": 4.5,
+      "spread": 0.9,
+      "life": 0.5,
+      "size": 0.11,
+      "at": "target",
+      "tone": "rim",
+      "tier": 0,
+      "grav": 9
+    },
+    {
+      "type": "particles",
+      "kind": "spark",
+      "t": 0.03,
+      "n": 2,
+      "speed": 6,
+      "spread": 1,
+      "life": 0.22,
+      "size": 0.06,
+      "at": "target",
+      "tone": "accent",
+      "tier": 1
+    },
+    {
+      "type": "particles",
+      "kind": "dust",
+      "t": 0.15,
+      "n": 1,
+      "speed": 0.6,
+      "spread": 0.5,
+      "life": 0.25,
+      "size": 0.1,
+      "at": "target",
+      "tone": "shadow",
+      "tier": 1,
+      "grav": 2
+    }
+  ]
+}
