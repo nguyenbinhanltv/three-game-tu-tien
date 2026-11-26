@@ -457,17 +457,15 @@ export class SkinnedCharacter implements CharacterView {
   knockdown(): void {
     if (this.dead) return;
     if (ANIM_FX.ragdoll && this.lodLevel === 0) this.ragOf()?.down(this.root.rotation.y, this.lastHitDir.dx, this.lastHitDir.dz);
-    if (!this.clips.has('knockdown')) return;
+    // Clip ngã/đứng dậy: bộ K-3 (`knockdown`/`getup`) hoặc UAL gốc của quái hình người Mannequin (`Hit_Knockback`/`LayToIdle`).
+    const down = this.clips.has('knockdown') ? 'knockdown' : this.clips.has('Hit_Knockback') ? 'Hit_Knockback' : null;
+    if (!down) return;
     this.stopPerform();
     this.pendingPerform = null;
     // Ngã chỉ là hình: ngã + nằm + đứng dậy gói trong KNOCK_TOTAL_S (cả hai clip phát cùng tốc độ), hủy khi server báo di chuyển/ra chiêu.
-    const up = this.clips.has('getup') ? 'getup' : undefined;
-    const rate = knockRate(
-      this.clips.get('knockdown')?.duration ?? 0,
-      up ? (this.clips.get('getup')?.duration ?? 0) : 0,
-      up ? KNOCK_LIE : 0,
-    );
-    this.playShot('hit', 'knockdown', rate, undefined, up, true);
+    const up = this.clips.has('getup') ? 'getup' : down === 'Hit_Knockback' && this.clips.has('LayToIdle') ? 'LayToIdle' : undefined;
+    const rate = knockRate(this.clips.get(down)?.duration ?? 0, up ? (this.clips.get(up)?.duration ?? 0) : 0, up ? KNOCK_LIE : 0);
+    this.playShot('hit', down, rate, undefined, up, true);
     if (this.shot) {
       this.shot.knock = true;
       this.shot.upRate = rate;
