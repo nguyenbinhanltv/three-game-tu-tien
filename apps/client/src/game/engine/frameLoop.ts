@@ -504,6 +504,8 @@ function updateCamera(eng: Game, dt: number): void {
     cz = tz + (cz - tz) * k;
     cy = Math.max(ty + (cy - ty) * k, groundAt(cx, cz) + 0.7 - (4 - i) * 0.5);
   }
+  // Dạ Cảnh: rung kiểu trauma (cộng dồn, bình phương, có lăn). Đặt mỗi khung để bật/tắt theo cờ mà không đụng nơi tạo.
+  eng.shake.trauma = FLAGS.style === 'da';
   eng.shake.update(dt, _shakePos, _shakeLook);
   const fc = FLAGS.debug || ANIM_LAB ? eng.freeCam : null;
   if (fc) {
@@ -517,6 +519,7 @@ function updateCamera(eng: Game, dt: number): void {
   }
   eng.camera.position.set(cx + _shakePos.x, cy + _shakePos.y, cz + _shakePos.z);
   eng.camera.lookAt(tx + _shakeLook.x, ty + _shakeLook.y, tz + _shakeLook.z);
+  if (eng.shake.roll !== 0) eng.camera.rotateZ(eng.shake.roll);
   const dfx = eng.deathFx.update(dt, ((eng.me()?.fl ?? 0) & PF_DEAD) !== 0);
   deathVisual(eng, dfx, tx, ty, tz);
   if (eng.cine.active) runCine(eng, dt);
