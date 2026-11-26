@@ -5,6 +5,7 @@ import * as THREE from 'three/webgpu';
 import {
   type DmgMsg,
   type FxMsg,
+  type FxTimeline,
   type HazardMsg,
   MF_SENSED,
   MF_REAL,
@@ -1395,6 +1396,16 @@ export function onSys(eng: Game, m: SysMsg): void {
 /** Cất/hạ cánh ngự kiếm (V-P10): cảnh `fx_fly_on`/`fx_fly_off` tại người đổi cờ bay. Cất cánh của mình đã phát ở `toggleFly` (dự đoán) nên bỏ qua. */
 export function flyFx(eng: Game, sid: string, flying: boolean, x: number, z: number): void {
   if (!eng.skillFx || (flying && sid === eng.sid) || Math.hypot(x - eng.renderPos.x, z - eng.renderPos.z) > 60) return;
-  const tl = FX_TIMELINE.get(flying ? 'fx_fly_on' : 'fx_fly_off');
-  if (tl) eng.skillFx.startFromFx(sid, tl);
+  const id = flying ? 'fx_fly_on' : 'fx_fly_off';
+  const tl = FX_TIMELINE.get(id);
+  if (!tl) return;
+  // Người khác: mờ còn ~50% để đông người cất/hạ cánh không rối (bản của mình giữ nguyên).
+  eng.skillFx.startFromFx(sid, sid === eng.sid ? tl : (dimmedFly.get(id) ?? dimFly(id, tl)));
+}
+
+const dimmedFly = new Map<string, FxTimeline>();
+function dimFly(id: string, tl: FxTimeline): FxTimeline {
+  const out: FxTimeline = { ...tl, events: tl.events.map((e) => (e.type === 'mesh' ? { ...e, alpha: (e.alpha ?? 0.95) * 0.5 } : e)) };
+  dimmedFly.set(id, out);
+  return out;
 }

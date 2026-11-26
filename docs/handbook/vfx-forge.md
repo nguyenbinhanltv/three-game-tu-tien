@@ -60,7 +60,7 @@ Hiệu ứng không thuộc chiêu hay hướng tu nào (đột phá, độ ki�
 
 ### Ngự kiếm (V-P10 đợt 3)
 
-- **Cất cánh** `fx_fly_on` và **hạ cánh** `fx_fly_off` (MỚI) sinh bằng `node tools/vfx-forge/ngu-kiem.mjs` (ghi đè cả file; công thức cũ trong `tools/vfx/recipes_e.py` đã bỏ). Sprite nhóm `ngu` (8 ô đơn sắc, kiểu tô 12), bảng màu `ngu_kiem` (lam ngọc, bạc hà, không cam). Cất cánh: phi kiếm phóng to trượt vào dưới chân → vành bụi gió rách bung ra ở mốc nhấn (+30 ms vệt kiếm sáng) → hai vệt gió xoắn quấn lên. Hạ cánh: kiếm thu về lưng thành vệt ngắn, vành gió ép xuống và bụi thấp rách.
+- **Cất cánh** `fx_fly_on` và **hạ cánh** `fx_fly_off` (MỚI) sinh bằng `node tools/vfx-forge/ngu-kiem.mjs` (ghi đè cả file; công thức cũ trong `tools/vfx/recipes_e.py` đã bỏ). Sprite nhóm `ngu` (8 ô đơn sắc, kiểu tô 12), bảng màu `ngu_kiem` (lam ngọc, bạc hà, không cam). Cất cánh (lặp rất thường nên nhỏ: cỡ ~65% concept, tổng ≤ 0,6 s): phi kiếm trượt vào dưới chân → vành bụi gió rách bung ra ở mốc nhấn (+30 ms vệt kiếm sáng) → một vệt gió xoắn quấn lên. Người khác thấy bản mờ còn ~50% (`dimFly` ở `flyFx`). Hạ cánh: kiếm thu về lưng thành vệt ngắn → nhịp va chạm (+30 ms mực/bụi bắn sát đất, vệt mực cháy đất) → xoáy nét cọ đứt tan.
 - Tranh nằm bẹt (vành bụi) vẫn là tấm billboard nên tâm đặt ở `FEET + GROUND × size × 0,55` (cắt một ít đáy trống thay vì nhấc vành lên ngang ngực).
 - **Cất cánh của mình** phát ngay ở `Game.toggleFly` (dự đoán). **Hạ cánh của mình và cả hai cảnh của người khác** suy từ cờ `PF_FLYING` đổi (`EntityManager.onFlyChange` → `flyFx` ở `apps/client/src/game/engine/fxMsgs.ts`), trong 60 m, bỏ qua lần đầu thấy người đó; không đổi giao thức.
 - Phòng thử: `pnpm shots vfxlab --skill fx_fly_on,fx_fly_off --at -200,0,30,150,400`.
