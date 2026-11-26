@@ -387,6 +387,15 @@ export const FX_SPRITES = [
   'dp_mantle',
   'dp_wisp',
   'dp_crack',
+  // V-P10: nhóm atlas `hq` (hào quang cảnh giới đứng yên). Tranh đơn sắc, kiểu tô 12.
+  'hq_dan',
+  'hq_smoke',
+  'hq_cloud',
+  'hq_cloud2',
+  'hq_orb',
+  'hq_mantle',
+  'hq_glyph',
+  'hq_wisp',
   // Trúng đòn chung (HPL2): nhóm atlas `chung` (vết va, chí mạng, chặn, né, cào/cắn, hồi máu/linh lực, ngắt chú). Tranh ĐƠN SẮC, kiểu tô 12 (theo bảng màu lúc phát: hướng tu người đánh / hệ quái).
   'chung_cut',
   'chung_smash',
