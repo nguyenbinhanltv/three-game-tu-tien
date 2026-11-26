@@ -20,6 +20,28 @@ export interface PathPalette {
   shadow: string;
 }
 
+export interface PathBasic {
+  range: number;
+  arc?: { r: number; deg: number; mul: number };
+}
+
+/**
+ * Điểm `(ox, oz)` có nằm trong cung trước mặt của người đứng ở `(px, pz)` nhìn theo hướng `(fx, fz)` không: cách ≤ `r + pad` và lệch hướng ≤ `deg / 2`.
+ * `pad` = bán kính thân mục tiêu (quái to dễ trúng hơn). Hướng không xác định (vector 0) thì chỉ xét khoảng cách.
+ */
+export function inArc(px: number, pz: number, fx: number, fz: number, ox: number, oz: number, r: number, deg: number, pad = 0): boolean {
+  const dx = ox - px;
+  const dz = oz - pz;
+  const d = Math.hypot(dx, dz);
+  if (d > r + pad) return false;
+  const fl = Math.hypot(fx, fz);
+  if (fl < 1e-6 || d < 1e-6) return true;
+  // Quái sát người (trong `pad`) luôn tính là trúng: thân nó đã chạm lưỡi dù tâm lệch góc.
+  if (d <= pad) return true;
+  const cos = (dx * fx + dz * fz) / (d * fl);
+  return cos >= Math.cos((Math.min(360, Math.max(0, deg)) * Math.PI) / 360);
+}
+
 export interface PathDef {
   id: string;
   role: MethodRole;
@@ -36,6 +58,12 @@ export interface PathDef {
   palette: PathPalette;
   /** Màu linh quang của chiêu (hex 6 ký tự). */
   tint: string;
+  /**
+   * Đòn thường riêng của hướng (Dạ Cảnh): áp cho chuỗi đòn thường (chiêu có `combo`) của người tu hướng này. `range` thay tầm chiêu (cận chiến:
+   * phải áp sát); `arc` = đòn chém quét: mọi quái khác trong cung trước mặt (bán kính `r` m, góc mở `deg`°, tính theo hướng người đánh → mục tiêu
+   * lúc trúng) nhận `mul` lần đòn chính. Không có = đòn thường mặc định (đơn mục tiêu, tầm của chiêu).
+   */
+  basic?: PathBasic;
   /** Lớp tiếng chồng lên tiếng trúng đòn; `strongOnly`: chỉ với đòn mạnh. */
   hit?: { sfx: string; gain: number; rate: number; strongOnly?: boolean };
   /**
