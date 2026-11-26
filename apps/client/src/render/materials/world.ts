@@ -4,14 +4,19 @@ import {
   cameraNear,
   diffuseColor,
   float,
+  luminance,
   mix,
+  normalLocal,
   normalView,
   normalWorld,
+  output,
+  positionLocal,
   positionView,
   positionViewDirection,
   smoothstep,
   uniform,
   vec3,
+  vec4,
   viewZToPerspectiveDepth,
 } from 'three/tsl';
 import { rimParams } from '../atmosphere';
@@ -97,6 +102,40 @@ export function cloneWorldMaterial(src: THREE.MeshStandardNodeMaterial): THREE.M
   return m;
 }
 
+/** Ba bậc sáng của kiểu tô Dạ Cảnh (tỉ lệ so với màu gốc): bóng, thân, sáng; và hai ngưỡng chuyển bậc (nửa bề rộng mép `TOON_SOFT`). */
+export const TOON_LEVELS = [0.34, 0.7, 1.08] as const;
+export const TOON_EDGES = [0.42, 0.86] as const;
+export const TOON_SOFT = 0.03;
+/** Tỉ lệ sáng từ mức này trở lên (viền sáng, đèn mạnh) được cộng nguyên phần vượt, không bị ép về bậc sáng nhất. */
+export const TOON_HILITE = 1.25;
+
+/** Bậc sáng (thuần số, cùng công thức với shader) của một tỉ lệ sáng `r` = độ sáng sau chiếu sáng / độ sáng màu gốc. */
+export function toonLevel(r: number): number {
+  const ss = (e: number) => {
+    const x = Math.min(1, Math.max(0, (r - (e - TOON_SOFT)) / (2 * TOON_SOFT)));
+    return x * x * (3 - 2 * x);
+  };
+  const a = TOON_LEVELS[0] + (TOON_LEVELS[1] - TOON_LEVELS[0]) * ss(TOON_EDGES[0]);
+  return a + (TOON_LEVELS[2] - a) * ss(TOON_EDGES[1]);
+}
+
+/**
+ * Tô bóng CHIA BẬC cho nhân vật/quái ở Dạ Cảnh (`?style=da`): giữ nguyên texture và mọi đường chiếu sáng PBR, chỉ lượng tử hóa ĐỘ SÁNG của kết quả
+ * so với màu gốc thành ba bậc có mép ngắn (không răng cưa). Sắc của ánh sáng (nắng, trời, đèn lồng) và phần viền sáng `rimLight` được giữ.
+ * Không thêm draw call hay texture. Ngoại lệ của Dạ Cảnh so với art bible v3 (xem docs/handbook/da-canh.md).
+ */
+export function toonBands(m: THREE.MeshStandardNodeMaterial): THREE.MeshStandardNodeMaterial {
+  const lit = output.rgb;
+  const base = luminance(diffuseColor.rgb).max(0.02);
+  const r = luminance(lit).div(base);
+  const lo = mix(float(TOON_LEVELS[0]), float(TOON_LEVELS[1]), smoothstep(TOON_EDGES[0] - TOON_SOFT, TOON_EDGES[0] + TOON_SOFT, r));
+  const lvl = mix(lo, float(TOON_LEVELS[2]), smoothstep(TOON_EDGES[1] - TOON_SOFT, TOON_EDGES[1] + TOON_SOFT, r));
+  // Phần vượt bậc sáng nhất (viền sáng, đèn mạnh) giữ nguyên để rim và điểm sáng không bị cắt.
+  const k = lvl.add(r.sub(TOON_HILITE).max(0)).div(r.max(0.02));
+  m.outputNode = vec4(lit.mul(k), output.a);
+  return m;
+}
+
 /**
  * Viền sáng (rim) tách khối nhân vật khỏi nền: fresnel hẹp ở mép hình bóng, sắc nắng, mạnh hơn ở phía hướng mặt trời
  * và ở phần trên thân, gần tắt ở phía khuất nắng. Yếu có chủ ý (art bible 5.3: không rim trắng gắt); cường độ theo preset
@@ -157,6 +196,29 @@ export const heroParams = {
  * Vật liệu "ma" cho viền khi bị che (Chân Cảnh C1): vẽ lại thân nhân vật CHỈ ở điểm sau một vật khác (`depthFunc` GREATER, không ghi
  * sâu), mực tối mờ, đậm ở mép (fresnel) để thành đường viền mảnh. Nơi dùng gắn vào bản sao SkinnedMesh dùng chung xương.
  */
+/** Tham số viền mực theo từng vật (`userData.ink = { w, color }`, đặt bởi `InkHulls`): bề dày theo đơn vị CỤC BỘ của lưới và màu viền. */
+const _inkCol = new THREE.Color();
+export const inkParams = {
+  w: uniform(0).onObjectUpdate(({ object }) => (object?.userData.ink as { w?: number } | undefined)?.w ?? 0),
+  color: uniform(new THREE.Color(0x05040a)).onObjectUpdate(({ object }) =>
+    _inkCol.setHex((object?.userData.ink as { color?: number } | undefined)?.color ?? 0x05040a),
+  ),
+};
+
+/**
+ * Viền mực kiểu "vỏ lộn ngược" (Dạ Cảnh): vẽ lại lưới thân với mặt SAU, phồng theo pháp tuyến `inkParams.w`, tô một màu phẳng. Ba lưu ý:
+ * dùng `MeshStandardNodeMaterial` tắt đèn (xem ghi chú ở `createHeroGhostMaterial` về lỗi của vật liệu Basic trên pass MRT); `positionNode` chạy SAU
+ * skinning của three nên vỏ bám đúng tư thế; không sương, không bóng. Mỗi thể được viền thêm 1 draw call: `InkHulls` giữ trần số thể.
+ */
+export function createInkHullMaterial(): THREE.MeshStandardNodeMaterial {
+  const m = new THREE.MeshStandardNodeMaterial({ side: THREE.BackSide, fog: false });
+  m.lights = false;
+  m.positionNode = positionLocal.add(normalLocal.mul(inkParams.w));
+  m.colorNode = inkParams.color;
+  m.emissiveNode = vec3(0, 0, 0);
+  return m;
+}
+
 export function createHeroGhostMaterial(): THREE.MeshStandardNodeMaterial {
   // Lưu ý: KHÔNG dùng `MeshBasicNodeMaterial` ở đây. Trên cảnh có pass MRT + vật vẽ trong lượt trong suốt (phòng thử VFX, chr=v3) vật liệu Basic
   // tự dựng làm three báo `TypeError: Cannot read properties of undefined (reading 'r')` ở `NodeUniformsGroup.updateColor` mỗi khung (lỗi hồi quy

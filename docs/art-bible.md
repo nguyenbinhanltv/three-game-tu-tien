@@ -41,6 +41,8 @@ Nguồn chuẩn đi kèm:
 | Palette 32 màu dùng để ép màu texture trong pipeline (plan 2.2 lớp 3) | Bảng màu tâm trạng, không ép (quyết định 4) |
 | Ép palette không dithering (quyết định ngày 2026-11-14) | Hết hiệu lực vì không còn bước ép palette. Hạt phim và dither ở pass hậu kỳ cuối là chuyện khác, vẫn làm (mục 5.4) |
 | Material toon dùng chung 3 bậc sáng, bóng lam xám, viền mực inverted hull (art bible v1–2 mục 3, 5; plan 2.2 lớp 4) | PBR cách điệu + pass chỉnh màu điện ảnh (mục 3, 5). Không dùng viền mực trên model |
+
+> **Ngoại lệ Dạ Cảnh (2026-11-27, người dùng chốt):** sau cờ `?style=da`, nhân vật và quái (không phải môi trường) được tô bóng chia ba bậc (`toonBands`) và có viền mực vỏ lộn ngược (`InkHulls`, trần 10 thể). Đây là hướng hình ảnh chính đang dựng, thay cho dòng trên khi Dạ Cảnh thành mặc định. Xem `docs/handbook/da-canh.md`.
 | Texture tiêu chuẩn, không PBR, chỉ giữ albedo | Texture chi tiết, giữ PBR (base color, normal, roughness/metalness) |
 
 Việc M1-6 đang làm theo hướng toon cần chuyển sang mục 5 của tài liệu này.
