@@ -58,6 +58,15 @@ Hiệu ứng không thuộc chiêu hay hướng tu nào (đột phá, độ ki�
 - Tấm sprite là quad 2×2 (`scale` 0,5 = ô 1 m) quay mặt về camera chéo 52°: mép dưới thấp hơn tâm 0,31 × cạnh ô. Tâm thấp hơn mức đó thì nền cắt ngang hình; phiến đá Trúc Cơ dùng chính điều này để "trồi lên".
 - Atlas `dp` nạp sẵn khi vào game (lên tầng chỉ dài ~1 s) nhưng không được miễn giải phóng; runner cũng nạp atlas của mọi sprite ngay lúc timeline `trigger: fx` bắt đầu.
 
+### Độ kiếp (V-P10 đợt 2)
+
+- **Mở kiếp** `fx_kiep_tc|kd|na|hn` và **cụm nổ chỗ sét rơi** `fx_kiep_strike` sinh bằng `node tools/vfx-forge/do-kiep.mjs` (sprite nhóm `kiep`, 8 ô đơn sắc, kiểu tô 12). Mở kiếp: hai tảng mây mực phình ra hai bên, trời rách ở mốc nhấn, tia sét đầu cắm xuống cạnh người. Bảng màu: Trúc Cơ `loi`, Kết Đan `kiep_hoa` (lửa kiếp tím hồng, hết cam), Nguyên Anh `dotpha_na`, Hóa Thần `dotpha_hn`.
+- **Vạch báo thiên lôi** theo bảng cảnh báo kẻ địch (`HAZARD_DANGER_COLORS`: cam son ở mức vừa, đỏ ở tia khóa mệnh/vòng ≥ 6 m), không còn tím sét; áp cho cả quái hệ lôi. Màu hệ chỉ còn ở thân tia và vùng nổ. Thân sét pha lôi hỏa đổi cam → tím hồng (`HOT_BOLT_CORE`).
+- **Lõi mực của tia sét**: `Vfx.lightning(..., ink = true)` vẽ thêm một lớp hòa trộn thường (kind `boltInk`, cùng lưới với thân sáng, +1 draw mỗi tia) có mép mực tối và lõi tím trắng, để tia đọc được trên đá sáng ban ngày (lớp cộng sáng gần như mất). Chỉ bật cho `Vfx.hazard`, vạch chữ nhật/quạt và sự kiện `bolt` có `ink: true`; tia sét của chiêu người chơi (Lôi tu...) giữ hình đã duyệt.
+- **Cụm nổ** do `engine/room.ts` (`kiepStrike`) phát bằng `FxRunner.startAt` lúc vòng tròn sét của kiếp nổ (không phải quái thả); tối đa 3 cụm mỗi nửa giây (lôi võng thả 7 vòng cùng lúc), kiếp của người khác chỉ vẽ khi gần và pool chưa đông; tia khóa mệnh nhân cỡ 1,8.
+- **Kiếp vân tầng thấp** (`lowKiepClouds` ở `game/fx/vfxParts/scenes.ts`): đĩa mây xoáy cũ treo cao 34–48 m nên nằm NGOÀI khung của camera chéo. Lớp mới là ba tảng mây vẽ tay ở nửa xa camera, cao 2,4–2,9 m, cách tâm 4–5 m (sát mép trên khung, sau lưng người). Đĩa mây cũ giữ nguyên cho góc máy khác.
+- **Phòng thử**: `pnpm shots vfxlab --skill lab_loi|lab_loi_hot|lab_loi_big|lab_kiep_van` phát đúng đường S.HAZARD/kiếp vân của game (`LAB_SCENES` ở `game/debug/vfxLab.ts`; mốc 0 = lúc sét đánh). Ảnh tại chỗ ở camera chơi thật: `pnpm shots kiepsan --trib truc_co,hoa_than,anh_bien` (thế giới, `do_kiep`, `do_kiep_bac_hoang`).
+
 ## Bảng phong cách
 
 `tools/vfx-forge/style-sheet.json`: ramp ba tông (lõi tối 15–25%, thân 50–60%, viền sáng 10–20%), nét không mảnh hơn 3% khung, tương phản lõi/viền ≥ 4:1, nền đen thuần cho flipbook, cấm đỏ/cam. Script đưa bảng này, bảng màu hướng tu và phối cảnh camera chéo vào MỌI prompt; luôn đính ảnh mẫu đã duyệt gần nhất bằng `--ref` để các chiêu cùng phong cách.
