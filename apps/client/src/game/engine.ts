@@ -1,3 +1,4 @@
+import { ensureColliders } from '@dtl/content/colliders-lazy';
 import type { FarBackdrop } from '../render/painted/farBackdrop';
 import { AutoQuality, isQuality } from '../base/quality';
 import * as THREE from 'three/webgpu';
@@ -603,6 +604,12 @@ export class Game {
     this.stage = document.getElementById('stage')!;
     applyInit(this, init);
     bindRoom(this, room);
+    this.warmColliders(this.initLevel); // B7: va chạm của level đầu nạp song song với địa hình; màn tải chờ xong (frameLoop `collidersReady`, có thời hạn)
+  }
+
+  /** Nạp collider của `level` (B7); lỗi chỉ ghi log vì `frameLoop` gọi lại định kỳ khi màn tải quá hạn và `ensureColliders` tự thử lại. */
+  warmColliders(level: string): void {
+    ensureColliders(level).catch((e: unknown) => engineLog.warn(`collider ${level} chưa nạp được, sẽ thử lại:`, e));
   }
 
   snapToServer = true;
@@ -930,6 +937,7 @@ export class Game {
   async enterLevel(id: string): Promise<boolean> {
     if (!this.started || this.disposed || !knownLevel(id) || id === levelId()) return false;
     const next = levelAssets(id);
+    this.warmColliders(id); // B7: va chạm của level mới (file nhỏ, nạp song song với asset)
     if (sameLayout(levelId(), id)) {
       // Cùng địa hình và cùng bố cục (thế giới ↔ bí cảnh Kiếm Trủng): chỉ đổi nhãn level và nạp trước nhạc, không dựng lại.
       setActiveLevel(id);

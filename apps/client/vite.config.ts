@@ -28,6 +28,22 @@ function titleFromI18n(assetBase: string): Plugin {
   };
 }
 
+/**
+ * B7: `packages/content/src/index.ts` nạp `./colliders` (~1,8 MB JSON va chạm của mọi level) để server và công cụ đăng ký đồng bộ; bundle client thay nó bằng
+ * stub rỗng và nạp từng level lúc vào bằng `ensureColliders` (`@dtl/content/colliders-lazy`). Không áp cho vitest (test cần dữ liệu đủ).
+ */
+function lazyColliders(): Plugin {
+  const stub = path.resolve(here, '../../packages/content/src/colliders.stub.ts');
+  return {
+    name: 'dtl-lazy-colliders',
+    enforce: 'pre',
+    resolveId(source, importer) {
+      if (process.env.VITEST || source !== './colliders' || !importer) return null;
+      return importer.replaceAll(String.fromCharCode(92), '/').endsWith('packages/content/src/index.ts') ? stub : null;
+    },
+  };
+}
+
 const MIME: Record<string, string> = {
   '.glb': 'model/gltf-binary',
   '.ktx2': 'image/ktx2',
@@ -87,7 +103,8 @@ export default defineConfig(({ command, mode }) => {
   // VITE_ASSET_BASE (CDN/R2): process.env hoặc apps/client/.env*; trống = asset cùng origin (.asset-cache/ rồi public/).
   const assetBase = (process.env.VITE_ASSET_BASE ?? loadEnv(mode, here, 'VITE_').VITE_ASSET_BASE ?? '').trim().replace(/\/+$/, '');
   return {
-    plugins: [react(), titleFromI18n(assetBase ? `${assetBase}/` : '/'), assetCache()],
+    plugins: [react(), titleFromI18n(assetBase ? `${assetBase}/` : '/'), assetCache(), lazyColliders()],
+    worker: { plugins: () => [lazyColliders()] },
     define: command === 'serve' ? { 'import.meta.env.VITE_DEV_SERVER_PORT': JSON.stringify(String(Number(env.PORT || 2567))) } : {},
     // strictPort: cổng bận thì báo lỗi thay vì âm thầm nhảy sang cổng khác (có thể là của worktree khác).
     server: { port: clientPort ?? 5173, strictPort: true, host: true },

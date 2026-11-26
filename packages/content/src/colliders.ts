@@ -1,14 +1,5 @@
-import {
-  bridgeModel,
-  bridgeShapes,
-  gioiTriPillars,
-  instantiateShapes,
-  type LocalShape,
-  registerCollision,
-  type Shape,
-  VAN_LAM,
-} from '@dtl/shared';
-import gioiTriLevel from '../data/levels/gioi_tri.json';
+import { type LocalShape, registerCollision, type Shape } from '@dtl/shared';
+import { type ArchFile, archShapesFrom, type InstFile, propShapesFrom, registerCodeShapes } from './colliders.core';
 import archKd from '../data/colliders/arch_kim_da.boxes.json';
 import archTk from '../data/colliders/arch_thien_khuyet.boxes.json';
 import archKt from '../data/colliders/arch_kiem_trung.boxes.json';
@@ -41,11 +32,6 @@ import xichTan from '../data/colliders/xich_tan_khich.inst.json';
  * - `<level>.inst.json`: vị trí prop đã rải (bake từ `allProps` của client bằng `pnpm colliders:bake`).
  * Tập hình khóa theo `levelId` (Kiếm Trủng dùng chung địa hình Vân Lam nhưng là level riêng; danh sách prop dùng chung với Vân Lam như `allPropsRaw`).
  */
-interface InstFile {
-  ids: string[];
-  p: number[][];
-}
-
 /** `lib.json` (sinh từ GLB) + `extra-lib.json` (hình ghi tay cho đồ dựng bằng mã: cây phong, thân cây vườn…, id `x_*`). */
 export const COLLIDER_LIB = { ...libJson, ...extraLib } as unknown as Record<string, LocalShape[]>;
 
@@ -70,28 +56,12 @@ export const INST_BY_LEVEL: Record<string, InstFile> = {
 
 /** Hình thế giới của mọi prop một level (hàm thuần, dùng cho test và công cụ). */
 export function propShapesOf(level: string, lib: Record<string, LocalShape[]> = COLLIDER_LIB): Shape[] {
-  const f = INST_BY_LEVEL[level];
-  if (!f) return [];
-  const out: Shape[] = [];
-  for (const r of f.p) {
-    const id = f.ids[r[0]!]!;
-    const local = lib[id];
-    if (!local?.length) continue;
-    instantiateShapes(local, { x: r[1]!, z: r[2]!, y: r[3]!, yaw: r[4]!, s: r[5]!, sy: r[6], lean: r[7] }, out, id);
-  }
-  return out;
+  return propShapesFrom(INST_BY_LEVEL[level], lib);
 }
 
 for (const level of Object.keys(INST_BY_LEVEL)) registerCollision(level, propShapesOf(level));
 
-/**
- * Kiến trúc dựng thành MỘT lưới gộp (arch_*): hộp trục thế giới sinh từ hình học GLB bằng `pnpm colliders:arch` (`tools/asset-pipeline/src/archcollider.ts`).
- * [x0, z0, x1, z1, y0, y1, walk(1)|rắn(0)]. Khóa theo level đang dùng kiến trúc đó.
- */
-interface ArchFile {
-  id: string;
-  boxes: number[][];
-}
+/** Level → hộp kiến trúc gộp (arch_*): khóa theo level đang dùng kiến trúc đó. */
 export const ARCH_BY_LEVEL: Record<string, ArchFile[]> = {
   van_lam: [archSect as unknown as ArchFile],
   thien_khuyet: [archTk as unknown as ArchFile],
@@ -103,43 +73,6 @@ export const ARCH_BY_LEVEL: Record<string, ArchFile[]> = {
   kinh_nguyet: [archKn as unknown as ArchFile],
 };
 
-function archShapesOf(level: string): Shape[] {
-  const out: Shape[] = [];
-  for (const f of ARCH_BY_LEVEL[level] ?? [])
-    for (const b of f.boxes)
-      out.push({
-        k: 'box',
-        x: (b[0]! + b[2]!) / 2,
-        z: (b[1]! + b[3]!) / 2,
-        hx: (b[2]! - b[0]!) / 2,
-        hz: (b[3]! - b[1]!) / 2,
-        yaw: 0,
-        y0: b[4]!,
-        y1: b[5]!,
-        walk: b[6] === 1,
-        tag: f.id,
-      });
-  return out;
-}
+for (const level of Object.keys(ARCH_BY_LEVEL)) registerCollision(level, archShapesFrom(ARCH_BY_LEVEL[level] ?? []));
 
-for (const level of Object.keys(ARCH_BY_LEVEL)) registerCollision(level, archShapesOf(level));
-
-/** Cầu treo Lạc Kiếm đi được (Chân Cảnh M2): ván dốc theo võng + lan can đặc, dựng từ mô hình chung `cautreo.ts` (cùng nguồn với hình ở client). */
-registerCollision('van_lam', bridgeShapes(bridgeModel(VAN_LAM.groundAt)));
-
-/**
- * Giới Trì Động Phủ (TN-3): 14 cột đồng quanh sân là cảnh dựng bằng code ở client nên không có trong `gioi_tri.inst.json`; chặn bằng cột tròn cao vô hạn
- * (`y0`/`y1` rộng) tại đúng chỗ `gioiTriPillars` dựng hình. Dùng chung công thức ở `packages/shared/src/vandinh.ts`.
- */
-registerCollision(
-  'gioi_tri',
-  gioiTriPillars((gioiTriLevel as unknown as { dungeon: { center: { x: number; z: number } } }).dungeon.center).map((c): Shape => ({
-    k: 'cyl',
-    x: c.x,
-    z: c.z,
-    r: c.r,
-    y0: -1000,
-    y1: 1000,
-    tag: 'gioi_tri_cot_dong',
-  })),
-);
+for (const level of ['van_lam', 'gioi_tri']) registerCodeShapes(level);
