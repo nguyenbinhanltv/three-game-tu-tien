@@ -1,6 +1,6 @@
 {
   "skillId": "fx_potion",
-  "idea": "DÙNG ĐAN (mọi lần uống đan không phải đan linh lực: hồi máu, buff, đổi linh căn): một làn khói đan mực nhỏ bốc từ ngực rồi tan thành vài cánh sáng bay lên. Rất nhỏ và nhanh (dùng thường xuyên; đan hồi máu còn có búp sen của nhịp hồi). Ngọc lục, lõi mực, mép trắng ngọc.",
+  "idea": "DÙNG ĐAN (mọi lần uống đan không phải đan linh lực, đan linh lực dùng `fx_mana`: hồi máu, buff, đổi linh căn): một làn khói đan mực nhỏ bốc từ ngực rồi tan thành vài cánh sáng bay lên. Rất nhỏ và nhanh (dùng thường xuyên; đan hồi máu còn có búp sen của nhịp hồi). Ngọc lục, lõi mực, mép trắng ngọc.",
   "element": "moc",
   "path": "",
   "scene": {

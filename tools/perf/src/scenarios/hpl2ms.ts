@@ -41,6 +41,7 @@ const HIT = [
   'fx_evade',
   'fx_heal',
   'fx_heal_tick',
+  'fx_mana',
 ];
 const ST = ['fx_st_slow', 'fx_st_poison', 'fx_st_burn', 'fx_st_stun', 'fx_st_hot'];
 const ENV = ['fx_env_gate', 'fx_env_gate_flat', 'fx_env_herb', 'fx_env_gather', 'fx_env_revive'];

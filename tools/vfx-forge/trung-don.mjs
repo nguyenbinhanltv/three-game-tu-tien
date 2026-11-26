@@ -73,6 +73,8 @@ const PAL = {
   hit_chung: { core: '14161c', body: 'b9c6d6', rim: 'ffffff', accent: 'f0e6a8', shadow: '08090c' },
   hit_guard: { core: '10202e', body: '6fa8d0', rim: 'eaf6ff', accent: 'f0e6a8', shadow: '070d14' },
   hit_heal: { core: '0c3324', body: '4fd69a', rim: 'eafff2', accent: 'f4e9a0', shadow: '06160f' },
+  // Hồi linh lực: lam chàm (trùng màu thanh linh lực trên HUD), lõi mực chàm; khác hẳn ngọc lục của hồi máu.
+  hit_mana: { core: '0e1a3c', body: '4f8cf0', rim: 'e6f0ff', accent: 'f0e6a8', shadow: '070b1a' },
   env_gate: { core: '0a2a40', body: '5fb8e8', rim: 'e6f8ff', accent: 'f0e6a8', shadow: '05121c' },
   env_revive: { core: '2a2410', body: 'f0e6a8', rim: 'fffbe8', accent: 'bfe8ff', shadow: '14110a' },
   hit_dich: { core: '2a1030', body: 'a04ad8', rim: 'f3e2ff', accent: 'f0e6a8', shadow: '12061a' },
@@ -277,7 +279,7 @@ const SCENES = [
     fxKind: 'potion',
     replaces: ['potion'],
     I: 0.12,
-    idea: 'DÙNG ĐAN (mọi lần uống đan không phải đan linh lực: hồi máu, buff, đổi linh căn): một làn khói đan mực nhỏ bốc từ ngực rồi tan thành vài cánh sáng bay lên. Rất nhỏ và nhanh (dùng thường xuyên; đan hồi máu còn có búp sen của nhịp hồi). Ngọc lục, lõi mực, mép trắng ngọc.',
+    idea: 'DÙNG ĐAN (mọi lần uống đan không phải đan linh lực, đan linh lực dùng `fx_mana`: hồi máu, buff, đổi linh căn): một làn khói đan mực nhỏ bốc từ ngực rồi tan thành vài cánh sáng bay lên. Rất nhỏ và nhanh (dùng thường xuyên; đan hồi máu còn có búp sen của nhịp hồi). Ngọc lục, lõi mực, mép trắng ngọc.',
     element: 'moc',
     shapeLang: ['cloud', 'spiral'],
     silhouette: 'một làn khói đan nhỏ cuộn bốc lên từ ngực rồi tan thành vài cánh sáng',
@@ -914,6 +916,28 @@ const SCENES = [
     footprint: { lengthM: 2.2, widthM: 2.2, heightM: 2.4 },
     budget: x.budget ?? { drawCalls: 2, particles: 6, screenCover: 0.02, overdraw: 2 },
   })),
+  // `fx_mana` neo `target` (= người nhận, như `fx_heal`): neo `self` của HitFx là diễn viên giả lệch 1 m về phía camera.
+  // Thêm SAU CÙNG: seed của mỗi cảnh tính theo thứ tự trong mảng, chèn giữa sẽ đổi hình các hiệu ứng đã duyệt.
+  {
+    id: 'fx_mana',
+    pal: 'hit_mana',
+    fxKind: '~mana',
+    I: 0.15,
+    idea: 'HỒI LINH LỰC (uống đan hồi khí; server gắn `v: mp` vào tin `potion`): một xoáy linh khí mực chàm cuộn thu về đan điền trong 0,15 giây, rồi MỘT chùm giọt linh dịch lam bật lên từ thắt lưng tới quá vai và tan. Lõi mực chàm, thân lam, mép trắng lam. Khác hồi máu ở cả hình (xoáy + giọt, không sen) lẫn màu (lam, không lục). Không cột sáng, không vòng dưới chân.',
+    element: 'thuy',
+    shapeLang: ['spiral', 'cloud'],
+    silhouette: 'một xoáy mực cuộn thu vào bụng rồi chùm giọt nước dài bật lên quá vai',
+    timing: { anticipationMs: 150, impactMs: 70, lingerMs: 500 },
+    footprint: { lengthM: 2.0, widthM: 2.0, heightM: 2.6 },
+    budget: { drawCalls: 3, particles: 40, screenCover: 0.03, overdraw: 3 },
+    events: () => [
+      sprite('chung_eddy', { t: 0, dur: 0.24, off: [0, -0.45, 0], size: 2.6, sizeTo: 1.2, alpha: 0.9, erodeFrom: 0.7 }),
+      parts('spark', 0, 12, { offset: [0, -0.45, 0], speed: 3, life: 0.14, inward: true, tone: 'body' }),
+      sprite('chung_drops', { t: 0.15, dur: 0.5, off: [0, 0.05, 0], size: 1.5, sizeTo: 2.2, up: 0.9, erodeFrom: 0.5, alpha: 0.85 }),
+      accent('chung_drops', 0.15, 1.7, { off: [0, 0.15, 0], sizeTo: 2.1 }),
+      parts('spark', 0.3, 8, { offset: [0, 0.4, 0], speed: 1.2, spread: 1, life: 0.6, size: 0.06, grav: -1.2, tone: 'rim', tier: 1 }),
+    ],
+  },
 ];
 
 /** Dư ba (chuẩn 2): phải có sự kiện hình BẮT ĐẦU từ +150 ms; hiệu ứng tan ≤ 200 ms nên thêm vài hạt bụi mực rất nhỏ rơi nốt. */
