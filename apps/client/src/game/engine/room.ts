@@ -149,11 +149,14 @@ function kiepStrike(eng: Game, m: HazardMsg): void {
   while (kiepStrikes.length && now - kiepStrikes[0]! > 500) kiepStrikes.shift();
   if (kiepStrikes.length >= KIEP_STRIKE_MAX) return;
   kiepStrikes.push(now);
+  // Neo `self` = actor.y + 1,15 và offset nhân `mul`; timeline đặt chân ở offset −1,15, nên chân thực tế = actor.y + 1,15 − 1,15·mul.
+  // Bù 1,15·(mul − 1) để chân cụm nổ luôn chạm mặt đất ở mọi cỡ.
+  const mul = m.big ? 1.8 : 1;
   runner.startAt(tl, {
-    actor: { x: m.x, y: groundAt(m.x, m.z), z: m.z, yaw: 0, model: {} },
+    actor: { x: m.x, y: groundAt(m.x, m.z) + 1.15 * (mul - 1), z: m.z, yaw: 0, model: {} },
     palette: m.hot ? 'kiep_hoa' : 'loi',
     tgt: null,
-    mul: m.big ? 1.8 : 1,
+    mul,
     mine: m.src === eng.sid,
   });
 }
