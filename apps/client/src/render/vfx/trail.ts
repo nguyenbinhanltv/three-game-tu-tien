@@ -2,6 +2,9 @@ import * as THREE from 'three/webgpu';
 import { abs, clamp, exp, float, max, min, mix, pow, smoothstep, step, time, uv, vec2, vec3 } from 'three/tsl';
 import { PF_DEAD, PF_FLYING, PF_MEDITATING } from '@dtl/shared';
 import { groundAt } from '../../base/levelCtx';
+import { shapeGeometry } from './fxShapes';
+import { spriteCell, useSpriteGroup } from './art';
+import { FX_PALETTE } from './palette';
 import { FLAGS } from '../../base/flags';
 import { vnoise, type FxUniforms } from './common';
 import type { Particles } from './particles';
@@ -32,6 +35,16 @@ const C_SWORD = 0xcff3ff; // spirit_sword
 const C_SWORD_DEEP = 0x8fdcff;
 const C_MIST = 0xdce6df; // air_mist
 const C_DUST = 0xb9b29a;
+/** Độ dài vệt theo tốc độ: nhịp lấy mẫu lịch sử chậm đi khi bay nhanh (cùng 24 điểm phủ thời gian dài hơn → dải dài hơn). Đứng yên/chậm: ×1,25; nhanh: ×0,75. */
+export const trailRate = (fast: number): number => 1.25 - 0.5 * Math.min(1, Math.max(0, fast));
+/** Bề rộng dải (m) theo tốc độ: mảnh khi chậm, dày khi nhanh. */
+export const trailWidth = (fast: number): number => 0.36 + 0.2 * Math.min(1, Math.max(0, fast));
+/** Vệt của người khác mờ còn một nửa để đông người không rối. */
+export const TRAIL_OTHERS = 0.5;
+/** Đuôi mây vẽ tay: số cụm tối đa cùng lúc (cho mọi người), tuổi (s), nhịp sinh (s) khi bay nhanh. */
+const MAX_PUFFS = 10;
+const PUFF_LIFE = 0.7;
+const PUFF_EVERY = 0.2;
 const C_INK = 0x0a3550; // lõi mực vệt phi kiếm (xanh thẫm) // giữa stone_light và leaf_dry
 
 /**
@@ -136,6 +149,10 @@ class Ribbon {
   ink: FxMesh | null = null;
   owner = '';
   fade = 0;
+  /** Dải của chính người chơi (người khác mờ hơn). */
+  mine = true;
+  /** Độ nhanh 0..1 (làm mượt) để dải dài/rộng theo tốc độ bay. */
+  fast = 0;
 
   constructor() {
     const uvs = new Float32Array(RIB_PTS * 2 * 2);
@@ -169,9 +186,9 @@ class Ribbon {
   }
 
   /** Đầu dải luôn ở vị trí hiện tại; lịch sử dịch theo nhịp `RIB_DT`. */
-  push(x: number, y: number, z: number, dt: number): void {
+  push(x: number, y: number, z: number, dt: number, rate = 1): void {
     const h = this.hist;
-    this.acc += dt;
+    this.acc += dt * rate;
     while (this.acc >= RIB_DT) {
       this.acc -= RIB_DT;
       h.copyWithin(3, 0, (RIB_PTS - 1) * 3);
@@ -256,6 +273,9 @@ export class Trails {
   private blades: { r: BladeRibbon; mesh: FxMesh | null }[] = [];
   private state = new Map<string, ActorState>();
   private frame = 0;
+  /** Đuôi mây sprite: pool cố định, mỗi cụm trôi ra sau rồi tan. */
+  private puffs: { m: FxMesh | null; age: number; vx: number; vy: number; vz: number; size: number; alpha: number }[] = [];
+  private puffAcc = new Map<string, number>();
 
   constructor(
     private src: FxSource,
@@ -332,7 +352,8 @@ export class Trails {
         const hx = a.x + sy * -0.9 * s;
         const hy = a.y - 0.1 * s;
         const hz = a.z + cy * -0.9 * s;
-        if (dist < 140) this.ribbonFor(id, hx, hy, hz, dt);
+        if (dist < 140) this.ribbonFor(id, hx, hy, hz, dt, mine, Math.min(1, a.speed / 12));
+        if (pk > 0) this.puffTail(id, hx, hy, hz, dt, mine, Math.min(1, a.speed / 12), a.yaw, camera);
         if (pk > 0) {
           const fast = Math.min(1, a.speed / 12);
           st.spark += dt * 26 * pk * (0.3 + fast);
@@ -451,7 +472,7 @@ export class Trails {
       else {
         r.fade -= dt * 4;
         // Không còn chủ: đầu dải đứng yên, đuôi đuổi kịp.
-        r.push(r.hist[0]!, r.hist[1]!, r.hist[2]!, dt);
+        r.push(r.hist[0]!, r.hist[1]!, r.hist[2]!, dt, trailRate(r.fast));
       }
       if (r.fade <= 0) {
         this.src.drop(r.mesh);
@@ -461,15 +482,21 @@ export class Trails {
         r.owner = '';
         continue;
       }
-      r.build(_cam, 0.5);
-      r.mesh.fxOpacity = 0.85 * r.fade;
-      if (r.ink) r.ink.fxOpacity = 0.95 * r.fade;
+      const om = r.mine ? 1 : TRAIL_OTHERS;
+      r.build(_cam, trailWidth(r.fast));
+      r.mesh.fxOpacity = 0.85 * r.fade * om;
+      if (r.ink) r.ink.fxOpacity = 0.95 * r.fade * om;
     }
     this.updateBlades(dt);
-    for (const [id, st] of this.state) if (st.seen !== this.frame) this.state.delete(id);
+    this.updatePuffs(dt, camera);
+    for (const [id, st] of this.state)
+      if (st.seen !== this.frame) {
+        this.state.delete(id);
+        this.puffAcc.delete(id);
+      }
   }
 
-  private ribbonFor(id: string, x: number, y: number, z: number, dt: number): void {
+  private ribbonFor(id: string, x: number, y: number, z: number, dt: number, mine: boolean, fast: number): void {
     let r = this.ribbons.find((q) => q.owner === id && q.mesh);
     if (!r) {
       r = this.ribbons.find((q) => !q.mesh);
@@ -486,7 +513,82 @@ export class Trails {
         r.ink.renderOrder = r.mesh.renderOrder - 1;
       }
     }
-    r.push(x, y, z, dt);
+    r.mine = mine;
+    r.fast += (fast - r.fast) * Math.min(1, dt * 4);
+    r.push(x, y, z, dt, trailRate(r.fast));
+  }
+
+  /**
+   * Đuôi mây vẽ tay (tranh `ngu_puffs`/`ngu_wisp`): nhả một cụm sau chuôi kiếm theo nhịp, nhanh hơn khi bay nhanh; cụm trôi ra sau, nở ra và tan như khói.
+   * Chạy chậm/đứng yên thì không nhả. Dùng chung pool `MAX_PUFFS` cho mọi người; người khác nhả thưa và mờ một nửa.
+   */
+  private puffTail(
+    id: string,
+    x: number,
+    y: number,
+    z: number,
+    dt: number,
+    mine: boolean,
+    fast: number,
+    yaw: number,
+    camera: THREE.Camera,
+  ): void {
+    if (fast < 0.25) return;
+    const acc = (this.puffAcc.get(id) ?? 0) + dt * (0.6 + fast) * (mine ? 1 : 0.5);
+    if (acc < PUFF_EVERY) {
+      this.puffAcc.set(id, acc);
+      return;
+    }
+    this.puffAcc.set(id, acc - PUFF_EVERY);
+    let p = this.puffs.find((q) => !q.m);
+    if (!p) {
+      if (this.puffs.length >= MAX_PUFFS) return;
+      p = { m: null, age: 0, vx: 0, vy: 0, vz: 0, size: 1, alpha: 1 };
+      this.puffs.push(p);
+    }
+    useSpriteGroup('ngu');
+    const pal = FX_PALETTE.ngu_kiem!;
+    const wisp = Math.random() < 0.4;
+    const cell = spriteCell(wisp ? 'ngu_wisp' : 'ngu_puffs');
+    const m = this.src.fx(shapeGeometry('sprite'), wisp ? pal.rim : pal.body, 0, 'sprite_ngu');
+    m.fxA.set(12, 0, Math.random() * 40, cell.idx);
+    m.fxB.set(((pal.rim >> 16) & 255) / 255, ((pal.rim >> 8) & 255) / 255, (pal.rim & 255) / 255, 0.5);
+    // Lệch ngang và hơi xuống khỏi dải để cụm mây đọc được ngoài mép dải, không chìm trong nó.
+    m.position.set(x + (Math.random() - 0.5) * 0.9, y - 0.15 - Math.random() * 0.3, z + (Math.random() - 0.5) * 0.9);
+    m.quaternion.copy(camera.quaternion);
+    p.m = m;
+    p.age = 0;
+    // Trôi ra sau (ngược hướng mặt) và hơi lên, kèm lệch ngang ngẫu nhiên.
+    const back = 0.8 + 0.8 * fast;
+    p.vx = -Math.sin(yaw) * back + (Math.random() - 0.5) * 0.5;
+    p.vz = -Math.cos(yaw) * back + (Math.random() - 0.5) * 0.5;
+    p.vy = 0.15 + Math.random() * 0.25;
+    p.size = (wisp ? 1.5 : 1.2) * (0.8 + Math.random() * 0.5);
+    p.alpha = (mine ? 0.9 : 0.9 * TRAIL_OTHERS) * (wisp ? 0.8 : 1);
+    m.scale.setScalar(p.size * 0.5);
+  }
+
+  /** Già đi các cụm đuôi mây: nở ra, mờ dần, tan (xói mòn) rồi trả về pool. */
+  private updatePuffs(dt: number, camera: THREE.Camera): void {
+    for (const p of this.puffs) {
+      const m = p.m;
+      if (!m) continue;
+      p.age += dt;
+      const k = p.age / PUFF_LIFE;
+      if (k >= 1) {
+        this.src.drop(m);
+        p.m = null;
+        continue;
+      }
+      m.position.x += p.vx * dt;
+      m.position.y += p.vy * dt;
+      m.position.z += p.vz * dt;
+      m.quaternion.copy(camera.quaternion);
+      m.scale.setScalar(p.size * 0.5 * (1 + 0.8 * k));
+      m.fxA.y = Math.min(1.1, Math.max(0, (k - 0.3) / 0.7) * 1.1);
+      m.fxOpacity = p.alpha * (1 - k * 0.6);
+      m.visible = true;
+    }
   }
 
   /** Số dải đang dùng (đo đạc). */
@@ -502,6 +604,11 @@ export class Trails {
       r.ink = null;
       r.owner = '';
     }
+    for (const p of this.puffs) {
+      if (p.m) this.src.drop(p.m);
+      p.m = null;
+    }
+    this.puffAcc.clear();
     for (const b of this.blades) {
       if (b.mesh) this.src.drop(b.mesh);
       b.mesh = null;
