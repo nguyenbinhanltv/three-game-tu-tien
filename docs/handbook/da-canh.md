@@ -24,7 +24,7 @@ Người dùng chốt 27/11: thiết kế lại MỘT bản đồ theo chất ga
 3. [x] Lớp tối quanh trận: hậu kỳ trong `feedbackLayers` (`render/post.ts`, `postParams.focusDark/focus/focusAspect`, hằng `FOCUS_*`), điều khiển bởi `game/engine/daFocus.ts` theo cờ giao chiến của camera (vào 3/s, ra 1,2/s); điểm ảnh sáng (chiêu, vạch báo, đèn) được giữ. Không thêm draw call.
 4. [ ] Rim + fill cho đạo cụ và kiến trúc xa để khối không chìm vào nền.
 5. [ ] Bố cục: phía gần camera chỉ để vật thấp; thêm điểm nhấn phát sáng (đốm linh khí, rêu sáng) theo bảng màu hẹp của khu.
-6. [ ] Quái ở Vân Lam: tô chia bậc + mắt hoặc điểm phát sáng làm dấu nhận diện.
+6. [~] Quái: tô chia bậc đã bật cho mọi quái khi `?style=da` (`MonsterSkins.material`, trừ quái bán trong suốt); mắt hoặc điểm phát sáng làm dấu nhận diện chưa làm.
 
 Số đo viền mực (27/11, `pnpm shots herolight --bots 8 --view 1080p`, một mẫu mỗi cấu hình): không viền 129 draw / 1,01 triệu tam giác / 10,2 ms khung; viền dùng lưới LOD0 137 / 1,24 triệu / 10,7 ms; viền dùng lưới LOD1 (`INK_LOD`, hiện tại) 136 / 1,16 triệu / 10,3 ms.
 
