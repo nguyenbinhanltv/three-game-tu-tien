@@ -1,6 +1,7 @@
 // R-8: tách từ game/engine.ts (hàm nhận `g: Game`, trước là phương thức private của lớp Game).
 import { ANIM_FX, CUTIN_FREEZE_MS, cutinArt } from '../character/animFx';
 import { v3SetKeyOf } from '../character/mannequin';
+import { flyTimeline } from '../fx/flyTimeline';
 import { isKiemTu } from '../character/kiemTu';
 import * as THREE from 'three/webgpu';
 import {
@@ -1393,4 +1394,11 @@ export function onSys(eng: Game, m: SysMsg): void {
     eng.wantFly = false;
     set({ wantFly: false });
   }
+}
+
+/** Cất/hạ cánh ngự kiếm (V-P10): cảnh `fx_fly_on`/`fx_fly_off` tại người đổi cờ bay. Cất cánh của mình đã phát ở `toggleFly` (dự đoán) nên bỏ qua. */
+export function flyFx(eng: Game, sid: string, flying: boolean, x: number, z: number): void {
+  if (!eng.skillFx || (flying && sid === eng.sid) || Math.hypot(x - eng.renderPos.x, z - eng.renderPos.z) > 60) return;
+  const tl = flyTimeline(flying, sid === eng.sid);
+  if (tl) eng.skillFx.startFromFx(sid, tl);
 }
