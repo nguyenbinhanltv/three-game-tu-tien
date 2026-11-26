@@ -10,7 +10,7 @@ import { FxMesh } from '../../render/materials/vfx';
 import { PARTICLES } from '../../render/vfx/particles';
 import { evictSpriteGroups, residentSpriteGroups } from '../../render/vfx/art';
 import type { Game } from '../engine';
-import { flyTimeline } from '../engine/fxMsgs';
+import { flyTimeline } from '../fx/flyTimeline';
 
 /** Trạng thái điều khiển thời gian, đọc bởi vòng khung (`labDt`). */
 const state = { scale: 1, paused: false, stepSec: 0 };

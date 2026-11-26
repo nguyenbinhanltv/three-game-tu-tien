@@ -1,11 +1,11 @@
 // R-8: tách từ game/engine.ts (hàm nhận `g: Game`, trước là phương thức private của lớp Game).
 import { ANIM_FX, CUTIN_FREEZE_MS, cutinArt } from '../character/animFx';
 import { v3SetKeyOf } from '../character/mannequin';
+import { flyTimeline } from '../fx/flyTimeline';
 import * as THREE from 'three/webgpu';
 import {
   type DmgMsg,
   type FxMsg,
-  type FxTimeline,
   type HazardMsg,
   MF_SENSED,
   MF_REAL,
@@ -32,7 +32,7 @@ import {
   strikeTier,
 } from '@dtl/shared';
 import { groundAt } from '../../base/levelCtx';
-import { FX_TIMELINE, ITEM, METHOD_SKILLS, MONSTER, t } from '@dtl/content';
+import { ITEM, METHOD_SKILLS, MONSTER, t } from '@dtl/content';
 import {
   MON_AURA_DUONG,
   MON_AURA_FACE,
@@ -1398,18 +1398,4 @@ export function flyFx(eng: Game, sid: string, flying: boolean, x: number, z: num
   if (!eng.skillFx || (flying && sid === eng.sid) || Math.hypot(x - eng.renderPos.x, z - eng.renderPos.z) > 60) return;
   const tl = flyTimeline(flying, sid === eng.sid);
   if (tl) eng.skillFx.startFromFx(sid, tl);
-}
-
-/** Timeline cảnh cất/hạ cánh: người khác mờ còn ~50% để đông người cất/hạ cánh không rối (bản của mình giữ nguyên). */
-export function flyTimeline(flying: boolean, mine: boolean): FxTimeline | undefined {
-  const id = flying ? 'fx_fly_on' : 'fx_fly_off';
-  const tl = FX_TIMELINE.get(id);
-  return !tl || mine ? tl : (dimmedFly.get(id) ?? dimFly(id, tl));
-}
-
-const dimmedFly = new Map<string, FxTimeline>();
-function dimFly(id: string, tl: FxTimeline): FxTimeline {
-  const out: FxTimeline = { ...tl, events: tl.events.map((e) => (e.type === 'mesh' ? { ...e, alpha: (e.alpha ?? 0.95) * 0.5 } : e)) };
-  dimmedFly.set(id, out);
-  return out;
 }
