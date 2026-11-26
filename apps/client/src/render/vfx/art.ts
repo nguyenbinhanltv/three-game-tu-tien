@@ -46,6 +46,8 @@ export const SPRITE_GROUPS = {
   ngu: { file: 'hoa-truc/vfx_sprites_ngu.53d3b0c236.webp', cols: 4, rows: 2 },
   // V-P10: độ kiếp (mở kiếp, kiếp vân tầng thấp, chỗ sét đánh); chỉ nạp khi có người độ kiếp trong tầm nhìn.
   kiep: { file: 'hoa-truc/vfx_sprites_kiep.d00db05f37.webp', cols: 4, rows: 2 },
+  // V-P10: hào quang cảnh giới (đan vân, mây mực thấp, đốm có đuôi, vạt đạo văn), tranh đơn sắc tô theo bảng màu cảnh giới; nạp khi có người đạt Kết Đan trở lên trong tầm nhìn.
+  hq: { file: 'hoa-truc/vfx_sprites_hq.da9c3606aa.webp', cols: 4, rows: 2 },
 } as const;
 export type SpriteGroup = keyof typeof SPRITE_GROUPS;
 /** Hướng tu (`PATHS[].id`) → nhóm atlas của nó. Thêm một dòng khi thêm hướng mới. */

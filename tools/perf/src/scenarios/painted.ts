@@ -3,9 +3,10 @@
 // Ảnh: <style>-<view>-<mood>-<điểm>.png; số đo: perf.json (drawCalls, triangles, textures, frameMs, heapMB mỗi điểm).
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { LEVELS } from '@dtl/content';
 import { sleep } from '../lib/devserver';
 import { list, num, opt } from '../lib/env';
-import { enterLevel, gm, perfSample, tp } from '../lib/game';
+import { enterLevel, gm, perfSample, tp, waitLevel } from '../lib/game';
 import { levelPoints, requireLevel } from '../lib/levelpoints';
 import type { Scenario } from '../lib/scenario';
 import { snap, writeJson } from '../lib/shot';
@@ -33,8 +34,20 @@ const atPoints = (): { name: string; x: number; z: number }[] =>
       if (!name || !Number.isFinite(x) || !Number.isFinite(z)) throw new Error(`--at sai dạng: "${p}" (cần ten:x,z)`);
       return { name, x: x!, z: z! };
     });
+/** Phó bản (room riêng, vào bằng cổng của level trả về): điểm quanh tâm phó bản; không có zone/poi để suy điểm. */
+const DUNGEON = LEVELS[LEVEL]?.dungeon;
+const dungeonPoints = (): { name: string; x: number; z: number }[] => {
+  const c = DUNGEON!.center;
+  return [
+    { name: 'tam', x: c.x, z: c.z },
+    { name: 'nam', x: c.x, z: c.z + 25 },
+    { name: 'bac', x: c.x, z: c.z - 25 },
+    { name: 'dong', x: c.x + 25, z: c.z },
+    { name: 'tay', x: c.x - 25, z: c.z },
+  ];
+};
 const pointsOf = (): { name: string; x: number; z: number }[] => [
-  ...(LEVEL === 'van_lam' ? POINTS : levelPoints(requireLevel(LEVEL).id)),
+  ...(DUNGEON ? dungeonPoints() : LEVEL === 'van_lam' ? POINTS : levelPoints(requireLevel(LEVEL).id)),
   ...atPoints(),
 ];
 
@@ -71,8 +84,22 @@ export default {
             warnings: true,
           });
           close = () => ctx.close();
-          await gm(page, `level ${LEVEL === 'van_lam' ? 15 : Math.max(27, requireLevel(LEVEL).minLevel ?? 0)}`, 2500);
-          if (LEVEL !== 'van_lam') await enterLevel(page, LEVEL);
+          await gm(
+            page,
+            `level ${LEVEL === 'van_lam' ? 15 : Math.max(27, (DUNGEON?.minLevel ?? requireLevel(LEVEL).minLevel ?? 0) + (DUNGEON ? 2 : 0))}`,
+            2500,
+          );
+          if (DUNGEON) {
+            // vào phó bản như người chơi: tới cổng ở level trả về (vé một lần), bấm E
+            const portal = LEVELS[DUNGEON.returnLevel]?.portals?.find((p) => p.to === LEVEL);
+            if (!portal) throw new Error(`phó bản ${LEVEL} không có cổng ở ${DUNGEON.returnLevel}`);
+            await enterLevel(page, DUNGEON.returnLevel);
+            await tp(page, DUNGEON.returnSpawn.x, DUNGEON.returnSpawn.z);
+            await tp(page, portal.x, portal.z);
+            await page.keyboard.press('KeyE');
+            await waitLevel(page, LEVEL);
+            await gm(page, 'god on', 1000);
+          } else if (LEVEL !== 'van_lam') await enterLevel(page, LEVEL);
           await gm(page, 'god on', 2500);
           await gm(page, 'killall', 2500);
           // --spawn <id quái> [--spawn-n N]: đặt quái quanh người để bắt chiêu vùng (telegraph) trên nền cỏ

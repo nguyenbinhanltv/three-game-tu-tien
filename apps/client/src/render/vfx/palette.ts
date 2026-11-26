@@ -101,6 +101,10 @@ FX_PALETTE.dotpha_tc = { core: 0x453a08, body: 0xe6c84a, rim: 0xfff4c8, accent: 
 FX_PALETTE.dotpha_kd = { core: 0x2c3a12, body: 0xf0e06a, rim: 0xfffbd6, accent: 0x4fd6a0, shadow: 0x161d09 };
 // Đan Hỏa Kiếp (V-P10): lửa kiếp tím hồng lạnh thay cam.
 FX_PALETTE.kiep_hoa = { core: 0x2a0c3a, body: 0xc45cff, rim: 0xffeefc, accent: 0xfff0b0, shadow: 0x150620 };
+// Hào quang cảnh giới (V-P10 đợt 4): Hóa Thần ngà + lam (không nâu mực); Kết Đan vàng chanh + ngọc, Nguyên Anh tím + lam băng.
+FX_PALETTE.hq_kd = { core: 0x2c3a12, body: 0xf0e06a, rim: 0xfffbd6, accent: 0x4fd6a0, shadow: 0x161d09 };
+FX_PALETTE.hq_na = { core: 0x2a1458, body: 0x8f78e8, rim: 0xf0eaff, accent: 0x9fe0ff, shadow: 0x140a30 };
+FX_PALETTE.hq_hn = { core: 0x1c2c44, body: 0x86aed0, rim: 0xfbf8ec, accent: 0xf0e8cc, shadow: 0x0f1826 };
 FX_PALETTE.dotpha_na = { core: 0x2a1458, body: 0x8f78e8, rim: 0xf0eaff, accent: 0x9fe0ff, shadow: 0x140a30 };
 // Hóa Thần (E4-D): vàng sao nhạt, lõi nâu trầm, điểm nhấn lam băng; dùng cho đột phá và thế thân thần niệm.
 FX_PALETTE.dotpha_hn = { core: 0x423a12, body: 0xe6cf86, rim: 0xfff8de, accent: 0xaee0ff, shadow: 0x211d09 };

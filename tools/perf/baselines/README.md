@@ -18,3 +18,5 @@ pnpm perf:gate --make-baseline bench/results/iso-<ngày>.json --out tools/perf/b
 **Chạy cổng với baseline Vừa:** `pnpm perf:gate bench/results/iso-<ngày>.json --baseline tools/perf/baselines/iso-medium-1080.json` (không đặt `--presets` thì cổng lấy các preset CÓ trong baseline, ở đây `medium`; không có baseline thì `high`). Đặt `--presets` không khớp điểm nào của lần chạy thì cổng CHẶN ("không điểm nào khớp preset"), không báo ĐẠT im lặng.
 
 Chưa có baseline thì cổng chỉ áp ngân sách vùng, mà một số điểm hiện đã vượt (ví dụ texture Vân Lam): hãy tạo baseline trước khi bật cổng bắt buộc. Baseline là "bậc thang": điểm đã vượt ngân sách chỉ bị chặn khi tệ hơn baseline quá 10%.
+
+**Cập nhật 26/11 (main 519d89f4d):** `iso-high.json` và `iso-medium-1080.json` sinh lại từ `perf:iso` đủ 119 điểm (WebGPU, RTX 3060 Ti, `settled-v1`, 0 lỗi console) sau khi B4/B6/B12 vào main. Texture MB trung vị +21 MB so với bản cũ (nội dung/asset mới của main, không do một PR đơn lẻ), nên cổng không còn chặn oan ở texture; draw call cảnh đánh giảm theo B4.
