@@ -175,7 +175,8 @@ export class MonsterSystem {
   /** Cấp đòn của lần `hitMonster` đang chạy, để `damageMonster` ghi vào tin sát thương. */
   private dmgTier: HitTier | undefined;
 
-  hitMonster(p: PlayerEnt, mon: MonEnt, basePower: number, mul = 1, elem?: string, tier?: HitTier): boolean {
+  /** `defScale`: hệ số nhân phòng ngự của quái cho đòn này (đòn chuỗi kiểu mới < 1, xem `comboDefScale`); mặc định 1. */
+  hitMonster(p: PlayerEnt, mon: MonEnt, basePower: number, mul = 1, elem?: string, tier?: HitTier, defScale = 1): boolean {
     // Ấn trên quái (VS-2c): ấn của chính người đánh cộng theo tầng (Truy hồn), ấn chung (Mất thế) cộng cho mọi người.
     const power0 = basePower * (1 + markAmp(mon.marks, MARK, p.sid, this.c.now));
     // Cộng hưởng vai trò (tổ đội đủ Kiếm tu/Hộ pháp/Đan sư đứng gần nhau): đánh mạnh hơn một chút.
@@ -191,7 +192,7 @@ export class MonsterSystem {
     const { dmg, crit } = computeDamage(
       p.char.atk,
       power * mul * counterMul(ke) * meleeMul,
-      mon.defn,
+      mon.defn * defScale,
       Math.random(),
       Math.random(),
       critRate,

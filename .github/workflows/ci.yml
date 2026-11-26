@@ -2,9 +2,9 @@
 # Test chậm: CI chỉ chạy bước pace (sim.ts); ffmpeg thật (audio:test), bench, shots hay playtest chạy ở máy dev.
 name: CI
 
+# TẠM TẮT tự chạy (27/11/2026, theo yêu cầu người dùng: làm thẳng trên main, không dùng cổng CI). Vẫn chạy tay được ở tab Actions.
+# Bật lại: thêm lại khối `pull_request: { branches: [main] }` dưới `on:`.
 on:
-  pull_request:
-    branches: [main]
   workflow_dispatch:
 
 # Đẩy commit mới lên cùng PR thì hủy lượt đang chạy để tiết kiệm phút.

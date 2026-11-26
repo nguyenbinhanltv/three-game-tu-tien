@@ -616,6 +616,11 @@ export interface ComboHit {
   tier?: HitTier;
   hitAt: number;
   kb?: boolean;
+  /**
+   * Khóa sau đòn này (giây từ lúc bấm): hết khóa mới ra được đòn/chiêu kế (thay GCD cho đòn chuỗi; = "khoảng hủy": phần thu đòn còn lại bị đòn kế cắt ngang).
+   * Bỏ trống: GCD. Phải > `hitAt` (đòn phải trúng xong mới tới đòn kế) và ≤ GCD.
+   */
+  lock?: number;
 }
 
 /** Chuỗi đòn thường liên hoàn: bấm tiếp trong `window` giây thì sang đòn sau, hết chuỗi thì về đòn đầu. */

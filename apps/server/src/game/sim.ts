@@ -185,7 +185,7 @@ export class GameSim {
     feedArtifact: (p, mon) => g.feedArtifact(p, mon),
     duelStrike: (p, o, powers, elemMul) => g.duelStrike(p, o, powers, elemMul),
     addPosture: (m, n) => g.addPosture(m, n),
-    hitMonster: (p, mon, basePower, mul, elem, tier) => g.hitMonster(p, mon, basePower, mul, elem, tier),
+    hitMonster: (p, mon, basePower, mul, elem, tier, defScale) => g.hitMonster(p, mon, basePower, mul, elem, tier, defScale),
     homeDist: (m) => g.homeDist(m),
     killMonster: (mon) => g.killMonster(mon),
     removeMonster: (m) => g.removeMonster(m),
@@ -715,8 +715,8 @@ export class GameSim {
     return this.tribHub.spawnTribBoss(p, id, dist);
   }
 
-  private hitMonster(p: PlayerEnt, mon: MonEnt, basePower: number, mul = 1, elem?: string, tier?: HitTier): boolean {
-    return this.monSys.hitMonster(p, mon, basePower, mul, elem, tier);
+  private hitMonster(p: PlayerEnt, mon: MonEnt, basePower: number, mul = 1, elem?: string, tier?: HitTier, defScale = 1): boolean {
+    return this.monSys.hitMonster(p, mon, basePower, mul, elem, tier, defScale);
   }
   private homeDist(m: MonEnt): number {
     return this.monSys.homeDist(m);
