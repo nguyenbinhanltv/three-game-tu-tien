@@ -675,11 +675,15 @@ export function applyGroundShader(mat: THREE.MeshStandardNodeMaterial, tex: Grou
     const ink: Node = dot(painted, vec3(0.299, 0.587, 0.114));
     // mảng sáng/tối vài chục mét (như mảng lớn của painted-valley) nhân vào độ chói để tuyết/đất không thành một màu phẳng
     const patch: Node = smoothstep(0.3, 0.7, F.noise(positionWorld.xz.div(17), false).a);
-    // theme.groundFlat (cả ngày lẫn đêm; phó bản ép mood): mảng 17 m đọc thành mây khi nền một tông; thu mảng về giữa, giữ nét nhỏ của đất vẽ và nhân độ chói albedo gốc
-    // (vết nứt, tro, mảnh đá) vào tông đất. 0 = như cũ (mọi level khác)
-    const patchF: Node = mix(patch, float(0.5), themeU.groundFlat);
-    const stroke: Node = smoothstep(0.09, 0.26, ink).mul(patchF.mul(0.6).add(0.4));
-    const crack: Node = mix(float(1), clamp(dot(col.rgb, vec3(0.299, 0.587, 0.114)).div(0.2), 0.3, 1.5), themeU.groundFlat);
+    // đêm (theme.nightFlat) và cả ngày lẫn đêm (theme.groundFlat; phó bản ép mood): mảng lớn 17 m đọc thành mây khi nền một tông; thu mảng về giữa, giữ nét nhỏ của
+    // đất vẽ và nhân độ chói albedo gốc (vết nứt, lá kim, tro, mảnh đá) vào tông đất. Cả hai 0 = như cũ (mọi level khác)
+    const flat: Node = paintedNight.mul(themeU.nightFlat);
+    const patchN: Node = mix(patch, float(0.5), max(flat, themeU.groundFlat));
+    const stroke: Node = smoothstep(0.09, 0.26, ink).mul(patchN.mul(0.6).add(0.4));
+    const lum: Node = dot(col.rgb, vec3(0.299, 0.587, 0.114));
+    const crack: Node = mix(float(1), clamp(lum.div(0.3), 0.55, 1.15), flat).mul(
+      mix(float(1), clamp(lum.div(0.2), 0.3, 1.5), themeU.groundFlat),
+    );
     const gTone: Node = mix(vec3(themeU.gShade), vec3(themeU.gLit), stroke).mul(crack);
     const mixed: Node = mix(painted, gTone, themeU.on.mul(themeU.groundMix));
     const mixedL: Node = dot(mixed, vec3(0.299, 0.587, 0.114));

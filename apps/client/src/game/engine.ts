@@ -115,6 +115,8 @@ import { groundAt } from '../base/levelCtx';
 import { PF_TRIBULATION } from '@dtl/shared';
 import { MonFx } from './fx/monFx';
 import { HitFx } from './fx/hitFx';
+import { StatusFx, monStatusOf, playerStatusOf, type StatusEnt } from './fx/statusFx';
+import { monScale } from './fx/monFx';
 import { variantFor } from './fx/fxTimeline';
 import {
   auraCombatOf,
@@ -340,6 +342,20 @@ export class Game {
   monFx: MonFx | null = null;
   /** Hình trúng đòn chung (HPL2): vết va theo hướng tu, chí mạng, chặn, quái đánh người, ngắt chú, nhịp hồi. */
   hitFx: HitFx | null = null;
+  statusFx: StatusFx | null = null;
+
+  /** Thực thể đang có hình trạng thái (quái chậm/độc/bỏng/choáng, người hồi dần): chỉ đọc cờ hiển thị đồng bộ từ server. */
+  private *statusEnts(): Generator<StatusEnt> {
+    for (const [id, m] of this.ents.monsters) {
+      if (m.s.st === 4) continue;
+      const kind = monStatusOf(m.s.mf ?? 0);
+      if (kind) yield { id, x: m.x, y: m.y, z: m.z, scale: monScale(m.model.height), kind, mine: false, actor: m as never };
+    }
+    for (const [id, p] of this.ents.players) {
+      const kind = playerStatusOf(p.s.fl);
+      if (kind) yield { id, x: p.x, y: p.y, z: p.z, scale: 1, kind, mine: id === this.sid, actor: p as never };
+    }
+  }
   boltKinds = new Map<number, string>();
   /** Dấu trên sân mới nhất của Thiên Nhân Ngũ Suy của chính mình, theo khóa `<loại>:<ô>` (chỉ bản dev, cho Playwright: `__game.suyLog`). */
   suyLog?: Record<
@@ -804,6 +820,11 @@ export class Game {
     this.pathAura = new PathAuraFx(this.vfx, auraEnv);
     this.monFx = new MonFx(this.skillFx.runner, { camera: () => this.camera, live: () => this.vfx.pool.live });
     this.hitFx = new HitFx(this.skillFx.runner, { camera: () => this.camera, live: () => this.vfx.pool.live });
+    this.statusFx = new StatusFx(this.skillFx.runner, {
+      camera: () => this.camera,
+      live: () => this.vfx.pool.live,
+      entities: () => this.statusEnts(),
+    });
     this.suyFx = new SuyFx(this.skillFx.runner, {
       vfx: this.vfx,
       scene: this.scene,
@@ -1509,6 +1530,7 @@ export class Game {
     this.pathAura = null;
     this.monFx = null;
     this.hitFx = null;
+    this.statusFx = null;
     this.suyFx?.dispose();
     this.suyFx = null;
     this.vfx?.dispose();

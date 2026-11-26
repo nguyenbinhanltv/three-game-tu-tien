@@ -32,6 +32,8 @@ export interface PaintedTheme {
   shadowMix?: number;
   /** 0..1: thu mảng sáng/tối lớn (17 m) của đất về giữa và nhân vết nứt/tro/mảnh đá của albedo gốc, cả ngày lẫn đêm. 0 = không (mặc định). */
   groundFlat?: number;
+  /** 0..1: ban đêm thu mảng sáng/tối lớn (17 m) của đất về giữa và nhân vết nứt của albedo gốc, để đất không loang như mây. 0 = không (mặc định). */
+  nightFlat?: number;
   /** Màu nhuộm trăng (nhân, tuyến tính) của đêm Họa Cảnh; mặc định [0,3, 0,46, 0,88] của Vân Lam. Bớt xanh dương để nhân vật và vòng chọn không chìm. */
   nightTint?: [number, number, number];
   /** Nhân đèn trời/trăng của đêm Họa Cảnh (mặc định 1): nhân vật và quái là phần duy nhất nhận đèn, tăng để đọc rõ. */
@@ -183,6 +185,24 @@ export const PAINTED_THEMES: Record<string, PaintedTheme> = {
     shadowMix: 1,
     groundFlat: 0.9,
   },
+  // Thiên Khuyết Cổ Thành (E4-A): cổ thành sa thạch nứt trên cao nguyên (đáy 80 m). Đất vàng đất nung ấm, bóng mận tím nhạt (pha tay); đá/tường ngà xám ấm với bóng tím
+  // chàm; đá lát ngà. Không cỏ xanh: mặt đất là đất nứt vốn nằm ở albedo, nên chỉ ánh xạ qua cặp `ground` (`groundMix` 1)
+  thien_khuyet: {
+    ground: [0xc79a62, 0x5c4659],
+    rock: [0xcfc0a2, 0x4e4868],
+    paving: [0xe0d3b6, 0x6a6282],
+    mist: 0xe8dac6,
+    mistBand: [76, 96],
+    mistK: 0.25,
+    propMix: 0.3,
+    bladeMix: 0.9,
+    nightContrast: 1.5,
+    nightTint: [0.48, 0.5, 0.62],
+    nightFlat: 0.9,
+    nightLift: 1.7,
+    groundMix: 1,
+    groundSat: 1,
+  },
 };
 
 /** Vân Lam (pilot) và level chưa có bảng: sương cũ của P4. */
@@ -206,6 +226,7 @@ export const themeU = {
   nightSplit: uniform(0),
   shadowMix: uniform(0),
   groundFlat: uniform(0),
+  nightFlat: uniform(0),
   nightTint: uniform(new THREE.Vector3(0.3, 0.46, 0.88)),
   groundMix: uniform(1),
   groundSat: uniform(1),
@@ -230,6 +251,7 @@ export function setPaintedTheme(levelId: string): void {
   themeU.nightSplit.value = t?.nightSplit ?? 0;
   themeU.shadowMix.value = t?.shadowMix ?? 0;
   themeU.groundFlat.value = t?.groundFlat ?? 0;
+  themeU.nightFlat.value = t?.nightFlat ?? 0;
   themeU.nightTint.value.set(...(t?.nightTint ?? [0.3, 0.46, 0.88]));
   themeU.groundMix.value = t?.groundMix ?? 1;
   themeU.groundSat.value = t?.groundSat ?? 1;
