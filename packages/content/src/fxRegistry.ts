@@ -168,6 +168,7 @@ import fx_fx_dotpha_hn from '../data/fx/fx_dotpha_hn.json';
 import fx_fx_dotpha_na from '../data/fx/fx_dotpha_na.json';
 import fx_fx_dotpha_tc from '../data/fx/fx_dotpha_tc.json';
 import fx_fx_fly_on from '../data/fx/fx_fly_on.json';
+import fx_fx_levelup from '../data/fx/fx_levelup.json';
 import fx_fx_kiep_kd from '../data/fx/fx_kiep_kd.json';
 import fx_fx_kiep_hn from '../data/fx/fx_kiep_hn.json';
 import fx_fx_kiep_na from '../data/fx/fx_kiep_na.json';
@@ -439,6 +440,7 @@ export const FX_TIMELINES = [
   fx_fx_dotpha_kd,
   fx_fx_dotpha_na,
   fx_fx_dotpha_tc,
+  fx_fx_levelup,
   fx_fx_fly_on,
   fx_fx_kiep_hn,
   fx_fx_kiep_kd,

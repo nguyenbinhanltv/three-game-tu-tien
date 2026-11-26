@@ -169,6 +169,7 @@ export class Vfx {
       'sprite_lam',
       'sprite_dan',
       'sprite_kieu',
+      'sprite_dp',
       'sprite_dong',
       'sprite_guong',
       'wind',
