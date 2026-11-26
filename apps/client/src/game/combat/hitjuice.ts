@@ -111,7 +111,7 @@ export function whooshDelay(hitIn: number): number {
   return Math.max(0, hitIn - WHOOSH_LEAD);
 }
 
-type Material = 'flesh' | 'stone' | 'metal';
+export type Material = 'flesh' | 'stone' | 'metal';
 
 /** Chất liệu thân quái để chọn lớp âm: vượn đá/thổ là đá, hệ kim là kim khí, còn lại là thịt. */
 export function materialOf(def: Pick<MonsterDef, 'model' | 'elem'> | undefined): Material {
