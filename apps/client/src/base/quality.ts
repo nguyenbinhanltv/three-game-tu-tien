@@ -80,6 +80,10 @@ const AUTO_SUSTAINED: AutoOptions = { windowMs: 20_000, cpuP95: 14, minFps: 45, 
 /** Ngưỡng tự hạ theo preset đang dùng. */
 export const optionsFor = (current: string): AutoOptions => (current === 'ultra' ? AUTO_ULTRA : AUTO_SUSTAINED);
 const MAX_WINDOW_MS = AUTO_SUSTAINED.windowMs;
+const LOCK30_MIN_MS = 30;
+const LOCK30_MAX_MS = 37;
+/** Tỉ lệ khoảng cách khung nằm trong [30, 37] ms để coi là khóa nhịp 30 fps. */
+const LOCK30_SHARE = 0.85;
 
 /**
  * Tự hạ preset khi nghẽn kéo dài (xem `optionsFor`): hạ MỘT bậc rồi chờ cooldown. Khung cách nhau > 1 s (tab ẩn, màn tải)
@@ -107,15 +111,18 @@ export class AutoQuality {
     }
   }
 
-  /** Bắt đầu lại cửa sổ (đổi preset, đổi level). `since` là mốc sớm nhất được xét lại. */
+  /**
+   * Bắt đầu lại cửa sổ (đổi preset, khoảng trống khung). `since` là mốc sớm nhất được xét lại và KHÔNG bao giờ lùi:
+   * `Game.setQuality` gọi `reset(now)` ngay sau lần tự hạ, không được xóa cooldown mà `check` vừa đặt.
+   */
   reset(since: number): void {
     this.t = [];
     this.cpu = [];
-    this.since = since;
+    this.since = Math.max(this.since, since);
   }
 
   /** CPU p95 và fps trong `windowMs` gần nhất; null nếu chưa đủ mẫu (cửa sổ chưa đầy hoặc đang cooldown). */
-  stats(now: number, windowMs: number = AUTO_ULTRA.windowMs): { p95: number; fps: number } | null {
+  stats(now: number, windowMs: number = AUTO_ULTRA.windowMs): { p95: number; fps: number; locked: boolean } | null {
     const from = now - windowMs;
     let i = 0;
     while (i < this.t.length && this.t[i]! < from) i++;
@@ -126,7 +133,13 @@ export class AutoQuality {
     const sorted = [...cpu].sort((a, b) => a - b);
     const p95 = sorted[Math.min(n - 1, Math.floor(n * 0.95))] ?? 0;
     const fps = (n - 1) / ((t[n - 1]! - t[0]!) / 1000);
-    return { p95, fps };
+    // Nhịp khung bị khóa ~30 fps (Chrome Energy Saver, Edge efficiency mode, Safari Low Power): gần như mọi khoảng cách khung nằm quanh 33,3 ms.
+    let near = 0;
+    for (let k = 1; k < n; k++) {
+      const d = t[k]! - t[k - 1]!;
+      if (d >= LOCK30_MIN_MS && d <= LOCK30_MAX_MS) near++;
+    }
+    return { p95, fps, locked: near >= (n - 1) * LOCK30_SHARE };
   }
 
   /** Preset nên hạ xuống, hoặc null (đủ tốt, bị khóa, chưa đủ mẫu, đã Thấp). Gọi khoảng 1 lần/giây. */
@@ -137,7 +150,8 @@ export class AutoQuality {
     const o = this.o ?? optionsFor(current);
     const s = this.stats(now, o.windowMs);
     if (!s) return null;
-    if (s.p95 > o.cpuP95 || s.fps < o.minFps) {
+    // fps thấp mà CPU nhẹ và nhịp dồn ở ~33 ms là trình duyệt tự khóa 30 fps (máy rảnh): không hạ oan, không ghi đè lựa chọn đã lưu.
+    if (s.p95 > o.cpuP95 || (s.fps < o.minFps && !s.locked)) {
       this.reset(now + o.cooldownMs); // chờ hết cooldown rồi đủ thêm một cửa sổ mới
       return next;
     }

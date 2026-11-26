@@ -106,10 +106,38 @@ describe('AutoQuality', () => {
     const n2 = run(ok, 0, 22, () => 4, 20); // 50 fps
     expect(ok.check(n2, 'medium', false)).toBeNull();
   });
-  it('fps < 40 thì Cực cao hạ dù CPU thấp', () => {
+  it('fps < 40 thì Cực cao hạ dù CPU thấp (nhịp không đều, không phải khóa 30 fps)', () => {
     const a = new AutoQuality();
-    const now = run(a, 0, 11, () => 4, 33); // 30 fps
+    let now = 0;
+    for (let i = 0; now < 11_000; i++) {
+      a.frame(now, 4);
+      now += i % 2 ? 22 : 40; // trung bình ~32 ms nhưng khoảng cách ngoài [30, 37] ms
+    }
     expect(a.check(now, 'ultra', false)).toBe('high');
+  });
+  it('trình duyệt khóa 30 fps (khung đều 33,3 ms, CPU thấp) thì KHÔNG hạ ở mọi preset', () => {
+    for (const q of ['ultra', 'high', 'medium']) {
+      const a = new AutoQuality();
+      const now = run(a, 0, 25, () => 3, 33.3);
+      expect(a.check(now, q, false), q).toBeNull();
+    }
+  });
+  it('khóa 30 fps nhưng CPU p95 cao thì vẫn hạ', () => {
+    const a = new AutoQuality();
+    const now = run(a, 0, 25, () => 30, 33.3);
+    expect(a.check(now, 'high', false)).toBe('medium');
+  });
+  it('đường nối thật: Game.setQuality gọi reset(now) sau lần hạ nhưng cooldown 30 s vẫn giữ', () => {
+    const a = new AutoQuality();
+    let now = run(a, 0, 22, () => 30);
+    expect(a.check(now, 'high', false)).toBe('medium');
+    a.reset(now); // đúng như setQuality làm ngay sau check
+    const t1 = now;
+    now = run(a, now, 25, () => 30); // 25 s < cooldown 30 s dù đã đủ cửa sổ 20 s
+    expect(a.check(now, 'medium', false)).toBeNull();
+    now = run(a, now, 8, () => 30);
+    expect(now - t1).toBeGreaterThan(30_000);
+    expect(a.check(now, 'medium', false)).toBe('low'); // hạ lần hai cách lần đầu ≥ cooldown
   });
   it('khóa preset thì không hạ', () => {
     const a = new AutoQuality();
