@@ -1,5 +1,5 @@
 // Bot headless để test tải và kiểm tra giao thức.
-// Chạy: pnpm bots --count 100 --duration 300 [--url ws://localhost:2567] [--prefix bot] [--crowd x,z[,r]] [--fight x,z[,r]] [--level N] [--dungeon]
+// Chạy: pnpm bots --count 100 --duration 300 [--url ws://localhost:2567] [--prefix bot] [--fly] [--crowd x,z[,r]] [--fight x,z[,r]] [--level N] [--dungeon]
 // --crowd: bot không đi săn mà đi lại/đứng quanh điểm (x, z) bán kính r (mặc định 25m), để đo client giữa đám đông (vd. sân tông môn 2048,2088).
 // --fight: bot ở quanh điểm (x, z) bán kính r (mặc định 25m), đánh quái/boss trong vùng bằng đủ các chiêu (nhiều VFX),
 //   thỉnh thoảng /gm heal để còn máu và linh lực. Không có quái thì đi lại như --crowd.
@@ -46,6 +46,8 @@ const DURATION = Number(arg('duration', '60'));
 const URL = arg('url', defaultServerWs());
 const PREFIX = arg('prefix', 'bot');
 const VERBOSE = process.argv.includes('--verbose');
+// --fly: bot bay liên tục (đo cảnh nhiều người ngự kiếm: vệt, đuôi mây, cất cánh).
+const FLY_ALL = process.argv.includes('--fly');
 const CROWD = point('crowd', 25);
 const FIGHT = point('fight', 25);
 const LEVEL = Number(arg('level', '0'));
@@ -293,6 +295,7 @@ class Bot {
       }
       if (now < this.flyUntil) flags |= IN_FLY;
     }
+    if (FLY_ALL) flags |= IN_FLY;
     this.seq++;
     this.room.send(C.INPUT, { s: this.seq, mx: 0, mz, yaw: this.yaw, f: flags });
   }
@@ -355,10 +358,10 @@ class Bot {
     } else if (now > this.turnAt) {
       this.turnAt = now + 1500 + Math.random() * 3500;
       this.yaw = Math.random() * Math.PI * 2;
-      this.moving = Math.random() < 0.6;
+      this.moving = FLY_ALL ? true : Math.random() < 0.6;
     }
     this.seq++;
-    this.room.send(C.INPUT, { s: this.seq, mx: 0, mz: this.moving ? 1 : 0, yaw: this.yaw, f: 0 });
+    this.room.send(C.INPUT, { s: this.seq, mx: 0, mz: this.moving ? 1 : 0, yaw: this.yaw, f: FLY_ALL ? IN_FLY : 0 });
   }
 
   async leave(): Promise<void> {
