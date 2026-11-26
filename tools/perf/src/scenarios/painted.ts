@@ -1,6 +1,8 @@
 // Họa Cảnh (`?style=painted`): ảnh so sánh mặc định | painted cùng điểm, cùng góc camera chéo, kèm số đo draw call/khung.
 //   pnpm shots painted --out <thư mục tuyệt đối> [--level <id>] [--moods day,night] [--views 720p,1080p] [--points a,b|all] [--at ten:x,z;...] [--styles off,painted] [--preset high] [--renderer webgpu|webgl2]
 // Ảnh: <style>-<view>-<mood>-<điểm>.png; số đo: perf.json (drawCalls, triangles, textures, frameMs, heapMB mỗi điểm).
+import { existsSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { sleep } from '../lib/devserver';
 import { list, num, opt } from '../lib/env';
 import { enterLevel, gm, perfSample, tp } from '../lib/game';
@@ -46,10 +48,19 @@ export default {
   async run(r) {
     const only = list('--points', 'all');
     const pts = pointsOf().filter((p) => only.includes('all') || only.includes(p.name));
-    const perf: Record<string, unknown> = {};
-    for (const style of list('--styles', 'off,painted')) {
-      for (const view of list('--views', '720p,1080p')) {
-        for (const mood of list('--moods', 'day,night')) {
+    // số đo ghi dần sau mỗi phiên và gộp với `perf.json` đã có: chạy bù một phần (`--styles`/`--views`/`--moods`) không làm mất số của lượt trước
+    const perfFile = join(r.out, 'perf.json');
+    const perf: Record<string, unknown> = existsSync(perfFile)
+      ? (JSON.parse(readFileSync(perfFile, 'utf8')) as Record<string, unknown>)
+      : {};
+    const combos: [string, string, string][] = [];
+    for (const style of list('--styles', 'off,painted'))
+      for (const view of list('--views', '720p,1080p')) for (const mood of list('--moods', 'day,night')) combos.push([style, view, mood]);
+    for (const [style, view, mood] of combos) {
+      // một phiên hỏng giữa chừng (trang nạp lại lúc máy tải nặng nên `__game` mất, hoặc trang tải quá 30 s) thì chụp lại cả phiên, tối đa 3 lần
+      for (let attempt = 1; ; attempt++) {
+        let close: (() => Promise<void>) | null = null;
+        try {
           const { ctx, page } = await r.open({
             name: `Pt${style[0]}${mood[0]}${view[0]}`,
             quality: opt('--preset', 'high'),
@@ -59,6 +70,7 @@ export default {
             seenIntro: true,
             warnings: true,
           });
+          close = () => ctx.close();
           await gm(page, `level ${LEVEL === 'van_lam' ? 15 : Math.max(27, requireLevel(LEVEL).minLevel ?? 0)}`, 2500);
           if (LEVEL !== 'van_lam') await enterLevel(page, LEVEL);
           await gm(page, 'god on', 2500);
@@ -94,9 +106,14 @@ export default {
             }
           }
           await ctx.close();
+          break;
+        } catch (e) {
+          await close?.().catch(() => undefined);
+          if (attempt >= 3) throw e;
+          console.warn(`[shots:painted] phiên ${style}-${view}-${mood} lỗi (lần ${attempt}), chụp lại: ${String(e).split('\n')[0]}`);
         }
       }
+      writeJson(r.out, 'perf.json', perf);
     }
-    writeJson(r.out, 'perf.json', perf);
   },
 } satisfies Scenario;
