@@ -57,6 +57,7 @@ import daotu from './scenarios/daotu';
 import cotu from './scenarios/cotu';
 import camchevfx from './scenarios/camchevfx';
 import animlab from './scenarios/animlab';
+import envreal from './scenarios/envreal';
 import tpmove from './scenarios/tpmove';
 import vfxlab from './scenarios/vfxlab';
 import vfxmon from './scenarios/vfxmon';
@@ -142,6 +143,7 @@ const SCENARIOS: Scenario[] = [
   cotu,
   camchevfx,
   animlab,
+  envreal,
   tpmove,
   vfxlab,
   vfxmon,

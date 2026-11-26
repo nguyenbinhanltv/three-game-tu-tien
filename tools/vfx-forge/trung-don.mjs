@@ -358,9 +358,10 @@ const SCENES = [
       shapeLang: ['ring', 'cloud'],
       silhouette: 'gợn nước mực lan trên nền, đốm linh khí bay lên',
       events: () => [
-        sprite('canh_ripple', { t: 0, dur: 1.5, size: 6.4, sizeTo: 7.2, erodeFrom: 0.7, alpha: 1, off: [0, -0.9, 0] }),
-        accent('canh_ripple', 0, 6.4, { dur: 0.12, tone: 'accent', off: [0, -0.9, 0] }),
-        parts('dust', 0.3, 3, { speed: 0.6, spread: 1, life: 0.8, size: 0.2, tone: 'rim', grav: -0.6, tier: 1 }),
+        // Mặt đĩa cổng nằm cao hơn nền ~1 m (đĩa + bệ): nâng gợn nước lên trên mặt đĩa, nếu không bị bệ che.
+        sprite('canh_ripple', { t: 0, dur: 1.5, size: 9.5, sizeTo: 10.5, erodeFrom: 0.7, alpha: 1, off: [0, 0.2, 0] }),
+        accent('canh_ripple', 0, 9.5, { dur: 0.12, tone: 'accent', off: [0, 0.2, 0] }),
+        parts('dust', 0.3, 3, { speed: 0.6, spread: 1, life: 0.8, size: 0.2, tone: 'rim', grav: -0.6, tier: 1, offset: [0, 0.5, 0] }),
       ],
     },
     {
@@ -372,9 +373,11 @@ const SCENES = [
       shapeLang: ['cloud'],
       silhouette: 'chùm đốm linh khí có đuôi trôi lên khỏi cây thuốc',
       events: () => [
-        sprite('canh_sprout', { t: 0, dur: 1.7, size: 1.7, sizeTo: 1.9, erodeFrom: 0.7, alpha: 0.8, tone: 'core', off: [0, -0.35, 0] }),
-        sprite('canh_mote', { t: 0, dur: 1.7, size: 2.6, sizeTo: 3.0, erodeFrom: 0.5, alpha: 1, off: [0, 0.7, 0] }),
-        accent('canh_mote', 0, 2.6, { dur: 0.1, tone: 'accent', off: [0, 0.7, 0] }),
+        // Lõi mực/lục ngọc đậm (lá + mầm) để đọc được trên nền đá sáng ban ngày; đốm linh khí trắng chỉ là điểm nhấn phía trên.
+        sprite('canh_sprout', { t: 0, dur: 1.7, size: 1.8, sizeTo: 2.0, erodeFrom: 0.75, alpha: 1, tone: 'core', off: [0, -0.3, 0] }),
+        sprite('canh_leaf', { t: 0, dur: 1.7, size: 1.7, sizeTo: 1.9, erodeFrom: 0.7, alpha: 1, off: [0, 0.35, 0] }),
+        accent('canh_leaf', 0, 1.7, { dur: 0.1, tone: 'accent', off: [0, 0.35, 0] }),
+        sprite('canh_mote', { t: 0.1, dur: 1.5, size: 1.6, sizeTo: 1.9, erodeFrom: 0.5, alpha: 1, off: [0, 0.9, 0], tier: 1 }),
       ],
     },
     {
