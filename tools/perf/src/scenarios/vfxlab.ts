@@ -5,7 +5,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import sharp from 'sharp';
-import { SKILL } from '@dtl/content';
+import { FX_TIMELINE, SKILL } from '@dtl/content';
 import { list, num, opt } from '../lib/env';
 import { sleep } from '../lib/devserver';
 import { gm } from '../lib/game';
@@ -20,6 +20,7 @@ const STEP_MS = 10;
 
 interface CardBudget {
   budget: { drawCalls: number; particles: number; screenCover: number; overdraw: number };
+  scene?: { impactAt: number };
 }
 
 const frame = (page: Page) => page.evaluate(() => new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => r()))));
@@ -72,7 +73,8 @@ async function inkMetrics(base: Buffer, shot: Buffer): Promise<{ darkShare: numb
 }
 
 async function run(r: Run, skills: string[], sizes: string[], at: number[]): Promise<Record<string, unknown>[]> {
-  for (const sk of skills) if (!SKILL.get(sk)) throw new Error(`không có chiêu ${sk}`);
+  // Timeline cảnh `fx_*` (đột phá, độ kiếp, ngự kiếm: V-P10) không phải chiêu nhưng phát được qua `__vfxlab.cast`.
+  for (const sk of skills) if (!SKILL.get(sk) && !(sk.startsWith('fx_') && FX_TIMELINE.has(sk))) throw new Error(`không có chiêu ${sk}`);
   const mon = opt('--mon', DEFAULT_MON);
   const dummies = Math.min(5, Math.max(1, num('--dummies', 1)));
   const { ctx, page } = await r.open({
@@ -124,12 +126,13 @@ async function run(r: Run, skills: string[], sizes: string[], at: number[]): Pro
   const results: Record<string, unknown>[] = [];
   for (const skill of skills) {
     const outDir = skills.length > 1 ? path.join(r.out, skill) : r.out;
-    const def = SKILL.get(skill)!;
-    const hitMs = Math.round((def.hitAt?.[0] ?? 0.3) * 1000);
+    const def = SKILL.get(skill);
     const card = (() => {
       const f = path.resolve(import.meta.dirname, '../../../../packages/content/data/vfx/cards', `${skill}.json`);
       return fs.existsSync(f) ? (JSON.parse(fs.readFileSync(f, 'utf8')) as CardBudget) : null;
     })();
+    // Cảnh `fx_*`: mốc "trúng" là mốc nhấn của thẻ cảnh (giây sau lúc kích), chưa có thẻ thì 0.
+    const hitMs = Math.round((def ? (def.hitAt?.[0] ?? 0.3) : (card?.scene?.impactAt ?? 0)) * 1000);
     const out: Record<string, unknown> = { skill, hitMs, card: card?.budget ?? null, shots: {} as Record<string, unknown> };
     const shots = out.shots as Record<string, unknown>;
     for (const tag of sizes) {

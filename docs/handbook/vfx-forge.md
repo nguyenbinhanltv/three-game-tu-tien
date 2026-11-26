@@ -45,6 +45,19 @@ Hình có hình dạng riêng (bàn tay, mặt hồn, lính giáo, phướn, l�
 
 **Đo phủ màn hình**: `node tools/vfx-forge/cover.mjs [id chiêu...]` (chạy ở gốc repo) là ƯỚC LƯỢNG có trọng số, tất định, từ timeline: Σ (bình phương cỡ × alpha × phần còn lại sau khi tan) của các tấm `sprite`/`flip` đang sống, chia diện tích khung camera chéo (cách 20 m, FOV dọc 32°, 16:9 = 20,4 × 11,5 m); in giá trị ở +30 ms và đỉnh. KHÔNG phải cận trên: bỏ ribbon/helix/decal/hạt, nhân alpha và phần tan, không trừ chồng nhau hay phần trong suốt của tranh. Dùng nó để khai `budget.screenCover` của thẻ (≤ 0,2; chiêu cuối ≤ 0,35) và PHẢI kèm số xác nhận bằng ảnh: `pixelCover` của `pnpm shots vfxlab` ở khung 0 và +150 ms (khung +30 ms hay dính rung hitstop làm lệch cả khung). `pixelCover` so với ảnh nền chụp trước khi ra chiêu nên bị lệch khi nền đổi (giờ/mây/rung): khung chưa có hình vẫn có thể báo 0,4; nếu một lượt báo gần như bằng nhau ở mọi khung thì lượt đó lệch nền, bỏ và chụp lại (`screenCover` của phòng thử là ước lượng theo hình cầu bao, quá tay với sprite, chỉ ghi kèm chú thích).
 
+## Thẻ cảnh và cảnh tiến cấp (V-P10)
+
+Hiệu ứng không thuộc chiêu hay hướng tu nào (đột phá, độ kiếp, ngự kiếm) là timeline `fx_*` kích theo S.FX. Chúng dùng **thẻ cảnh**: thẻ thường cộng `"scene": { "palette": {core, body, rim, accent, shadow}, "impactAt": <giây> }` và `"path": ""` (`VfxCardScene` ở `packages/shared/src/vfxcard.ts`).
+
+- `scene.palette` (hex) phải bằng bảng `palette` của timeline ở `apps/client/src/render/vfx/palette.ts` (test `apps/client/src/game/fx/dotPhaFx.test.ts` đối chiếu); không tông nào đỏ/cam theo `isRedOrange` (vàng kim phải có hue > 45°).
+- Timeline kích theo S.FX không có mốc âm, nên nhịp tụ nằm trong `[0, impactAt)`, điểm nhấn ở `impactAt + 0,03`; `checkStandard2` tính ba nhịp quanh `impactAt`. Phủ theo trần chung ≤ 0,2 (đợt đột phá đo được 0,03–0,09).
+- Phòng thử nhận id `fx_*`: `pnpm shots vfxlab --skill fx_dotpha_tc --at -300,0,30,150,400,1200` (mốc tính quanh `impactAt` của thẻ). Concept: `pnpm vfx:forge concept --card fx_dotpha_tc --shot <base.jpg> --out <ngoài repo>`.
+- **Đột phá** (`node tools/vfx-forge/dot-pha.mjs`, ghi đè cả file): `fx_levelup` (dải mực-ngọc quấn thân + chùm lá), `fx_dotpha_tc` (bốn phiến đá mực trồi lên + cuộn khói), `fx_dotpha_kd` (viên đan vỏ mực nứt + vòng đan vân lệch tâm; bảng màu vàng chanh + ngọc lục, hết cam), `fx_dotpha_na` (sen mực tám cánh + hài nhi sáng), `fx_dotpha_hn` (bóng thần hồn + hai vạt mây rách). Người khác thấy cùng timeline, hạ một bậc chất lượng.
+- Sprite nhóm `dp` (16 ô) là tranh **đơn sắc**; kiểu tô 12 (`SPRITE_STYLE.dp_`, `spriteNodes`) tô theo màu của sự kiện: `tone` = thân, `rim` của bảng = viền, lõi = màu thân hạ rất tối. Một atlas dùng cho mọi cảnh giới; cảnh mới chỉ cần bảng màu mới. Prompt vẽ: yêu cầu "monochrome grayscale only", đóng atlas với hậu tố `:neutral`.
+- Bảng Codex hay lệch lưới khi có hình rộng (sen, đôi vạt mây): xem bản xem trước `--preview`; thấy mảnh lạc/ô bị cắt thì cắt lại từng hình theo khung bao rồi xếp vào lưới đều nền `#00FF00` trước khi `sprite-pack`.
+- Tấm sprite là quad 2×2 (`scale` 0,5 = ô 1 m) quay mặt về camera chéo 52°: mép dưới thấp hơn tâm 0,31 × cạnh ô. Tâm thấp hơn mức đó thì nền cắt ngang hình; phiến đá Trúc Cơ dùng chính điều này để "trồi lên".
+- Atlas `dp` nạp sẵn khi vào game (lên tầng chỉ dài ~1 s) nhưng không được miễn giải phóng; runner cũng nạp atlas của mọi sprite ngay lúc timeline `trigger: fx` bắt đầu.
+
 ## Bảng phong cách
 
 `tools/vfx-forge/style-sheet.json`: ramp ba tông (lõi tối 15–25%, thân 50–60%, viền sáng 10–20%), nét không mảnh hơn 3% khung, tương phản lõi/viền ≥ 4:1, nền đen thuần cho flipbook, cấm đỏ/cam. Script đưa bảng này, bảng màu hướng tu và phối cảnh camera chéo vào MỌI prompt; luôn đính ảnh mẫu đã duyệt gần nhất bằng `--ref` để các chiêu cùng phong cách.
