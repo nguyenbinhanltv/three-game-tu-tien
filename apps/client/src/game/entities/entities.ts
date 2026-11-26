@@ -21,6 +21,7 @@ import {
 import { groundAt } from '../../base/levelCtx';
 import { gatesOf, type Gate } from '../world/gates';
 import { APPEARANCE, SET, MONSTER, NPCS, QUESTS, t, pathOf as PATH_OF_METHOD, questPathOk } from '@dtl/content';
+import { isKiemTu } from '../character/kiemTu';
 import { BRAWLER_WEAPON } from '../character/brawlerGear';
 import { giantScale, stepGiant } from './giant';
 import { bladeLook, loiArc } from './loiBlade';
@@ -524,6 +525,7 @@ export class EntityManager {
       v.model.setGiant?.(giantScale(v.giant));
       v.model.setBrawlerGear?.(s.mt ? (PATH_OF_METHOD(s.mt)?.weapons.includes(BRAWLER_WEAPON) ?? false) : false, s.mt === COTHAN_METHOD);
       v.model.setGreatBlade?.(s.mt ? (PATH_OF_METHOD(s.mt)?.weapons.includes(GREATBLADE_WEAPON) ?? false) : false);
+      v.model.setKiemTu?.(isKiemTu(s.mt));
       v.model.setCoGear?.(s.mt ? (PATH_OF_METHOD(s.mt)?.weapons.includes(COHU_WEAPON) ?? false) : false);
       v.model.setTranKy?.(s.mt ? (PATH_OF_METHOD(s.mt)?.weapons.includes(TRAN_KY_WEAPON) ?? false) : false);
       const bl = bladeLook(s.mt, look.set ? (SET.get(look.set)?.look.blade ?? '') : '', s.wg ?? 0, this.time);

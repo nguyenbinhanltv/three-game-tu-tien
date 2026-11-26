@@ -1,12 +1,12 @@
 // Thân Pháp T2 (hoàn thiện TP-1): đo và chụp ĐẢO CHIỀU GẤP (pivot) và IK chân khi CHẠY trên bậc thang/dốc, bằng đầu dò `window.__animlab.probe()`.
 // Nhân vật đi bằng đích chuột phải (`__game.iso.dest`) nên hướng chạy theo trục thế giới, không phụ thuộc hướng camera chéo của bản đồ.
-//   pnpm shots tpmove --out <thư mục tuyệt đối> [--tests pivot,stand,flat,stairs,slope] [--thanphap 0|1] [--fx pivot=0,...] [--gender m|f] [--set <gm outfit>]
+//   pnpm shots tpmove --out <thư mục tuyệt đối> [--tests pivot,stand,flat,stairs,slope] [--thanphap 0|1] [--fx pivot=0,...] [--gender m|f] [--set <gm outfit>] [--method <id công pháp>]
 //                     [--stills 1 [--sizes 720p,1080p]] [--runs 3]
 // Số đo (`tpmove.json`); độ cao cổ chân tính so với mặt đứng thật ngay dưới nó, trừ mốc tiếp đất khi chạy đều trên bãi phẳng (`runContactCm`):
 //  - pivot: `dipCm` = hông hạ thêm so với điểm thấp của nhịp chạy đều, `uprightDeg` = thân dựng lên bao nhiêu so với độ chúi lúc chạy đều (phanh),
 //    `turn50Ms`/`turn90Ms` = thời gian thân (đang hiển thị) quay được 50%/90% góc, `sinkCm` = chân lún sâu nhất trong 0,6 s sau khi đảo chiều (dương = lún).
 //  - stand: cổ chân lúc đứng trước và sau một lượt chạy–dừng (phải về cùng độ cao) + ảnh ngang tầm chân.
-//  - flat (đối chứng) / stairs / slope (lên rồi xuống, chỉ lúc chạy đều): `sinkP95Cm`/`sinkMaxCm` = chân trụ lún, `contactCm` = p10
+//  - flat (đối chứng) / stairs / slope (lên rồi xuống, chỉ lúc chạy đều): `ankleMinCm` = cổ chân thấp nhất (lún THẬT khi < cổ chân đứng ~17 cm); `sinkP95Cm`/`sinkMaxCm` = chân trụ so với mũi chân lúc chạy (đảo chiều/phanh về dáng đi bộ tính là lún), `contactCm` = p10
 //    độ cao chân trụ (≈ lúc tiếp đất), `vyP95`/`vyP99` = tốc độ dọc của cổ chân (m/s): chân nhảy cả bậc trong một khung thì vọt lên hàng chục m/s.
 // `--stills 1`: dải khung quanh lúc đảo chiều và lúc chạy trên bậc, camera chéo, mỗi cỡ một lượt cùng góc; tên file có mốc ms.
 import fs from 'node:fs';
@@ -204,6 +204,8 @@ function feetStats(rows: Row[], rest: number) {
     ),
     sinkMaxCm: r1(Math.max(0, ...h.map((x) => -x)) * 100),
     contactCm: r1(q(h, 0.1) * 100),
+    /** Cổ chân thấp nhất (cm trên mặt đứng): so với cổ chân lúc đứng (~17–18 cm) để biết chân có THẬT SỰ lún không; `sink*` lấy mốc là mũi chân lúc chạy nên dáng phanh/đi bộ (gót, cổ chân thấp hơn) bị tính là lún. */
+    ankleMinCm: r1(Math.min(...stance) * 100),
     vyP95: r1(q(vy, 0.95)),
     vyP99: r1(q(vy, 0.99)),
   };
@@ -257,7 +259,7 @@ export default {
   name: 'tpmove',
   desc: 'Thân Pháp T2: đo + dải khung đảo chiều gấp (pivot) và IK chân khi chạy trên bậc/dốc (trước/sau bằng --thanphap, --fx)',
   usage:
-    '[--tests pivot,stand,flat,stairs,slope] [--thanphap 0|1] [--fx pivot=0,...] [--gender m|f] [--set <gm outfit>] [--stills 1 [--sizes 720p,1080p] [--dpr 2]] [--runs 3] [--raw 1]',
+    '[--tests pivot,stand,flat,stairs,slope] [--thanphap 0|1] [--fx pivot=0,...] [--gender m|f] [--set <gm outfit>] [--method <id công pháp>] [--stills 1 [--sizes 720p,1080p] [--dpr 2]] [--runs 3] [--raw 1]',
   async run(r) {
     requireLevel('van_lam');
     const tests = new Set(list('--tests', 'pivot,stand,flat,stairs,slope'));
@@ -276,7 +278,7 @@ export default {
         seenIntro: true,
         look: { g: opt('--gender', 'm') },
         extra: opt('--query', ''),
-        query: { realm: 'nk12', god: 1, chr: 'v3', animlab: 1, quiet: 1, thanphap: opt('--thanphap', '1') === '1' ? 1 : undefined },
+        query: { realm: 'nk12', god: 1, chr: 'v3', animlab: 1, quiet: 1, thanphap: opt('--thanphap', '1') === '1' ? 1 : 0 },
         hide: 'hud',
       });
       await page.waitForFunction(() => !!window.__game && !!window.__animlab, undefined, { timeout: 120_000 });
@@ -285,6 +287,9 @@ export default {
       if (Object.keys(fxSet).length) await page.evaluate((f) => window.__animlab!.fx(f), fxSet);
       // Giữ cảnh giới Ngưng Khí (`realm=nk12`): từ Nguyên Anh hào quang nhấc người 0,2 m trên mây sen, làm lệch mọi số đo chân.
       await gm(page, 'spawn clear', 1400);
+      // `--method <id>`: công pháp (hướng tu) của nhân vật, để chụp Kiếm tu (lac_kiem_quyet) và hệ khác (vd. bat_dong_kim_than).
+      const method = opt('--method', '');
+      if (method) await gm(page, `method ${method}`, 1500);
       const set = opt('--set', 'none');
       if (set !== 'none') await gm(page, `outfit ${set} ${opt('--gender', 'm')}`, 3500);
       await page.waitForFunction(() => !!window.__animlab!.probe(), undefined, { timeout: 60_000, polling: 300 });
