@@ -93,3 +93,39 @@ describe('checkStandard2 (chuẩn Họa Pháp Lô 2)', () => {
     expect(isRedOrange('f2d86b')).toBe(false);
   });
 });
+
+describe('thẻ cảnh (V-P10: hiệu ứng fx_* không thuộc chiêu/hướng tu)', () => {
+  const scene: VfxCard = {
+    ...ok,
+    skillId: 'fx_x',
+    path: '',
+    textures: [],
+    scene: { palette: { core: '453a08', body: 'e6c84a', rim: 'fff4c8', accent: '3fb8d8' }, impactAt: 0.5 },
+  };
+  const vs = (c: VfxCard, isScene = true) =>
+    validateVfxCard(
+      c,
+      () => false,
+      () => false,
+      () => isScene,
+    );
+  it('hợp lệ khi có timeline fx_* cùng id, không cần chiêu hay hướng tu', () => expect(vs(scene)).toEqual([]));
+  it('chặn khi không có timeline, khi khai path, khi bảng màu không phải hex, khi impactAt ngoài khoảng', () => {
+    expect(vs(scene, false).join()).toMatch(/không có timeline/);
+    expect(vs({ ...scene, path: 'kiem_tu' }).join()).toMatch(/path phải rỗng/);
+    expect(vs({ ...scene, scene: { ...scene.scene!, palette: { ...scene.scene!.palette, body: '#e6c84a' } } }).join()).toMatch(/hex/);
+    expect(vs({ ...scene, scene: { ...scene.scene!, impactAt: 9 } }).join()).toMatch(/impactAt/);
+  });
+  it('ba nhịp của chuẩn 2 tính quanh impactAt (mọi t ≥ 0)', () => {
+    const c: VfxCard = { ...scene, standard: 2, silhouette: 'bốn phiến đá mực trồi nghiêng', materials: ['sprite'] };
+    const evs = [
+      { type: 'mesh', shape: 'sprite', t: 0 },
+      { type: 'mesh', shape: 'sprite', t: 0.53 },
+      { type: 'mesh', shape: 'sprite', t: 1 },
+    ];
+    const ctx = { redTones: new Set<string>(), impactAt: 0.5 };
+    expect(checkStandard2(c, evs, false, ctx)).toEqual([]);
+    // Không truyền impactAt: mốc nhấn tính ở 0 nên thiếu báo trước.
+    expect(checkStandard2(c, evs, false, { redTones: new Set<string>() }).join()).toMatch(/báo trước/);
+  });
+});

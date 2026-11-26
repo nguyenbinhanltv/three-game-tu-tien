@@ -663,12 +663,23 @@ function spriteNodesImpl(U: FxUniforms, group: SpriteGroup): { color: N; opacity
   const nRamp = mix(mix(mix(nCore, nBody, smoothstep(0.04, 0.4, nT)), nRim, smoothstep(0.4, 0.8, nT)), nWhite, smoothstep(0.9, 1.0, nT));
   const nWarm = smoothstep(0.0, 0.08, ts.r.sub(ts.g.mul(0.9)));
   const nHybrid = mix(nRamp, min(ts.rgb.mul(1.12), vec3(1.0, 0.95, 0.6)), nWarm);
-  // Chọn kiểu tô theo `fxA.x`: 1 lôi, 2 kiếm, 3 hộ pháp, 4 thủy, 5 nguyệt, 6 xương, 7 đất/độc, 8 sét tím, 9 đao, 10 đan, 11 cổ thần (0 = âm hồn).
+  // Chọn kiểu tô theo `fxA.x`: 1 lôi, 2 kiếm, 3 hộ pháp, 4 thủy, 5 nguyệt, 6 xương, 7 đất/độc, 8 sét tím, 9 đao, 10 đan, 11 cổ thần, 12 theo bảng timeline (0 = âm hồn).
   const is = (n: number) => step(n - 0.5, U.a.x).mul(float(1).sub(step(n + 0.5, U.a.x)));
   const spStyled0 = mix(mix(mix(spLift, lRamp, is(1)), kRamp, is(2)), hRamp, is(3));
   const spStyled1 = mix(mix(mix(spStyled0, wRamp, is(4)), mRamp, is(5)), boneRamp, is(6));
   const spStyled2 = mix(mix(mix(mix(spStyled1, earthHybrid, is(7)), rawRamp, is(8)), dRamp, is(9)), cRamp, is(11));
-  const spStyled3 = mix(spStyled2, nHybrid, is(10));
+  // Kiểu "theo bảng timeline" (`fxA.x` = 12, cảnh đột phá V-P10): tranh ĐƠN SẮC, tô bằng chính màu của sự kiện: lõi mực = màu sự kiện hạ rất tối,
+  // thân = màu sự kiện (`tone`), viền = `rim` của bảng, điểm sáng nhất gần trắng. Một atlas dùng cho mọi cảnh giới (mỗi cảnh giới một bảng màu).
+  // Dải giữ THÂN rộng (tranh xám sáng vẫn ra màu thân, không trôi lên trắng): chỉ nét trắng của tranh (mép, khe nứt) mới lên viền.
+  const pT = smoothstep(0.06, 0.92, spLum);
+  const pWhite = mix(spRimIn, vec3(1, 1, 1), 0.35);
+  const pBody = U.color.mul(0.82);
+  const pRamp = mix(
+    mix(mix(U.color.mul(0.05), pBody, smoothstep(0.08, 0.5, pT)), spRimIn, smoothstep(0.66, 0.9, pT)),
+    pWhite,
+    smoothstep(0.93, 1.0, pT),
+  );
+  const spStyled3 = mix(mix(spStyled2, nHybrid, is(10)), pRamp, is(12));
   // Tan như khói mỏng dần: nhiễu thấp tần + mép mỏng (tranh sáng/trong) tan trước, ngưỡng rộng nên không ra đường cắt răng cưa.
   const spE = vnoise(q.mul(vec2(5, 7)).add(U.a.z.mul(7)))
     .mul(0.55)
