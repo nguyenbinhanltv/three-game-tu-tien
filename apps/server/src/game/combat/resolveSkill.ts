@@ -199,7 +199,7 @@ export function resolveSkillImpl(sys: CombatSystem, p: PlayerEnt, skill: SkillDe
         if (am) sys.markMon(p, o, am.id, am.n);
         if (stun > 0) sys.stunMonster(p, o, stun);
         if (v?.slow && !o.def.boss) o.slow = mergeSlow(o.slow, { until: sys.c.now + v.slow.dur * 1000, mul: v.slow.mul }, sys.c.now);
-        if (burn) o.poison = { sid: p.sid, until: sys.c.now + burn.dur * 1000, nextAt: sys.c.now + 1000, per: burn.per };
+        if (burn) o.poison = { sid: p.sid, until: sys.c.now + burn.dur * 1000, nextAt: sys.c.now + 1000, per: burn.per, kind: 'burn' };
       }
       // Đan Hỏa Phong Tràn: Mộc ấn trên đạo hữu nổ thành sát thương quanh họ.
       if (cm?.burst) sys.burstAllyMarks(p, skill, cm, elemMul, tag);
@@ -522,6 +522,7 @@ export function resolveSkillImpl(sys: CombatSystem, p: PlayerEnt, skill: SkillDe
             until: sys.c.now + skill.poison.dur * durMul * 1000,
             nextAt: sys.c.now + 1000,
             per: Math.max(1, Math.round(c.atk * skill.poison.mul * (v?.poisonMul ?? 1))),
+            kind: 'poison',
           };
           sys.aggroMonster(o, p);
         }

@@ -1,0 +1,44 @@
+{
+  "skillId": "fx_st_poison",
+  "idea": "ĐỘC (mộc độc): chùm bọt độc nổi lên quanh thân, vài bọt vỡ; lục chanh, lõi tím mực, mép trắng ngà. Lặp mỗi giây khi còn trạng thái.",
+  "element": "moc",
+  "path": "",
+  "scene": {
+    "palette": {
+      "core": "1c1230",
+      "body": "9bd05a",
+      "rim": "f0ffd0",
+      "accent": "c9a8ff",
+      "shadow": "0a0614"
+    },
+    "impactAt": 0
+  },
+  "shapeLang": [
+    "cloud"
+  ],
+  "timing": {
+    "anticipationMs": 0,
+    "impactMs": 50,
+    "lingerMs": 900
+  },
+  "footprint": {
+    "lengthM": 2.2,
+    "widthM": 2.2,
+    "heightM": 2.4
+  },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": {
+    "drawCalls": 2,
+    "particles": 6,
+    "screenCover": 0.02,
+    "overdraw": 2
+  },
+  "textures": [],
+  "silhouette": "chùm bọt độc lớn nhỏ nổi lên quanh thân, vài bọt vỡ",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles"
+  ]
+}

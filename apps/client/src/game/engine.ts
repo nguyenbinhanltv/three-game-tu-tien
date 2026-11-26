@@ -116,6 +116,8 @@ import { PF_TRIBULATION } from '@dtl/shared';
 import { MonFx } from './fx/monFx';
 import { HitFx } from './fx/hitFx';
 import { EnvFx, type EnvGate } from './fx/envFx';
+import { StatusFx, monStatusOf, playerStatusOf, type StatusEnt } from './fx/statusFx';
+import { monScale } from './fx/monFx';
 import { variantFor } from './fx/fxTimeline';
 import {
   auraCombatOf,
@@ -348,6 +350,20 @@ export class Game {
   /** Điểm hái đang có cây (cờ `on` do server đồng bộ). */
   private *envHerbs(): Generator<{ id: string; x: number; y: number; z: number }> {
     for (const [id, n] of this.view.nodes) if (n.on) yield { id, x: n.x, y: n.y, z: n.z };
+  }
+  statusFx: StatusFx | null = null;
+
+  /** Thực thể đang có hình trạng thái (quái chậm/độc/bỏng/choáng, người hồi dần): chỉ đọc cờ hiển thị đồng bộ từ server. */
+  private *statusEnts(): Generator<StatusEnt> {
+    for (const [id, m] of this.ents.monsters) {
+      if (m.s.st === 4) continue;
+      const kind = monStatusOf(m.s.mf ?? 0);
+      if (kind) yield { id, x: m.x, y: m.y, z: m.z, scale: monScale(m.model.height), kind, mine: false, actor: m as never };
+    }
+    for (const [id, p] of this.ents.players) {
+      const kind = playerStatusOf(p.s.fl);
+      if (kind) yield { id, x: p.x, y: p.y, z: p.z, scale: 1, kind, mine: id === this.sid, actor: p as never };
+    }
   }
   boltKinds = new Map<number, string>();
   /** Dấu trên sân mới nhất của Thiên Nhân Ngũ Suy của chính mình, theo khóa `<loại>:<ô>` (chỉ bản dev, cho Playwright: `__game.suyLog`). */
@@ -818,6 +834,11 @@ export class Game {
       live: () => this.vfx.pool.live,
       gates: () => this.envGates,
       herbs: () => this.envHerbs(),
+    });
+    this.statusFx = new StatusFx(this.skillFx.runner, {
+      camera: () => this.camera,
+      live: () => this.vfx.pool.live,
+      entities: () => this.statusEnts(),
     });
     this.suyFx = new SuyFx(this.skillFx.runner, {
       vfx: this.vfx,
@@ -1525,6 +1546,7 @@ export class Game {
     this.monFx = null;
     this.hitFx = null;
     this.envFx = null;
+    this.statusFx = null;
     this.suyFx?.dispose();
     this.suyFx = null;
     this.vfx?.dispose();

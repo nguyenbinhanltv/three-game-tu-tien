@@ -143,6 +143,15 @@ const LAB_ENV: Record<string, { dx: number; chest: number }> = {
   fx_env_revive: { dx: 0, chest: 1.15 },
 };
 
+/** Timeline trạng thái kéo dài (`fx_st_*`) → loại trạng thái (đặt ở quái, riêng hồi dần ở mình). */
+const LAB_ST: Record<string, 'slow' | 'poison' | 'burn' | 'stun' | 'hot'> = {
+  fx_st_slow: 'slow',
+  fx_st_poison: 'poison',
+  fx_st_burn: 'burn',
+  fx_st_stun: 'stun',
+  fx_st_hot: 'hot',
+};
+
 /** `MonsterBurrow` rút gọn: các trường phòng thử cần. */
 interface BurrowCfg {
   r: number;
@@ -254,6 +263,33 @@ export function installVfxLab(g: Game, onHazard?: (g: Game, m: HazardMsg) => voi
         if (!h.envFx || !me) return false;
         return h.envFx.labPlay(skill, { id: 'lab', x: me.x + labEnv.dx, y: me.y, z: me.z, chest: labEnv.chest });
       }
+      // Hình trạng thái kéo dài (HPL2 PR2): phát một lượt qua `StatusFx` lên quái (chậm/độc/bỏng/choáng) hoặc lên mình (hồi dần).
+      const stKind = LAB_ST[skill];
+      if (stKind) {
+        const h = g as unknown as {
+          statusFx: { play(e: object, force: boolean): boolean } | null;
+          ents: {
+            monsters: Map<string, { x: number; y: number; z: number; model: { height: number } }>;
+            players: Map<string, { x: number; y: number; z: number }>;
+          };
+        };
+        const ent = stKind === 'hot' ? h.ents.players.get(gg.sid) : hit ? h.ents.monsters.get(hit[0]) : undefined;
+        if (!h.statusFx || !ent) return false;
+        const scale = 'model' in ent ? monScale((ent as { model: { height: number } }).model.height) : 1;
+        return h.statusFx.play(
+          {
+            id: stKind === 'hot' ? gg.sid : hit![0],
+            x: ent.x,
+            y: ent.y,
+            z: ent.z,
+            scale,
+            kind: stKind,
+            mine: stKind === 'hot',
+            actor: ent,
+          },
+          true,
+        );
+      }
       // Hình trúng đòn chung (HPL2): phát qua `HitFx` như lúc chơi. Vết va/chí mạng/chặn/ngắt chú đặt ở quái (tô theo hướng tu của mình, chặn có bảng riêng);
       // quái đánh người và nhịp hồi đặt ở mình (tô theo hệ của quái / bảng hồi).
       const labHit = LAB_HIT[skill];
@@ -304,6 +340,8 @@ export function installVfxLab(g: Game, onHazard?: (g: Game, m: HazardMsg) => voi
       if (hf) hf.lab = on;
       const ef = (g as unknown as { envFx: { lab: boolean } | null }).envFx;
       if (ef) ef.lab = on;
+      const sf = (g as unknown as { statusFx: { lab: boolean } | null }).statusFx;
+      if (sf) sf.lab = on;
     },
     castMon(mon, mv) {
       const gg = g as unknown as {

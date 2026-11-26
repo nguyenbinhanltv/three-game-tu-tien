@@ -175,8 +175,8 @@ export interface MonEnt {
   taunt?: { sid: string; until: number };
   /** Bị làm chậm (đòn bạo kích của bộ Hàn Giao Lân): tốc độ đuổi nhân `mul` tới `until`. */
   slow?: { until: number; mul: number };
-  /** Mộc độc của Hồi Xuân Quyết (đan sư): mỗi giây gây `per` sát thương tới `until`. */
-  poison?: { sid: string; until: number; nextAt: number; per: number };
+  /** Sát thương theo thời gian: mộc độc của Hồi Xuân Quyết (`poison`, đan sư) hoặc bỏng của chiêu hỏa (`burn`); mỗi giây gây `per` tới `until`. `kind` chỉ để đồng bộ cờ vẽ hình. */
+  poison?: { sid: string; until: number; nextAt: number; per: number; kind: 'poison' | 'burn' };
 }
 
 export interface NodeEnt {

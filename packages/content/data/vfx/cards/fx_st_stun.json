@@ -1,0 +1,44 @@
+{
+  "skillId": "fx_st_stun",
+  "idea": "CHOÁNG / MẤT THẾ (quái): vòng quầng nghiêng trên đầu với ba chim mực và hai ngôi sao xoay quanh. Lặp khi còn trạng thái.",
+  "element": "vo",
+  "path": "",
+  "scene": {
+    "palette": {
+      "core": "14161c",
+      "body": "b9c6d6",
+      "rim": "ffffff",
+      "accent": "f0e6a8",
+      "shadow": "08090c"
+    },
+    "impactAt": 0
+  },
+  "shapeLang": [
+    "ring"
+  ],
+  "timing": {
+    "anticipationMs": 0,
+    "impactMs": 50,
+    "lingerMs": 900
+  },
+  "footprint": {
+    "lengthM": 2.2,
+    "widthM": 2.2,
+    "heightM": 2.4
+  },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": {
+    "drawCalls": 2,
+    "particles": 6,
+    "screenCover": 0.02,
+    "overdraw": 2
+  },
+  "textures": [],
+  "silhouette": "vòng quầng trên đầu, chim mực và sao xoay quanh",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles"
+  ]
+}

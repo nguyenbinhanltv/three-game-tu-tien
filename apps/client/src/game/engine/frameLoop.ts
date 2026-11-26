@@ -252,6 +252,7 @@ export function runFrame(eng: Game): void {
   if (me) eng.vfx.trails.update(dt, eng.ents.players, eng.sid, eng.camera);
   eng.suyFx?.update();
   eng.envFx?.update(dt);
+  eng.statusFx?.update(dt);
   eng.skillFx?.update(dt, pscale);
   if (me) eng.realmAura?.update(dt);
   if (me) eng.pathAura?.update(dt);
