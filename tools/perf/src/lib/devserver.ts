@@ -57,6 +57,8 @@ export interface DevServer {
   readonly port: number;
   readonly clientPort: number;
   readonly logFile: string;
+  /** DB tạm của server (bị xóa ở `stop()`): công cụ cần đọc DB, vd. đối soát sổ cái, phải làm trước khi tắt. */
+  readonly dbFile: string;
   start(): Promise<void>;
   stop(): void;
 }
@@ -171,5 +173,5 @@ export function createDevServer(o: {
     for (const pid of listeningPids(owned).values()) ownedPids.add(pid);
   }
 
-  return { port, clientPort, logFile, start, stop };
+  return { port, clientPort, logFile, dbFile, start, stop };
 }
