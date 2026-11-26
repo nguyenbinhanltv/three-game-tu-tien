@@ -1,6 +1,7 @@
 import * as THREE from 'three/webgpu';
-import { heightAt, levelId } from '../../base/levelCtx';
+import { heightAt, levelId, levelTerrain } from '../../base/levelCtx';
 import { ckGrassK } from './cuuKieuArt';
+import { vhPaintedGrass } from './vanHaiArt';
 import { baseOf } from '../../base/quality';
 import { createBlades } from '../../render/painted/lab/blades';
 import { createFlowers, FLOWER_RING } from '../../render/painted/lab/flowers';
@@ -22,6 +23,7 @@ import { GRASS_PUSH_SLOTS, grassBlockedByCollider, grassDensityAt, setGrassColli
  * Lớp cỏ Họa Cảnh của game (`?style=painted`): lá và hoa là bản dịch TSL đã đo khớp ở cảnh thử (render/painted/lab), đọc độ cao và độ phủ cỏ từ
  * lưới cuộn dựng từ địa hình game (xem render/painted/fieldShared.ts). Luật mọc cỏ chung với cỏ thường (`grassDensityAt`).
  */
+const _isle = { k: 0, dry: 0.25 };
 const wrapIdx = (v: number): number => ((v % REGION) + REGION) % REGION;
 
 export class PaintedGameField implements GrassLayer {
@@ -56,6 +58,8 @@ export class PaintedGameField implements GrassLayer {
     setGrassColliders(x0, z0, CT);
     // cỏ không mọc dày trên đường/sân đá của level (như cỏ mặc định): hiện chỉ Cửu Kiều
     const roadK = levelId() === 'cuu_kieu' ? ckGrassK : null;
+    // Vân Hải: mật độ và độ khô theo bản sắc từng đảo (lối mòn, bờ hồ, đá lộ, đám cỏ), cùng luật với thẻ cỏ mặc định
+    const isleDef = levelId() === 'van_hai' ? levelTerrain().def : null;
     const n = CT + 1;
     const hs = new Float64Array(n * n);
     for (let j = 0; j < n; j++) for (let i = 0; i < n; i++) hs[j * n + i] = heightAt(x0 + i + 0.5, z0 + j + 0.5);
@@ -68,14 +72,20 @@ export class PaintedGameField implements GrassLayer {
         let dens = grassDensityAt(x + 0.5, z + 0.5, h, slopeG);
         if (dens > 0 && grassBlockedByCollider(x + 0.5, z + 0.5)) dens = 0;
         if (dens > 0 && roadK) dens *= roadK(x + 0.5, z + 0.5);
+        let dry = 0.25;
+        if (dens > 0 && isleDef) {
+          vhPaintedGrass(isleDef, x + 0.5, z + 0.5, slopeG, _isle);
+          dens *= _isle.k;
+          dry = _isle.dry;
+        }
         const tx = wrapIdx(x);
         const tz = wrapIdx(z);
         const k = tz * REGION + tx;
         d.heights[k] = h;
-        d.map[k * 4] = 64; // dry 0,25
+        d.map[k * 4] = Math.round(255 * dry); // dry (0,25 mặc định)
         d.map[k * 4 + 1] = Math.round(255 * Math.min(1, dens / 0.55)); // growth
         d.map[k * 4 + 2] = 0; // wet
-        d.map[k * 4 + 3] = dens > 0 ? 140 : 0; // flowers 0,55
+        d.map[k * 4 + 3] = dens > 0 ? Math.round(140 * (1 - 0.7 * Math.max(0, dry - 0.3))) : 0; // flowers 0,55; ít hoa hơn ở chỗ cỏ khô (Lôi Vân)
         // độ dốc của "thế đất" lấy trên vài mét (như nguồn: không phải từng gồ ghề)
         const sx = (heightAt(x + 8.5, z + 0.5) - heightAt(x - 7.5, z + 0.5)) / 16;
         const sz = (heightAt(x + 0.5, z + 8.5) - heightAt(x + 0.5, z - 7.5)) / 16;
