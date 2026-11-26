@@ -136,7 +136,7 @@ function attachBloom(m: THREE.Material, strength: number): void {
   // Họa Cảnh: không có bloom; vật liệu đánh dấu ghi MẶT NẠ VFX cho Kuwahara vào kênh a của đích `aux` (rgb của `aux` là vũng sáng đèn do đất ghi):
   // độ phủ (alpha) của vật liệu, bất kể màu/hệ số bloom. rgb ghi 0: với trộn thường thì alpha cộng dồn `a + đích·(1 − a)`, với cộng sáng `a + đích`.
   (m as unknown as WithMrt).mrtNode =
-    FLAGS.style === 'painted' ? mrt({ aux: vec4(0, 0, 0, output.a) }) : mrt({ bloom: vec4(output.rgb.mul(s), output.a) });
+    FLAGS.painted ? mrt({ aux: vec4(0, 0, 0, output.a) }) : mrt({ bloom: vec4(output.rgb.mul(s), output.a) });
   m.needsUpdate = true;
 }
 
@@ -167,7 +167,7 @@ export function markBloom(material: THREE.Material, strength = 1): void {
  * mặc định: không đổi đích MRT hay chi phí của pipeline thường.
  */
 export function markVfxMask(material: THREE.Material): void {
-  if (FLAGS.style === 'painted') markBloom(material, 0);
+  if (FLAGS.painted) markBloom(material, 0);
 }
 
 // ---------- pipeline ----------
@@ -278,7 +278,7 @@ export class PostPipeline {
     this.post.outputColorTransform = false;
     const scenePass = pass(scene, camera, { samples: opts.msaa });
     this.scenePass = scenePass;
-    if (FLAGS.style === 'painted') {
+    if (FLAGS.painted) {
       // Họa Cảnh: pass cuối của painted-valley (Kuwahara, vignette, đường cong họa sĩ, sRGB); không ACES, chỉnh màu, hạt phim, bloom, AO, FXAA
       // P5: VFX/linh quang đánh dấu bằng markBloom (không có bloom thật) ghi mặt nạ để Kuwahara không nhòe chúng
       setBloomActive(true);

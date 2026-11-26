@@ -719,7 +719,7 @@ export class PropLayer {
                 ? propCrystal
                 : undefined;
     // Họa Cảnh: cây và nhà tô hai tông (render/painted/props.ts); mặc định giữ nguyên
-    const mats = adoptGltfMaterials(handle.scene, FLAGS.style === 'painted' ? (m) => paintedProp(baseWrap ? baseWrap(m) : m) : baseWrap);
+    const mats = adoptGltfMaterials(handle.scene, FLAGS.painted ? (m) => paintedProp(baseWrap ? baseWrap(m) : m) : baseWrap);
     handle.scene.updateMatrixWorld(true);
     const lods: LodMesh[][] = [];
     handle.scene.traverse((o) => {

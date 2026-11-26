@@ -186,7 +186,7 @@ export class EntityManager {
   heroSids: ReadonlySet<string> | null = null;
   private heroGhosts = new HeroGhosts();
   /** Viền mực Dạ Cảnh (`?style=da`): null khi tắt. Có trần số thể (`INK_HULL_MAX`). */
-  private inkHulls = FLAGS.style === 'da' ? new InkHulls() : null;
+  private inkHulls = FLAGS.da ? new InkHulls() : null;
   private heroRing = new HeroRing();
   monsters = new Map<string, MonVis>();
   nodes = new Map<string, THREE.Group>();

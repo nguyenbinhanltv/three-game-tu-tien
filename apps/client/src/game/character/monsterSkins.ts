@@ -939,7 +939,7 @@ export class MonsterSkins {
       m.emissiveNode = color(new THREE.Color(def.accent)).mul(smoothstep(0.08, 0.22, c.b.sub(c.r)).mul(c.b).mul(s.coreGlow));
     }
     // Dạ Cảnh: quái cũng tô bóng chia bậc như nhân vật (quái bán trong suốt `ghost` giữ nguyên).
-    if (FLAGS.style === 'da' && s.ghost === undefined) toonBands(m);
+    if (FLAGS.da && s.ghost === undefined) toonBands(m);
     this.mats.set(def.id, m);
     return m;
   }
