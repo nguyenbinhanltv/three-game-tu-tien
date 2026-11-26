@@ -132,3 +132,9 @@ Thêm/đổi texture: thêm mục ở `tools/vfx-forge/src/sharedTex.ts` (`forge
 - Atlas `chung` (16 ô, đơn sắc, kiểu tô 12) thuộc `ALWAYS_GROUPS`: nạp sẵn, không bị giải phóng khi rỗi.
 - `evade`: server (`DeathSystem.damagePlayer`) phát FX chỉ hình khi đòn bị khung bất tử bỏ qua, giãn 400 ms; không đổi sát thương.
 - Phòng thử: `pnpm shots vfxlab --skill fx_hit_cut,... --clean 1`. Số "hạt" của phòng thử gồm cả hạt của luồng khác (~90), timeline chỉ phát ≤ 6 hạt.
+
+### Trạng thái kéo dài (HPL2 PR2)
+
+- Server chỉ gửi **bit hiển thị**, suy ra từ trạng thái server, không ảnh hưởng luật: `MF_SLOW`/`MF_POISON`/`MF_BURN`/`MF_DAZED` (`MonS.mf`, 1024/2048/4096/8192, `MF_DISP_MASK`; `MF_DAZED` = choáng THẬT, khác khựng 350 ms của đòn nặng vốn cũng bật `MF_STUN`; `syncDisplayFlags` ở `apps/server/src/game/monsters/tickMonster.ts`, `setMonFlags` giữ chúng; `MonEnt.poison.kind` tách bỏng khỏi độc) và `PF_HOT` (`PlayerS.fl`, 512, bật khi còn dòng hồi dần trong `CombatSystem.hots`).
+- Client `game/fx/statusFx.ts` (`StatusFx`): mỗi thực thể ≤ 1 trạng thái (choáng > bỏng > độc > chậm; người: hồi dần), tối đa 8 thực thể gần camera nhất, phát lại timeline `fx_st_slow|poison|burn|stun|hot` (≈1 s, bám thân) mỗi chu kỳ; bỏ phần của người khác khi đông. Sprite trong atlas `chung` (28 ô): dấu trạng thái `chung_chain` (xích kéo lùi, chậm), `chung_bubble` (độc), `chung_flame` (lưỡi mực-than viền vàng hổ phách, bỏng; không cam/đỏ), `chung_halo` (vòng chim + sao, choáng), `chung_leaf` (lá + giọt ngọc, hồi dần); còn `spear` (đâm dày), `frost`/`coal`/`dizzy` (bản cũ), `ward`/`crack`/`eye` dành cho PR2a.
+- Phòng thử: `pnpm shots vfxlab --skill fx_st_slow,... --clean 1 --notags 1`.

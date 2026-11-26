@@ -40,6 +40,7 @@ import {
   type HitTier,
   MF_BROKEN,
   MF_CHANT,
+  MF_DISP_MASK,
   MF_STUN,
   type MonsterCaster,
   type MonsterChant,
@@ -364,6 +365,8 @@ export class MonsterSystem {
       mf |= m.mx.bits;
       if (!ce) ce = m.mx.ce;
     }
+    // Cờ chỉ-để-vẽ (chậm/độc/bỏng) do `syncDisplayFlags` giữ: không để cờ chú/choáng xóa mất.
+    mf |= m.s.mf & MF_DISP_MASK;
     if (m.s.mf !== mf) m.s.mf = mf;
     if (m.s.ce !== ce) m.s.ce = ce;
   }
