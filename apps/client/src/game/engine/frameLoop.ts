@@ -74,6 +74,7 @@ import { heroParams } from '../../render/materials/world';
 import { heroRimOn } from '../fx/fxSettings';
 import { applyDmg, ensureCloneVis, updateSoulVis } from './fxMsgs';
 import { syncHud } from './hudSync';
+import { updateDaFocus } from './daFocus';
 import { updateDaMood } from './daMood';
 import { updateEclipse, updateFaceMood, updateRiftMood } from './levelLoad';
 import type { Game } from '../engine';
@@ -465,6 +466,8 @@ function updateCamera(eng: Game, dt: number): void {
           combat = true;
           break;
         }
+    // Dạ Cảnh: lớp tối quanh trận bật khi đang giao chiến.
+    if (FLAGS.style === 'da') updateDaFocus(eng.camera, dt, combat, rp.x, rp.y, rp.z);
     const spot = combat ? null : spotAt(levelId(), rp.x, rp.z);
     const vv = vistaView(eng.vista.update(dt, flying, spot, FLAGS.vista && !eng.cine.active, combat), flying ? 'fly' : 'spot');
     if (eng.vista.hint(spot) && FLAGS.vista) pushToast(t('ui.vista_hint'));
@@ -501,6 +504,8 @@ function updateCamera(eng: Game, dt: number): void {
     cz = tz + (cz - tz) * k;
     cy = Math.max(ty + (cy - ty) * k, groundAt(cx, cz) + 0.7 - (4 - i) * 0.5);
   }
+  // Dạ Cảnh: rung kiểu trauma (cộng dồn, bình phương, có lăn). Đặt mỗi khung để bật/tắt theo cờ mà không đụng nơi tạo.
+  eng.shake.trauma = FLAGS.style === 'da';
   eng.shake.update(dt, _shakePos, _shakeLook);
   const fc = FLAGS.debug || ANIM_LAB ? eng.freeCam : null;
   if (fc) {
@@ -514,6 +519,7 @@ function updateCamera(eng: Game, dt: number): void {
   }
   eng.camera.position.set(cx + _shakePos.x, cy + _shakePos.y, cz + _shakePos.z);
   eng.camera.lookAt(tx + _shakeLook.x, ty + _shakeLook.y, tz + _shakeLook.z);
+  if (eng.shake.roll !== 0) eng.camera.rotateZ(eng.shake.roll);
   const dfx = eng.deathFx.update(dt, ((eng.me()?.fl ?? 0) & PF_DEAD) !== 0);
   deathVisual(eng, dfx, tx, ty, tz);
   if (eng.cine.active) runCine(eng, dt);
