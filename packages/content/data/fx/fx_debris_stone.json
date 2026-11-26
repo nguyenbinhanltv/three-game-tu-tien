@@ -1,0 +1,98 @@
+{
+  "skill": "fx_debris_stone",
+  "trigger": "fx",
+  "fxKind": "~debris_stone",
+  "palette": "deb_stone",
+  "events": [
+    {
+      "type": "mesh",
+      "shape": "sprite",
+      "sprite": "chung_chips",
+      "billboard": true,
+      "at": "target",
+      "t": 0.02,
+      "dur": 0.36,
+      "offset": [
+        0,
+        0.2,
+        0.3
+      ],
+      "scale": 1.05,
+      "scaleTo": 1.45,
+      "sweep": 0,
+      "erodeFrom": 0.45,
+      "ragged": 0.5,
+      "tone": "body",
+      "alpha": 0.95,
+      "tier": 1,
+      "seed": 2640,
+      "align": "aim"
+    },
+    {
+      "type": "mesh",
+      "shape": "sprite",
+      "sprite": "chung_chips",
+      "billboard": true,
+      "at": "target",
+      "t": 0.03,
+      "dur": 0.07,
+      "offset": [
+        0,
+        0.2,
+        0.3
+      ],
+      "scale": 1.18,
+      "scaleTo": 1.37,
+      "sweep": 0,
+      "erodeFrom": 0.2,
+      "ragged": 0.5,
+      "tone": "rim",
+      "alpha": 0.85,
+      "tier": 1,
+      "seed": 2641,
+      "align": "aim"
+    },
+    {
+      "type": "particles",
+      "kind": "shard",
+      "t": 0.03,
+      "n": 6,
+      "speed": 4.2,
+      "spread": 0.7,
+      "life": 0.45,
+      "size": 0.11,
+      "at": "target",
+      "tone": "rim",
+      "tier": 0,
+      "grav": 11
+    },
+    {
+      "type": "particles",
+      "kind": "dust",
+      "t": 0.05,
+      "n": 3,
+      "speed": 1,
+      "spread": 0.8,
+      "life": 0.4,
+      "size": 0.2,
+      "at": "target",
+      "tone": "body",
+      "tier": 1,
+      "grav": -0.4
+    },
+    {
+      "type": "particles",
+      "kind": "dust",
+      "t": 0.15,
+      "n": 1,
+      "speed": 0.6,
+      "spread": 0.5,
+      "life": 0.25,
+      "size": 0.1,
+      "at": "target",
+      "tone": "shadow",
+      "tier": 1,
+      "grav": 2
+    }
+  ]
+}

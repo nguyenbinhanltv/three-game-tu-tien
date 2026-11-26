@@ -134,6 +134,9 @@ const LAB_HIT: Record<string, string> = {
   fx_heal: 'hit_heal',
   fx_heal_tick: 'hit_heal',
   fx_mana: 'hit_mana',
+  fx_debris_flesh: 'deb_flesh',
+  fx_debris_stone: 'deb_stone',
+  fx_debris_metal: 'deb_metal',
 };
 
 /** Timeline môi trường (`fx_env_*`) → độ lệch +x so với người chơi (m) và độ cao ngực: cổng/linh thảo đặt cạnh người chơi, hồi sinh đặt lên chính mình. */

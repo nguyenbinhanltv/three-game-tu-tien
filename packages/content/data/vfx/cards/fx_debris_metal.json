@@ -1,0 +1,45 @@
+{
+  "skillId": "fx_debris_metal",
+  "idea": "MẢNH VỤN KIM (quái hệ kim, giáp kim khí trúng đòn): chùm tia lửa thép trắng lạnh tóe hẹp theo hướng đòn và vài mảnh giáp nhỏ bật ra. Thép lạnh, tia trắng ánh vàng nhạt (không cam). Rất nhỏ, tan trong 0,25 giây.",
+  "element": "kim",
+  "path": "",
+  "scene": {
+    "palette": {
+      "core": "14181c",
+      "body": "9fb4c8",
+      "rim": "ffffff",
+      "accent": "f0e6a8",
+      "shadow": "080a0c"
+    },
+    "impactAt": 0
+  },
+  "shapeLang": [
+    "line",
+    "burst"
+  ],
+  "timing": {
+    "anticipationMs": 0,
+    "impactMs": 50,
+    "lingerMs": 300
+  },
+  "footprint": {
+    "lengthM": 1.6,
+    "widthM": 1,
+    "heightM": 1.4
+  },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": {
+    "drawCalls": 2,
+    "particles": 14,
+    "screenCover": 0.03,
+    "overdraw": 2
+  },
+  "textures": [],
+  "silhouette": "chùm tia lửa thép hẹp tóe theo hướng đòn, vài mảnh giáp nhỏ",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles"
+  ]
+}

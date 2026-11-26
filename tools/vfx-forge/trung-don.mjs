@@ -77,6 +77,10 @@ const PAL = {
   hit_mana: { core: '0e1a3c', body: '4f8cf0', rim: 'e6f0ff', accent: 'f0e6a8', shadow: '070b1a' },
   env_gate: { core: '0a2a40', body: '5fb8e8', rim: 'e6f8ff', accent: 'f0e6a8', shadow: '05121c' },
   env_revive: { core: '2a2410', body: 'f0e6a8', rim: 'fffbe8', accent: 'bfe8ff', shadow: '14110a' },
+  // Mảnh vụn theo CHẤT LIỆU thân quái (HPL2 B): thịt = mực sẫm (không máu đỏ), đá = xám ngà, kim = thép lạnh ánh vàng nhạt.
+  deb_flesh: { core: '0c0c10', body: '8a7fa6', rim: 'e2dcf0', accent: 'e8e2f0', shadow: '050507' },
+  deb_stone: { core: '1c1a16', body: '8a8272', rim: 'e8e2d0', accent: 'f0e6a8', shadow: '0c0b09' },
+  deb_metal: { core: '14181c', body: '9fb4c8', rim: 'ffffff', accent: 'f0e6a8', shadow: '080a0c' },
   hit_dich: { core: '2a1030', body: 'a04ad8', rim: 'f3e2ff', accent: 'f0e6a8', shadow: '12061a' },
   // Trạng thái kéo dài (PR2): độc = lục chanh + lõi tím mực; bỏng = than đen viền vàng trắng (vàng hue > 45°, không cam).
   st_poison: { core: '1c1230', body: '9bd05a', rim: 'f0ffd0', accent: 'c9a8ff', shadow: '0a0614' },
@@ -939,6 +943,90 @@ const SCENES = [
       parts('spark', 0.3, 8, { offset: [0, 0.4, 0], speed: 1.2, spread: 1, life: 0.6, size: 0.06, grav: -1.2, tone: 'rim', tier: 1 }),
     ],
   },
+  // Mảnh vụn theo chất liệu thân quái (HPL2 B): lớp phụ của vết va, chỉ phát cho đòn dính tới mình; một sprite `tier 1` (preset Thấp và đòn người khác bỏ) + vài hạt.
+  ...[
+    {
+      id: 'fx_debris_flesh',
+      pal: 'deb_flesh',
+      idea: 'MẢNH VỤN THỊT (quái thân thịt/lông trúng đòn): một vệt mực sẫm văng lệch về phía sau nạn nhân như mực hắt lên giấy, vài giọt mực rơi xuống. Mực đen tím, mép xám lạnh; KHÔNG máu đỏ. Rất nhỏ, tan trong 0,3 giây.',
+      element: 'vo',
+      shapeLang: ['burst'],
+      silhouette: 'một vệt mực hắt lệch ra sau thân, vài giọt mực rơi',
+      events: () => [
+        // Tấm mực nằm SAU thân 0,55 m theo hướng đòn (z cục bộ = hướng người đánh → nạn nhân) để không che quái.
+        sprite('chung_splat', {
+          t: 0.02,
+          dur: 0.32,
+          off: [0, 0.1, 0.55],
+          size: 1.8,
+          sizeTo: 2.6,
+          align: 'aim',
+          tone: 'body',
+          alpha: 0.85,
+          erodeFrom: 0.4,
+          tier: 1,
+        }),
+        accent('chung_splat', 0, 2.0, { align: 'aim', off: [0, 0.1, 0.55], dur: 0.14, alpha: 1 }),
+        parts('dust', 0.03, 30, { offset: [0, 0, 0.4], speed: 2.6, spread: 0.6, life: 0.4, size: 0.12, tone: 'rim', grav: 7 }),
+      ],
+    },
+    {
+      id: 'fx_debris_stone',
+      pal: 'deb_stone',
+      idea: 'MẢNH VỤN ĐÁ (vượn đá, quái hệ thổ trúng đòn): chùm mảnh đá góc cạnh bật ra sau thân rồi rơi nhanh, kèm làn bụi đá ngà. Xám ngà, lõi mực nâu. Rất nhỏ, tan trong 0,35 giây.',
+      element: 'tho',
+      shapeLang: ['burst'],
+      silhouette: 'chùm mảnh đá góc cạnh bật ra sau thân rồi rơi, làn bụi ngà',
+      events: () => [
+        sprite('chung_chips', {
+          t: 0.02,
+          dur: 0.36,
+          off: [0, 0.2, 0.3],
+          size: 2.1,
+          sizeTo: 2.9,
+          align: 'aim',
+          alpha: 0.95,
+          erodeFrom: 0.45,
+          tier: 1,
+        }),
+        accent('chung_chips', 0, 2.1, { align: 'aim', off: [0, 0.2, 0.3] }),
+        parts('shard', 0.03, 30, { speed: 4.2, spread: 0.7, life: 0.45, size: 0.11, tone: 'rim', grav: 11 }),
+        parts('dust', 0.05, 15, { speed: 1, spread: 0.8, life: 0.4, size: 0.2, tone: 'body', grav: -0.4, tier: 1 }),
+      ],
+    },
+    {
+      id: 'fx_debris_metal',
+      pal: 'deb_metal',
+      idea: 'MẢNH VỤN KIM (quái hệ kim, giáp kim khí trúng đòn): chùm tia lửa thép trắng lạnh tóe hẹp theo hướng đòn và vài mảnh giáp nhỏ bật ra. Thép lạnh, tia trắng ánh vàng nhạt (không cam). Rất nhỏ, tan trong 0,25 giây.',
+      element: 'kim',
+      shapeLang: ['line', 'burst'],
+      silhouette: 'chùm tia lửa thép hẹp tóe theo hướng đòn, vài mảnh giáp nhỏ',
+      events: () => [
+        // Kim = chùm HẸP và sáng (đá = chùm rộng xám): tấm mảnh giáp nhỏ, hình chính là tia lửa thép hẹp theo hướng đòn. Không dùng `chung_spear` (trùng `fx_hit_stab`).
+        sprite('chung_chips', {
+          t: 0.02,
+          dur: 0.24,
+          off: [0, 0.2, 0.3],
+          size: 1.2,
+          sizeTo: 1.9,
+          align: 'aim',
+          tone: 'rim',
+          alpha: 0.9,
+          erodeFrom: 0.35,
+          tier: 1,
+        }),
+        accent('chung_chips', 0, 1.2, { align: 'aim', off: [0, 0.2, 0.3], tone: 'accent' }),
+        parts('spark', 0, 60, { speed: 9, spread: 0.25, life: 0.22, size: 0.07, tone: 'rim' }),
+      ],
+    },
+  ].map((x) => ({
+    ...x,
+    fxKind: '~' + x.id.slice(3),
+    I: 0,
+    timing: { anticipationMs: 0, impactMs: 50, lingerMs: 300 },
+    footprint: { lengthM: 1.6, widthM: 1.0, heightM: 1.4 },
+    budget: { drawCalls: 2, particles: 14, screenCover: 0.03, overdraw: 2 },
+  })),
 ];
 
 /** Dư ba (chuẩn 2): phải có sự kiện hình BẮT ĐẦU từ +150 ms; hiệu ứng tan ≤ 200 ms nên thêm vài hạt bụi mực rất nhỏ rơi nốt. */

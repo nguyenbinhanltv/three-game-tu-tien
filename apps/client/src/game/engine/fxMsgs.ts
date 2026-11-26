@@ -1229,6 +1229,9 @@ function hitVisual(eng: Game, m: DmgMsg, mine: boolean, byMe: boolean): void {
   if (m.n === 0) return hf.block(v, sp ?? sm ?? null, involves);
   if (sp) {
     if (m.tr !== undefined || victimIsPlayer) hf.hit(v, sp, eng.methodOfPlayer(m.src!), !!m.crit, involves);
+    // Mảnh vụn theo chất liệu thân quái (HPL2 B): chỉ đòn của người chơi trúng QUÁI.
+    const vm = victimIsPlayer ? undefined : eng.ents.monsters.get(m.dst);
+    if (vm && m.tr !== undefined) hf.debris(v, sp, materialOf(vm.model.def), involves);
   } else if (sm && victimIsPlayer) {
     const def = MONSTER.get(sm.s.t);
     hf.monStrike(v, sm, def?.elem, BITERS.has(def?.model ?? ''), involves);
