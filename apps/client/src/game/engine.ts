@@ -151,7 +151,7 @@ import { ANIM_LAB, VFX_LAB } from './engine/common';
 import { installAnimLab } from './debug/animLab';
 import { LoginOptions, QUALITY, isWebGPU, isWorldRoom, levelOfInit, levelOfRoom, serverUrl } from './engine/common';
 import { describeGpu, fireSkill, pickRenderer, runFrame, watchGpuDevice } from './engine/frameLoop';
-import { handleFx, monFlagFx, monsterInk, onSwingEvent, resetSound, volumeAt } from './engine/fxMsgs';
+import { handleFx, flyFx, monFlagFx, monsterInk, onSwingEvent, resetSound, volumeAt } from './engine/fxMsgs';
 import { fxTargetOf } from './engine/hudSync';
 import { bindInput, onResize } from './engine/input';
 import {
@@ -826,6 +826,7 @@ export class Game {
     this.ents.onSkillEvent = (sid, e) => this.emitSkillEvent(sid, e);
     this.ents.onMonsterDeath = (m) => monsterInk(this, m);
     this.ents.onMonFlags = (m, e) => monFlagFx(this, m, e);
+    this.ents.onFlyChange = (sid, flying, x, z) => flyFx(this, sid, flying, x, z);
     this.ents.burrow = this.burrowFx;
     this.minimap = renderMinimap(320);
     mark('minimap');

@@ -1,0 +1,45 @@
+{
+  "skillId": "fx_fly_on",
+  "idea": "Ngự kiếm cất cánh: một thanh phi kiếm phóng to trượt vào dưới chân người, vành gió-bụi vẽ tay bị ép bẹp rồi bung ra thành vài cụm mây bụi rách, hai vệt gió xoắn quấn lên theo thân kiếm. Lõi mực lam thẫm, thân lam ngọc, mép trắng lạnh, điểm nhấn bạc hà. Không vòng rune, không sao tỏa tia.",
+  "element": "kim",
+  "path": "",
+  "scene": {
+    "palette": {
+      "core": "0a3f5e",
+      "body": "2cc7dc",
+      "rim": "dff8ff",
+      "accent": "9fe8c8",
+      "shadow": "08202e"
+    },
+    "impactAt": 0.25
+  },
+  "shapeLang": [
+    "line",
+    "cloud"
+  ],
+  "timing": {
+    "anticipationMs": 250,
+    "impactMs": 90,
+    "lingerMs": 900
+  },
+  "footprint": {
+    "lengthM": 5,
+    "widthM": 5,
+    "heightM": 3
+  },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": {
+    "drawCalls": 9,
+    "particles": 200,
+    "screenCover": 0.18,
+    "overdraw": 6
+  },
+  "textures": [],
+  "silhouette": "thanh kiếm lam ngọc dưới chân, vành bụi gió rách quanh, hai vệt gió xoắn",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles"
+  ]
+}

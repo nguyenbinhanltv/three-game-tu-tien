@@ -40,6 +40,8 @@ export const SPRITE_GROUPS = {
   kieu: { file: 'hoa-truc/vfx_sprites_kieu.27c9c1ffe4.webp', cols: 4, rows: 6 },
   // V-P10: cảnh đột phá (lên tầng + bốn cảnh giới), tranh đơn sắc tô theo bảng màu timeline; chỉ nạp khi có người đột phá.
   dp: { file: 'hoa-truc/vfx_sprites_dp.c0b797988b.webp', cols: 4, rows: 4 },
+  // V-P10: ngự kiếm (cất cánh, hạ cánh, vệt bay), tranh đơn sắc tô theo bảng màu timeline; chỉ nạp khi có người bay.
+  ngu: { file: 'hoa-truc/vfx_sprites_ngu.53d3b0c236.webp', cols: 4, rows: 2 },
   // V-P10: độ kiếp (mở kiếp, kiếp vân tầng thấp, chỗ sét đánh); chỉ nạp khi có người độ kiếp trong tầm nhìn.
   kiep: { file: 'hoa-truc/vfx_sprites_kiep.d00db05f37.webp', cols: 4, rows: 2 },
 } as const;

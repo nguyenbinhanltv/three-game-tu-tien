@@ -1,0 +1,76 @@
+# Cổng server (B12): 100 bot chung một kênh trên server game thật (DB tạm), CHẶN khi tick p95 > 8 ms, có dòng `refId`
+# (gói state bị cắt, xem apps/server/src/viewSerializer.ts) hoặc sổ cái lệch (`ledgerCheck.ts`). Chỉ cần CPU, không cần asset R2 hay trình duyệt.
+# Chỉ chạy khi PR đụng code server/giao thức/nội dung/bot hoặc chính công cụ; chạy tay (workflow_dispatch) để đo lại.
+name: server-gate
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'apps/server/**'
+      - 'apps/bot-client/**'
+      - 'packages/shared/**'
+      - 'packages/content/**'
+      - 'tools/perf/src/servergate.ts'
+      - 'tools/perf/src/lib/servergate.ts'
+      - 'tools/perf/src/lib/devserver.ts'
+      - 'tools/perf/src/lib/bots.ts'
+      - 'pnpm-lock.yaml'
+      - '.github/workflows/server-gate.yml'
+  workflow_dispatch:
+    inputs:
+      count:
+        description: 'Số bot (chung một kênh)'
+        required: false
+        default: '100'
+      tick_ms:
+        description: 'Trần tick p95 (ms)'
+        required: false
+        default: '8'
+
+concurrency:
+  group: server-gate-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Cài dependency
+        run: pnpm install --frozen-lockfile
+
+      - name: perf:server (bot, tick p95, refId, sổ cái)
+        env:
+          COUNT: ${{ inputs.count || '100' }}
+          TICK_MS: ${{ inputs.tick_ms || '8' }}
+        run: pnpm perf:server --count "$COUNT" --tick-ms "$TICK_MS" --out bench/results --md bench/results/server-gate.md
+
+      - name: Đăng kết quả
+        if: always()
+        run: |
+          if [ -f bench/results/server-gate.md ]; then cat bench/results/server-gate.md >> "$GITHUB_STEP_SUMMARY"; fi
+
+      - name: Gom log server (để tải về khi hỏng)
+        if: always()
+        run: cp "${RUNNER_TEMP:-/tmp}"/dtl-servergate-*.log /tmp/dtl-servergate-*.log bench/results/ 2>/dev/null || true
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: server-gate
+          path: bench/results
