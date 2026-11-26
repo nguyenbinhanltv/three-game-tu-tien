@@ -687,7 +687,10 @@ function spriteNodesImpl(U: FxUniforms, group: SpriteGroup): { color: N; opacity
     smoothstep(0.9, 1.0, pT),
   );
   const p2Alpha = mix(float(1), mix(float(0.55), float(1), smoothstep(0.08, 0.45, pT)), is(13));
-  const spStyled3 = mix(mix(mix(spStyled2, nHybrid, is(10)), pRamp, is(12)), pRamp2, is(13));
+  // Kiểu 14 (`spriteStyle: 14` của sự kiện): như 12 nhưng NÉT SÁNG của tranh giữ màu thân (chỉ điểm trắng nhất ánh nhẹ `rim`). Cho tranh toàn nét trắng
+  // (lưới lục giác `chung_hexweb` của mặt Âm) cần ra đúng màu bảng thay vì trôi lên trắng như khiên.
+  const pRamp3 = mix(mix(U.color.mul(0.15), U.color, smoothstep(0.08, 0.5, pT)), spRimIn, smoothstep(0.95, 1.0, pT).mul(0.3));
+  const spStyled3 = mix(mix(mix(mix(spStyled2, nHybrid, is(10)), pRamp, is(12)), pRamp2, is(13)), pRamp3, is(14));
   // Tan như khói mỏng dần: nhiễu thấp tần + mép mỏng (tranh sáng/trong) tan trước, ngưỡng rộng nên không ra đường cắt răng cưa.
   const spE = vnoise(q.mul(vec2(5, 7)).add(U.a.z.mul(7)))
     .mul(0.55)

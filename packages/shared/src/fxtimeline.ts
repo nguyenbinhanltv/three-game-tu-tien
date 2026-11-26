@@ -552,6 +552,8 @@ export interface FxMeshEvent extends FxBase {
   flip?: FlipAtlas | ForgeFlip;
   /** Ô sprite của hình `sprite` (bắt buộc với `shape: "sprite"`). */
   sprite?: FxSprite;
+  /** Ghi đè kiểu tô của sprite (mặc định theo tiền tố tên). `14` = tranh đơn sắc mà nét sáng giữ màu thân (không trôi lên trắng). Chỉ là lớp hình. */
+  spriteStyle?: number;
   /** Sprite billboard: `aim` xoay trong mặt phẳng nhìn để trục +x của tranh chạy dọc HƯỚNG NGẮM (chiêu tia/giáo/đường sét dài), tính từ camera chéo; `rot[2]` cộng thêm. */
   align?: 'aim';
   /** Tranh của hình `card`: `arhat` (La Hán ngồi + hào quang) hoặc `phoenix` (Phượng dang cánh); `colossus` (Cổ Thần khổng lồ nửa thân) và `fist` (cự quyền) của Cổ Thần (TN-5). */
