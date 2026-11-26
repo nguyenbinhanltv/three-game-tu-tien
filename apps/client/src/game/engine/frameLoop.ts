@@ -79,6 +79,8 @@ import { logger } from '../../base/log';
 
 const renderLog = logger('render');
 const loadLog = logger('load');
+/** Thời hạn chờ collider level đầu ở màn tải (ms) trước khi vẫn vào game. */
+const COLLIDER_WAIT_MS = 8000;
 const gpuLog = logger('gpu');
 const qualityLog = logger('quality');
 /** FOV camera quỹ đạo (cảnh điện ảnh/độ kiếp); camera chéo dùng `ISO_FOV`. */
@@ -357,7 +359,12 @@ export function runFrame(eng: Game): void {
   }
   eng.budget.mark('ui');
   eng.budget.end();
-  if (!eng.started && me && eng.terrain.ready && eng.frames > 4 && collidersReady(levelId())) {
+  // B7: va chạm của level đầu nạp bằng import() riêng: chờ tối đa COLLIDER_WAIT_MS rồi vẫn vào game (server vẫn chặn va chạm, dự đoán sẽ khớp khi nạp xong);
+  // trong lúc chờ gọi lại `ensureColliders` mỗi giây để khỏi kẹt khi chunk lỗi tạm thời (mạng chập chờn, hash chunk cũ 404 sau deploy).
+  const collReady = collidersReady(levelId());
+  if (!collReady && eng.frames % 60 === 0) eng.warmColliders(levelId());
+  const collOk = collReady || performance.now() - eng.startedAt > COLLIDER_WAIT_MS;
+  if (!eng.started && me && eng.terrain.ready && eng.frames > 4 && collOk) {
     eng.started = true;
     eng.loadStats.worldReady = Math.round(performance.now() - eng.startedAt);
     eng.loadStats.frames = eng.frames;

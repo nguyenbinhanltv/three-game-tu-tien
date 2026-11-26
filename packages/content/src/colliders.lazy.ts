@@ -54,8 +54,23 @@ export async function loadLevelShapes(level: string): Promise<Shape[]> {
   return [...(inst ? propShapesFrom(inst.default as InstFile, lib) : []), ...(arch ? archShapesFrom([arch.default as ArchFile]) : [])];
 }
 
-/** Nạp và đăng ký collider của `level` (chạy lại cho cùng level trả về cùng promise). Level không có dữ liệu bake vẫn nhận hình dựng bằng mã. */
-export function ensureColliders(level: string): Promise<void> {
+export interface EnsureOptions {
+  /** Số lần thử tối đa khi `import()` lỗi (mạng chập chờn, hash chunk cũ 404 sau khi deploy). */
+  tries?: number;
+  /** Chờ trước lần thử lại thứ n (ms): delayMs × 2^(n-1). */
+  delayMs?: number;
+  /** Nguồn hình của level (mặc định `loadLevelShapes`); để test chèn loader giả. */
+  load?: (level: string) => Promise<Shape[]>;
+}
+
+const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
+
+/**
+ * Nạp và đăng ký collider của `level` (chạy lại cho cùng level trả về cùng promise). Level không có dữ liệu bake vẫn nhận hình dựng bằng mã.
+ * `import()` lỗi thì thử lại có backoff (`tries` lần); hết lần thì promise bị từ chối và KHÔNG bị nhớ: gọi lại `ensureColliders` sẽ thử từ đầu
+ * (frameLoop gọi lại định kỳ khi màn tải quá hạn, nên người chơi không kẹt ở màn tải).
+ */
+export function ensureColliders(level: string, o: EnsureOptions = {}): Promise<void> {
   let p = done.get(level);
   if (!p && collisionOf(level).shapes.length > 0) {
     // Đã có hình (môi trường nạp `colliders.ts` đầy đủ, như test): không đăng ký lần hai.
@@ -64,14 +79,26 @@ export function ensureColliders(level: string): Promise<void> {
     done.set(level, p);
   }
   if (!p) {
+    const tries = Math.max(1, o.tries ?? 3);
+    const delayMs = o.delayMs ?? 400;
+    const load = o.load ?? loadLevelShapes;
     p = (async () => {
+      let shapes: Shape[] | null = null;
+      for (let n = 1; shapes === null; n++) {
+        try {
+          shapes = await load(level);
+        } catch (e) {
+          if (n >= tries) throw e;
+          await sleep(delayMs * 2 ** (n - 1));
+        }
+      }
       // Thứ tự đăng ký giống `colliders.ts`: prop → kiến trúc → hình dựng bằng mã.
-      registerCollision(level, await loadLevelShapes(level));
+      registerCollision(level, shapes);
       registerCodeShapes(level);
       ready.add(level);
     })();
     done.set(level, p);
-    p.catch(() => done.delete(level)); // lỗi mạng: cho phép thử lại ở lần vào sau
+    p.catch(() => done.delete(level));
   }
   return p;
 }
