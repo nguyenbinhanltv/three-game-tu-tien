@@ -35,7 +35,7 @@ import { GROUND_LAYER as L, type GroundTextures } from '../../base/groundTexture
 import { FLAGS } from '../../base/flags';
 import { isoTerrainDetail } from './isoDetail';
 import { lampPoolAt } from '../painted/lampPools';
-import { withLowMist } from '../painted/lowMist';
+import { lowMistAt } from '../painted/lowMist';
 import { DRY_HI, DRY_LO, themeU } from '../painted/theme';
 import { paintedColor } from '../painted/palette';
 import { paintedNight } from '../painted/frame';
@@ -753,8 +753,12 @@ export function applyGroundShader(mat: THREE.MeshStandardNodeMaterial, tex: Grou
     // bóng mặt trời trên đất (theme.albedoMix; Vấn Đỉnh): đất vẽ phát sáng nên không nhận bóng, vật thể như lơ lửng. Cho một phần màu đất đi qua đèn (albedo, chỉ ban ngày; đêm giữ như cũ, nhận bóng
     // đổ của cột, đá, cổng, viền mềm theo bản đồ bóng), phần còn lại vẫn phát sáng; tổng giữ độ sáng của bản vẽ khi không có bóng. 0 = như cũ (mọi level khác)
     const lit: Node = themeU.albedoMix.mul(0.85).mul(float(1).sub(paintedNight));
-    mat.colorNode = mix(col, rTone, themeU.on.mul(themeU.rockMix)).mul(keep).add(groundBase.mul(lit));
-    mat.emissiveNode = withLowMist(F, groundBase.mul(float(1).sub(lit)), positionWorld.xz, positionWorld.y, grassW.add(pavW).min(1));
+    // sương thấp tính một lần: phần qua đèn nhân (1 − sương), phần phát sáng trộn về màu sương, nên khi không bóng tổng vẫn là mix(đất, sương, m) như cũ
+    const mist: Node = lowMistAt(F, positionWorld.xz, positionWorld.y).mul(grassW.add(pavW).min(1));
+    mat.colorNode = mix(col, rTone, themeU.on.mul(themeU.rockMix))
+      .mul(keep)
+      .add(groundBase.mul(lit).mul(float(1).sub(mist)));
+    mat.emissiveNode = mix(groundBase.mul(float(1).sub(lit)), vec3(themeU.mist), mist);
     if (FLAGS.paintDbg === 'vc') {
       // gỡ lỗi: màu đỉnh thô (tuyến tính) ×2
       mat.colorNode = vec3(0);
