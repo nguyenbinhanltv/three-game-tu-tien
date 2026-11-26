@@ -142,6 +142,22 @@ export const PAINTED_THEMES: Record<string, PaintedTheme> = {
     rockMix: 0.35,
     face: { x: 1024, w: 30, west: [0.4, 0.46, 0.86], east: [1.2, 1.0, 0.74] },
   },
+  // Thiên Khuyết Cổ Thành (E4-A): cổ thành sa thạch nứt trên cao nguyên (đáy 80 m). Đất vàng đất nung ấm, bóng mận tím nhạt (pha tay); đá/tường ngà xám ấm với bóng tím
+  // chàm; đá lát ngà. Không cỏ xanh: mặt đất là đất nứt vốn nằm ở albedo, nên chỉ ánh xạ qua cặp `ground` (`groundMix` 1)
+  thien_khuyet: {
+    ground: [0xc79a62, 0x5c4659],
+    rock: [0xcfc0a2, 0x4e4868],
+    paving: [0xe0d3b6, 0x6a6282],
+    mist: 0xe8dac6,
+    mistBand: [76, 96],
+    mistK: 0.25,
+    propMix: 0.3,
+    nightContrast: 1.5,
+    nightTint: [0.42, 0.46, 0.68],
+    nightLift: 1.7,
+    groundMix: 1,
+    groundSat: 1,
+  },
 };
 
 /** Vân Lam (pilot) và level chưa có bảng: sương cũ của P4. */
