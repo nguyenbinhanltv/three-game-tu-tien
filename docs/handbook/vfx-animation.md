@@ -77,3 +77,13 @@ Nối vào locomotion (`patchMove.ts`, `MannequinCharacter.stepPatch`): bắt đ
 ## Thân Pháp bật mặc định (TP-1, bước 3)
 
 Từ bước này `?thanphap` mặc định **bật**, `?thanphap=0` tắt (so A/B). Phân lớp: **chung mọi hệ** = `exaggerate`, `bounce`, `loco` (xung bắt đầu/dừng, nghiêng theo gia tốc), `impulse`, `pivot`, `ragdoll`, `patch`, `patchLoop`, `spring`; **riêng Kiếm tu** (công pháp thuộc hướng `kiem_tu`, `kiemTu.ts` → `isKiemTu`) = `idle` (xoay kiếm/chắp tay), pose `_tp` (kéo theo nét kéo kiếm `smear`), cut-in chiêu cuối, dáng lướt thấp (`glideLean`/`glideDip`). Model nhận hướng qua `CharacterView.setKiemTu` (đặt trong `entities.ts`). IK chân: mặt đứng dưới chân nhìn trước `FEET.lookAhead` = 0,1 s (lấy cao hơn giữa chỗ đang đứng và chỗ sắp tới) nên `groundUp` hạ về 13 m/s mà chân không lún vào bậc; đo `pnpm shots tpmove` (12 lượt thang): lún tối đa 0,7–2,8 cm, p99 tốc độ dọc cổ chân 14–16,7 m/s.
+
+Đo `pnpm bench:crowd --bots 50 --renderers webgpu --presets medium --size 1920x1080 --scenes san,rung,boss` (2026-11-26, lượt riêng, `CROWD_QUERY=&thanphap=0` so với mặc định mới); CPU `Game.frame()` p50/p95 (ms), draw call, tam giác:
+
+| cảnh | `?thanphap=0` | mặc định mới (Thân Pháp bật) |
+| --- | --- | --- |
+| sân | 6,2 / 8,9 · 123 DC · 1044k | 6,1 / 8,5 · 121 DC · 1010k |
+| rừng | 7,8 / 10,3 · 156 DC · 1036k | 5,1 / 8,3 · 141 DC · 977k |
+| boss | 6,3 / 8,8 · 130 DC · 1195k | 5,9 / 8,1 · 132 DC · 1187k |
+
+Chênh lệch nằm trong nhiễu đo (bật không chậm hơn tắt); p95 > 8 ms ở cả hai là mức có sẵn của máy đo, không do Thân Pháp. Số riêng IK chân: 6,6 nhân vật ≈ 0,45 ms/khung (trần `FEET.maxPerFrame` = 4 nhân vật/khung giữ nguyên).
