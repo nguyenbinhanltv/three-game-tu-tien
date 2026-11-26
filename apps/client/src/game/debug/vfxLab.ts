@@ -133,6 +133,7 @@ const LAB_HIT: Record<string, string> = {
   fx_hit_bite: 'me',
   fx_heal: 'hit_heal',
   fx_heal_tick: 'hit_heal',
+  fx_mana: 'hit_mana',
 };
 
 /** Timeline môi trường (`fx_env_*`) → độ lệch +x so với người chơi (m) và độ cao ngực: cổng/linh thảo đặt cạnh người chơi, hồi sinh đặt lên chính mình. */
@@ -322,19 +323,17 @@ export function installVfxLab(g: Game, onHazard?: (g: Game, m: HazardMsg) => voi
         };
         const mon = hit ? h.ents.monsters.get(hit[0]) : undefined;
         const me = h.ents.players.get(gg.sid);
-        if (!h.hitFx || !mon || !me) return false;
-        const monPt = { id: hit![0], x: mon.x, y: mon.y, z: mon.z, chest: mon.model.height * 0.55, scale: monScale(mon.model.height) };
+        // Hồi và né nằm ở chính mình (nạn nhân là người chơi, không có người đánh): chạy được cả khi phòng trống (`--nomon`).
+        const selfOnly = labHit === 'hit_heal' || labHit === 'hit_mana' || skill === 'fx_evade';
+        if (!h.hitFx || !me) return false;
         const mePt = { id: gg.sid, x: me.x, y: me.y, z: me.z, chest: 1.15 };
+        if (selfOnly) return h.hitFx.labPlay(skill, mePt, null, labHit);
+        if (!mon) return false;
+        const monPt = { id: hit![0], x: mon.x, y: mon.y, z: mon.z, chest: mon.model.height * 0.55, scale: monScale(mon.model.height) };
         const onMe = labHit === 'me';
         const pal =
-          labHit === 'mon'
-            ? (h.methodOfPlayer(gg.sid) ?? 'hit_chung')
-            : labHit === 'me'
-              ? monHitPalette(MONSTER.get(mon.s.t)?.elem)
-              : labHit;
-        // Hồi và né nằm ở chính mình (nạn nhân là người chơi, không có người đánh).
-        const onSelf = onMe || labHit === 'hit_heal' || skill === 'fx_evade';
-        return h.hitFx.labPlay(skill, onSelf ? mePt : monPt, onMe ? mon : onSelf ? null : me, pal);
+          labHit === 'mon' ? (h.methodOfPlayer(gg.sid) ?? 'hit_chung') : onMe ? monHitPalette(MONSTER.get(mon.s.t)?.elem) : labHit;
+        return h.hitFx.labPlay(skill, onMe ? mePt : monPt, onMe ? mon : me, pal);
       }
       // Timeline kích theo S.FX (lướt, thuấn di...): chạy đường `startFromFx` như khi nhận tin từ server; còn lại phát từ sự kiện `windup`.
       const tl = FX_TIMELINE.get(skill);

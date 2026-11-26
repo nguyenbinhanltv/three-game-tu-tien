@@ -185,8 +185,10 @@ export class EconomySystem {
     // Tu vi chỉ cho chính người dùng (không chuyển tu vi qua đan dược).
     if (def.use.xp) this.c.giveXp(p, Math.round(def.use.xp * potency));
     if (def.use.buff) this.c.applyPillBuff(p, def, potency);
-    if (who !== p) this.c.fx({ t: 'potion', src: who.sid });
-    this.c.fx({ t: 'potion', src: p.sid });
+    // Hình: người NHẬN đan hồi linh lực mang `v: 'mp'` (client vẽ xoáy linh khí lam thay khói đan lục). Chỉ là lớp hình, không lộ số linh lực.
+    const recv: FxMsg = def.use.mpPct ? { t: 'potion', src: who.sid, v: 'mp' } : { t: 'potion', src: who.sid };
+    this.c.fx(recv);
+    if (who !== p) this.c.fx({ t: 'potion', src: p.sid });
   }
 
   onEquip(p: PlayerEnt, msg: unknown): void {
