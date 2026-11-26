@@ -9,7 +9,7 @@ Spec đầy đủ (Claude Doc): https://claude.ai/artifact/S6ZYqLfR37PYy8NyccDjJ
 | Chủ đề | Quyết định |
 | --- | --- |
 | Nền tảng MVP | Chỉ desktop web (Chrome, Edge, Firefox, Safari). Mobile để sau |
-| Combat + camera | Từ 2026-11-23 (Thiên Nhãn): camera chéo khóa góc mặc định (FOV 32°, nghiêng 52°, khoảng cách cố định ~20 m, hướng cố định theo bản đồ, KHÔNG xoay, KHÔNG zoom); chuột phải đi tới điểm + WASD, Space né, chiêu ngắm theo con trỏ (server kiểm), chiêu đơn tự khóa mục tiêu gần con trỏ, Tab-target giữ làm phụ; GCD 1 giây |
+| Combat + camera | Từ 2026-11-23 (Thiên Nhãn): camera chéo khóa góc mặc định (FOV 32°, nghiêng 52°, khoảng cách cố định ~20 m, hướng cố định theo bản đồ, KHÔNG xoay, KHÔNG zoom); chuột phải đi tới điểm + WASD, Space né, chiêu ngắm theo con trỏ (server kiểm), chiêu đơn tự khóa mục tiêu gần con trỏ, Tab-target giữ làm phụ; chiêu khóa GCD 1 giây; **đòn thường là chuỗi hành động** (từ 2026-11-27, Dạ Cảnh): mỗi đòn khóa theo `lock` riêng (0,42 / 0,42 / 0,6 s), server giữ một lệnh bấm sớm ≤ 250 ms (`COMBO_BUFFER_MS`), né xóa lệnh đang giữ |
 | Client | TypeScript, Vite, Three.js `WebGPURenderer` (tự lùi WebGL2), shader viết bằng TSL, UI bằng React |
 | Server | Một tiến trình Node.js chạy Colyseus. Mỗi bản đồ × kênh, mỗi bí cảnh, mỗi lần độ kiếp là một room |
 | Đăng nhập | Chỉ Google. Server kiểm tra ID token, chỉ email trong danh sách mời mới vào được |

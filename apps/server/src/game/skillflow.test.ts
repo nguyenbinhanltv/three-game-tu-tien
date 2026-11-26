@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, it } from 'vitest';
-import { DASH_MIN_GAP_MS, groundAt, MS_DEAD, PF_DEAD, S, WORLD_MARGIN, type CdMsg, type FxMsg } from '@dtl/shared';
+import { comboDefScale, DASH_MIN_GAP_MS, groundAt, MS_DEAD, PF_DEAD, S, WORLD_MARGIN, type CdMsg, type FxMsg } from '@dtl/shared';
 
 // K-2: server áp sát thương tại hitAt, chuỗi đánh thường, cường hóa, lướt có kiểm đường, hủy chiêu, chống spam.
 process.env.DB_FILE = ':memory:';
@@ -259,7 +259,7 @@ describe('đánh thường liên hoàn', () => {
         .pop()?.n,
     ).toBe(0);
   });
-  it('đòn 3 mạnh hơn đòn 1 (hệ số 1,4 so với 0,9)', () => {
+  it('đòn 3 mạnh hơn đòn 1 (hệ số 0,64 so với 0,4)', () => {
     const { sim, p, mon, fresh } = setup();
     const m = mon();
     const muls: number[] = [];
@@ -270,16 +270,166 @@ describe('đánh thường liên hoàn', () => {
       muls.push(p.flow.pending!.mul);
       p.flow.pending = null;
     }
-    expect(muls[0]).toBeCloseTo(0.9);
-    expect(muls[2]).toBeCloseTo(1.4);
+    expect(muls[0]).toBeCloseTo(0.4);
+    expect(muls[2]).toBeCloseTo(0.64);
   });
-  it('quá GCD vẫn do server giữ: bấm dồn trong 1 giây chỉ ra một đòn', () => {
+  it('khóa do server giữ: bấm dồn cùng lúc chỉ ra một đòn', () => {
     const { sim, p, mon, fresh, resolve } = setup();
     const m = mon();
     fresh();
     for (let i = 0; i < 10; i++) sim.onSkill(p, { id: 'skl_phi_kiem', t: m.id });
     resolve();
     expect(p.flow.comboIdx).toBe(0);
+  });
+});
+
+describe('chuỗi đòn thường hành động (Dạ Cảnh)', () => {
+  const basic = { id: 'skl_phi_kiem' };
+  const buffered = (sim: Sim, p: Ent) => (sim as unknown as { combat: { tickBuffered(p: Ent): void } }).combat.tickBuffered(p);
+  it('mỗi đòn khóa theo `lock` của nó (0,42 / 0,42 / 0,6 s), không phải GCD 1 giây', () => {
+    const { sim, p, mon, fresh, resolve } = setup();
+    const m = mon();
+    fresh();
+    const locks: number[] = [];
+    for (let i = 0; i < 3; i++) {
+      const t0 = sim.now;
+      sim.onSkill(p, { ...basic, t: m.id });
+      locks.push(p.gcdAt - t0);
+      resolve();
+      sim.now = p.gcdAt;
+    }
+    expect(locks).toEqual([420, 420, 600]);
+    expect(p.flow.comboIdx).toBe(2);
+  });
+  it('khóa của đòn thường cũng chặn chiêu khác; chiêu khác vẫn khóa 1 GCD', () => {
+    const { sim, p, mon, fresh, resolve } = setup();
+    const m = mon();
+    fresh();
+    sim.onSkill(p, { ...basic, t: m.id });
+    resolve();
+    sim.now += 200;
+    sim.onSkill(p, { id: 'skl_kiem_khi_tram', t: m.id });
+    expect(p.flow.pending).toBeNull();
+    sim.now = p.gcdAt;
+    const t0 = sim.now;
+    sim.onSkill(p, { id: 'skl_kiem_khi_tram', t: m.id });
+    expect(p.flow.pending?.skill.id).toBe('skl_kiem_khi_tram');
+    expect(p.gcdAt - t0).toBe(1000);
+  });
+  it('bộ đệm: lệnh tới sớm ≤ 250 ms được giữ MỘT lệnh và ra khi hết khóa; sớm hơn thì bỏ', () => {
+    const { sim, p, mon, fresh, resolve } = setup();
+    const m = mon();
+    fresh();
+    sim.onSkill(p, { ...basic, t: m.id });
+    resolve();
+    // Còn 320 ms mới hết khóa: quá sớm, không đệm.
+    sim.now += 100;
+    sim.onSkill(p, { ...basic, t: m.id });
+    expect(p.flow.buffered).toBeNull();
+    // Còn 220 ms: đệm; bấm thêm vẫn chỉ một lệnh.
+    sim.now += 100;
+    for (let i = 0; i < 3; i++) sim.onSkill(p, { ...basic, t: m.id });
+    expect(p.flow.buffered).not.toBeNull();
+    expect(p.flow.comboIdx).toBe(0);
+    // Chưa hết khóa: chưa ra.
+    sim.now += 100;
+    buffered(sim, p);
+    expect(p.flow.comboIdx).toBe(0);
+    // Hết khóa: ra đúng MỘT đòn kế, bộ đệm trống.
+    sim.now = p.gcdAt;
+    buffered(sim, p);
+    expect(p.flow.comboIdx).toBe(1);
+    expect(p.flow.buffered).toBeNull();
+    resolve();
+    sim.now = p.gcdAt;
+    buffered(sim, p);
+    expect(p.flow.comboIdx).toBe(1);
+  });
+  it('bộ đệm không rút ngắn nhịp: đòn đệm bắt đầu không sớm hơn lúc hết khóa (trừ 60 ms nới mạng)', () => {
+    const { sim, p, mon, fresh, resolve } = setup();
+    const m = mon();
+    fresh();
+    const t0 = sim.now;
+    sim.onSkill(p, { ...basic, t: m.id });
+    resolve();
+    sim.now = t0 + 250;
+    sim.onSkill(p, { ...basic, t: m.id });
+    for (let t = 260; t <= 340; t += 20) {
+      sim.now = t0 + t;
+      buffered(sim, p);
+    }
+    expect(p.flow.comboIdx).toBe(0);
+    sim.now = t0 + 360;
+    buffered(sim, p);
+    expect(p.flow.comboIdx).toBe(1);
+  });
+  it('chiêu không phải đòn chuỗi tới sớm vẫn bị bỏ, không đệm', () => {
+    const { sim, p, mon, fresh, resolve } = setup();
+    const m = mon();
+    fresh();
+    sim.onSkill(p, { ...basic, t: m.id });
+    resolve();
+    sim.now = p.gcdAt - 100;
+    sim.onSkill(p, { id: 'skl_kiem_khi_tram', t: m.id });
+    expect(p.flow.buffered).toBeNull();
+  });
+  it('né xóa đòn đang đệm (không tự ra đòn sau khi đã né)', () => {
+    const { sim, p, mon, fresh, resolve } = setup();
+    const m = mon();
+    fresh();
+    sim.onSkill(p, { ...basic, t: m.id });
+    resolve();
+    sim.now = p.gcdAt - 150;
+    sim.onSkill(p, { ...basic, t: m.id });
+    expect(p.flow.buffered).not.toBeNull();
+    sim.onDodge(p, {});
+    expect(p.flow.buffered).toBeNull();
+  });
+  it('chia nhỏ đòn không mất sát thương vì phòng ngự: đòn hệ số 0,4 với phòng ngự × 0,4 gây đúng 0,4 lần một đòn hệ số 1', () => {
+    const { sim, p, mon, sent } = setup();
+    const m = mon();
+    const total = () => {
+      const n = sent.filter((x) => x.type === S.DMG && x.msg.dst === m.id).reduce((acc, x) => acc + (x.msg.n as number), 0);
+      sent.length = 0;
+      return n;
+    };
+    const hit = (
+      sim as unknown as {
+        hitMonster(p: Ent, m: unknown, power: number, mul?: number, elem?: string, tier?: undefined, defScale?: number): boolean;
+      }
+    ).hitMonster.bind(sim);
+    // Trung bình nhiều đòn để triệt dao động ±10% và bạo kích.
+    const N = 3000;
+    expect(m.defn).toBeGreaterThan(0);
+    for (let i = 0; i < N; i++) hit(p, m, 1);
+    const one = total() / N;
+    for (let i = 0; i < N; i++) hit(p, m, 0.4, 1, undefined, undefined, 0.4);
+    const scaled = total() / N;
+    for (let i = 0; i < N; i++) hit(p, m, 0.4);
+    const unscaled = total() / N;
+    expect(scaled / (0.4 * one)).toBeGreaterThan(0.96);
+    expect(scaled / (0.4 * one)).toBeLessThan(1.04);
+    // Không nhân phòng ngự thì đòn nhỏ bị trừ phòng ngự nguyên vẹn: thấp hơn hẳn.
+    expect(unscaled).toBeLessThan(scaled * 0.93);
+    // Dữ liệu thật: ba đòn của phi kiếm nhân phòng ngự theo đúng hệ số của chúng.
+    const sk = SKILL.get('skl_phi_kiem')!;
+    expect([0, 1, 2].map((i) => comboDefScale(sk, i))).toEqual([0.4, 0.4, 0.64]);
+    expect(comboDefScale(SKILL.get('skl_kiem_khi_tram')!)).toBe(1);
+  });
+  it('kiếm tu: đòn cuối rút khóa 0,1 s nhưng không sớm hơn lúc đòn trúng xong', () => {
+    const { sim, p, mon, fresh, resolve } = setup(10, 'lac_kiem_quyet');
+    const m = mon();
+    fresh();
+    let last = 0;
+    for (let i = 0; i < 3; i++) {
+      const t0 = sim.now;
+      sim.onSkill(p, { ...basic, t: m.id });
+      last = p.gcdAt - t0;
+      resolve();
+      sim.now = p.gcdAt;
+    }
+    expect(last).toBe(500);
+    expect(last).toBeGreaterThanOrEqual(260 + 50);
   });
 });
 

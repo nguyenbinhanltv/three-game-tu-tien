@@ -272,16 +272,24 @@ describe('SkillPoses (khớp động tác với FX)', () => {
     expect((calls[2]!.o?.timing as { kb: boolean }).kb).toBe(true);
   });
 
-  it('gửi lặp trong GCD (tự đánh 220 ms/lần) không dự đoán lại: không khởi động lại động tác, không tăng đòn liên hoàn', () => {
+  it('gửi lặp trong lúc còn khóa của đòn (đòn chuỗi khóa 0,42 s) không dự đoán lại: không khởi động lại động tác, không tăng đòn liên hoàn', () => {
     const sp = new SkillPoses();
     const { m, calls } = fake();
-    for (let t = 1000; t < 1900; t += 220) sp.predict(m, phi, t);
+    for (let t = 1000; t < 1300; t += 100) sp.predict(m, phi, t);
     expect(calls).toHaveLength(1);
     expect(calls[0]!.o?.combo).toBe(0);
-    // Hết GCD thì đòn kế (đòn 2) mới được đoán.
-    sp.predict(m, phi, 2050);
+    // Hết khóa của đòn 1 (0,42 s, trừ dung sai 100 ms) thì đòn kế (đòn 2) mới được đoán; đòn 3 khóa 0,6 s.
+    sp.predict(m, phi, 1420);
     expect(calls).toHaveLength(2);
     expect(calls[1]!.o?.combo).toBe(1);
+    sp.predict(m, phi, 1840);
+    expect(calls).toHaveLength(3);
+    expect(calls[2]!.o?.combo).toBe(2);
+    sp.predict(m, phi, 2260);
+    expect(calls).toHaveLength(3);
+    sp.predict(m, phi, 2440);
+    expect(calls).toHaveLength(4);
+    expect(calls[3]!.o?.combo).toBe(0);
   });
 
   it('lao người: chỉ chuỗi đánh thường, có mục tiêu, và không vượt chỗ đứng sát', () => {
