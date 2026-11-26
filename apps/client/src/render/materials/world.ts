@@ -4,14 +4,17 @@ import {
   cameraNear,
   diffuseColor,
   float,
+  luminance,
   mix,
   normalView,
   normalWorld,
+  output,
   positionView,
   positionViewDirection,
   smoothstep,
   uniform,
   vec3,
+  vec4,
   viewZToPerspectiveDepth,
 } from 'three/tsl';
 import { rimParams } from '../atmosphere';
@@ -94,6 +97,40 @@ export function cloneWorldMaterial(src: THREE.MeshStandardNodeMaterial): THREE.M
   m.color.copy(src.color);
   m.emissive.copy(src.emissive);
   m.normalScale.copy(src.normalScale);
+  return m;
+}
+
+/** Ba bậc sáng của kiểu tô Dạ Cảnh (tỉ lệ so với màu gốc): bóng, thân, sáng; và hai ngưỡng chuyển bậc (nửa bề rộng mép `TOON_SOFT`). */
+export const TOON_LEVELS = [0.34, 0.7, 1.08] as const;
+export const TOON_EDGES = [0.42, 0.86] as const;
+export const TOON_SOFT = 0.03;
+/** Tỉ lệ sáng từ mức này trở lên (viền sáng, đèn mạnh) được cộng nguyên phần vượt, không bị ép về bậc sáng nhất. */
+export const TOON_HILITE = 1.25;
+
+/** Bậc sáng (thuần số, cùng công thức với shader) của một tỉ lệ sáng `r` = độ sáng sau chiếu sáng / độ sáng màu gốc. */
+export function toonLevel(r: number): number {
+  const ss = (e: number) => {
+    const x = Math.min(1, Math.max(0, (r - (e - TOON_SOFT)) / (2 * TOON_SOFT)));
+    return x * x * (3 - 2 * x);
+  };
+  const a = TOON_LEVELS[0] + (TOON_LEVELS[1] - TOON_LEVELS[0]) * ss(TOON_EDGES[0]);
+  return a + (TOON_LEVELS[2] - a) * ss(TOON_EDGES[1]);
+}
+
+/**
+ * Tô bóng CHIA BẬC cho nhân vật/quái ở Dạ Cảnh (`?style=da`): giữ nguyên texture và mọi đường chiếu sáng PBR, chỉ lượng tử hóa ĐỘ SÁNG của kết quả
+ * so với màu gốc thành ba bậc có mép ngắn (không răng cưa). Sắc của ánh sáng (nắng, trời, đèn lồng) và phần viền sáng `rimLight` được giữ.
+ * Không thêm draw call hay texture. Ngoại lệ của Dạ Cảnh so với art bible v3 (xem docs/handbook/da-canh.md).
+ */
+export function toonBands(m: THREE.MeshStandardNodeMaterial): THREE.MeshStandardNodeMaterial {
+  const lit = output.rgb;
+  const base = luminance(diffuseColor.rgb).max(0.02);
+  const r = luminance(lit).div(base);
+  const lo = mix(float(TOON_LEVELS[0]), float(TOON_LEVELS[1]), smoothstep(TOON_EDGES[0] - TOON_SOFT, TOON_EDGES[0] + TOON_SOFT, r));
+  const lvl = mix(lo, float(TOON_LEVELS[2]), smoothstep(TOON_EDGES[1] - TOON_SOFT, TOON_EDGES[1] + TOON_SOFT, r));
+  // Phần vượt bậc sáng nhất (viền sáng, đèn mạnh) giữ nguyên để rim và điểm sáng không bị cắt.
+  const k = lvl.add(r.sub(TOON_HILITE).max(0)).div(r.max(0.02));
+  m.outputNode = vec4(lit.mul(k), output.a);
   return m;
 }
 
