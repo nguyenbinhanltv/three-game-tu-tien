@@ -29,6 +29,7 @@ import {
 import { cellRand } from './hash';
 import { TAU, type N, type RefField } from './field';
 import { mulberry } from './ref/textures';
+import { bladeTone } from '../bladeTone';
 
 /**
  * Lá cỏ: dựa trên painted-valley/src/lib/blades.js (MIT, © 2026 Patch; xem assets/LICENSES.md), dịch từng dòng sang TSL. Chỉ hai vòng
@@ -423,6 +424,11 @@ function bladeMaterial(
     col = select(isCut, mix(col, col.mul(1.35).add(vec3(0.025, 0.028, 0.008)), smoothstep(0.7, 1.0, t).mul(0.7)), col);
     col = col.toVar();
     col = mix(col, vec3(0.011, 0.01, 0.009), charred);
+    col = col.toVar();
+    // Họa Cảnh P9 (bảng theo level, ../bladeTone.ts, đặt ở ../theme.ts `bladeMix`): lá đổi tông vào cặp đất của level theo độ chói của chính nó (lá sẫm → tông tối, lá hứng nắng → tông
+    // sáng), nên lá và đất cùng một bảng; `bladeMix` = 0 (cảnh thử đo khớp, Vân Lam) giữ nguyên màu nguồn
+    const ink: N = dot(col, vec3(0.299, 0.587, 0.114));
+    col = mix(col, mix(vec3(bladeTone.shade), vec3(bladeTone.lit), smoothstep(0.05, 0.3, ink)), bladeTone.mix);
     col = col.toVar();
     pAlbedo.assign(col);
     // a low sun lights the tall clumps and leaves the short ones behind them in shade

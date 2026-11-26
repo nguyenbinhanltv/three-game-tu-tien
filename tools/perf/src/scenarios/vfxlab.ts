@@ -5,7 +5,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import sharp from 'sharp';
-import { SKILL } from '@dtl/content';
+import { FX_TIMELINE, SKILL } from '@dtl/content';
 import { list, num, opt } from '../lib/env';
 import { sleep } from '../lib/devserver';
 import { gm } from '../lib/game';
@@ -18,8 +18,12 @@ const DEFAULT_MON = 'elite_liet_cot_bao';
 /** Bước thời gian mỗi khung khi tua (ms): nhỏ để mốc +30 ms rơi đúng. */
 const STEP_MS = 10;
 
+/** Mốc 0 (giây sau lúc phát) của các cảnh thử độ kiếp; GIỮ KHỚP `LAB_SCENES` ở client (tools/perf không import mã client). */
+const LAB_DELAY: Record<string, number> = { lab_loi: 1.25, lab_loi_hot: 1.25, lab_loi_big: 3, lab_kiep_van: 0 };
+
 interface CardBudget {
   budget: { drawCalls: number; particles: number; screenCover: number; overdraw: number };
+  scene?: { impactAt: number };
 }
 
 const frame = (page: Page) => page.evaluate(() => new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => r()))));
@@ -72,7 +76,10 @@ async function inkMetrics(base: Buffer, shot: Buffer): Promise<{ darkShare: numb
 }
 
 async function run(r: Run, skills: string[], sizes: string[], at: number[]): Promise<Record<string, unknown>[]> {
-  for (const sk of skills) if (!SKILL.get(sk)) throw new Error(`không có chiêu ${sk}`);
+  // Timeline cảnh `fx_*` (đột phá, độ kiếp, ngự kiếm: V-P10) không phải chiêu nhưng phát được qua `__vfxlab.cast`.
+  // Cảnh thử `lab_*` (thiên lôi, kiếp vân của độ kiếp): đường vẽ theo tin server, khai ở `LAB_SCENES` (apps/client/src/game/debug/vfxLab.ts).
+  for (const sk of skills)
+    if (!SKILL.get(sk) && !(sk.startsWith('fx_') && FX_TIMELINE.has(sk)) && !(sk in LAB_DELAY)) throw new Error(`không có chiêu ${sk}`);
   const mon = opt('--mon', DEFAULT_MON);
   const dummies = Math.min(5, Math.max(1, num('--dummies', 1)));
   const { ctx, page } = await r.open({
@@ -124,12 +131,13 @@ async function run(r: Run, skills: string[], sizes: string[], at: number[]): Pro
   const results: Record<string, unknown>[] = [];
   for (const skill of skills) {
     const outDir = skills.length > 1 ? path.join(r.out, skill) : r.out;
-    const def = SKILL.get(skill)!;
-    const hitMs = Math.round((def.hitAt?.[0] ?? 0.3) * 1000);
+    const def = SKILL.get(skill);
     const card = (() => {
       const f = path.resolve(import.meta.dirname, '../../../../packages/content/data/vfx/cards', `${skill}.json`);
       return fs.existsSync(f) ? (JSON.parse(fs.readFileSync(f, 'utf8')) as CardBudget) : null;
     })();
+    // Cảnh `fx_*`: mốc "trúng" là mốc nhấn của thẻ cảnh (giây sau lúc kích), chưa có thẻ thì 0.
+    const hitMs = Math.round((def ? (def.hitAt?.[0] ?? 0.3) : (LAB_DELAY[skill] ?? card?.scene?.impactAt ?? 0)) * 1000);
     const out: Record<string, unknown> = { skill, hitMs, card: card?.budget ?? null, shots: {} as Record<string, unknown> };
     const shots = out.shots as Record<string, unknown>;
     for (const tag of sizes) {

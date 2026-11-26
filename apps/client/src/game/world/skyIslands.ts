@@ -21,6 +21,8 @@ import {
   vertexColor,
 } from 'three/tsl';
 import { getCloudNoise } from '../../render/noiseTex';
+import { paintedProp, paintedStd } from '../../render/painted/props';
+import { FLAGS } from '../../base/flags';
 import { skyParams } from '../../render/sky';
 import { bridgeDeckY, type BridgeDef, hash01, type IslandDef, type Terrain, type TerrainDef } from '@dtl/shared';
 import type { SpiritScan } from '../../ui/store';
@@ -377,11 +379,17 @@ export class SkyIslands {
     const plankGeo = this.track(new THREE.BoxGeometry(2 * 2.6 + 0.3, 0.18, PLANK));
     const railGeo = this.track(new THREE.CylinderGeometry(0.05, 0.05, 1, 5));
     const postGeo = this.track(new THREE.CylinderGeometry(0.09, 0.11, RAIL_H, 6));
-    const wood = this.track(new THREE.MeshStandardMaterial({ color: 0xcfc2a6, roughness: 0.85, metalness: 0 }));
-    const chain = this.track(new THREE.MeshStandardMaterial({ color: 0x4a4d55, roughness: 0.45, metalness: 0.7 }));
+    const wood = this.track(paintedStd({ color: 0xcfc2a6, roughness: 0.85, metalness: 0 }));
+    const chain = this.track(paintedStd({ color: 0x4a4d55, roughness: 0.45, metalness: 0.7 }));
+    const tint = new THREE.Color();
     const mk = (geo: THREE.BufferGeometry, mat: THREE.Material, list: THREE.Matrix4[], name: string) => {
       const im = new THREE.InstancedMesh(geo, mat, list.length);
       list.forEach((mm, i) => im.setMatrixAt(i, mm));
+      // Họa Cảnh: ván cầu không còn đèn nên mỗi tấm một sắc độ (xác định theo thứ tự ván), mặt cầu không thành một dải phẳng
+      if (FLAGS.style === 'painted' && name === 'bridge-planks') {
+        list.forEach((_m, i) => im.setColorAt(i, tint.setScalar(0.8 + hash01(i, 5, 977) * 0.26)));
+        if (im.instanceColor) im.instanceColor.needsUpdate = true;
+      }
       im.instanceMatrix.needsUpdate = true;
       im.frustumCulled = false;
       im.castShadow = false;
@@ -577,7 +585,8 @@ export class SkyIslands {
         .add(smp(vec2(wp.x, wp.z).mul(sc), ch).mul(wn.y))
         .add(smp(vec2(wp.x, wp.y).mul(sc), ch).mul(wn.z));
     const a = tri(0.03, 'g');
-    const b = tri(0.21, 'a');
+    // Họa Cảnh: bỏ hạt đá mịn (~5 m, nhìn xa thành lấm tấm), chỉ giữ mảng lớn ~33 m; mặc định giữ nguyên hai tần số
+    const b = FLAGS.style === 'painted' ? float(0.5) : tri(0.21, 'a');
     // rêu ở mặt ngửa (loang theo nhiễu), đá sáng hơn ở mặt hướng nắng
     const up = smoothstep(0.55, 0.92, normalWorld.y.add(a.sub(0.5).mul(0.35)));
     const sun = dot(normalWorld, skyParams.sunDir).max(0);
@@ -594,7 +603,7 @@ export class SkyIslands {
     );
     m.roughnessNode = float(0.8).add(b.mul(0.2));
     m.emissiveNode = vertexColor().mul(0.24); // fill nhẹ: mặt dưới đảo không đen đặc khi nhìn từ biển mây
-    this.rock = this.track(m);
+    this.rock = this.track(paintedProp(m)); // Họa Cảnh: hai tông theo hướng mặt, đổi tông theo cặp đá của level (mặc định trả nguyên vật liệu)
     return m;
   }
 
@@ -758,7 +767,7 @@ export class SkyIslands {
       }
     }
     const geo = this.track(new THREE.IcosahedronGeometry(1, 0));
-    const mat = this.track(new THREE.MeshStandardMaterial({ roughness: 0.95, metalness: 0, flatShading: true }));
+    const mat = this.track(paintedStd({ roughness: 0.95, metalness: 0, flatShading: true }));
     const im = new THREE.InstancedMesh(geo, mat, list.length);
     list.forEach((m, i) => {
       im.setMatrixAt(i, m);
@@ -914,7 +923,7 @@ export class SkyIslands {
     }
     const merged = this.track(mergeGeometries(parts, false));
     for (const p of parts) p.dispose();
-    const mesh = new THREE.Mesh(merged, this.track(new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.8, metalness: 0 })));
+    const mesh = new THREE.Mesh(merged, this.track(paintedStd({ vertexColors: true, roughness: 0.8, metalness: 0 })));
     mesh.castShadow = false;
     mesh.frustumCulled = false;
     mesh.name = 'whale-ribs';

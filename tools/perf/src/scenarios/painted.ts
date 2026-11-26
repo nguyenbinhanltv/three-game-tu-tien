@@ -1,6 +1,8 @@
 // Họa Cảnh (`?style=painted`): ảnh so sánh mặc định | painted cùng điểm, cùng góc camera chéo, kèm số đo draw call/khung.
-//   pnpm shots painted --out <thư mục tuyệt đối> [--level <id>] [--moods day,night] [--views 720p,1080p] [--points a,b|all] [--styles off,painted] [--preset high] [--renderer webgpu|webgl2]
+//   pnpm shots painted --out <thư mục tuyệt đối> [--level <id>] [--moods day,night] [--views 720p,1080p] [--points a,b|all] [--at ten:x,z;...] [--styles off,painted] [--preset high] [--renderer webgpu|webgl2]
 // Ảnh: <style>-<view>-<mood>-<điểm>.png; số đo: perf.json (drawCalls, triangles, textures, frameMs, heapMB mỗi điểm).
+import { existsSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { sleep } from '../lib/devserver';
 import { list, num, opt } from '../lib/env';
 import { enterLevel, gm, perfSample, tp } from '../lib/game';
@@ -20,7 +22,21 @@ export const POINTS: { name: string; x: number; z: number }[] = [
 
 /** Điểm của level đang chụp: Vân Lam giữ danh sách đặt tay; level khác suy từ dữ liệu (P9), ảnh tên `<style>-<view>-<mood>-<điểm>.png`. */
 const LEVEL = opt('--level', 'van_lam');
-const pointsOf = (): { name: string; x: number; z: number }[] => (LEVEL === 'van_lam' ? POINTS : levelPoints(requireLevel(LEVEL).id));
+/** `--at "ten:x,z;ten2:x,z"`: thêm điểm đặt tay (cầu, sàn mây, vườn cây... không có trong điểm suy từ dữ liệu level). */
+const atPoints = (): { name: string; x: number; z: number }[] =>
+  opt('--at', '')
+    .split(';')
+    .filter(Boolean)
+    .map((p) => {
+      const [name, xz] = p.split(':');
+      const [x, z] = (xz ?? '').split(',').map(Number);
+      if (!name || !Number.isFinite(x) || !Number.isFinite(z)) throw new Error(`--at sai dạng: "${p}" (cần ten:x,z)`);
+      return { name, x: x!, z: z! };
+    });
+const pointsOf = (): { name: string; x: number; z: number }[] => [
+  ...(LEVEL === 'van_lam' ? POINTS : levelPoints(requireLevel(LEVEL).id)),
+  ...atPoints(),
+];
 
 const SIZES: Record<string, [number, number]> = { '720p': [1280, 720], '1080p': [1920, 1080] };
 
@@ -28,14 +44,23 @@ export default {
   name: 'painted',
   desc: 'Họa Cảnh: ảnh so sánh mặc định | ?style=painted ở Thung Lũng Thanh Phong (ngày/đêm × 720p/1080p) + số đo',
   usage:
-    '[--level <id>] [--styles off,painted] [--moods day,night] [--views 720p,1080p] [--points a,b|all] [--preset high] [--burst N] [--spawn <id quái> --spawn-n N] [--cast 0,1,2: bấm chiêu ở ô số này giữa các khung burst]',
+    '[--level <id>] [--styles off,painted] [--moods day,night] [--views 720p,1080p] [--points a,b|all] [--at ten:x,z;...] [--fly a,b: thêm khung ngự kiếm ở các điểm này] [--preset high] [--burst N] [--spawn <id quái> --spawn-n N] [--cast 0,1,2: bấm chiêu ở ô số này giữa các khung burst]',
   async run(r) {
     const only = list('--points', 'all');
     const pts = pointsOf().filter((p) => only.includes('all') || only.includes(p.name));
-    const perf: Record<string, unknown> = {};
-    for (const style of list('--styles', 'off,painted')) {
-      for (const view of list('--views', '720p,1080p')) {
-        for (const mood of list('--moods', 'day,night')) {
+    // số đo ghi dần sau mỗi phiên và gộp với `perf.json` đã có: chạy bù một phần (`--styles`/`--views`/`--moods`) không làm mất số của lượt trước
+    const perfFile = join(r.out, 'perf.json');
+    const perf: Record<string, unknown> = existsSync(perfFile)
+      ? (JSON.parse(readFileSync(perfFile, 'utf8')) as Record<string, unknown>)
+      : {};
+    const combos: [string, string, string][] = [];
+    for (const style of list('--styles', 'off,painted'))
+      for (const view of list('--views', '720p,1080p')) for (const mood of list('--moods', 'day,night')) combos.push([style, view, mood]);
+    for (const [style, view, mood] of combos) {
+      // một phiên hỏng giữa chừng (trang nạp lại lúc máy tải nặng nên `__game` mất, hoặc trang tải quá 30 s) thì chụp lại cả phiên, tối đa 3 lần
+      for (let attempt = 1; ; attempt++) {
+        let close: (() => Promise<void>) | null = null;
+        try {
           const { ctx, page } = await r.open({
             name: `Pt${style[0]}${mood[0]}${view[0]}`,
             quality: opt('--preset', 'high'),
@@ -45,6 +70,7 @@ export default {
             seenIntro: true,
             warnings: true,
           });
+          close = () => ctx.close();
           await gm(page, `level ${LEVEL === 'van_lam' ? 15 : Math.max(27, requireLevel(LEVEL).minLevel ?? 0)}`, 2500);
           if (LEVEL !== 'van_lam') await enterLevel(page, LEVEL);
           await gm(page, 'god on', 2500);
@@ -69,11 +95,25 @@ export default {
             }
             first = false;
             perf[`${style}-${view}-${mood}-${p.name}`] = await perfSample(page);
+            // --fly a,b: ở các điểm này chụp thêm khung ngự kiếm (camera hạ thấp, lộ chân trời: cảnh xa, biển mây, vùng xa nướng một lần), ảnh `…-<điểm>-fly.png`
+            if (list('--fly', '').includes(p.name)) {
+              await page.evaluate(() => window.__game!.toggleFly());
+              // vùng xa nướng chia qua nhiều khung (worker CPU + lát GPU): chờ đủ
+              await snap(page, r.out, `${style}-${view}-${mood}-${p.name}-fly.png`, { wait: style === 'painted' ? 16000 : 6000 });
+              perf[`${style}-${view}-${mood}-${p.name}-fly`] = await perfSample(page);
+              await page.evaluate(() => window.__game!.toggleFly());
+              await sleep(2500);
+            }
           }
           await ctx.close();
+          break;
+        } catch (e) {
+          await close?.().catch(() => undefined);
+          if (attempt >= 3) throw e;
+          console.warn(`[shots:painted] phiên ${style}-${view}-${mood} lỗi (lần ${attempt}), chụp lại: ${String(e).split('\n')[0]}`);
         }
       }
+      writeJson(r.out, 'perf.json', perf);
     }
-    writeJson(r.out, 'perf.json', perf);
   },
 } satisfies Scenario;

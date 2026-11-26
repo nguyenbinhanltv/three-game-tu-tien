@@ -370,6 +370,32 @@ export const FX_SPRITES = [
   'may_tuft',
   'may_tail',
   'may_burst',
+  // V-P10: nhóm atlas `dp` (đột phá tầng/cảnh giới). Tranh vẽ ĐƠN SẮC (mực → trắng), shader tô theo bảng màu của timeline (kiểu 12).
+  'dp_ribbon',
+  'dp_leaves',
+  'dp_slab',
+  'dp_plume',
+  'dp_pill',
+  'dp_orbit',
+  'dp_swirl',
+  'dp_shell',
+  'dp_bud',
+  'dp_lotus',
+  'dp_infant',
+  'dp_petal',
+  'dp_spirit',
+  'dp_mantle',
+  'dp_wisp',
+  'dp_crack',
+  // V-P10: nhóm atlas `kiep` (độ kiếp: mở kiếp, kiếp vân, chỗ sét đánh). Tranh đơn sắc, kiểu tô 12.
+  'kiep_rift',
+  'kiep_cloud',
+  'kiep_cloud2',
+  'kiep_eye',
+  'kiep_impact',
+  'kiep_smoke',
+  'kiep_arcs',
+  'kiep_knot',
 ] as const;
 export type FxSprite = (typeof FX_SPRITES)[number];
 
@@ -596,6 +622,8 @@ export interface FxBoltEvent extends FxBase {
   thick?: number;
   tone?: FxTone;
   seed?: number;
+  /** Lõi mực dưới thân sáng (V-P10): thiên lôi của độ kiếp đọc được trên nền sáng; chiêu người chơi không dùng. */
+  ink?: boolean;
 }
 
 /**

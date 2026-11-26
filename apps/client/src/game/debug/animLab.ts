@@ -8,6 +8,7 @@ import type { Game } from '../engine';
 import { ANIM_FX, CUTIN_FREEZE_MS, cutinArt, type AnimFxFlags } from '../character/animFx';
 import { set } from '../../ui/store';
 import { v3SetKeyOf } from '../character/mannequin';
+import { walkableGround } from '../character/mannequinFeet';
 import { closeCam, keyMoments, type LabCam } from './animLabMath';
 
 /** Trạng thái điều khiển thời gian, đọc bởi vòng khung (`animLabDt`). */
@@ -53,7 +54,26 @@ export interface AnimLabApi {
   hitMon(from: 'front' | 'back' | 'left' | 'right', tier: number, knock?: boolean): { x: number; y: number } | null;
   /** T7: phát cut-in chiêu cuối `skill` như khi mình tung chiêu (khựng + thẻ); trả false nếu chiêu chưa có tranh. */
   cutin(skill: string, setKey?: string, g?: string): boolean;
+  /**
+   * Số đo dáng người khung hiện tại (đo pivot và IK chân): gốc, hướng thân đang hiển thị (gốc + độ lệch của nhịp đảo chiều), độ dời thân của lớp phụ (`innerY`), hông/đầu (thế giới),
+   * mỗi cổ chân kèm độ cao mặt đứng ngay dưới nó (`g`). null khi model chưa có xương Mannequin.
+   */
+  probe(): AnimLabProbe | null;
 }
+
+export interface AnimLabProbe {
+  root: [number, number, number];
+  yaw: number;
+  innerY: number;
+  pelvis: [number, number, number];
+  head: [number, number, number];
+  /** Trái rồi phải: vị trí cổ chân và mặt đứng dưới nó. */
+  feet: { x: number; y: number; z: number; g: number }[];
+  /** Mặt đứng dưới gốc nhân vật. */
+  ground: number;
+}
+
+const _pv = new THREE.Vector3();
 
 /** Gắn `window.__animlab` (gọi một lần khi tạo Game, chỉ khi `?animlab=1` ở bản dev). */
 export function installAnimLab(g: Game): void {
@@ -144,6 +164,35 @@ export function installAnimLab(g: Game): void {
       v.y += m.height * 0.5;
       v.project(g.camera);
       return { x: (v.x * 0.5 + 0.5) * window.innerWidth, y: (-v.y * 0.5 + 0.5) * window.innerHeight };
+    },
+    probe() {
+      const m = self() as unknown as { root: THREE.Object3D; inner?: THREE.Object3D; rig?: THREE.Object3D } | undefined;
+      const rig = m?.rig;
+      const bone = (n: string) => rig?.getObjectByName(n);
+      const pel = bone('pelvis');
+      const head = bone('Head') ?? bone('head');
+      const fl = bone('foot_l');
+      const fr = bone('foot_r');
+      if (!m || !pel || !head || !fl || !fr) return null;
+      const rp = m.root.position;
+      const ground = walkableGround(rp.y);
+      const at = (o: THREE.Object3D): [number, number, number] => {
+        o.getWorldPosition(_pv);
+        return [_pv.x, _pv.y, _pv.z];
+      };
+      const foot = (o: THREE.Object3D) => {
+        const [x, y, z] = at(o);
+        return { x, y, z, g: ground(x, z) };
+      };
+      return {
+        root: [rp.x, rp.y, rp.z],
+        yaw: m.root.rotation.y + (m.inner?.rotation.y ?? 0),
+        innerY: m.inner?.position.y ?? 0,
+        pelvis: at(pel),
+        head: at(head),
+        feet: [foot(fl), foot(fr)],
+        ground: ground(rp.x, rp.z),
+      };
     },
     cutin(skill, setKey, gender) {
       const me = g.ents.players.get(g.sid);

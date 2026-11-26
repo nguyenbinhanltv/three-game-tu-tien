@@ -24,7 +24,7 @@ interface Flags {
   vfxLab: boolean;
   /** `?animlab=1` (chỉ dev) phòng thử animation Thân Pháp: gắn `window.__animlab`. */
   animLab: boolean;
-  /** `?thanphap=1`: bật lớp Thân Pháp (cường điệu góc chéo, nảy bước...) trên nhân vật v3; mặc định tắt tới khi duyệt pilot. */
+  /** Lớp Thân Pháp (cường điệu góc chéo, nảy bước, pivot, clip Patch...) trên nhân vật v3; mặc định BẬT, `?thanphap=0` tắt. Lớp riêng Kiếm tu (idle, pose `_tp`, cut-in, lướt thấp) chỉ chạy với công pháp Kiếm tu. */
   thanPhap: boolean;
   /** `?ploop=0` (cùng `?thanphap=1`) giữ vòng chạy UAL thay vì clip Patch, để so trước/sau. */
   patchLoop: boolean;
@@ -164,11 +164,11 @@ export const FLAG_DOCS: Readonly<Record<string, { scope: 'user' | 'diag' | 'test
   batch: { scope: 'diag', doc: '=0: tắt gộp draw call VFX' },
   vfxlab: { scope: 'test', doc: '=1 (dev): phòng thử VFX, gắn window.__vfxlab; dùng với pnpm shots vfxlab' },
   animlab: { scope: 'test', doc: '=1 (dev): phòng thử animation Thân Pháp, gắn window.__animlab; dùng với pnpm shots animlab' },
-  pstride: { scope: 'test', doc: '=<k> (cùng ?thanphap=1): nhân độ dài chu kỳ chạy Patch để quét trượt chân (mặc định 1)' },
-  ploop: { scope: 'test', doc: '=0 (cùng ?thanphap=1): giữ vòng chạy UAL thay vì clip Patch PM_Run/PM_Sprint, để so trước/sau' },
+  pstride: { scope: 'test', doc: '=<k> (khi Thân Pháp bật): nhân độ dài chu kỳ chạy Patch để quét trượt chân (mặc định 1)' },
+  ploop: { scope: 'test', doc: '=0 (khi Thân Pháp bật): giữ vòng chạy UAL thay vì clip Patch PM_Run/PM_Sprint, để so trước/sau' },
   thanphap: {
     scope: 'diag',
-    doc: '=1: lớp Thân Pháp (cường điệu góc chéo, nảy bước, idle/chiêu mới của Kiếm tu); pilot TP-1, mặc định tắt',
+    doc: '=0: tắt lớp Thân Pháp (mặc định bật: cường điệu góc chéo, nảy bước, pivot, clip Patch cho mọi hệ; idle/chiêu/cut-in mới chỉ Kiếm tu)',
   },
   vfxwarm: { scope: 'diag', doc: '=0: tắt biên dịch trước VFX' },
   auraground: { scope: 'diag', doc: '=0: hào quang cảnh giới kiểu cũ quanh người, không có ấn dưới chân (so ảnh C5)' },
@@ -259,7 +259,7 @@ export function readFlags(search: string): Flags {
     batching: !off(q.get('batch')),
     vfxLab: q.get('vfxlab') === '1',
     animLab: q.get('animlab') === '1',
-    thanPhap: q.get('thanphap') === '1',
+    thanPhap: q.get('thanphap') !== '0',
     patchLoop: !off(q.get('ploop')),
     pStride: Number(q.get('pstride')) > 0 ? Number(q.get('pstride')) : 1,
     vfxWarm: !off(q.get('vfxwarm')),

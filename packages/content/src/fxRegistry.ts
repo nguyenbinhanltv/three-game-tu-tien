@@ -168,9 +168,11 @@ import fx_fx_dotpha_hn from '../data/fx/fx_dotpha_hn.json';
 import fx_fx_dotpha_na from '../data/fx/fx_dotpha_na.json';
 import fx_fx_dotpha_tc from '../data/fx/fx_dotpha_tc.json';
 import fx_fx_fly_on from '../data/fx/fx_fly_on.json';
+import fx_fx_levelup from '../data/fx/fx_levelup.json';
 import fx_fx_kiep_kd from '../data/fx/fx_kiep_kd.json';
 import fx_fx_kiep_hn from '../data/fx/fx_kiep_hn.json';
 import fx_fx_kiep_na from '../data/fx/fx_kiep_na.json';
+import fx_fx_kiep_strike from '../data/fx/fx_kiep_strike.json';
 import fx_fx_kiep_tc from '../data/fx/fx_kiep_tc.json';
 import fx_suy_den_dark from '../data/fx/suy_den_dark.json';
 import fx_suy_den_gust from '../data/fx/suy_den_gust.json';
@@ -439,10 +441,12 @@ export const FX_TIMELINES = [
   fx_fx_dotpha_kd,
   fx_fx_dotpha_na,
   fx_fx_dotpha_tc,
+  fx_fx_levelup,
   fx_fx_fly_on,
   fx_fx_kiep_hn,
   fx_fx_kiep_kd,
   fx_fx_kiep_na,
+  fx_fx_kiep_strike,
   fx_fx_kiep_tc,
   fx_fx_soul_in,
   fx_fx_soul_out,

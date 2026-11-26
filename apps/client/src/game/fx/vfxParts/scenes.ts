@@ -5,6 +5,8 @@ import { type FxMesh } from '../../../render/materials/vfx';
 import { SIGIL_CIRCLE, SIGIL_RECT, sigilLayout } from '../../../render/vfx/sigil';
 import { seedOr } from '../../../render/vfx/common';
 import { VORTEX_GEO } from '../../../render/vfx/lightning';
+import { spriteCell, useSpriteGroup } from '../../../render/vfx/art';
+import { shapeGeometry } from '../../../render/vfx/fxShapes';
 import { G } from '../../core/geo';
 import { CLOUD_COLOR, PosFn, RING_GEO, TUBE_GEO, _a, _up } from './common';
 import type { Vfx } from '../vfx';
@@ -288,6 +290,54 @@ export function tribulationCloud(v: Vfx, pos: PosFn, dur: number, stillOn: () =>
         v.clouds.delete(cloud);
         v.drop(cloud);
       },
+    );
+  }
+  lowKiepClouds(v, pos, dur, stillOn, seedOr(seed));
+}
+
+/** Mực của mây kiếp tầng thấp (tím than) và viền sáng tím nhạt. */
+const KIEP_CLOUD_INK = 0x3a2a66;
+/**
+ * Ba tảng mây vẽ tay ở NỬA XA camera của người độ kiếp (không bao giờ trôi ra trước che cảnh): bán kính (m), cao (m), nửa cạnh ô (m),
+ * góc lệch so với hướng xa camera (rad), biên độ đung đưa (rad) và tần số (rad/s).
+ */
+const LOW_CLOUDS = [
+  { sprite: 'kiep_cloud', r: 4.4, h: 2.4, size: 1.9, a0: -1.0, sway: 0.2, w: 0.31 },
+  { sprite: 'kiep_cloud2', r: 4.8, h: 2.9, size: 2.1, a0: 0.05, sway: 0.16, w: 0.23 },
+  { sprite: 'kiep_cloud', r: 4.4, h: 2.5, size: 1.8, a0: 1.05, sway: 0.2, w: 0.37 },
+] as const;
+
+/**
+ * Kiếp vân TẦNG THẤP (V-P10). Đĩa mây xoáy cũ treo cao 34–48 m nên nằm ngoài khung của camera chéo khóa góc (không ai thấy). Lớp này đưa kiếp vân vào
+ * khung: ba tảng mây mực vẽ tay (sprite `kiep_*`) đung đưa chậm ở nửa xa camera, cao 2,4–2,9 m, cách tâm 4–5 m (trên màn hình nằm sát mép trên, phía sau
+ * người, không che người). 3 draw call, sống cùng thời gian với đĩa mây (`stillOn`).
+ */
+function lowKiepClouds(v: Vfx, pos: PosFn, dur: number, stillOn: () => boolean, sd: number): void {
+  useSpriteGroup('kiep');
+  const fade = (t: number, op: number, dt: number): number => (stillOn() ? Math.min(1, t / 2.5) : Math.max(0, op - dt));
+  for (const [i, C] of LOW_CLOUDS.entries()) {
+    const m = v.fx(shapeGeometry('sprite'), KIEP_CLOUD_INK, 0, 'sprite_kiep');
+    // fxA của sprite: x = kiểu tô (12: theo màu lưới), y = độ tan, z = seed, w = ô trong atlas; fxB = màu viền.
+    m.fxA.set(12, 0, (sd % 97) * 0.1 + i * 3.1, spriteCell(C.sprite).idx);
+    m.fxB.set(0.8, 0.74, 1, 0.5);
+    let t = 0;
+    let op = 0;
+    v.add(
+      dur + 1.5,
+      (_k, dt) => {
+        t += dt;
+        if (!pos(_a)) return;
+        op = fade(t, op, dt);
+        // Hướng xa camera (mặt bằng) + lệch riêng của từng tảng + đung đưa chậm.
+        const cp = v.camera?.position;
+        const away = cp ? Math.atan2(_a.z - cp.z, _a.x - cp.x) : 0;
+        const a = away + C.a0 + Math.sin(t * C.w + i * 2.1) * C.sway;
+        m.position.set(_a.x + Math.cos(a) * C.r, _a.y + C.h, _a.z + Math.sin(a) * C.r);
+        m.scale.setScalar(C.size);
+        if (v.camera) m.quaternion.copy(v.camera.quaternion);
+        m.fxOpacity = op * 0.85;
+      },
+      () => v.drop(m),
     );
   }
 }
