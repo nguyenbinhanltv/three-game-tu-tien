@@ -778,6 +778,8 @@ export class MannequinCharacter implements CharacterView {
   private gearAncient = false;
   /** Hướng tu hiện tại là Thể tu (găng/giáp chỉ vẽ khi đang ở LOD gần: một người xa không đáng một draw call). */
   private gearOn = false;
+  /** Thân Pháp: lớp riêng Kiếm tu (idle xoay kiếm, lướt thấp), do entities đặt theo công pháp. */
+  private kiemTu = false;
   private disposed = false;
 
   constructor(
@@ -948,6 +950,11 @@ export class MannequinCharacter implements CharacterView {
   setGiant(k: number): void {
     if (this.disposed || this.shadow) return;
     if (this.root.scale.x !== k) this.root.scale.setScalar(k);
+  }
+
+  /** Thân Pháp: hướng Kiếm tu bật lớp riêng (idle xoay kiếm, dáng lướt thấp); `entities.ts` đặt theo công pháp mỗi khung. */
+  setKiemTu(on: boolean): void {
+    this.kiemTu = on;
   }
 
   /** Hướng tu Thể tu: tay không, găng + giáp nhẹ (dựng lần đầu khi cần). Bỏ thì ẩn, không dựng lại. */
@@ -1863,11 +1870,11 @@ export class MannequinCharacter implements CharacterView {
     if (dt > 1e-3) this.accel += (Math.max(-40, Math.min(40, (a.speed - this.lastSpeed) / dt)) - this.accel) * Math.min(1, dt * 12);
     this.lastSpeed = a.speed;
     if (ANIM_FX.loco && free && !this.perf && !this.shotUpper && !this.patchShot) {
-      const pitch = glideLean(a.speed) + accelLean(this.accel);
+      const pitch = (this.kiemTu ? glideLean(a.speed) : 0) + accelLean(this.accel);
       rotateWorld(b.spine_01 ?? null, rgt, pitch * 0.4);
       rotateWorld(b.spine_02 ?? null, rgt, pitch * 0.35);
       rotateWorld(b.spine_03 ?? null, rgt, pitch * 0.25);
-      this.inner.position.y -= glideDip(a.speed);
+      if (this.kiemTu) this.inner.position.y -= glideDip(a.speed);
       // Xung bắt đầu/dừng/pivot (lò xo tắt dần): chúi/ngả, nghiêng, hạ hông.
       const li = this.loco2;
       if (ANIM_FX.impulse) li.update(dt, a.speed, this.pivot.active ? 0 : this.yawRate);
@@ -1898,7 +1905,7 @@ export class MannequinCharacter implements CharacterView {
       this.inner.position.y -= pv.dip;
     }
     // T3: đứng yên lâu thì tự chơi một idle đặc trưng (xoay kiếm khi đang cầm kiếm, chắp tay ngắm trời khi tay không); bỏ ngay khi di chuyển.
-    if (ANIM_FX.idle) {
+    if (ANIM_FX.idle && this.kiemTu) {
       const still = free && a.speed < 0.3 && !this.perf && !a.combat && !a.casting && this.baseName !== 'Sitting_Idle_Loop';
       this.stillT = still ? this.stillT + dt : 0;
       if (still && idleDue(this.stillT, this.drawn ? IDLE_DRAWN_AFTER : this.idleAfter)) {

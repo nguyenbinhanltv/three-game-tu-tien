@@ -107,7 +107,7 @@ export const PAINTED_THEMES: Record<string, PaintedTheme> = {
   // lam; bản sắc năm đảo (Tùng Đài rêu thẫm, Thạch Quy đá cát, Kính Hồ phù sa lục nhạt, Lôi Vân đá cháy sấm, Kình Ngư trắng xương) đi qua `vcMix`
   van_hai: {
     ground: [0xa9ad50, 0x3d6351],
-    rock: [0xc2bba6, 0x5c5e7c],
+    rock: [0xc4b9a0, 0x6e645c],
     paving: [0xdcd3ba, 0x6c6c8c],
     mist: 0xf4e6dc,
     // sương chỉ ở chân đảo và sàn mây (sàn 60 m, mặt đảo 122–140 m): mặt đảo trong, không phủ lên chỗ đánh
@@ -125,6 +125,25 @@ export const PAINTED_THEMES: Record<string, PaintedTheme> = {
     bladeMix: 0.8,
     // Phù Đảo Các (đảo trung tâm r 85 + mép 12)
     slab: [1024, 1024, 97],
+  },
+  // Đoạn Mạch Cổ Cốc (MAP-2): hẻm sa thạch mùa thu. Đất son vàng (nắng nằm sẵn trong màu, vì đất vẽ không nhận đèn của mood), bóng nâu mận lạnh hơn và ít bão
+  // hòa hơn (pha tay); thảm lá phong đỏ/vàng, lòng sông cạn và sa thạch lộ ở dốc vốn nằm ở màu đỉnh nên đi qua `vcMix`. Cỏ là thẻ cỏ khô của level (không lá mảnh)
+  doan_mach: {
+    ground: [0xdf8330, 0x74506a],
+    rock: [0xc98c62, 0x5a3c58],
+    paving: [0xd2bc94, 0x6c5a74],
+    mist: 0xe8c49a,
+    // bụi mù chỉ đọng ở lòng sông cạn thấp (đáy 58–70 m); bãi đánh và trạm (80–90 m) trong
+    mistBand: [58, 74],
+    mistK: 0.25,
+    propMix: 0.25,
+    // đêm: hai tông đất cách nhau rõ về độ chói (sáng 0,42 ↔ tối 0,13) + tương phản 1,8 để mặt đất còn mảng sáng/tối, không thành một tấm lam phẳng
+    nightContrast: 1.8,
+    nightTint: [0.44, 0.5, 0.8],
+    nightLift: 1.7,
+    groundMix: 1,
+    groundSat: 1,
+    vcMix: 0.2,
   },
   // Vấn Đỉnh Âm Dương Giới (TN-3): không cỏ. Tây = mặt Âm Hư (đá phiến tím lam lạnh), đông = mặt Dương Thực (đất nung nứt vàng đồng); nền hai mặt là albedo
   // thủ tục của level (`albedoMix`), vách giữ sắc từng mặt (`rockMix` thấp), vật thể tĩnh nhuộm theo mặt (`face`)

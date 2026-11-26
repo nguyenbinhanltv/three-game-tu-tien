@@ -11,6 +11,7 @@ import {
   FADE_MAX,
   FADE_MIN,
   hazardFlash,
+  HAZARD_DANGER_COLORS,
   hazardStyle,
   hazardDanger,
   hazardStyleDanger,
@@ -100,7 +101,8 @@ describe('vạch báo quái theo mức nguy hiểm (iso)', () => {
   it('màu tăng dần, thiên lôi giữ tím, HDR không vượt trần', () => {
     const c = [0, 1, 2].map((d) => hazardStyleDanger('fire', d as 0 | 1 | 2).color);
     expect(new Set(c).size).toBe(3);
-    expect(hazardStyleDanger('lightning', 2).color).toBe(0xb48cff);
+    // V-P10: vạch báo thiên lôi theo bảng cảnh báo kẻ địch (đỏ/cam), không còn tím sét.
+    expect(hazardStyleDanger('lightning', 2).color).toBe(HAZARD_DANGER_COLORS[2]);
   });
 });
 

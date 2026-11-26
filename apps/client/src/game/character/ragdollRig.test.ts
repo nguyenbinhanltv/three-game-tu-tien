@@ -97,7 +97,7 @@ describe('RagRig trong SkinnedCharacter: chỉ áp ở khung mixer chạy', () =
     } finally {
       ANIM_FX.ragdoll = was;
     }
-  });
+  }, 30_000); // nhập động skinned nạp lạnh ~5 s, sát ngưỡng mặc định
 });
 
 describe('RagRig: xương mixer không ghi lại (clip kẹp cuối)', () => {
