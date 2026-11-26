@@ -705,8 +705,9 @@ export function applyGroundShader(mat: THREE.MeshStandardNodeMaterial, tex: Grou
       mat.colorNode = vec3(0);
       mat.emissiveNode = vec3(clamp(col.r.sub(col.g).mul(10).add(0.5), 0, 1), dryW, themeU.dryMix);
     }
-    // vũng sáng đèn đêm: ghi vào đích MRT `lamp`, pass cuối cộng SAU bước nhuộm trăng (giữ tông hổ phách)
-    (mat as unknown as { mrtNode: unknown }).mrtNode = mrt({ lamp: vec4(lampPoolAt(positionWorld.xz), 1) });
+    // vũng sáng đèn đêm: ghi vào rgb của đích MRT `aux`, pass cuối cộng SAU bước nhuộm trăng (giữ tông hổ phách). Kênh a của `aux` là mặt nạ VFX
+    // (render/post.ts): đất ghi 0 (không phải VFX) và vì đất đục nên cũng xóa mặt nạ của VFX nằm sau nó.
+    (mat as unknown as { mrtNode: unknown }).mrtNode = mrt({ aux: vec4(lampPoolAt(positionWorld.xz), 0) });
   }
 
   // ----- pháp tuyến + độ nhám -----

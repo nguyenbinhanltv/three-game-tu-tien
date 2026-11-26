@@ -1,5 +1,5 @@
 // Chụp cảnh thử `?paintedlab=1` của ta bằng đúng bản dump uniform của tham chiếu (ref.json), cùng cỡ ảnh, rồi so với ref.png.
-//   node tools/painted-compare/lab-capture.mjs --ref <thư mục có ref.png + ref.json> --out <thư mục ra> [--paint 3] [--win x,z] [--renderer webgpu|webgl2] [--port 5190]
+//   node tools/painted-compare/lab-capture.mjs --ref <thư mục có ref.png + ref.json> --out <thư mục ra> [--paint 3] [--win x,z] [--renderer webgpu|webgl2] [--port 5190] [--query painthalf=0]
 // Tự bật vite của client (cổng --port), mở MỘT Chromium, tắt cả hai khi xong. Ghi ours.png, diff.png, metrics.json; in SSIM/ΔE.
 import fs from 'node:fs';
 import path from 'node:path';
@@ -20,6 +20,8 @@ const win = arg('--win', '-20,-90');
 const renderer = arg('--renderer', 'webgpu');
 const parts = arg('--parts', 'ground,blades,flowers');
 const dbg = arg('--dbg', '');
+// tham số URL thêm (vd. `painthalf=0`: bút rộng Kuwahara ở độ phân giải đầy, bản dịch từng dòng)
+const extra = arg('--query', '');
 fs.mkdirSync(out, { recursive: true });
 const dump = JSON.parse(fs.readFileSync(path.join(refDir, 'ref.json'), 'utf8'));
 const T0 = Date.now();
@@ -69,7 +71,7 @@ try {
   page.on('pageerror', (e) => logs.push(`pageerror: ${e.message}`.slice(0, 300)));
   console.log('vite lên, mở trang');
   await page.goto(
-    `http://127.0.0.1:${port}/?paintedlab=1&mute=1&paint=${paint}&win=${win}&renderer=${renderer}&parts=${parts}${dbg ? `&dbg=${dbg}` : ''}`,
+    `http://127.0.0.1:${port}/?paintedlab=1&mute=1&paint=${paint}&win=${win}&renderer=${renderer}&parts=${parts}${dbg ? `&dbg=${dbg}` : ''}${extra ? `&${extra}` : ''}`,
     {
       waitUntil: 'load',
     },
