@@ -8,8 +8,9 @@ const GEO_B = new THREE.PlaneGeometry(1, 1);
 
 describe('gộp draw call hiệu ứng (K-6)', () => {
   it('chỉ các kiểu tĩnh được gộp; sét, vệt, cột sáng giữ lưới riêng', () => {
-    for (const k of ['glow', 'flat', 'solid', 'slash', 'ink', 'dome', 'inkpool'] as const) expect(BATCH_KINDS.has(k)).toBe(true);
-    for (const k of ['bolt', 'vortex', 'trail', 'beam', 'shade', 'sigil'] as const) expect(BATCH_KINDS.has(k)).toBe(false);
+    for (const k of ['glow', 'flat', 'solid', 'slash', 'ink', 'dome', 'inkpool', 'sigil', 'sigilTop'] as const)
+      expect(BATCH_KINDS.has(k)).toBe(true);
+    for (const k of ['bolt', 'vortex', 'trail', 'beam', 'shade'] as const) expect(BATCH_KINDS.has(k)).toBe(false);
   });
 
   it('pool ghi tay cầm của kiểu gộp và bỏ khi trả về', () => {

@@ -755,7 +755,7 @@ export function applyGroundShader(mat: THREE.MeshStandardNodeMaterial, tex: Grou
     const lit: Node = themeU.albedoMix.mul(0.85).mul(float(1).sub(paintedNight));
     // sương thấp tính một lần: phần qua đèn nhân (1 − sương), phần phát sáng trộn về màu sương, nên khi không bóng tổng vẫn là mix(đất, sương, m) như cũ
     const mist: Node = lowMistAt(F, positionWorld.xz, positionWorld.y).mul(grassW.add(pavW).min(1));
-    mat.colorNode = mix(col, rTone, themeU.on.mul(themeU.rockMix))
+    mat.colorNode = mix(col, rTone.mul(float(1).add(paintedNight.mul(themeU.nightSplit).mul(0.7))), themeU.on.mul(themeU.rockMix))
       .mul(keep)
       .add(groundBase.mul(lit).mul(float(1).sub(mist)));
     mat.emissiveNode = mix(groundBase.mul(float(1).sub(lit)), vec3(themeU.mist), mist);
