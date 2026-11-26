@@ -9,6 +9,7 @@ import { AssetCache, createGltfLoader, createKtx2Loader, type Manifest } from '.
 import { MonsterModel } from '../core/models';
 import { MONSTER_SKINS, MonsterSkins } from './monsterSkins';
 import { lodLevel, MID_DIST, mixerDue, mixerInterval, mixerPhase, SkinnedMonster } from './skinned';
+import { deathYawOffset } from './hitDir';
 import { baseState, clipFor } from './states';
 import { type AnimState, legacyModelsRequested } from './view';
 
@@ -297,6 +298,30 @@ describe('sói có xương (mon_soi_xam thật)', () => {
     run(w, anim(), 0.5);
     expect(w.state).toBe('idle');
     w.dispose();
+    skins.dispose();
+  });
+
+  it('quái chết xoay thân phụ ngã ra xa người đánh (TP-2): đòn mới thì xoay, đòn cũ thì không, hồi sinh về 0', async () => {
+    const { skins } = await wolfSkins();
+    const w = skins.create(MONSTER.get('mon_soi_xam')!) as SkinnedMonster;
+    const inner = () => (w as unknown as { inner: THREE.Object3D }).inner.rotation.y;
+    run(w, anim(), 0.2);
+    // Đòn từ phía sau (người đánh ở sau lưng, đẩy về phía trước +z): mặt phải xoay về người đánh (đích = deathYawOffset).
+    w.hitReact({ dirX: 0, dirZ: 1 });
+    run(w, anim(), 0.1);
+    run(w, anim({ dead: true }), 0.8);
+    expect(inner()).toBeCloseTo(deathYawOffset(w.root.rotation.y, 0, 1), 2);
+    expect(Math.abs(inner())).toBeGreaterThan(1);
+    run(w, anim({ dead: true }), 0.1);
+    expect(inner()).toBeCloseTo(deathYawOffset(w.root.rotation.y, 0, 1), 2);
+    expect(Math.abs(inner())).toBeGreaterThan(1);
+    run(w, anim({ dead: false }), 0.8); // hồi sinh
+    expect(inner()).toBeCloseTo(0, 3);
+    // Đòn đã cũ hơn DEATH_DIR_TTL: không xoay.
+    w.hitReact({ dirX: 0, dirZ: 1 });
+    run(w, anim(), 2);
+    run(w, anim({ dead: true }), 0.8);
+    expect(inner()).toBeCloseTo(0, 3);
     skins.dispose();
   });
 

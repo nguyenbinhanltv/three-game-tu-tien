@@ -4,6 +4,7 @@
 
 import * as THREE from 'three/webgpu';
 import { POSE, SKILLS } from '@dtl/content';
+import { C } from '@dtl/shared';
 import type { Game } from '../engine';
 import { ANIM_FX, CUTIN_FREEZE_MS, cutinArt, type AnimFxFlags } from '../character/animFx';
 import { set } from '../../ui/store';
@@ -52,6 +53,33 @@ export interface AnimLabApi {
   hitSelf(from: 'front' | 'back' | 'left' | 'right', tier: number, knock?: boolean): boolean;
   /** T5: như `hitSelf` nhưng cho quái đầu tiên trong cảnh; trả toạ độ màn hình (px) của quái để cắt ảnh, hoặc null nếu không có quái. */
   hitMon(from: 'front' | 'back' | 'left' | 'right', tier: number, knock?: boolean): { x: number; y: number } | null;
+  /** TP-2: đòn thật qua `ents.hitReact` (cùng đường với S.DMG) lên quái đầu tiên, từ chính mình, cấp `tier`; trả toạ độ màn hình của quái hoặc null. */
+  hitReal(tier: number): { x: number; y: number } | null;
+  /** Toạ độ màn hình (px) của quái đầu tiên (không gây đòn), hoặc null. */
+  probeMon(): { x: number; y: number } | null;
+  /** TP-2: toạ độ màn hình (px) của mình, người chơi khác đầu tiên và quái đầu tiên (null nếu không có); chiếu từ ngực. */
+  scr(): { self: Pt | null; other: Pt | null; mon: Pt | null };
+  /** TP-2: đòn thật (`ents.hitReact`, từ mình) lên người chơi khác đầu tiên, cấp `tier`; false nếu không có. */
+  hitOther(tier: number): boolean;
+  /** TP-2: trạng thái ngã của người chơi khác / quái đầu tiên (đang ngã? tốc độ server báo), để chứng minh hủy ngã. */
+  knockState(): {
+    other: { knock: boolean; speed: number; state: string } | null;
+    mon: { knock: boolean; speed: number; state: string } | null;
+  };
+  /** TP-2: ra lệnh như server cho quái đầu tiên: 'attack' = gọi `attack()` của model (đường sự kiện đánh của engine). */
+  orderMon(kind: 'attack'): void;
+  /** TP-2: số người chơi/quái đang có (gỡ lỗi cảnh chụp). */
+  census(): { players: string[]; monsters: number; pending: boolean; otherSpeed: number | null };
+  /** TP-2: độ lệch (độ, 0 = quay mặt đúng về mình) giữa hướng mặt đang hiển thị của quái đầu tiên (gốc + xoay phụ) và hướng tới mình; null nếu không có quái. */
+  monFacingErr(): number | null;
+  /** TP-2: độ xoay thân phụ (độ) của quái đầu tiên (xoay ngã chết) và toạ độ màn hình của điểm cách quái 2,2 m PHÍA SAU nó (nơi đặt người đánh giả). */
+  monTurn(): { deg: number; behind: { x: number; y: number } } | null;
+  /** TP-2: dùng CHIÊU CUỐI thật của mình lên quái đầu tiên (chọn mục tiêu rồi `useSkill` như bấm phím); false nếu không có quái hoặc chiêu chưa sẵn. */
+  ultOnMon(): boolean;
+  /** TP-2: ẩn/hiện nhóm VFX (cột sáng hồi sinh che nhân vật khi chụp). */
+  hideVfx(on: boolean): void;
+  /** TP-2: gửi `C.RESPAWN` như bấm nút hồi sinh (sau `/gm die`). */
+  respawn(): void;
   /** T7: phát cut-in chiêu cuối `skill` như khi mình tung chiêu (khựng + thẻ); trả false nếu chiêu chưa có tranh. */
   cutin(skill: string, setKey?: string, g?: string): boolean;
   /**
@@ -59,6 +87,11 @@ export interface AnimLabApi {
    * mỗi cổ chân kèm độ cao mặt đứng ngay dưới nó (`g`). null khi model chưa có xương Mannequin.
    */
   probe(): AnimLabProbe | null;
+}
+
+export interface Pt {
+  x: number;
+  y: number;
 }
 
 export interface AnimLabProbe {
@@ -164,6 +197,108 @@ export function installAnimLab(g: Game): void {
       v.y += m.height * 0.5;
       v.project(g.camera);
       return { x: (v.x * 0.5 + 0.5) * window.innerWidth, y: (-v.y * 0.5 + 0.5) * window.innerHeight };
+    },
+    hitReal(tier) {
+      const e = [...g.ents.monsters.entries()][0];
+      if (!e) return null;
+      g.ents.hitReact(e[0], g.sid, false, 0, tier >= 2, undefined, tier);
+      return api.probeMon();
+    },
+    probeMon() {
+      const e = [...g.ents.monsters.values()][0];
+      if (!e) return null;
+      const m = e.model as unknown as { root: THREE.Object3D; height: number };
+      const v = m.root.getWorldPosition(new THREE.Vector3());
+      v.y += m.height * 0.5;
+      v.project(g.camera);
+      return { x: (v.x * 0.5 + 0.5) * window.innerWidth, y: (-v.y * 0.5 + 0.5) * window.innerHeight };
+    },
+    scr() {
+      const at = (m: { root: THREE.Object3D; height?: number } | undefined, h: number): Pt | null => {
+        if (!m) return null;
+        const v = m.root.getWorldPosition(new THREE.Vector3());
+        v.y += h;
+        v.project(g.camera);
+        return { x: (v.x * 0.5 + 0.5) * window.innerWidth, y: (-v.y * 0.5 + 0.5) * window.innerHeight };
+      };
+      const other = [...g.ents.players.entries()].find(([id]) => id !== g.sid)?.[1];
+      const mon = [...g.ents.monsters.values()][0];
+      return {
+        self: at(self() as never, 1.0),
+        other: at(other?.model as never, 1.0),
+        mon: at(mon?.model as never, (mon?.model.height ?? 2) * 0.5),
+      };
+    },
+    hitOther(tier) {
+      const e = [...g.ents.players.entries()].find(([id]) => id !== g.sid);
+      if (!e) return false;
+      g.ents.hitReact(e[0], g.sid, false, 0, tier >= 2, undefined, tier);
+      return true;
+    },
+    knockState() {
+      const st = (v: { model: unknown; speed: number } | undefined) => {
+        if (!v) return null;
+        const m = v.model as { knocking?: boolean; shot?: { knock?: boolean; state?: string } | null; base?: string | null };
+        return { knock: !!(m.knocking ?? m.shot?.knock), speed: v.speed, state: m.shot?.state ?? m.base ?? '' };
+      };
+      return {
+        other: st([...g.ents.players.entries()].find(([id]) => id !== g.sid)?.[1]),
+        mon: st([...g.ents.monsters.values()][0]),
+      };
+    },
+    orderMon() {
+      const m = [...g.ents.monsters.values()][0]?.model as { attack?: () => void } | undefined;
+      m?.attack?.();
+    },
+    census() {
+      const other = [...g.ents.players.entries()].find(([id]) => id !== g.sid)?.[1];
+      const mon = [...g.ents.monsters.values()][0];
+      return {
+        players: [...g.ents.players.keys()],
+        monsters: g.ents.monsters.size,
+        pending: !!mon?.skinPending,
+        otherSpeed: other ? other.speed : null,
+      };
+    },
+    monFacingErr() {
+      const mon = [...g.ents.monsters.values()][0];
+      const me = g.ents.players.get(g.sid);
+      if (!mon || !me) return null;
+      const inner = (mon.model as unknown as { inner?: THREE.Object3D }).inner;
+      const eff = mon.model.root.rotation.y + (inner?.rotation.y ?? 0);
+      let d = Math.atan2(me.x - mon.x, me.z - mon.z) - eff;
+      while (d > Math.PI) d -= 2 * Math.PI;
+      while (d < -Math.PI) d += 2 * Math.PI;
+      return Math.round((d * 180) / Math.PI);
+    },
+    monTurn() {
+      const mon = [...g.ents.monsters.values()][0];
+      if (!mon) return null;
+      const m = mon.model as unknown as { root: THREE.Object3D; inner?: THREE.Object3D };
+      const y = m.root.rotation.y;
+      const v = m.root.getWorldPosition(new THREE.Vector3());
+      v.x -= Math.sin(y) * 2.2;
+      v.z -= Math.cos(y) * 2.2;
+      v.y += 1;
+      v.project(g.camera);
+      return {
+        deg: Math.round(((m.inner?.rotation.y ?? 0) * 180) / Math.PI),
+        behind: { x: (v.x * 0.5 + 0.5) * window.innerWidth, y: (-v.y * 0.5 + 0.5) * window.innerHeight },
+      };
+    },
+    ultOnMon() {
+      const id = [...g.ents.monsters.keys()][0];
+      const i = g.bar().findIndex((sk) => sk.ult);
+      if (!id || i < 0) return false;
+      g.setTarget(id, 'mon');
+      g.useSkill(i);
+      return true;
+    },
+    hideVfx(on) {
+      g.vfx.group.visible = !on;
+    },
+    respawn() {
+      g.send(C.RESPAWN);
     },
     probe() {
       const m = self() as unknown as { root: THREE.Object3D; inner?: THREE.Object3D; rig?: THREE.Object3D } | undefined;

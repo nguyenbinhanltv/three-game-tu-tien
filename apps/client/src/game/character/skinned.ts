@@ -1,5 +1,6 @@
 import { applyProportions, type BoneScale } from './hero';
 import * as THREE from 'three/webgpu';
+import { DEATH_DIR_TTL, DEATH_TURN_S, KNOCK_LIE_S, deathYawOffset, knockCancelled, knockRate } from './hitDir';
 import { bodyClassOf, canCancel, HIT_FEEL, hitDirOf, hitsPassed, lungeOffset, type MonsterDef, type SkillTiming } from '@dtl/shared';
 import { groundAt } from '../../base/levelCtx';
 import { HitReact, type HitOpts } from '../combat/hitreact';
@@ -122,11 +123,9 @@ interface Perform {
 /** Tầm lao người hiển thị có giới hạn: dù dữ liệu ghi lớn thế nào hình cũng không rời người quá chừng này (m). */
 const LUNGE_MAX = 1.5;
 /** Nằm sau khi ngã trước khi đứng dậy (giây) và thời gian tối thiểu nằm trước khi di chuyển kéo dậy sớm. */
-const KNOCK_LIE = 0.35;
-/** Tốc độ phát clip ngã (3,7 s ở 1×: loạng choạng 1,2 s rồi mới ngã) và đứng dậy (1,6 s): nhanh hơn để không bắt người chơi nằm quá lâu. */
-const KNOCK_RATE = 1.5;
-/** Clip ngã dài hơn mức này (giây) mới phát nhanh `KNOCK_RATE`; clip ngắn (UAL Hit_Knockback 0,83 s) phát 1×. */
-const KNOCK_LONG = 2;
+const KNOCK_LIE = KNOCK_LIE_S;
+/** Làm mờ về nền (giây) khi hủy ngã vì server báo di chuyển/ra chiêu: dưới 0,2 s theo yêu cầu. */
+const KNOCK_CANCEL_FADE = 0.18;
 /** Tốc độ phát clip tiếp đất (UAL) và nhịp nhảy: lấy đà phát 1,5×, tiếp đất 2,2× (≈0,6 s) và bị ngắt khi đi lại. */
 const JUMP_START_RATE = 1.5;
 const JUMP_LAND_RATE = 2.2;
@@ -195,6 +194,9 @@ interface Shot {
   next?: string;
   /** Đang nằm sau khi ngã: tuổi (giây) để kéo dậy sớm khi di chuyển. */
   lie?: number;
+  /** Đang trong chuỗi ngã/đứng dậy (hủy khi server báo di chuyển/ra chiêu) và tốc độ phát clip đứng dậy. */
+  knock?: boolean;
+  upRate?: number;
 }
 
 /** Động tác đòn lớn của boss: clip trong GLB và thời điểm chạm (giây trong clip, ở tốc độ 1×). */
@@ -262,6 +264,9 @@ export class SkinnedCharacter implements CharacterView {
   /** Thân Pháp T5: ragdoll nhẹ (tạo lười ở lần trúng đòn đầu khi bật cờ `ragdoll`); xem `ragdollRig.ts`. */
   protected ragRig: RagRig | null = null;
   private lastHitDir = { dx: 0, dz: 0 };
+  /** Giây từ đòn trúng gần nhất, và độ xoay thân phụ khi chết (ngã ra xa người đánh, như người chơi). */
+  private hitAge = 99;
+  private deathTurn = { to: 0, t: 1 };
   /** Lớp con tắt ragdoll (boss). */
   protected ragEnabled = true;
   private ragOf(): RagRig | null {
@@ -454,11 +459,19 @@ export class SkinnedCharacter implements CharacterView {
   knockdown(): void {
     if (this.dead) return;
     if (ANIM_FX.ragdoll && this.lodLevel === 0) this.ragOf()?.down(this.root.rotation.y, this.lastHitDir.dx, this.lastHitDir.dz);
-    if (!this.clips.has('knockdown')) return;
+    // Clip ngã/đứng dậy: bộ K-3 (`knockdown`/`getup`) hoặc UAL gốc của quái hình người Mannequin (`Hit_Knockback`/`LayToIdle`).
+    const down = this.clips.has('knockdown') ? 'knockdown' : this.clips.has('Hit_Knockback') ? 'Hit_Knockback' : null;
+    if (!down) return;
     this.stopPerform();
     this.pendingPerform = null;
-    const long = (this.clips.get('knockdown')?.duration ?? 0) > KNOCK_LONG;
-    this.playShot('hit', 'knockdown', long ? KNOCK_RATE : 1, undefined, this.clips.has('getup') ? 'getup' : undefined, true);
+    // Ngã chỉ là hình: ngã + nằm + đứng dậy gói trong KNOCK_TOTAL_S (cả hai clip phát cùng tốc độ), hủy khi server báo di chuyển/ra chiêu.
+    const up = this.clips.has('getup') ? 'getup' : down === 'Hit_Knockback' && this.clips.has('LayToIdle') ? 'LayToIdle' : undefined;
+    const rate = knockRate(this.clips.get(down)?.duration ?? 0, up ? (this.clips.get(up)?.duration ?? 0) : 0, up ? KNOCK_LIE : 0);
+    this.playShot('hit', down, rate, undefined, up, true);
+    if (this.shot) {
+      this.shot.knock = true;
+      this.shot.upRate = rate;
+    }
   }
 
   /** NPC: xen các clip idle phụ (khoanh tay, nói chuyện, gật/lắc đầu...) vào lúc đứng nghỉ, cách nhau vài giây, lệch pha mỗi NPC. */
@@ -548,7 +561,10 @@ export class SkinnedCharacter implements CharacterView {
 
   hitReact(o: HitOpts): void {
     this.hit.react(o);
-    if (o.dirX || o.dirZ) this.lastHitDir = { dx: o.dirX ?? 0, dz: o.dirZ ?? 0 };
+    if (o.dirX || o.dirZ) {
+      this.lastHitDir = { dx: o.dirX ?? 0, dz: o.dirZ ?? 0 };
+      this.hitAge = 0;
+    }
     if (ANIM_FX.ragdoll && this.lodLevel === 0 && !this.dead)
       this.ragOf()?.hit(this.root.rotation.y, o.dirX ?? 0, o.dirZ ?? 0, o.tier, !!o.heavy, !!o.crit);
     this.hitOpts = o;
@@ -592,6 +608,8 @@ export class SkinnedCharacter implements CharacterView {
 
   update(realDt: number, a: AnimState): void {
     const dt = this.hit.update(realDt);
+    this.hitAge += realDt;
+    if (this.dead && this.deathTurn.t < 1) this.deathTurn.t = Math.min(1, this.deathTurn.t + realDt / DEATH_TURN_S);
     this.inner.position.x = this.hit.shake;
     if (this.pendingHit >= 0) {
       this.pendingHit -= realDt;
@@ -605,6 +623,10 @@ export class SkinnedCharacter implements CharacterView {
         this.shot = null;
         this.pendingHit = -1;
         this.pendingMove = null;
+        this.deathTurn =
+          this.hitAge <= DEATH_DIR_TTL
+            ? { to: deathYawOffset(this.root.rotation.y, this.lastHitDir.dx, this.lastHitDir.dz), t: 0 }
+            : { to: 0, t: 1 };
         if (ANIM_FX.ragdoll && this.lodLevel === 0) this.ragOf()?.down(this.root.rotation.y, this.lastHitDir.dx, this.lastHitDir.dz);
         this.enterBase('death', FADE_DEATH);
       }
@@ -631,6 +653,12 @@ export class SkinnedCharacter implements CharacterView {
         this.pendingMove = want === 'stun' ? null : this.pendingMove;
         this.base = null;
       }
+      // Ngã chỉ là hình: server báo di chuyển/niệm/bay thì hủy ngay, blend về nền trong FADE_BASE (0,22 s).
+      if (this.shot?.knock && knockCancelled(a)) {
+        this.shot = null;
+        this.enterBase(want, KNOCK_CANCEL_FADE);
+        this.base = want;
+      }
       if (this.shot) {
         this.shot.left -= dt;
         const sh = this.shot;
@@ -640,8 +668,10 @@ export class SkinnedCharacter implements CharacterView {
           if (sh.next && sh.left <= KNOCK_LIE && a.speed > MOVE_MIN) sh.left = Math.min(sh.left, FADE_OUT_SHOT);
         }
         if (sh.left <= FADE_OUT_SHOT) {
-          if (sh.next && this.clips.has(sh.next)) this.playShot('hit', sh.next, GETUP_RATE);
-          else {
+          if (sh.next && this.clips.has(sh.next)) {
+            this.playShot('hit', sh.next, sh.upRate ?? GETUP_RATE);
+            if (this.shot) this.shot.knock = true;
+          } else {
             this.shot = null;
             this.base = null;
           }
@@ -694,6 +724,7 @@ export class SkinnedCharacter implements CharacterView {
       this.acc = 0;
     }
     if (this.quad) this.tiltToSlope(dt);
+    else if (this.dead || this.inner.rotation.y !== 0) this.inner.rotation.y = this.dead ? this.deathTurn.to * this.deathTurn.t : 0;
     this.postPose(dt, a);
     // `RagRig` ghi tuyệt đối (tư thế gốc + góc), không cộng dồn, nên áp mỗi khung kể cả khung mixer không chạy.
     if (this.ragRig && ANIM_FX.ragdoll) this.ragRig.apply(dt, this.root.rotation.y, this.dead, this.lodLevel === 0 && this.inner.visible);
@@ -773,7 +804,7 @@ export class SkinnedCharacter implements CharacterView {
     this.tiltX += (tx - this.tiltX) * k;
     this.tiltZ += (tz - this.tiltZ) * k;
     if (Math.abs(this.tiltX) < 1e-4 && Math.abs(this.tiltZ) < 1e-4 && tx === 0 && tz === 0) this.tiltX = this.tiltZ = 0;
-    this.inner.rotation.set(this.tiltX, 0, this.tiltZ);
+    this.inner.rotation.set(this.tiltX, this.dead ? this.deathTurn.to * this.deathTurn.t : 0, this.tiltZ);
   }
 
   /** Số xương lò xo đang mô phỏng (0 nếu không có hoặc đang nghỉ ở LOD xa). Cho đo hiệu năng. */

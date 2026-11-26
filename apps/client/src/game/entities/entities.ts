@@ -29,7 +29,8 @@ import { GREATBLADE_WEAPON } from '../character/greatblade';
 import { COHU_WEAPON } from '../character/coGear';
 import { TRAN_KY_WEAPON } from '../character/tranGear';
 import { hoverBob, hoverTarget, stepHover } from './hover';
-import { COTHAN_METHOD, BONDED_ARTIFACT_ID, BONDED_UNLOCK_LEVEL, PLAYER_BODY_RADIUS } from '@dtl/shared';
+import { knockdownWanted } from '../character/hitDir';
+import { bodyClassOf, COTHAN_METHOD, BONDED_ARTIFACT_ID, BONDED_UNLOCK_LEVEL, PLAYER_BODY_RADIUS } from '@dtl/shared';
 import { type Body, solveSeparation } from './separation';
 import { hashName as hashStr, type EscortMsg, type QuestView } from '@dtl/shared';
 import { LABELS, type Label } from './labelBatch';
@@ -1035,6 +1036,13 @@ export class EntityManager {
       dirX: vs ? vd.x - vs.x : 0,
       dirZ: vs ? vd.z - vs.z : 0,
     });
+    // Chiêu cuối hất ngã người khác / quái nhỏ-vừa: ngã rồi đứng dậy (chỉ hình).
+    const mon = this.monsters.get(dst);
+    const def = mon ? MONSTER.get(mon.s.t) : undefined;
+    if (knockdownWanted(tier, { self: dst === this.mySid, body: def ? bodyClassOf(def) : undefined }, this.time - vd.knockAt)) {
+      vd.knockAt = this.time;
+      vd.model.knockdown?.();
+    }
     if (src && src === this.mySid && vs) vs.model.hit.hitStop(stop?.attacker ?? 0, delay);
   }
 

@@ -100,6 +100,21 @@ export interface AnimLabDebug {
   poses(): string[];
   hitSelf(from: 'front' | 'back' | 'left' | 'right', tier: number, knock?: boolean): boolean;
   hitMon(from: 'front' | 'back' | 'left' | 'right', tier: number, knock?: boolean): { x: number; y: number } | null;
+  hitReal(tier: number): { x: number; y: number } | null;
+  probeMon(): { x: number; y: number } | null;
+  scr(): { self: { x: number; y: number } | null; other: { x: number; y: number } | null; mon: { x: number; y: number } | null };
+  hitOther(tier: number): boolean;
+  knockState(): {
+    other: { knock: boolean; speed: number; state: string } | null;
+    mon: { knock: boolean; speed: number; state: string } | null;
+  };
+  hideVfx(on: boolean): void;
+  ultOnMon(): boolean;
+  monFacingErr(): number | null;
+  monTurn(): { deg: number; behind: { x: number; y: number } } | null;
+  orderMon(kind: 'attack'): void;
+  census(): { players: string[]; monsters: number; pending: boolean; otherSpeed: number | null };
+  respawn(): void;
   cutin(skill: string, setKey?: string, g?: string): boolean;
   probe(): {
     root: [number, number, number];
