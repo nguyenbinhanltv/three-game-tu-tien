@@ -59,6 +59,8 @@ import {
 import { logger } from '../../base/log';
 
 const vfxLog = logger('vfx');
+/** Lõi mực của tia sét: tím than gần đen (bảng `loi`.shadow). */
+const BOLT_INK = 0x1a0c33;
 export { HAZARD_COLORS } from './vfxParts/common';
 
 let rainModel: Promise<void> | null = null;
@@ -170,6 +172,7 @@ export class Vfx {
       'sprite_dan',
       'sprite_kieu',
       'sprite_dp',
+      'sprite_kiep',
       'sprite_dong',
       'sprite_guong',
       'wind',
@@ -504,12 +507,33 @@ export class Vfx {
    */
   boltGlowMul = 1;
 
-  lightning(x: number, y: number, z: number, color = 0xd6c4ff, scale = 1, seed?: number, flash = 0, thick = 1, height = BOLT_HEIGHT): void {
+  /**
+   * `ink` (V-P10): thêm lõi mực hòa trộn thường dưới thân sáng để tia đọc được trên nền sáng ban ngày. Chỉ bật cho thiên lôi của độ kiếp/kẻ địch
+   * (`Vfx.hazard`, vạch chữ nhật/quạt, timeline `fx_kiep_*`); tia sét của chiêu người chơi giữ hình đã duyệt.
+   */
+  lightning(
+    x: number,
+    y: number,
+    z: number,
+    color = 0xd6c4ff,
+    scale = 1,
+    seed?: number,
+    flash = 0,
+    thick = 1,
+    height = BOLT_HEIGHT,
+    ink = false,
+  ): void {
     const sd = seedOr(seed);
     const bolt = takeBolt();
     boltShape(sd, height, 7, scale * thick, bolt.shape);
+    // Lõi mực (hòa trộn thường) vẽ trước, cùng lưới với thân sáng.
+    // Tia dày (thick > 1) có dải rộng hơn: hạ độ đậm của mực theo căn bậc hai để không thành một mảng tối to.
+    const inkOp = 0.85 / Math.sqrt(Math.max(1, thick));
+    const inkM = ink ? this.fx(bolt.geo.geo, BOLT_INK, inkOp, 'boltInk') : null;
+    if (inkM) inkM.renderOrder = -1;
     const m = this.fx(bolt.geo.geo, color, 1, 'bolt');
     m.fxA.z = (sd % 4000) / 100;
+    if (inkM) inkM.fxA.z = m.fxA.z;
     const glow = this.fx(G.ico1, color, 0.35);
     glow.position.set(x, y + 0.6, z);
     const ring = this.fx(RING_GEO, color, 0.9);
@@ -524,6 +548,11 @@ export class Vfx {
         m.fxA.x = ph.head;
         m.fxA.y = ph.lum;
         m.fxK = k;
+        if (inkM) {
+          inkM.fxA.x = ph.head;
+          inkM.fxA.y = ph.lum;
+          inkM.fxOpacity = inkOp * (1 - Math.max(0, k - 0.5) / 0.5);
+        }
         if (cam) bolt.geo.build(bolt.shape, x, y, z, cam);
         // Tia ngược chạm đất: chớp cảnh, tia lửa, mây sáng; bừng lại lần hai nhỏ hơn.
         if (struck === 0 && k >= 0.12) {
@@ -541,6 +570,7 @@ export class Vfx {
       },
       () => {
         this.drop(m);
+        if (inkM) this.drop(inkM);
         this.drop(glow);
         this.drop(ring);
         BOLTS.push(bolt);

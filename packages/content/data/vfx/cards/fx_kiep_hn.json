@@ -1,0 +1,46 @@
+{
+  "skillId": "fx_kiep_hn",
+  "idea": "Mở kiếp Hóa Thần (ngũ hành kiếp): hai tảng mây kiếp vẽ bằng mực kéo vào từ hai bên phía trên đầu người độ kiếp, bầu trời ngay trên đầu RÁCH một đường ngang lởm chởm (mép mực tối, trong khe sáng lạnh), từ khe rách một tia thiên lôi đầu tiên đánh thẳng xuống cạnh người, đất nứt cháy đen và khói bốc lên. Lõi mực nâu-ô liu thẫm, thân ngà vàng nhạt, mép trắng kem, điểm lam nhạt. Không vòng rune dưới chân, không sao tỏa tia.",
+  "element": "kim",
+  "path": "",
+  "scene": {
+    "palette": {
+      "core": "423a12",
+      "body": "e6cf86",
+      "rim": "fff8de",
+      "accent": "aee0ff",
+      "shadow": "211d09"
+    },
+    "impactAt": 0.6
+  },
+  "shapeLang": [
+    "cloud",
+    "line"
+  ],
+  "timing": {
+    "anticipationMs": 600,
+    "impactMs": 90,
+    "lingerMs": 2400
+  },
+  "footprint": {
+    "lengthM": 9,
+    "widthM": 7,
+    "heightM": 8
+  },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": {
+    "drawCalls": 12,
+    "particles": 300,
+    "screenCover": 0.15,
+    "overdraw": 6
+  },
+  "textures": [],
+  "silhouette": "một khe rách ngang lởm chởm trên đầu kẹp giữa hai tảng mây mực, một tia sét gấp khúc cắm xuống đất",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles",
+    "crack"
+  ]
+}

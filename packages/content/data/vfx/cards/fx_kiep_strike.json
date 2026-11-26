@@ -1,0 +1,46 @@
+{
+  "skillId": "fx_kiep_strike",
+  "idea": "Chỗ thiên lôi độ kiếp đánh xuống đất (vạch báo đỏ do server đã hiện trước): một cụm nổ gồm các mảnh đất mực bắn chéo lên quanh một lõi trắng tím, vết nứt cháy đen tỏa trên nền, vài hồ quang nhỏ bò trên đất rồi một cuộn khói mực mỏng bốc lên. Thân sét có lõi mực tối viền tím trắng để đọc được trên đá sáng ban ngày. Lõi mực tím than, thân tím điện, mép trắng tím.",
+  "element": "loi",
+  "path": "",
+  "scene": {
+    "palette": {
+      "core": "3a1670",
+      "body": "9a63ff",
+      "rim": "f5eeff",
+      "accent": "ffe27a",
+      "shadow": "1a0c33"
+    },
+    "impactAt": 0
+  },
+  "shapeLang": [
+    "spike",
+    "cloud"
+  ],
+  "timing": {
+    "anticipationMs": 0,
+    "impactMs": 80,
+    "lingerMs": 900
+  },
+  "footprint": {
+    "lengthM": 5,
+    "widthM": 5,
+    "heightM": 4
+  },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": {
+    "drawCalls": 6,
+    "particles": 60,
+    "screenCover": 0.06,
+    "overdraw": 5
+  },
+  "textures": [],
+  "silhouette": "cụm mảnh đất mực bắn chéo lên quanh một lõi sáng, dưới là vết nứt cháy đen và một cuộn khói mỏng",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles",
+    "crack"
+  ]
+}
