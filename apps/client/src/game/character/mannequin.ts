@@ -2,6 +2,7 @@
 // clip UAL TRỰC TIẾP (`anim_ual_native`, cùng tên xương và tư thế nghỉ), không retarget lúc chạy. Bóng dùng chính bộ xương này.
 // Từ N-7 đây là nhân vật MẶC ĐỊNH của người chơi; `?chr=v1` quay về model Tripo cũ (dự phòng một bản). NPC giữ rig cũ.
 import { BladeSmear, smearWindow } from '../fx/bladeSmear';
+import { PATH_TP, isTpIdlePose, tpIdleFor } from './pathTp';
 import { PatchMove, PATCH_LIB, type PatchEventKind } from './patchMove';
 import { PivotTurn } from './pivotTurn';
 import { RagRig } from './ragdollRig';
@@ -15,13 +16,23 @@ import {
   glideLean,
   IDLE_DRAWN_AFTER,
   idleDue,
-  idlePoseFor,
   leanBoost,
   LOCO_CLAMP,
   LocoImpulse,
   SPRING_TP,
 } from './animFx';
-import { DEATH_DIR_TTL, DEATH_TURN_S, dashClipOf, holdHipsInPlace, deathYawOffset, flinchAmpOf, hitClipOf, hitSideOf } from './hitDir';
+import {
+  DEATH_DIR_TTL,
+  DEATH_TURN_S,
+  dashClipOf,
+  knockCancelled,
+  knockRate,
+  holdHipsInPlace,
+  deathYawOffset,
+  flinchAmpOf,
+  hitClipOf,
+  hitSideOf,
+} from './hitDir';
 import { boneKey } from './ikpose';
 import { applyProportions, proportionBones, type BoneScale } from './hero';
 import * as THREE from 'three/webgpu';
@@ -711,6 +722,9 @@ export class MannequinCharacter implements CharacterView {
   private drawn = false;
   /** Đòn nối tiếp sau đòn hiện tại (ngã → đứng dậy). */
   private chain: string | null = null;
+  /** Tốc độ phát clip nối (đứng dậy) và cờ đang ngã (để hủy khi server báo di chuyển/ra chiêu). */
+  private chainRate = 1;
+  private knocking = false;
   private frozenMix = new Map<THREE.AnimationAction, number>();
   private swingBase = 0;
   private locoCycles = 1;
@@ -778,8 +792,8 @@ export class MannequinCharacter implements CharacterView {
   private gearAncient = false;
   /** Hướng tu hiện tại là Thể tu (găng/giáp chỉ vẽ khi đang ở LOD gần: một người xa không đáng một draw call). */
   private gearOn = false;
-  /** Thân Pháp: lớp riêng Kiếm tu (idle xoay kiếm, lướt thấp), do entities đặt theo công pháp. */
-  private kiemTu = false;
+  /** Thân Pháp: hướng tu có lớp riêng (khóa `PATH_TP`), do entities đặt theo công pháp; undefined = chỉ lớp chung. */
+  private tpPath: string | undefined;
   private disposed = false;
 
   constructor(
@@ -940,7 +954,8 @@ export class MannequinCharacter implements CharacterView {
       this.shot = null;
       const next = this.chain;
       this.chain = null;
-      if (next && !this.dead) this.oneShot(next);
+      if (next && !this.dead) this.oneShot(next, this.chainRate);
+      else this.knocking = false;
     });
     this.play('Idle_Loop');
     this.mixer.update(0);
@@ -952,9 +967,9 @@ export class MannequinCharacter implements CharacterView {
     if (this.root.scale.x !== k) this.root.scale.setScalar(k);
   }
 
-  /** Thân Pháp: hướng Kiếm tu bật lớp riêng (idle xoay kiếm, dáng lướt thấp); `entities.ts` đặt theo công pháp mỗi khung. */
-  setKiemTu(on: boolean): void {
-    this.kiemTu = on;
+  /** Thân Pháp (TP-3): hướng tu của nhân vật (khóa `PATH_TP`) để chạy lớp riêng của hướng đó (idle, lướt thấp, nét kéo); `entities.ts` đặt theo công pháp mỗi khung. */
+  setTpPath(path: string | undefined): void {
+    this.tpPath = path;
   }
 
   /** Hướng tu Thể tu: tay không, găng + giáp nhẹ (dựng lần đầu khi cần). Bỏ thì ẩn, không dựng lại. */
@@ -1301,6 +1316,7 @@ export class MannequinCharacter implements CharacterView {
 
   attack(o: AttackOpts = {}): void {
     if (this.dead) return;
+    this.cancelKnock();
     this.attacks++;
     this.combatT = COMBAT_HOLD;
     const moving = !!this.lastAnim && this.lastAnim.speed > 0.3 && !this.perfBlocked();
@@ -1397,6 +1413,7 @@ export class MannequinCharacter implements CharacterView {
     const pose = this.tpl.bank?.get(id);
     if (!pose) return false;
     if (this.dead || this.perfBlocked()) return true;
+    this.cancelKnock();
     if (o.delay && o.delay > 0) {
       this.pendingPerform = { id, left: o.delay, o };
       return true;
@@ -1571,12 +1588,27 @@ export class MannequinCharacter implements CharacterView {
   knockdown(): void {
     if (this.dead) return;
     this.chain = this.tpl.clips.has('LayToIdle') ? 'LayToIdle' : null;
-    this.oneShot('Hit_Knockback');
+    // Ngã chỉ là hình: nằm + đứng dậy gói trong KNOCK_TOTAL_S (tăng tốc cả hai clip), hủy khi server báo di chuyển/ra chiêu (`cancelKnock`).
+    const rate = knockRate(
+      this.tpl.clips.get('Hit_Knockback')?.duration ?? 0,
+      this.chain ? (this.tpl.clips.get('LayToIdle')?.duration ?? 0) : 0,
+    );
+    this.chainRate = rate;
+    this.knocking = this.oneShot('Hit_Knockback', rate);
     if (ANIM_FX.ragdoll && this.lodLevel === 0) {
       // Ngã: xung mạnh theo hướng đòn cuối, khớp mềm hẳn trong lúc nằm.
       const lh = this.lastHit;
       (this.rag ??= new RagRig(this.rig)).down(this.root.rotation.y, lh.dx, lh.dz);
     }
+  }
+
+  /** Hủy ngã đang chạy (đứng dậy nhanh: clip hiện tại mờ trong 0,15 s, nền chạy lại). */
+  private cancelKnock(): void {
+    if (!this.knocking) return;
+    this.knocking = false;
+    this.chain = null;
+    if (this.shot) this.shot.fadeOut(0.15);
+    this.shot = null;
   }
 
   hitReact(o: HitOpts): void {
@@ -1646,6 +1678,12 @@ export class MannequinCharacter implements CharacterView {
     }
     // Chết/hồi sinh: quên hướng chạy nhớ được, để bước nhảy vị trí lúc hồi sinh không thành cú đảo chiều giả.
     if (a.dead !== this.dead) this.pivot.reset();
+    // Hồi sinh: đứng dậy từ tư thế nằm (LayToIdle) thay vì bật đứng ngay.
+    if (!a.dead && this.dead && this.tpl.clips.has('LayToIdle')) {
+      // Phát nhanh theo trần như ngã (KNOCK_TOTAL_S) và coi là ngã: đi/ra chiêu ngay thì hủy, không trượt đi trong tư thế nằm (kể cả nhân vật của mình).
+      this.chain = null;
+      this.knocking = this.oneShot('LayToIdle', knockRate(0, this.tpl.clips.get('LayToIdle')?.duration ?? 0));
+    }
     this.dead = a.dead;
     if (this.dead && this.deathTurn.t < 1) {
       this.deathTurn.t = Math.min(1, this.deathTurn.t + realDt / DEATH_TURN_S);
@@ -1667,6 +1705,7 @@ export class MannequinCharacter implements CharacterView {
       this.inner.rotation.y = pv.yawOffset;
     }
     this.lastAnim = a;
+    if (this.knocking && knockCancelled(a)) this.cancelKnock();
     this.updatePerform(dt, a);
     this.updateAtk(dt);
     this.grounded = !(a.flying || a.airborne || a.sky);
@@ -1760,7 +1799,7 @@ export class MannequinCharacter implements CharacterView {
       this.clothSit += ((sitNow ? 1 : 0) - this.clothSit) * Math.min(1, this.acc * 6);
       if (on) this.cloth.update(this.acc, this.clothSit, !!(this.springs || this.skirtSprings || this.sleeveSprings || this.tasselSprings));
     }
-    if (ANIM_FX.smear && this.lodLevel === 0 && this.inner.visible) this.updateSmear();
+    if (ANIM_FX.smear && this.lodLevel === 0 && this.inner.visible && PATH_TP[this.tpPath ?? '']?.smear) this.updateSmear();
     this.acc = 0;
   }
 
@@ -1870,11 +1909,11 @@ export class MannequinCharacter implements CharacterView {
     if (dt > 1e-3) this.accel += (Math.max(-40, Math.min(40, (a.speed - this.lastSpeed) / dt)) - this.accel) * Math.min(1, dt * 12);
     this.lastSpeed = a.speed;
     if (ANIM_FX.loco && free && !this.perf && !this.shotUpper && !this.patchShot) {
-      const pitch = (this.kiemTu ? glideLean(a.speed) : 0) + accelLean(this.accel);
+      const pitch = (PATH_TP[this.tpPath ?? '']?.glide ? glideLean(a.speed) : 0) + accelLean(this.accel);
       rotateWorld(b.spine_01 ?? null, rgt, pitch * 0.4);
       rotateWorld(b.spine_02 ?? null, rgt, pitch * 0.35);
       rotateWorld(b.spine_03 ?? null, rgt, pitch * 0.25);
-      if (this.kiemTu) this.inner.position.y -= glideDip(a.speed);
+      if (PATH_TP[this.tpPath ?? '']?.glide) this.inner.position.y -= glideDip(a.speed);
       // Xung bắt đầu/dừng/pivot (lò xo tắt dần): chúi/ngả, nghiêng, hạ hông.
       const li = this.loco2;
       if (ANIM_FX.impulse) li.update(dt, a.speed, this.pivot.active ? 0 : this.yawRate);
@@ -1905,15 +1944,16 @@ export class MannequinCharacter implements CharacterView {
       this.inner.position.y -= pv.dip;
     }
     // T3: đứng yên lâu thì tự chơi một idle đặc trưng (xoay kiếm khi đang cầm kiếm, chắp tay ngắm trời khi tay không); bỏ ngay khi di chuyển.
-    if (ANIM_FX.idle && this.kiemTu) {
+    if (ANIM_FX.idle && this.tpPath) {
       const still = free && a.speed < 0.3 && !this.perf && !a.combat && !a.casting && this.baseName !== 'Sitting_Idle_Loop';
       this.stillT = still ? this.stillT + dt : 0;
       if (still && idleDue(this.stillT, this.drawn ? IDLE_DRAWN_AFTER : this.idleAfter)) {
         // Chọn theo trạng thái kiếm thật; `ambient`: idle không kéo vào thế đấu, không rút kiếm.
-        this.perform(idlePoseFor(this.drawn), { skill: 'idle', ambient: true });
+        const idle = tpIdleFor(this.tpPath, this.drawn);
+        if (idle) this.perform(idle, { skill: 'idle', ambient: true });
         this.stillT = 0;
         this.idleAfter = 6 + Math.random() * 5;
-      } else if (a.speed > 0.5 && this.perf && this.perf.id.startsWith('kiem_idle')) this.abortPerform();
+      } else if (a.speed > 0.5 && this.perf && isTpIdlePose(this.perf.id)) this.abortPerform();
     }
     // T5: ragdoll nhẹ cộng lên tư thế clip (thân trên, đầu, tay); độ lỏng hồi về 0 sau ~1,2 s, riêng lúc chết giữ lỏng.
     // Ragdoll ghi tuyệt đối (gốc + góc), không cộng dồn lên xương mixer không ghi lại (clip kẹp cuối).
@@ -2057,7 +2097,8 @@ export class MannequinPlayers {
     if (this.poseSrc) {
       if (this.poseSrc instanceof PoseSource)
         for (const t of this.tpl.values())
-          if (typeof t === 'object' && !t.bank) t.bank = new MannequinPoseBank(this.poseSrc, t.handle.scene);
+          if (typeof t === 'object' && !t.bank)
+            t.bank = new MannequinPoseBank(this.poseSrc, t.handle.scene, () => t.clips.get('Idle_Loop'));
       return;
     }
     this.poseSrc = 'loading';

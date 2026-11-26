@@ -84,7 +84,13 @@ export const SPRITE_STYLE: Record<string, number> = {
   may_: 8,
   // V-P10 đột phá: tranh đơn sắc, tô theo bảng màu của timeline (màu sự kiện = thân, `rim` của bảng = viền).
   dp_: 12,
+  hq_: 12,
+  // Trúng đòn chung: cũng tranh đơn sắc tô theo bảng màu lúc phát (hướng tu người đánh / hệ của quái).
+  chung_: 12,
+  ngu_: 12,
   kiep_: 12,
+  // Môi trường (cổng, linh thảo, hồi sinh): tranh đơn sắc tô theo bảng màu timeline.
+  canh_: 12,
 };
 
 export interface FxTarget {
@@ -603,6 +609,10 @@ export class FxRunner {
             | 'sprite_dong'
             | 'sprite_kieu'
             | 'sprite_dp'
+            | 'sprite_hq'
+            | 'sprite_chung'
+            | 'sprite_ngu'
+            | 'sprite_canh'
             | 'sprite_kiep')
       : kind0;
     const isSprite = cell !== null;
@@ -694,6 +704,11 @@ export class FxRunner {
       } else if (ev.follow) {
         this.anchor(c, ev.at ?? 'self', ev.offset, yaw, this.tgtOf(c) ?? tgt, m.position);
       } else m.position.copy(start);
+      if (ev.orbit) {
+        const a = (ev.orbit.phase ?? 0) + ev.orbit.w * k * dur;
+        m.position.x += Math.cos(a) * ev.orbit.r;
+        m.position.z += Math.sin(a) * ev.orbit.r;
+      }
       if (ev.billboard ?? (kind === 'flip' || kind === 'mapFlip' || ev.shape === 'sprite')) {
         // Quay mặt về camera; `rot[2]` xoay thêm trong mặt phẳng hình (nét chém chéo).
         m.quaternion.copy(cam.quaternion);

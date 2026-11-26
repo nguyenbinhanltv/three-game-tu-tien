@@ -101,10 +101,27 @@ FX_PALETTE.dotpha_tc = { core: 0x453a08, body: 0xe6c84a, rim: 0xfff4c8, accent: 
 FX_PALETTE.dotpha_kd = { core: 0x2c3a12, body: 0xf0e06a, rim: 0xfffbd6, accent: 0x4fd6a0, shadow: 0x161d09 };
 // Đan Hỏa Kiếp (V-P10): lửa kiếp tím hồng lạnh thay cam.
 FX_PALETTE.kiep_hoa = { core: 0x2a0c3a, body: 0xc45cff, rim: 0xffeefc, accent: 0xfff0b0, shadow: 0x150620 };
+// Hào quang cảnh giới (V-P10 đợt 4): Hóa Thần ngà + lam (không nâu mực); Kết Đan vàng chanh + ngọc, Nguyên Anh tím + lam băng.
+FX_PALETTE.hq_kd = { core: 0x2c3a12, body: 0xf0e06a, rim: 0xfffbd6, accent: 0x4fd6a0, shadow: 0x161d09 };
+FX_PALETTE.hq_na = { core: 0x2a1458, body: 0x8f78e8, rim: 0xf0eaff, accent: 0x9fe0ff, shadow: 0x140a30 };
+FX_PALETTE.hq_hn = { core: 0x1c2c44, body: 0x86aed0, rim: 0xfbf8ec, accent: 0xf0e8cc, shadow: 0x0f1826 };
 FX_PALETTE.dotpha_na = { core: 0x2a1458, body: 0x8f78e8, rim: 0xf0eaff, accent: 0x9fe0ff, shadow: 0x140a30 };
 // Hóa Thần (E4-D): vàng sao nhạt, lõi nâu trầm, điểm nhấn lam băng; dùng cho đột phá và thế thân thần niệm.
 FX_PALETTE.dotpha_hn = { core: 0x423a12, body: 0xe6cf86, rim: 0xfff8de, accent: 0xaee0ff, shadow: 0x211d09 };
+// Trúng đòn chung (HPL2): bảng mặc định của nhóm (phòng thử, hoặc khi không biết người đánh); lúc chơi vết va tô theo hướng tu người đánh / hệ của quái.
+// Phải bằng `scene.palette` của thẻ cảnh `fx_hit_*`/`fx_heal`… (sinh bởi `tools/vfx-forge/trung-don.mjs`, test `sceneCards.test.ts`). Không tông nào đỏ/cam.
+FX_PALETTE.hit_chung = { core: 0x14161c, body: 0xb9c6d6, rim: 0xffffff, accent: 0xf0e6a8, shadow: 0x08090c };
+FX_PALETTE.hit_guard = { core: 0x10202e, body: 0x6fa8d0, rim: 0xeaf6ff, accent: 0xf0e6a8, shadow: 0x070d14 };
+FX_PALETTE.hit_heal = { core: 0x0c3324, body: 0x4fd69a, rim: 0xeafff2, accent: 0xf4e9a0, shadow: 0x06160f };
+FX_PALETTE.env_gate = { core: 0x0a2a40, body: 0x5fb8e8, rim: 0xe6f8ff, accent: 0xf0e6a8, shadow: 0x05121c };
+FX_PALETTE.env_revive = { core: 0x2a2410, body: 0xf0e6a8, rim: 0xfffbe8, accent: 0xbfe8ff, shadow: 0x14110a };
+FX_PALETTE.st_poison = { core: 0x1c1230, body: 0x9bd05a, rim: 0xf0ffd0, accent: 0xc9a8ff, shadow: 0x0a0614 };
+FX_PALETTE.st_gold = { core: 0x2a2210, body: 0xe0c050, rim: 0xfff6cf, accent: 0xffffff, shadow: 0x14110a };
+FX_PALETTE.st_yin = { core: 0x1a1030, body: 0x8a6fd0, rim: 0xece4ff, accent: 0xf0e6a8, shadow: 0x0a0618 };
+FX_PALETTE.st_burn = { core: 0x1a1410, body: 0xd9b83c, rim: 0xfff3c2, accent: 0xffffff, shadow: 0x0c0a06 };
+FX_PALETTE.hit_dich = { core: 0x2a1030, body: 0xa04ad8, rim: 0xf3e2ff, accent: 0xf0e6a8, shadow: 0x12061a };
 FX_PALETTE.than_hanh = { core: 0x0a3f5e, body: 0x2cc7dc, rim: 0xdff8ff, accent: 0xf3c860, shadow: 0x08202e };
+FX_PALETTE.ngu_kiem = { core: 0x0a3f5e, body: 0x2cc7dc, rim: 0xdff8ff, accent: 0x9fe8c8, shadow: 0x08202e };
 
 /** Mặc định: bảng của hướng tu đầu tiên (Kiếm tu). */
 const FX_PALETTE_DEFAULT = FX_PALETTE[PATHS[0]!.methods[0]!]!;

@@ -26,7 +26,7 @@ import { hash01 } from '@dtl/shared';
 import { heightAt } from '../../base/levelCtx';
 import { createLanternHalos } from '../../render/atmosphere';
 import { getCloudNoise } from '../../render/noiseTex';
-import { postParams } from '../../render/post';
+import { markVfxMask, postParams } from '../../render/post';
 import { DungeonFx } from './dungeonFx';
 import { withSightFade } from './occlusion';
 
@@ -65,6 +65,18 @@ const TIP_Y = 12.65;
 
 /** Chớp của tia sét THẬT (`postParams.flash`, 0..~1,2): vật liệu `_rune`/`_volt`/đá vụn đọc giá trị này, không bao giờ do chớp trang trí. */
 const flashU = uniform(0);
+/**
+ * Lõi mực của hồ quang (V-P10, chuẩn Họa Pháp Lô 2 luật 4): hồ quang chỉ là đường 1 px cộng sáng nên mất trên nền sáng ban ngày. Hai bản sao CÙNG hình học,
+ * hòa trộn thường, màu mực tím thẫm, lệch hai phía vài cm quanh đường sáng: thành viền tối mảnh hai bên tia trắng tím, đọc được cả ngày lẫn đêm (+2 draw khi hồ quang hiện).
+ */
+export const ARC_INK = {
+  color: 0x14082e,
+  opacity: 0.9,
+  offsets: [new THREE.Vector3(0.05, 0.09, 0), new THREE.Vector3(-0.05, -0.09, 0.03)],
+} as const;
+/** Mưa: hòa trộn thường tông lam xám thay vì cộng sáng nhạt (cộng sáng 0,28 gần như mất trên nền sáng). */
+export const RAIN_LOOK = { color: 0x8f9ad6, opacity: 0.42 } as const;
+
 /** Chớp trên cao (xoáy mây, biển mây, tia trong mây): gồm chớp trang trí; sàn đấu và vật liệu dưới đất KHÔNG đọc cái này. */
 const skyU = uniform(0);
 
@@ -150,6 +162,7 @@ export class DoKiepArt {
   private rain: THREE.LineSegments;
   private readonly rainSeed: number[] = [];
   private arcs: THREE.LineSegments;
+  private readonly arcInk: THREE.LineSegments[] = [];
   private arcClock = 0;
   private debris: THREE.InstancedMesh;
   private readonly debrisSeed: number[] = [];
@@ -206,6 +219,7 @@ export class DoKiepArt {
       depthWrite: false,
       blending: THREE.AdditiveBlending,
     });
+    markVfxMask(m);
     this.motes = new THREE.Points(g, m);
     this.motes.name = 'dk-motes';
     this.motes.frustumCulled = false;
@@ -219,12 +233,13 @@ export class DoKiepArt {
     rg.boundingSphere = new THREE.Sphere(new THREE.Vector3(CENTER.x, this.y0 + 20, CENTER.z), 90);
     for (let i = 0; i < RAIN_N; i++) this.rainSeed.push(hash01(i, 1, 5501), hash01(i, 2, 5501), hash01(i, 3, 5501));
     const rm = new THREE.LineBasicMaterial({
-      color: 0xaab4e8,
+      color: RAIN_LOOK.color,
       transparent: true,
-      opacity: 0.28,
+      opacity: RAIN_LOOK.opacity,
       depthWrite: false,
-      blending: THREE.AdditiveBlending,
+      blending: THREE.NormalBlending,
     });
+    markVfxMask(rm); // Họa Cảnh: Kuwahara không nhòe mưa/hồ quang (không làm gì ở chế độ mặc định)
     this.rain = new THREE.LineSegments(rg, rm);
     this.rain.frustumCulled = false;
     this.rain.name = 'dk-rain';
@@ -243,11 +258,32 @@ export class DoKiepArt {
       depthWrite: false,
       blending: THREE.AdditiveBlending,
     });
+    markVfxMask(am);
     this.arcs = new THREE.LineSegments(ag, am);
     this.arcs.frustumCulled = false;
     this.arcs.name = 'dk-arcs';
+    this.arcs.renderOrder = 2;
     this.group.add(this.arcs);
     this.disposables.push(ag, am);
+    // Lõi mực: hai bản sao dùng chung `ag`, vẽ trước tia sáng.
+    const im = new THREE.LineBasicMaterial({
+      color: ARC_INK.color,
+      transparent: true,
+      opacity: ARC_INK.opacity,
+      depthWrite: false,
+      blending: THREE.NormalBlending,
+    });
+    markVfxMask(im);
+    this.disposables.push(im);
+    for (const [i, off] of ARC_INK.offsets.entries()) {
+      const ink = new THREE.LineSegments(ag, im);
+      ink.frustumCulled = false;
+      ink.name = `dk-arcs-ink${i}`;
+      ink.renderOrder = 1;
+      ink.position.copy(off);
+      this.arcInk.push(ink);
+      this.group.add(ink);
+    }
 
     // đá vụn bay lơ lửng quanh đài, xoay chậm và nhích lên xuống
     const dgeo = new THREE.IcosahedronGeometry(1, 0);
@@ -387,6 +423,7 @@ export class DoKiepArt {
     this.arcClock += dt;
     const arcsOn = f > 0.15 || Math.sin(t * 1.7) > 0.35;
     this.arcs.visible = arcsOn;
+    for (const k of this.arcInk) k.visible = arcsOn;
     if (arcsOn && this.arcClock > 0.07) {
       this.arcClock = 0;
       const aa = this.arcs.geometry.attributes.position as THREE.BufferAttribute;

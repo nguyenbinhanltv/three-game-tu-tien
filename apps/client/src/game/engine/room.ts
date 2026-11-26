@@ -48,7 +48,7 @@ import { hazardDanger } from '../../render/vfx/phases';
 import { telegraph } from '../fx/telegraph';
 import { HAZARD_COLORS } from '../fx/vfx';
 import { isWorldRoom, levelOfInit } from './common';
-import { isBossSrc, lightningFlash, monFlagFx, monsterInk, onDmg, onSys, resetSound, shakeForHazard, volumeAt } from './fxMsgs';
+import { isBossSrc, flyFx, lightningFlash, monFlagFx, monsterInk, onDmg, onSys, resetSound, shakeForHazard, volumeAt } from './fxMsgs';
 import type { Game } from '../engine';
 
 /** Chạy sau `sec` giây: đồng hồ thật, trừ phòng thử VFX (`?vfxlab=1`) dùng đồng hồ trình diễn để tua/tạm dừng được đúng mili giây. */
@@ -216,6 +216,7 @@ export function rebind(eng: Game, room: Room, init: InitMsg): void {
   eng.camFrame.cancel();
   eng.ents.onMonsterDeath = (m) => monsterInk(eng, m);
   eng.ents.onMonFlags = (m, e) => monFlagFx(eng, m, e);
+  eng.ents.onFlyChange = (sid, flying, x, z) => flyFx(eng, sid, flying, x, z);
   eng.ents.burrow = eng.burrowFx;
   eng.snapToServer = true;
   eng.dmg?.clear();

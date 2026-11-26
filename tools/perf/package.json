@@ -9,6 +9,7 @@
     "iso": "tsx src/iso.ts",
     "gate": "tsx src/gate.ts",
     "aoi": "tsx src/aoi.ts",
+    "servergate": "tsx src/servergate.ts",
     "typecheck": "tsc -p tsconfig.json",
     "compat": "tsx src/compat.ts",
     "load": "tsx src/load.ts",

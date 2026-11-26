@@ -387,7 +387,70 @@ export const FX_SPRITES = [
   'dp_mantle',
   'dp_wisp',
   'dp_crack',
+  // V-P10: nhóm atlas `hq` (hào quang cảnh giới đứng yên). Tranh đơn sắc, kiểu tô 12.
+  'hq_dan',
+  'hq_smoke',
+  'hq_cloud',
+  'hq_cloud2',
+  'hq_orb',
+  'hq_mantle',
+  'hq_glyph',
+  'hq_wisp',
+  // Trúng đòn chung (HPL2): nhóm atlas `chung` (vết va, chí mạng, chặn, né, cào/cắn, hồi máu/linh lực, ngắt chú). Tranh ĐƠN SẮC, kiểu tô 12 (theo bảng màu lúc phát: hướng tu người đánh / hệ quái).
+  'chung_cut',
+  'chung_smash',
+  'chung_stab',
+  'chung_crit',
+  'chung_guard',
+  'chung_dodge',
+  'chung_chips',
+  'chung_claw',
+  'chung_fang',
+  'chung_lotus',
+  'chung_petals',
+  'chung_drops',
+  'chung_eddy',
+  'chung_snap',
+  'chung_puff',
+  'chung_splat',
+  // Trạng thái kéo dài (HPL2 PR2): chậm (sương băng), độc (bọt), bỏng (than hồng), choáng (đốm mực xoáy), đâm dày, khiên mai rùa, yếu điểm, mắt soi.
+  'chung_frost',
+  'chung_bubble',
+  'chung_coal',
+  'chung_dizzy',
+  'chung_spear',
+  'chung_ward',
+  'chung_crack',
+  'chung_eye',
+  // Dấu trạng thái đọc rõ ở 720p: xích kéo lùi (chậm), lưỡi mực-than (bỏng), vòng sao + chim mực (choáng), lá + giọt ngọc (hồi dần).
+  'chung_chain',
+  'chung_flame',
+  'chung_halo',
+  'chung_leaf',
+  // Nhóm 2a (khiên fresnel, thể thật, phản đòn): lưới lục giác rỗng viền sáng, gợn nước viền mực, mảnh gương, vòng lục giác.
+  'chung_hexweb',
+  'chung_pool',
+  'chung_mirror',
+  'chung_hexring',
+  // V-P10: nhóm atlas `ngu` (ngự kiếm: cất cánh, hạ cánh, vệt bay). Tranh đơn sắc, kiểu tô 12.
+  'ngu_blade',
+  'ngu_ring',
+  'ngu_gust',
+  'ngu_wake',
+  'ngu_puffs',
+  'ngu_dust',
+  'ngu_streak',
+  'ngu_wisp',
   // V-P10: nhóm atlas `kiep` (độ kiếp: mở kiếp, kiếp vân, chỗ sét đánh). Tranh đơn sắc, kiểu tô 12.
+  // HPL2 PR3: nhóm atlas `canh` (môi trường: cổng, linh thảo, hồi sinh). Tranh đơn sắc, kiểu tô 12.
+  'canh_vortex',
+  'canh_rift',
+  'canh_mote',
+  'canh_leaf',
+  'canh_wings',
+  'canh_feather',
+  'canh_sprout',
+  'canh_ripple',
   'kiep_rift',
   'kiep_cloud',
   'kiep_cloud2',
@@ -495,8 +558,13 @@ export interface FxMeshEvent extends FxBase {
   card?: 'arhat' | 'phoenix' | 'ghost' | 'colossus' | 'fist';
   /** Với `move`: giữ hướng thẳng đứng (chỉ xoay theo hướng nhìn) thay vì quay mũi theo hướng bay (rồng lao xuống). */
   keepUp?: boolean;
-  /** Quay quanh trục tiến (độ/giây), cho vòng xoắn. */
+  /** Quay quanh trục tiến (độ/giây), cho vòng xoắn. Sprite billboard KHÔNG quay theo `spin` (dùng `orbit`). */
   spin?: number;
+  /**
+   * Quay vòng quanh điểm đặt (kết hợp `follow`): hình đi trên đường tròn bán kính `r` mét ở mặt XZ, tốc độ `w` rad/s, pha đầu `phase` rad.
+   * Dùng cho mảnh gương xoay quanh thân (phản đòn). Chỉ là hình.
+   */
+  orbit?: { r: number; w: number; phase?: number };
   /** Seed hình (mặc định theo lần phát). */
   seed?: number;
   /** Bám theo mục tiêu/người ra chiêu suốt vòng đời (mặc định cố định tại điểm đặt). */

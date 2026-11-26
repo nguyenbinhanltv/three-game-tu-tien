@@ -69,10 +69,10 @@ export class Environment {
     this.setShadowQuality(preset === 'ultra');
   }
 
-  /** Bóng Cực cao: bản đồ 4096² phủ ±110 m (Cao: 2048², ±70 m). Đổi lúc chạy: bỏ bản đồ bóng cũ để three dựng lại. */
+  /** Bóng Cực cao: bản đồ 3072² (B9: trước 4096², ~128 MB gồm đích màu + độ sâu; 3072² còn ~72 MB) phủ ±110 m (Cao: 2048², ±70 m). Đổi lúc chạy: bỏ bản đồ bóng cũ để three dựng lại. */
   private setShadowQuality(ultra: boolean): void {
     if (!this.sun.castShadow) return;
-    const size = ultra ? 4096 : 2048;
+    const size = ultra ? 3072 : 2048; // camera chéo Cực cao: 3072² trên ±36 m = 42,7 điểm ảnh/m, vẫn dày hơn Cao (2048² trên ±26 m = 39,4)
     // Camera chéo: một tầng bóng ôm sát khung hình (±26 m, ±36 m ở Cực cao) cho nét hơn ~2,7 lần.
     const half = this.isoShadow ? (ultra ? 36 : 26) * this.isoK : ultra ? 110 : 70;
     const sh = this.sun.shadow;

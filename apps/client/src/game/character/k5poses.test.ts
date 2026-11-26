@@ -139,7 +139,8 @@ export function measure(row: Row) {
 }
 
 describe('K-5: cấu trúc khung khóa', () => {
-  for (const row of ROWS) {
+  // Voice `tt` (quyền, TP-3a) có bộ đo riêng ở k5poseFist.test.ts.
+  for (const row of ROWS.filter((r) => r.voice !== 'tt')) {
     it(`${row.id}: ${row.nine ? 9 : 7} khung, mốc theo dữ liệu chiêu`, () => {
       const m = measure(row);
       const skill = SK.get(row.skill)!;
@@ -181,7 +182,7 @@ describe('K-5: cấu trúc khung khóa', () => {
 });
 
 describe('K-5: ba giọng đo được', () => {
-  for (const row of ROWS) {
+  for (const row of ROWS.filter((r) => r.voice !== 'tt')) {
     it(`${row.id} (${row.voice}): hạ hông, xoay hông, giữ`, () => {
       const m = measure(row);
       const R = RANGE[row.voice];
@@ -197,7 +198,7 @@ describe('K-5: ba giọng đo được', () => {
       }
     });
   }
-  for (const row of ROWS.filter((r) => r.swing)) {
+  for (const row of ROWS.filter((r) => r.swing && r.voice !== 'tt')) {
     it(`${row.id} (${row.voice}): tầm tay, mũi kiếm, quá đà, chân, tay trái`, () => {
       const m = measure(row);
       const R = RANGE[row.voice];
@@ -256,7 +257,7 @@ describe('K-5: ba giọng đo được', () => {
 describe('K-5: kiếm không xuyên thân', () => {
   // Thân là một ống từ hông tới ngực, nghiêng theo độ cúi của hông + cột sống; kiếm từ 0,15 m sau cổ tay tới mũi.
   const RADIUS = 0.1;
-  for (const id of new Set(ROWS.map((r) => r.id))) {
+  for (const id of new Set(ROWS.filter((r) => r.voice !== 'tt').map((r) => r.id))) {
     it(`${id}: đoạn kiếm cách trục thân ≥ ${RADIUS} m ở mọi khung`, () => {
       const def = P(id);
       const ks = resolveKeys(def);

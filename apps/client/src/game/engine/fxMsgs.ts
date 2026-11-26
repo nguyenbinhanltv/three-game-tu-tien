@@ -1,25 +1,21 @@
 // R-8: tách từ game/engine.ts (hàm nhận `g: Game`, trước là phương thức private của lớp Game).
+import type { FxCaster } from '../fx/fxTimeline';
 import { ANIM_FX, CUTIN_FREEZE_MS, cutinArt } from '../character/animFx';
 import { v3SetKeyOf } from '../character/mannequin';
-import { isKiemTu } from '../character/kiemTu';
+import { flyTimeline } from '../fx/flyTimeline';
+import { PATH_TP, tpPathOf } from '../character/pathTp';
 import * as THREE from 'three/webgpu';
 import {
   type DmgMsg,
   type FxMsg,
   type HazardMsg,
-  MF_SENSED,
-  MF_REAL,
   MF_BURROW,
   MF_CHANT,
   MF_FACE,
-  MF_FACE_T,
-  MF_REFLECT,
-  MF_WEAK,
   MS_ATTACK,
   PF_CASTING,
   PF_DEAD,
   PF_FLYING,
-  PF_SHIELD,
   PF_TRIBULATION,
   type SysMsg,
   BONDED_ARTIFACT_ID,
@@ -33,16 +29,7 @@ import {
 } from '@dtl/shared';
 import { groundAt } from '../../base/levelCtx';
 import { ITEM, METHOD_SKILLS, MONSTER, t } from '@dtl/content';
-import {
-  MON_AURA_DUONG,
-  MON_AURA_FACE,
-  MON_AURA_REAL,
-  MON_AURA_REFLECT,
-  MON_AURA_SENSED,
-  MON_AURA_WEAK,
-  MON_BURROW_DIRT,
-  type MonFlagEdge,
-} from '../entities/monFlags';
+import { MON_BURROW_DIRT, type MonFlagEdge } from '../entities/monFlags';
 import { fxColor, METHOD_FX, playMethodFx, playVariantExtras } from '../fx/methodFx';
 import { isTranEnd, playTranFx, tranKind } from '../fx/tranFx';
 import { CO_FX_KINDS, CO_STAND_KINDS, playCoFx, playCoStand } from '../fx/coFx';
@@ -59,6 +46,8 @@ import { SECT_LANTERNS } from '../world/sect';
 import { SoulVis, type SoulScout } from '../fx/soulVis';
 import { CloneVis } from '../fx/cloneVis';
 import { skipOthersFx } from '../fx/fxBudget';
+import { HEAL_BIG_FRAC, type HitPoint } from '../fx/hitFx';
+import { monScale } from '../fx/monFx';
 import { SHAKE } from '../camera/shake';
 import { fxTriggered, replacedFx } from '../fx/skillFx';
 import { type SkillEvent } from '../character/view';
@@ -331,7 +320,7 @@ export function handleFx(eng: Game, m: FxMsg, held = false): void {
     // Thân Pháp T7/TP-3 (cờ ?thanphap): chiêu cuối của người mặc bộ có tranh cut-in (theo bộ đang mặc) thì khựng trình diễn 0,5 s (chỉ hình, không đụng server/input) và hiện cut-in.
     const mine = eng.ents.players.get(eng.sid);
     const cutin =
-      ult && ANIM_FX.cutin && isKiemTu(mine?.mt)
+      ult && ANIM_FX.cutin && PATH_TP[tpPathOf(mine?.mt) ?? '']?.cutin
         ? cutinArt(v3SetKeyOf(mine?.look.g ?? 'm', mine?.look.skin, mine?.look.set), mine?.look.g ?? 'm')
         : null;
     if (cutin && eng.shake.enabled) eng.fxSlow = { scale: 0.04, until: performance.now() + CUTIN_FREEZE_MS };
@@ -407,39 +396,25 @@ export function handleFx(eng: Game, m: FxMsg, held = false): void {
       v.swordRain(m.x ?? 0, m.y ?? 0, m.z ?? 0, m.r ?? 8, tint(0x9fe0ff), m.sd, src === eng.sid);
       break;
     case 'bite': {
+      // Chỉ động tác: hình trúng (vệt cào / dấu cắn theo hệ quái) do `hitVisual` phát khi tin sát thương tới.
       e.monsters.get(src)?.model.attack();
-      if (!(QUIET && dst === eng.sid) && e.chestOf(dst, _v)) v.burst(_v, 0xe8c4a8, 0.6, 0.2, 0.25); // cắn: chỉ viền mờ màu kem, không cầu hồng đặc
       break;
     }
     case 'heal':
-    case 'potion':
-      v.pillar(posSrc, tint(0x7dffa0), 1.0, 0.9, 4);
+      // Hình hồi máu do `hitVisual` (DmgMsg heal → `HitFx.heal`) phát; không vẽ thêm trụ sáng.
       break;
+    case 'potion': {
+      const pp = hitPointOf(eng, src);
+      if (pp) eng.hitFx?.potion(pp, src === eng.sid);
+      break;
+    }
     case 'art': {
       // Pháp bảo phụ (P3-8): pháp bảo bay lên theo animation thủ tục; thêm một vòng sáng nhỏ dưới chân, không trụ sáng, không chớp toàn cảnh.
       if (m.s === BONDED_ARTIFACT_ID) e.players.get(src)?.lo?.trigger(m.d ?? 1.4);
       else e.players.get(src)?.art?.trigger(m.d ?? 1.2);
       const col = tint(m.s === BONDED_ARTIFACT_ID ? 0xffb35a : 0xc9a2ff);
       if (e.chestOf(src, _v)) v.burst(_v.set(_v.x, _v.y - 1.05, _v.z).clone(), col, Math.min(1.5, (m.r ?? 8) * 0.12), 0.4);
-      if (m.s === 'itm_thanh_lien_an') {
-        // Khiên trùm cả tổ đội: vẽ cho người trong tầm đang mang khiên (cờ về sau vài chục ms).
-        const rr = (m.r ?? 22) ** 2;
-        const from = e.players.get(src);
-        window.setTimeout(() => {
-          for (const [sid, pv] of e.players) {
-            if (from && (pv.x - from.x) ** 2 + (pv.z - from.z) ** 2 > rr) continue;
-            if (sid !== src && !((pv.s.fl ?? 0) & PF_SHIELD)) continue;
-            v.shield(
-              (out) => e.chestOf(sid, out),
-              m.d ?? 4,
-              () => ((eng.view.players.get(sid)?.fl ?? 0) & PF_SHIELD) !== 0,
-              col,
-              1,
-              0.09,
-            );
-          }
-        }, 120);
-      }
+      // Khiên trùm tổ đội (Thanh Liên Ấn): hình do `StatusFx` vẽ theo cờ `PF_SHIELD` của từng người.
       break;
     }
     case 'artheal':
@@ -458,7 +433,7 @@ export function handleFx(eng: Game, m: FxMsg, held = false): void {
       if (e.chestOf(dst, _v)) v.burst(_v.clone(), tint(0xe8c46a), 0.9, 0.35);
       break;
     case 'shield':
-      v.shield(posSrc, m.d ?? 8, () => ((eng.view.players.get(src)?.fl ?? 0) & PF_SHIELD) !== 0, tint(0x7fd8ff), m.v === 'big' ? 1.4 : 1);
+      // Hình khiên do `StatusFx` vẽ theo cờ `PF_SHIELD` (mai rùa, vỡ khi hết); tin này chỉ còn để âm/hiệu ứng khác.
       break;
     case 'levelup':
       v.pillar(posSrc, 0xffe08a, 1.8, 1.4, 12);
@@ -504,9 +479,11 @@ export function handleFx(eng: Game, m: FxMsg, held = false): void {
     case 'respawn':
       // Của mình: linh quang đầy đủ do deathVisual nổ khi cờ PF_DEAD tắt (khớp lúc mực rút). Người khác: cột sáng.
       if (src === eng.sid) break;
-      // Được Hồi Thiên Đan Lộ hồi sinh: cột sáng hẹp và mờ để nhìn rõ người vừa đứng dậy.
-      if (m.v === 'revive') v.pillar(posSrc, 0xbfe8ff, 1.2, 0.35, 6, 0.12);
-      else v.pillar(posSrc, 0xbfe8ff, 1.2, 1.0, 8);
+      // Cánh hạc + lông vũ + gợn nước (không cột sáng); được Hồi Thiên Đan Lộ hồi sinh cũng dùng chung hình.
+      {
+        const rp = hitPointOf(eng, src);
+        if (rp) eng.envFx?.revive(rp, false, e.players.get(src) as unknown as FxCaster);
+      }
       break;
     case 'quest':
     case 'craft':
@@ -514,8 +491,8 @@ export function handleFx(eng: Game, m: FxMsg, held = false): void {
       v.pillar(posSrc, m.t === 'quest' ? 0xffd84a : 0xffa860, 0.9, 0.8, 3.5);
       break;
     case 'gather':
-      _v.set(m.x ?? 0, (m.y ?? 0) + 0.6, m.z ?? 0);
-      v.burst(_v, 0x8fffc0, 0.8, 0.35);
+      // Lá bung + mầm non tại gốc cây (không còn vòng nổ cầu).
+      eng.envFx?.gather({ id: 'gather', x: m.x ?? 0, y: m.y ?? 0, z: m.z ?? 0, chest: 0.6 }, src === eng.sid);
       break;
     case 'death':
       if (src === eng.sid) set({ tamCanh: -1, soulUntil: 0, nguHanh: null, cloneUntil: 0, steles: -1 });
@@ -544,12 +521,18 @@ export function handleFx(eng: Game, m: FxMsg, held = false): void {
       v.castSigil(posSrc, m.d ?? 2, 0x9fe6ff, 3.2, () => ((eng.view.monsters.get(src)?.mf ?? 0) & MF_CHANT) !== 0);
       break;
     case 'interrupt':
-      if (e.chestOf(dst, _v)) v.burst(_v, 0xfff2b0, 2.6, 0.45);
+    case 'break': {
+      // Ngắt chú (dst = boss, src = người phá) / boss mất thế (src = boss): sợi xích chú đứt trước ngực boss, tô theo hướng tu người phá.
+      const bp = hitPointOf(eng, m.t === 'interrupt' ? dst : src);
+      if (bp) eng.hitFx?.brk(bp, m.t === 'interrupt' ? eng.methodOfPlayer(src) : undefined, m.t === 'break' || src === eng.sid);
       break;
-    case 'break':
-      // Boss mất thế: chớp vàng lớn ở ngực boss.
-      if (e.chestOf(src, _v)) v.burst(_v, 0xffd36b, 3.2, 0.55);
+    }
+    case 'evade': {
+      // Chỉ là lớp hình: server báo đòn trúng khung né của `dst`.
+      const ep = hitPointOf(eng, dst);
+      if (ep) eng.hitFx?.evade(ep, dst === eng.sid);
       break;
+    }
     case 'phase': {
       const mt = eng.view.monsters.get(src)?.t;
       const cined = !!mt && phaseCine(eng, src, `mon.${mt}.say.${m.d ?? 1}`);
@@ -1113,16 +1096,7 @@ export function applyDmg(
   if (mine && !m.heal && !eng.targetId && m.src && eng.view.monsters.has(m.src)) eng.setTarget(m.src, 'mon');
   const foe = !m.heal && (mine || byMe) ? eng.ents.monsters.get((mine ? m.src : m.dst) ?? '') : undefined;
   if (foe) eng.music.engage(!!foe.model.def.boss);
-  // FX quái (V5): quái bị đánh → tia/mảnh theo hệ; quái đánh trúng người → vệt chém đỏ.
-  if (!m.heal && m.n > 0) {
-    const dm = eng.ents.monsters.get(m.dst);
-    if (dm) eng.monFx?.hit(dm);
-    else {
-      const sm = m.src ? eng.ents.monsters.get(m.src) : undefined;
-      const dp = sm ? eng.ents.players.get(m.dst) : undefined;
-      if (sm && dp) eng.monFx?.strike(sm, dp);
-    }
-  }
+  hitVisual(eng, m, mine, byMe);
   if (!mine && !byMe) {
     // Sát thương của người khác: chỉ hiện khi ở gần.
     if (_v.distanceTo(eng.renderPos) > 45) return;
@@ -1221,6 +1195,45 @@ export function applyDmg(
   eng.dmg.spawn(keNum ? `${text} ${t('ui.dmg.ke')}` : text, _v, cls2, m.dst, !m.heal && !m.crit && !m.ke && m.n > 0 ? m.n : undefined);
 }
 
+/** Model quái đánh bằng miệng: đòn trúng người là dấu cắn thay cho vệt cào. */
+const BITERS = new Set(['wolf', 'serpent', 'fox']);
+
+/** Điểm phát hình trúng đòn của một thực thể (quái hoặc người); null nếu không còn trong cảnh. */
+function hitPointOf(eng: Game, id: string): HitPoint | null {
+  const mon = eng.ents.monsters.get(id);
+  if (mon) return { id, x: mon.x, y: mon.y, z: mon.z, chest: mon.model.height * 0.55, scale: monScale(mon.model.height) };
+  const pl = eng.ents.players.get(id);
+  return pl ? { id, x: pl.x, y: pl.y, z: pl.z, chest: 1.15 } : null;
+}
+
+/**
+ * Hình trúng đòn chung (HPL2, `HitFx`), chỉ là lớp hình theo `DmgMsg`: người đánh trúng → vết va tô theo hướng tu của người đánh (+ khe nứt khi chí mạng);
+ * quái đánh trúng người → vệt cào/dấu cắn tô theo hệ của quái (không đỏ: đỏ dành cho vạch báo); sát thương 0 → tấm khiên nứt; nhận hồi máu → sen.
+ * Sát thương lên quái không có cấp đòn `tr` (độc/bỏng mỗi giây, trận, pháp bảo: đã có hình riêng hoặc không phải một cú đánh) thì không vẽ vết va.
+ */
+function hitVisual(eng: Game, m: DmgMsg, mine: boolean, byMe: boolean): void {
+  const hf = eng.hitFx;
+  if (!hf) return;
+  const v = hitPointOf(eng, m.dst);
+  if (!v) return;
+  const involves = mine || byMe;
+  const victimIsPlayer = eng.ents.players.has(m.dst);
+  if (m.heal) {
+    const mhp = eng.view.players.get(m.dst)?.mhp ?? 0;
+    if (m.n > 0 && victimIsPlayer) hf.heal(v, mhp > 0 && m.n >= mhp * HEAL_BIG_FRAC, involves);
+    return;
+  }
+  const sp = m.src ? eng.ents.players.get(m.src) : undefined;
+  const sm = m.src && !sp ? eng.ents.monsters.get(m.src) : undefined;
+  if (m.n === 0) return hf.block(v, sp ?? sm ?? null, involves);
+  if (sp) {
+    if (m.tr !== undefined || victimIsPlayer) hf.hit(v, sp, eng.methodOfPlayer(m.src!), !!m.crit, involves);
+  } else if (sm && victimIsPlayer) {
+    const def = MONSTER.get(sm.s.t);
+    hf.monStrike(v, sm, def?.elem, BITERS.has(def?.model ?? ''), involves);
+  }
+}
+
 /** Vệt mực mờ dưới chân nạn nhân đòn nặng (M4-14), tối đa một vệt mỗi 0,4 giây mỗi nạn nhân. */
 function heavyInk(eng: Game, dst: string, src: string | undefined): void {
   const v = eng.vfx;
@@ -1240,48 +1253,11 @@ function heavyInk(eng: Game, dst: string, src: string | undefined): void {
 }
 
 /** Quái đang thấy vừa gục (M4-14): mực văng ra rồi loang thành vết trên đất, tan dần sau vài giây. */
-/** Cờ quái mở rộng (E1-E) bật/tắt: vòng phản đòn/yếu điểm bám chân quái trong suốt thời gian cờ; bụi khi chui đất/trồi. */
+/** Cờ quái bật/tắt: chui đất/trồi (bụi + BurrowFx) và niệm chú; các cờ trạng thái do `StatusFx` vẽ. */
 export function monFlagFx(eng: Game, m: MonVis, e: MonFlagEdge): void {
   const v = eng.vfx;
   if (!v || Math.hypot(m.x - eng.renderPos.x, m.z - eng.renderPos.z) > 70) return;
-  const id = m.id;
-  const pos = (out: THREE.Vector3) => {
-    const o = eng.ents?.monsters.get(id);
-    if (!o) return false;
-    out.set(o.x, o.y, o.z);
-    return true;
-  };
-  const left = Math.max(0.3, ((eng.view.monsters.get(id)?.ce ?? 0) - (Date.now() + eng.timeOffset)) / 1000);
-  if (e.on & MF_REFLECT)
-    v.castSigil(
-      pos,
-      left,
-      MON_AURA_REFLECT.color,
-      MON_AURA_REFLECT.radius,
-      () => ((eng.view.monsters.get(id)?.mf ?? 0) & MF_REFLECT) !== 0,
-    );
-  if (e.on & MF_WEAK)
-    v.castSigil(pos, left, MON_AURA_WEAK.color, MON_AURA_WEAK.radius, () => ((eng.view.monsters.get(id)?.mf ?? 0) & MF_WEAK) !== 0);
-  // Thể thật của Kính Nguyệt Chân Quân (E3-M): vết ngọc lam suốt trận; thần thức soi ra thì vòng vàng tới `ce`.
-  if (e.on & MF_REAL)
-    v.castSigil(
-      pos,
-      3600,
-      MON_AURA_REAL.color,
-      MON_AURA_REAL.radius,
-      () => ((eng.view.monsters.get(id)?.mf ?? 0) & MF_REAL) !== 0 && (eng.view.monsters.get(id)?.hp ?? 0) > 0,
-    );
-  if (e.on & MF_SENSED)
-    v.castSigil(pos, left, MON_AURA_SENSED.color, MON_AURA_SENSED.radius, () => ((eng.view.monsters.get(id)?.mf ?? 0) & MF_SENSED) !== 0);
-  // Mặt Âm của boss hai mặt: vòng tím bám chân suốt mặt Âm (`ce` = lúc lật), tắt khi cờ rơi.
-  // Mặt Âm: khiên mờ tím bao thân + vòng tím dưới chân (mặt sai: không đánh được). Mặt Dương: viền vàng cam dưới chân (đang dễ tổn thương).
-  const mfOf = () => eng.view.monsters.get(id)?.mf ?? 0;
-  if (e.on & MF_FACE) {
-    v.castSigil(pos, left, MON_AURA_FACE.color, MON_AURA_FACE.radius, () => (mfOf() & MF_FACE) !== 0);
-    v.shield(pos, left, () => (mfOf() & MF_FACE) !== 0, MON_AURA_FACE.color, Math.min(3, Math.max(1.4, m.model.height / 1.3)), 0.4);
-  }
-  if (e.off & MF_FACE ? (mfOf() & MF_FACE_T) !== 0 : (e.on & MF_FACE_T) !== 0 && (mfOf() & MF_FACE) === 0)
-    v.castSigil(pos, left, MON_AURA_DUONG.color, MON_AURA_DUONG.radius, () => (mfOf() & MF_FACE_T) !== 0 && (mfOf() & MF_FACE) === 0);
+  // Phản đòn / yếu điểm / thể thật / bị soi / mặt Âm-Dương: hình do `StatusFx` vẽ theo cờ (silhouette trên thân, không còn vòng rune dưới chân).
   if (e.on & MF_CHANT) eng.monFx?.cast(m);
   if ((e.on | e.off) & MF_BURROW) {
     _v2.set(m.x, m.y + 0.4, m.z);
@@ -1393,4 +1369,11 @@ export function onSys(eng: Game, m: SysMsg): void {
     eng.wantFly = false;
     set({ wantFly: false });
   }
+}
+
+/** Cất/hạ cánh ngự kiếm (V-P10): cảnh `fx_fly_on`/`fx_fly_off` tại người đổi cờ bay. Cất cánh của mình đã phát ở `toggleFly` (dự đoán) nên bỏ qua. */
+export function flyFx(eng: Game, sid: string, flying: boolean, x: number, z: number): void {
+  if (!eng.skillFx || (flying && sid === eng.sid) || Math.hypot(x - eng.renderPos.x, z - eng.renderPos.z) > 60) return;
+  const tl = flyTimeline(flying, sid === eng.sid);
+  if (tl) eng.skillFx.startFromFx(sid, tl);
 }

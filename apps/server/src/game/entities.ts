@@ -69,6 +69,8 @@ export interface PlayerEnt {
   /** Né (P1 Thiên Nhãn): hết khung bất tử lúc `dodgeUntil`, lần né gần nhất `dodgeAt` (giờ server, ms). Không lưu DB. */
   dodgeUntil: number;
   dodgeAt: number;
+  /** Lần phát FX hình `evade` gần nhất (giờ server, ms): đòn bị khung bất tử bỏ qua chỉ vẽ tàn ảnh, giãn để vùng nổ nhiều nhịp không spam. Không lưu DB. */
+  evadeFxAt: number;
   /** Kho lượt né (S5): số lượt còn và mốc nạp. Không lưu DB. */
   dodge: DodgeBank;
   /** Chân Cảnh S1: khựng vì trúng đòn đến lúc này (giờ server, ms): không đi được. `staggerOkAt`: sau mốc này mới khựng/đẩy lùi tiếp (chống khóa liên tục). Không lưu DB. */
@@ -173,8 +175,8 @@ export interface MonEnt {
   taunt?: { sid: string; until: number };
   /** Bị làm chậm (đòn bạo kích của bộ Hàn Giao Lân): tốc độ đuổi nhân `mul` tới `until`. */
   slow?: { until: number; mul: number };
-  /** Mộc độc của Hồi Xuân Quyết (đan sư): mỗi giây gây `per` sát thương tới `until`. */
-  poison?: { sid: string; until: number; nextAt: number; per: number };
+  /** Sát thương theo thời gian: mộc độc của Hồi Xuân Quyết (`poison`, đan sư) hoặc bỏng của chiêu hỏa (`burn`); mỗi giây gây `per` tới `until`. `kind` chỉ để đồng bộ cờ vẽ hình. */
+  poison?: { sid: string; until: number; nextAt: number; per: number; kind: 'poison' | 'burn' };
 }
 
 export interface NodeEnt {

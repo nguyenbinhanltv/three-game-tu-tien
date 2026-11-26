@@ -675,8 +675,16 @@ export function applyGroundShader(mat: THREE.MeshStandardNodeMaterial, tex: Grou
     const ink: Node = dot(painted, vec3(0.299, 0.587, 0.114));
     // mảng sáng/tối vài chục mét (như mảng lớn của painted-valley) nhân vào độ chói để tuyết/đất không thành một màu phẳng
     const patch: Node = smoothstep(0.3, 0.7, F.noise(positionWorld.xz.div(17), false).a);
-    const stroke: Node = smoothstep(0.09, 0.26, ink).mul(patch.mul(0.6).add(0.4));
-    const gTone: Node = mix(vec3(themeU.gShade), vec3(themeU.gLit), stroke);
+    // đêm (theme.nightFlat) và cả ngày lẫn đêm (theme.groundFlat; phó bản ép mood): mảng lớn 17 m đọc thành mây khi nền một tông; thu mảng về giữa, giữ nét nhỏ của
+    // đất vẽ và nhân độ chói albedo gốc (vết nứt, lá kim, tro, mảnh đá) vào tông đất. Cả hai 0 = như cũ (mọi level khác)
+    const flat: Node = paintedNight.mul(themeU.nightFlat);
+    const patchN: Node = mix(patch, float(0.5), max(flat, themeU.groundFlat));
+    const stroke: Node = smoothstep(0.09, 0.26, ink).mul(patchN.mul(0.6).add(0.4));
+    const lum: Node = dot(col.rgb, vec3(0.299, 0.587, 0.114));
+    const crack: Node = mix(float(1), clamp(lum.div(0.3), 0.55, 1.15), flat).mul(
+      mix(float(1), clamp(lum.div(0.2), 0.3, 1.5), themeU.groundFlat),
+    );
+    const gTone: Node = mix(vec3(themeU.gShade), vec3(themeU.gLit), stroke).mul(crack);
     const mixed: Node = mix(painted, gTone, themeU.on.mul(themeU.groundMix));
     const mixedL: Node = dot(mixed, vec3(0.299, 0.587, 0.114));
     const grassy0: Node = mix(vec3(mixedL), mixed, mix(float(1), themeU.groundSat, themeU.on));
@@ -752,7 +760,7 @@ export function applyGroundShader(mat: THREE.MeshStandardNodeMaterial, tex: Grou
     const groundBase = paintedT.mul(grassW).add(pavTone.mul(pavW));
     // bóng mặt trời trên đất (theme.albedoMix; Vấn Đỉnh): đất vẽ phát sáng nên không nhận bóng, vật thể như lơ lửng. Cho một phần màu đất đi qua đèn (albedo, chỉ ban ngày; đêm giữ như cũ, nhận bóng
     // đổ của cột, đá, cổng, viền mềm theo bản đồ bóng), phần còn lại vẫn phát sáng; tổng giữ độ sáng của bản vẽ khi không có bóng. 0 = như cũ (mọi level khác)
-    const lit: Node = themeU.albedoMix.mul(0.85).mul(float(1).sub(paintedNight));
+    const lit: Node = max(themeU.albedoMix, themeU.shadowMix).mul(0.85).mul(float(1).sub(paintedNight));
     // sương thấp tính một lần: phần qua đèn nhân (1 − sương), phần phát sáng trộn về màu sương, nên khi không bóng tổng vẫn là mix(đất, sương, m) như cũ
     const mist: Node = lowMistAt(F, positionWorld.xz, positionWorld.y).mul(grassW.add(pavW).min(1));
     mat.colorNode = mix(col, rTone.mul(float(1).add(paintedNight.mul(themeU.nightSplit).mul(0.7))), themeU.on.mul(themeU.rockMix))
@@ -769,8 +777,9 @@ export function applyGroundShader(mat: THREE.MeshStandardNodeMaterial, tex: Grou
       mat.colorNode = vec3(0);
       mat.emissiveNode = vec3(clamp(col.r.sub(col.g).mul(10).add(0.5), 0, 1), dryW, themeU.dryMix);
     }
-    // vũng sáng đèn đêm: ghi vào đích MRT `lamp`, pass cuối cộng SAU bước nhuộm trăng (giữ tông hổ phách)
-    (mat as unknown as { mrtNode: unknown }).mrtNode = mrt({ lamp: vec4(lampPoolAt(positionWorld.xz), 1) });
+    // vũng sáng đèn đêm: ghi vào rgb của đích MRT `aux`, pass cuối cộng SAU bước nhuộm trăng (giữ tông hổ phách). Kênh a của `aux` là mặt nạ VFX
+    // (render/post.ts): đất ghi 0 (không phải VFX) và vì đất đục nên cũng xóa mặt nạ của VFX nằm sau nó.
+    (mat as unknown as { mrtNode: unknown }).mrtNode = mrt({ aux: vec4(lampPoolAt(positionWorld.xz), 0) });
   }
 
   // ----- pháp tuyến + độ nhám -----

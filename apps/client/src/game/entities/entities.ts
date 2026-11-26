@@ -21,7 +21,7 @@ import {
 import { groundAt } from '../../base/levelCtx';
 import { gatesOf, type Gate } from '../world/gates';
 import { APPEARANCE, SET, MONSTER, NPCS, QUESTS, t, pathOf as PATH_OF_METHOD, questPathOk } from '@dtl/content';
-import { isKiemTu } from '../character/kiemTu';
+import { tpPathOf } from '../character/pathTp';
 import { BRAWLER_WEAPON } from '../character/brawlerGear';
 import { giantScale, stepGiant } from './giant';
 import { bladeLook, loiArc } from './loiBlade';
@@ -29,7 +29,8 @@ import { GREATBLADE_WEAPON } from '../character/greatblade';
 import { COHU_WEAPON } from '../character/coGear';
 import { TRAN_KY_WEAPON } from '../character/tranGear';
 import { hoverBob, hoverTarget, stepHover } from './hover';
-import { COTHAN_METHOD, BONDED_ARTIFACT_ID, BONDED_UNLOCK_LEVEL, PLAYER_BODY_RADIUS } from '@dtl/shared';
+import { knockdownWanted } from '../character/hitDir';
+import { bodyClassOf, COTHAN_METHOD, BONDED_ARTIFACT_ID, BONDED_UNLOCK_LEVEL, PLAYER_BODY_RADIUS } from '@dtl/shared';
 import { type Body, solveSeparation } from './separation';
 import { hashName as hashStr, type EscortMsg, type QuestView } from '@dtl/shared';
 import { LABELS, type Label } from './labelBatch';
@@ -188,7 +189,8 @@ export class EntityManager {
   /** Người đồng hành của nhiệm vụ hộ tống (E2-H), theo id `escorts` của level. Không phải NPC tương tác. */
   escorts = new Map<string, NpcVis>();
   ring: THREE.Mesh;
-  private bars = new HeadBars();
+  /** Công khai cho phòng thử (`__vfxlab.tags`). */
+  readonly bars = new HeadBars();
   /** Bật khi có cắt cảnh: thanh máu và nhãn tên trên đầu ẩn đi. */
   tagsHidden = false;
   /** Boss đang có thanh máu lớn trên HUD (engine đặt mỗi lần đồng bộ HUD): bảng tên 3D của nó ẩn đi. */
@@ -199,6 +201,8 @@ export class EntityManager {
   private time = 0;
   /** Nghe sự kiện chiêu của mọi người chơi trong tầm (K-4): `sid`, sự kiện (windup/hit/recovery/cancel/end). */
   onSkillEvent: ((sid: string, e: SkillEvent) => void) | null = null;
+  /** Người chơi `sid` vừa bắt đầu/ngừng ngự kiếm (đổi cờ `PF_FLYING`): `x`,`z` là chỗ đang vẽ. */
+  onFlyChange: ((sid: string, flying: boolean, x: number, z: number) => void) | null = null;
   /** Quái đang thấy vừa gục (một lần mỗi lần chết; engine vẽ vết mực M4-14). */
   onMonsterDeath: ((m: MonVis) => void) | null = null;
   /** Cờ quái mở rộng vừa bật/tắt (E1-E): vẽ vòng phản đòn/yếu điểm, bụi chui đất. */
@@ -452,6 +456,8 @@ export class EntityManager {
     view.players.forEach((s, sid) => {
       const isLocal = sid === this.mySid;
       let v = this.players.get(sid);
+      // Người vừa vào tầm nhìn khung này: `v.fl` còn 0 nên không được coi là "vừa đổi cờ bay".
+      const fresh = !v;
       if (!v) {
         if (!isLocal) {
           const d2 = (s.x - local.x) ** 2 + (s.z - local.z) ** 2;
@@ -507,6 +513,8 @@ export class EntityManager {
         const sp = Math.hypot(v.x - ox, v.z - oz) / Math.max(dt, 1e-3);
         v.speed += (sp - v.speed) * Math.min(1, dt * 8);
       }
+      // Cờ bay đổi (không tính lần đầu thấy người này): engine phát cảnh cất/hạ cánh (V-P10).
+      if (!fresh && ((v.fl ^ s.fl) & PF_FLYING) !== 0) this.onFlyChange?.(sid, (s.fl & PF_FLYING) !== 0, v.x, v.z);
       v.fl = s.fl;
       v.mt = s.mt ?? '';
       // Pháp bảo phụ: chỉ dựng cho người trong tầm nhìn gần (nhỏ, không đáng nạp xa).
@@ -525,7 +533,7 @@ export class EntityManager {
       v.model.setGiant?.(giantScale(v.giant));
       v.model.setBrawlerGear?.(s.mt ? (PATH_OF_METHOD(s.mt)?.weapons.includes(BRAWLER_WEAPON) ?? false) : false, s.mt === COTHAN_METHOD);
       v.model.setGreatBlade?.(s.mt ? (PATH_OF_METHOD(s.mt)?.weapons.includes(GREATBLADE_WEAPON) ?? false) : false);
-      v.model.setKiemTu?.(isKiemTu(s.mt));
+      v.model.setTpPath?.(tpPathOf(s.mt));
       v.model.setCoGear?.(s.mt ? (PATH_OF_METHOD(s.mt)?.weapons.includes(COHU_WEAPON) ?? false) : false);
       v.model.setTranKy?.(s.mt ? (PATH_OF_METHOD(s.mt)?.weapons.includes(TRAN_KY_WEAPON) ?? false) : false);
       const bl = bladeLook(s.mt, look.set ? (SET.get(look.set)?.look.blade ?? '') : '', s.wg ?? 0, this.time);
@@ -1028,6 +1036,13 @@ export class EntityManager {
       dirX: vs ? vd.x - vs.x : 0,
       dirZ: vs ? vd.z - vs.z : 0,
     });
+    // Chiêu cuối hất ngã người khác / quái nhỏ-vừa: ngã rồi đứng dậy (chỉ hình).
+    const mon = this.monsters.get(dst);
+    const def = mon ? MONSTER.get(mon.s.t) : undefined;
+    if (knockdownWanted(tier, { self: dst === this.mySid, body: def ? bodyClassOf(def) : undefined }, this.time - vd.knockAt)) {
+      vd.knockAt = this.time;
+      vd.model.knockdown?.();
+    }
     if (src && src === this.mySid && vs) vs.model.hit.hitStop(stop?.attacker ?? 0, delay);
   }
 

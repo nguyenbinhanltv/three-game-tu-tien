@@ -33,6 +33,7 @@ import {
   GCD,
   type LevelDef,
   MF_STUN,
+  PF_HOT,
   MS_CHASE,
   MS_DEAD,
   MS_IDLE,
@@ -993,6 +994,8 @@ export class CombatSystem {
     if (old && old.per > perSec && old.endAt > this.c.now + sec * 1000) return;
     if (old) this.hots.splice(this.hots.indexOf(old), 1);
     this.hots.push({ sid, nextAt: this.c.now + 1000, endAt: this.c.now + sec * 1000, per: perSec, by: by?.sid });
+    const target = this.c.players.get(sid);
+    if (target) this.c.setFlag(target, PF_HOT, true);
   }
 
   /**
@@ -1096,6 +1099,10 @@ export class CombatSystem {
         if (n > 0 && o.char.hp < o.char.mhp) this.healPlayer(o, n, h.by ? this.c.players.get(h.by) : null);
       }
       if (h.nextAt > h.endAt) this.hots.splice(i, 1);
+    }
+    // Cờ chỉ-để-vẽ PF_HOT: bật khi còn dòng hồi dần, tắt khi hết (suy ra từ `hots`, không ảnh hưởng luật).
+    for (const o of this.c.players.values()) {
+      if (o.s.fl & PF_HOT && !this.hots.some((h) => h.sid === o.sid)) this.c.setFlag(o, PF_HOT, false);
     }
     for (let i = this.trails.length - 1; i >= 0; i--) {
       const tr = at(this.trails, i);

@@ -36,6 +36,10 @@ interface Flags {
   aura: boolean;
   /** `?auraground=0` hào quang cảnh giới kiểu cũ quanh người (không có ấn dưới chân); so ảnh trước/sau (Chân Cảnh C5). */
   auraGround: boolean;
+  /** `?trailink=0` vệt phi kiếm không có lớp mực (bản cũ chỉ cộng sáng); so ảnh trước/sau (V-P10). */
+  trailInk: boolean;
+  /** `?aurasprites=0` hào quang cảnh giới kiểu cũ (ấn rune dưới chân, vòng ngũ hành, phù văn lưng) thay vì sprite vẽ tay Họa Pháp Lô 2 (V-P10); so ảnh trước/sau. */
+  auraSprites: boolean;
   /** `?pathaura=0` về hào quang cảnh giới mặc định cho Đao tu/Cổ tu/Cấm chế sư (so ảnh trước/sau lớp hào quang riêng của hướng). */
   pathAura: boolean;
   /** `?mood=dawn|day|dusk|night` đổi thời điểm trong ngày (không lưu). */
@@ -124,8 +128,10 @@ interface Flags {
   isoFxCompress: boolean;
   /** `?style=painted` phong cách "Họa Cảnh" (nền hoạt hình vẽ tay, thử ở Vân Lam); mặc định không đổi gì. Giá trị lạ = tắt. */
   style: 'painted' | null;
-  /** `?paint=0..3` mức lớp Kuwahara của Họa Cảnh (0 tắt, mặc định 1 khi `?style=painted`). */
+  /** `?paint=0..3` mức lớp Kuwahara của Họa Cảnh (0 tắt; không có cờ: 3 = bút rộng bán kính 2). */
   paint: number | null;
+  /** `?painthalf=0` (cùng `?style=painted`): bút rộng Kuwahara tính tại chỗ ở mọi điểm ảnh như trước B6 (so ảnh/số đo); mặc định pass riêng cỡ ~màn hình. */
+  paintHalf: boolean;
   /** `?far=1|0` (cùng `?style=painted`): ép bật/tắt vùng xa nướng một lần (FarBackdrop). Không có cờ: theo bảng level (`render/painted/theme.ts` `far`; Vân Lam tắt vì thung lũng kín). */
   far: boolean | null;
   /** `?vistafly=<độ>`: ghi đè pitch camera vista khi ngự kiếm (chỉ với ?far=1; để so mức). */
@@ -147,7 +153,11 @@ export const FLAG_DOCS: Readonly<Record<string, { scope: 'user' | 'diag' | 'test
     doc: '=1: vùng xa Họa Cảnh (núi nướng một lần, render/painted/farBackdrop.ts); =0 tắt; chỉ có tác dụng với ?style=painted, WebGPU; mặc định theo level (Bắc Hoang bật)',
   },
   paintdbg: { scope: 'diag', doc: '=dry|vc: gỡ lỗi mảng đất trần của Họa Cảnh (xuất mặt nạ ra đất; xem render/painted/theme.ts dryMix)' },
-  paint: { scope: 'diag', doc: '0..3: mức Kuwahara của ?style=painted (0 tắt, mặc định 1)' },
+  paint: { scope: 'diag', doc: '0..3: mức Kuwahara của ?style=painted (0 tắt, mặc định 3)' },
+  painthalf: {
+    scope: 'diag',
+    doc: '=0: bút rộng Kuwahara của ?style=painted tính tại chỗ ở mọi điểm ảnh (trước B6); mặc định pass riêng cỡ ~màn hình',
+  },
   vista: { scope: 'diag', doc: '0: tắt camera mở tầm nhìn (hạ thấp khi ngự kiếm và ở điểm ngắm cảnh)' },
   paintedlab: {
     scope: 'test',
@@ -171,6 +181,11 @@ export const FLAG_DOCS: Readonly<Record<string, { scope: 'user' | 'diag' | 'test
     doc: '=0: tắt lớp Thân Pháp (mặc định bật: cường điệu góc chéo, nảy bước, pivot, clip Patch cho mọi hệ; idle/chiêu/cut-in mới chỉ Kiếm tu)',
   },
   vfxwarm: { scope: 'diag', doc: '=0: tắt biên dịch trước VFX' },
+  trailink: { scope: 'diag', doc: '=0: vệt phi kiếm không có lớp mực (bản cũ chỉ cộng sáng), so ảnh V-P10' },
+  aurasprites: {
+    scope: 'diag',
+    doc: '=0: hào quang cảnh giới kiểu cũ (ấn rune, vòng ngũ hành, phù văn lưng) thay vì sprite vẽ tay (V-P10)',
+  },
   auraground: { scope: 'diag', doc: '=0: hào quang cảnh giới kiểu cũ quanh người, không có ấn dưới chân (so ảnh C5)' },
   aura: { scope: 'diag', doc: '=0: tắt hào quang cảnh giới trên nhân vật' },
   pathaura: { scope: 'diag', doc: '=0: Đao tu/Cổ tu/Cấm chế sư dùng hào quang cảnh giới mặc định thay lớp hào quang riêng của hướng' },
@@ -248,6 +263,7 @@ export function readFlags(search: string): Flags {
     paintDbg: q.get('paintdbg') === 'dry' ? 'dry' : q.get('paintdbg') === 'vc' ? 'vc' : null,
     vistaFlyPitch: Number.isFinite(Number(q.get('vistafly') ?? NaN)) && q.has('vistafly') ? Number(q.get('vistafly')) : null,
     paint: /^[0-3]$/.test(q.get('paint') ?? '') ? Number(q.get('paint')) : null,
+    paintHalf: !off(q.get('painthalf')),
     isoFxCompress: q.get('isofx') !== '0',
     vista: q.get('vista') !== '0',
     isoYaw: q.get('isoyaw') === null || Number.isNaN(Number(q.get('isoyaw'))) ? null : (Number(q.get('isoyaw')) * Math.PI) / 180,
@@ -265,6 +281,8 @@ export function readFlags(search: string): Flags {
     vfxWarm: !off(q.get('vfxwarm')),
     aura: !off(q.get('aura')),
     auraGround: !off(q.get('auraground')),
+    trailInk: !off(q.get('trailink')),
+    auraSprites: !off(q.get('aurasprites')),
     pathAura: !off(q.get('pathaura')),
     mood: mood === 'dawn' || mood === 'day' || mood === 'dusk' || mood === 'night' ? mood : null,
     fxq: q.get('fxq'),

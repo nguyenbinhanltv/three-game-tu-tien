@@ -2,7 +2,7 @@
 // 720p + 1080p, dừng thời gian bằng `window.__animlab` để khung đúng từng mili giây; đo CPU xương (mục `anim` của FrameBudget) lúc đứng yên và lúc chạy;
 // tùy chọn đặt ảnh tham chiếu cạnh khung đỉnh đòn, và quay clip thời gian thật (đứng, chạy, từng chiêu) để so trước/sau (`--thanphap 0|1`).
 // Dùng: pnpm shots animlab --out <thư mục tuyệt đối> [--pose kiem_khi_tram,phi_kiem,thien_kiem_vu] [--cams iso,close] [--sizes 720p,1080p] [--thanphap 1]
-//        [--ref <ảnh>] [--clip 1] [--cpu 1] [--gender m|f] [--times 0.1,0.2,...] [--clip-size 720p|1080p] [--fx impulse=0,loco=0,...] [--stills tp1b|tp2|tp2mon|b3|ref] [--set <bộ>] [--stills-size 720p|1080p] [--cutin <id chiêu> [--cutin-at 0.12,0.3,...]]
+//        [--ref <ảnh>] [--clip 1] [--cpu 1] [--gender m|f] [--method <id công pháp>] [--times 0.1,0.2,...] [--clip-size 720p|1080p] [--fx impulse=0,loco=0,...] [--stills tp1b|tp2|tp2mon|b3|ref] [--set <bộ>] [--stills-size 720p|1080p] [--cutin <id chiêu> [--cutin-at 0.12,0.3,...]]
 import path from 'node:path';
 import sharp from 'sharp';
 import { list, opt } from '../lib/env';
@@ -55,6 +55,8 @@ async function run(r: Run, poses: string[], cams: string[], sizes: string[]): Pr
   await gm(page, 'level 32', 1500);
   await gm(page, 'tp 2048 2095', 1800);
   await gm(page, 'spawn clear', 1400);
+  // `--method <id công pháp>`: chọn hướng tu (vd. bat_dong_kim_than = Thể tu) để chụp pose của hướng khác.
+  if (opt('--method', '')) await gm(page, `method ${opt('--method', '')}`, 1500);
   await gm(page, 'cd', 1300);
   const out: Record<string, unknown> = { thanphap: opt('--thanphap', '1') === '1', poses: {} };
   const stillsMode = opt('--stills', '');
@@ -213,6 +215,20 @@ async function run(r: Run, poses: string[], cams: string[], sizes: string[]): Pr
         ['4-phai', 'right', 2, false],
         ['5-nga', 'front', 3, true],
       ];
+      // TP-2: đòn thật (cấp 3 qua `ents.hitReact`, như S.DMG) lên quái nhỏ/vừa: phải tự ngã rồi đứng dậy; dải khung theo thời gian.
+      await page.evaluate(() => window.__animlab!.pause(false));
+      await sleep(1800);
+      await page.evaluate(() => window.__animlab!.pause(true));
+      await frame(page);
+      let tHit = 0;
+      for (const ms of [0, 200, 450, 800, 1300]) {
+        if (ms > tHit) await advance(page, ms - tHit);
+        tHit = ms;
+        if (ms === 0) await page.evaluate(() => window.__animlab!.hitReal(3));
+        for (let k = 0; k < SETTLE_FRAMES; k++) await frame(page);
+        const p = await page.evaluate(() => window.__animlab!.probeMon());
+        await monShot(`7-that-${ms}ms`, p);
+      }
       for (const [name, from, tier, knock] of mcases) {
         await page.evaluate(() => window.__animlab!.pause(false));
         await sleep(1800);
@@ -288,6 +304,12 @@ async function run(r: Run, poses: string[], cams: string[], sizes: string[]): Pr
       await sleep(1500);
       await gm(page, 'die', 900);
       await shot('6-chet');
+      // TP-2: hồi sinh (C.RESPAWN) — đứng dậy từ tư thế nằm; dải khung theo thời gian thật.
+      await page.evaluate(() => window.__animlab!.respawn());
+      for (const ms of [120, 350, 700]) {
+        await sleep(ms === 120 ? 120 : ms === 350 ? 230 : 350);
+        await shot(`8-hoisinh-${ms}ms`, true);
+      }
     }
     await ctx.close();
     return { ...out, stills: stillsMode };

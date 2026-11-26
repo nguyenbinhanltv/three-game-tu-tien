@@ -102,6 +102,8 @@ function swapMarkLabel(
 
 export class PlayerVis {
   model: CharacterView;
+  /** Thời điểm (đồng hồ EntityManager) lần ngã gần nhất, để nghỉ giữa hai lần (`knockdownWanted`). */
+  knockAt = -99;
   /** Ngoại hình model đang dựng (đổi thì dựng lại). */
   look: PlayerLook;
   /** Đang dùng model khối tạm trong lúc asset model mới còn nạp. */
@@ -197,6 +199,8 @@ export class PlayerVis {
 
 export class MonVis {
   model: MonsterView;
+  /** Như `PlayerVis.knockAt`. */
+  knockAt = -99;
   /** Đang dùng model khối tạm trong lúc asset model mới còn nạp. */
   skinPending: boolean;
   label: Label | null = null;

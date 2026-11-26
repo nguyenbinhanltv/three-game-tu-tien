@@ -1,0 +1,45 @@
+{
+  "skillId": "fx_hit_block",
+  "idea": "CHẶN / HẤP THỤ (đòn bị hộ thể nuốt hết, sát thương 0): một tấm khiên lục giác bằng mực loãng hiện lên trước ngực đúng chỗ đòn chạm, nứt ba đường từ điểm chạm, một góc vỡ bật mảnh; lam thép, lõi mực chàm, mép trắng lạnh. Đứng yên rồi tan, không nở to.",
+  "element": "kim",
+  "path": "",
+  "scene": {
+    "palette": {
+      "core": "10202e",
+      "body": "6fa8d0",
+      "rim": "eaf6ff",
+      "accent": "f0e6a8",
+      "shadow": "070d14"
+    },
+    "impactAt": 0
+  },
+  "shapeLang": [
+    "ring",
+    "line"
+  ],
+  "timing": {
+    "anticipationMs": 0,
+    "impactMs": 80,
+    "lingerMs": 260
+  },
+  "footprint": {
+    "lengthM": 1.4,
+    "widthM": 1.4,
+    "heightM": 1.6
+  },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": {
+    "drawCalls": 2,
+    "particles": 10,
+    "screenCover": 0.012,
+    "overdraw": 2
+  },
+  "textures": [],
+  "silhouette": "tấm lục giác mực loãng nứt ba đường từ một điểm, một góc vỡ bật mảnh",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles"
+  ]
+}

@@ -63,18 +63,4 @@ def register(R, H):
         ],
     }
 
-    # ---------- Ngự kiếm: kiếm hóa quang bay ra dưới chân đỡ người lên, vệt gió ----------
-    R['fx_fly_on'] = lambda: {
-        'skill': 'fx_fly_on', 'palette': 'than_hanh',
-        'events': [
-            decal('rune', -0.1, 3.8, 1.6, at='self', offset=[0, -1.15, 0], grow=0.25, tone='core', alpha=0.95, tier=0),
-            mesh('kite', 0.0, 1.2, at='self', offset=[0, -1.05, 6.0], scale=[1.8, 1.8, 6.5], sweep=0.2, erodeFrom=0.7, tone='rim', alpha=0.95, move={'to': 'self', 'offset': [0, -1.05, 0], 'ease': 'out'}, seed=3, tier=0),
-            mesh('kite', 0.05, 1.1, at='self', offset=[0, -1.15, 6.0], scale=[2.4, 2.4, 6.5], sweep=0.2, erodeFrom=0.7, tone='core', alpha=0.75, move={'to': 'self', 'offset': [0, -1.15, 0], 'ease': 'out'}, seed=4, tier=1),
-            mesh('ripple', 0.2, 0.8, at='self', offset=[0, -1.1, 0], scale=0.3, scaleTo=3.8, sweep=0.4, erodeFrom=0.4, tone='body', alpha=0.9, seed=2, tier=0),
-            mesh('helix', 0.2, 0.9, at='self', offset=[0, -1.0, -3.0], scale=[1.4, 1.4, 7.0], sweep=0.3, erodeFrom=0.4, spin=500, tone='accent', alpha=0.85, seed=5, tier=0),
-            mesh('helix', 0.22, 0.8, at='self', offset=[0.8, -0.8, -3.0], scale=[1.0, 1.0, 6.0], sweep=0.3, erodeFrom=0.4, spin=-500, tone='rim', alpha=0.7, seed=6, tier=1),
-            mesh('burst', 0.2, 0.1, at='self', offset=[0, -0.9, 0], scale=1.6, billboard=True, sweep=0.0, tone='rim', tier=0),
-            parts('spark', 0.2, 40, 4.0, 0.4, 0.8, 0.07, at='self', offset=[0, -1.0, 0], back=True, tone='rim', tier=0),
-            parts('dust', 0.2, 20, 3.0, 0.8, 0.6, 0.25, at='self', offset=[0, -1.1, 0], tone='body', tier=1),
-        ],
-    }
+    # Ngự kiếm (cất cánh `fx_fly_on`, hạ cánh `fx_fly_off`): từ V-P10 do `node tools/vfx-forge/ngu-kiem.mjs` sinh; không còn ở đây.

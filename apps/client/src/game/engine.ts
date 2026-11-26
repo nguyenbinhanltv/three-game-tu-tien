@@ -1,3 +1,4 @@
+import { ensureColliders } from '@dtl/content/colliders-lazy';
 import type { FarBackdrop } from '../render/painted/farBackdrop';
 import { AutoQuality, isQuality } from '../base/quality';
 import * as THREE from 'three/webgpu';
@@ -114,6 +115,10 @@ import { SuyFx } from './fx/suyFx';
 import { groundAt } from '../base/levelCtx';
 import { PF_TRIBULATION } from '@dtl/shared';
 import { MonFx } from './fx/monFx';
+import { HitFx } from './fx/hitFx';
+import { EnvFx, type EnvGate } from './fx/envFx';
+import { StatusFx, monStatusOf, playerStatusOf, type StatusEnt } from './fx/statusFx';
+import { monScale } from './fx/monFx';
 import { variantFor } from './fx/fxTimeline';
 import {
   auraCombatOf,
@@ -151,7 +156,7 @@ import { ANIM_LAB, VFX_LAB } from './engine/common';
 import { installAnimLab } from './debug/animLab';
 import { LoginOptions, QUALITY, isWebGPU, isWorldRoom, levelOfInit, levelOfRoom, serverUrl } from './engine/common';
 import { describeGpu, fireSkill, pickRenderer, runFrame, watchGpuDevice } from './engine/frameLoop';
-import { handleFx, monFlagFx, monsterInk, onSwingEvent, resetSound, volumeAt } from './engine/fxMsgs';
+import { handleFx, flyFx, monFlagFx, monsterInk, onSwingEvent, resetSound, volumeAt } from './engine/fxMsgs';
 import { fxTargetOf } from './engine/hudSync';
 import { bindInput, onResize } from './engine/input';
 import {
@@ -337,6 +342,30 @@ export class Game {
   pathAura: PathAuraFx | null = null;
   /** Hiệu ứng quái/tinh anh/boss (V5). */
   monFx: MonFx | null = null;
+  /** Hình trúng đòn chung (HPL2): vết va theo hướng tu, chí mạng, chặn, quái đánh người, ngắt chú, nhịp hồi. */
+  hitFx: HitFx | null = null;
+  envFx: EnvFx | null = null;
+  /** Cổng của level đang chơi (`levelLoad` đặt) để `EnvFx` vẽ xoáy nước/khe nứt. */
+  envGates: EnvGate[] = [];
+
+  /** Điểm hái đang có cây (cờ `on` do server đồng bộ). */
+  private *envHerbs(): Generator<{ id: string; x: number; y: number; z: number }> {
+    for (const [id, n] of this.view.nodes) if (n.on) yield { id, x: n.x, y: n.y, z: n.z };
+  }
+  statusFx: StatusFx | null = null;
+
+  /** Thực thể đang có hình trạng thái (quái chậm/độc/bỏng/choáng, người hồi dần): chỉ đọc cờ hiển thị đồng bộ từ server. */
+  private *statusEnts(): Generator<StatusEnt> {
+    for (const [id, m] of this.ents.monsters) {
+      if (m.s.st === 4) continue;
+      const kind = monStatusOf(m.s.mf ?? 0);
+      if (kind) yield { id, x: m.x, y: m.y, z: m.z, scale: monScale(m.model.height), kind, mine: false, actor: m as never };
+    }
+    for (const [id, p] of this.ents.players) {
+      const kind = playerStatusOf(p.s.fl);
+      if (kind) yield { id, x: p.x, y: p.y, z: p.z, scale: 1, kind, mine: id === this.sid, actor: p as never };
+    }
+  }
   boltKinds = new Map<number, string>();
   /** Dấu trên sân mới nhất của Thiên Nhân Ngũ Suy của chính mình, theo khóa `<loại>:<ô>` (chỉ bản dev, cho Playwright: `__game.suyLog`). */
   suyLog?: Record<
@@ -575,6 +604,12 @@ export class Game {
     this.stage = document.getElementById('stage')!;
     applyInit(this, init);
     bindRoom(this, room);
+    this.warmColliders(this.initLevel); // B7: va chạm của level đầu nạp song song với địa hình; màn tải chờ xong (frameLoop `collidersReady`, có thời hạn)
+  }
+
+  /** Nạp collider của `level` (B7); lỗi chỉ ghi log vì `frameLoop` gọi lại định kỳ khi màn tải quá hạn và `ensureColliders` tự thử lại. */
+  warmColliders(level: string): void {
+    ensureColliders(level).catch((e: unknown) => engineLog.warn(`collider ${level} chưa nạp được, sẽ thử lại:`, e));
   }
 
   snapToServer = true;
@@ -800,6 +835,18 @@ export class Game {
     this.realmAura = new RealmAuraFx(this.vfx, auraEnv);
     this.pathAura = new PathAuraFx(this.vfx, auraEnv);
     this.monFx = new MonFx(this.skillFx.runner, { camera: () => this.camera, live: () => this.vfx.pool.live });
+    this.hitFx = new HitFx(this.skillFx.runner, { camera: () => this.camera, live: () => this.vfx.pool.live });
+    this.envFx = new EnvFx(this.skillFx.runner, {
+      camera: () => this.camera,
+      live: () => this.vfx.pool.live,
+      gates: () => this.envGates,
+      herbs: () => this.envHerbs(),
+    });
+    this.statusFx = new StatusFx(this.skillFx.runner, {
+      camera: () => this.camera,
+      live: () => this.vfx.pool.live,
+      entities: () => this.statusEnts(),
+    });
     this.suyFx = new SuyFx(this.skillFx.runner, {
       vfx: this.vfx,
       scene: this.scene,
@@ -826,6 +873,7 @@ export class Game {
     this.ents.onSkillEvent = (sid, e) => this.emitSkillEvent(sid, e);
     this.ents.onMonsterDeath = (m) => monsterInk(this, m);
     this.ents.onMonFlags = (m, e) => monFlagFx(this, m, e);
+    this.ents.onFlyChange = (sid, flying, x, z) => flyFx(this, sid, flying, x, z);
     this.ents.burrow = this.burrowFx;
     this.minimap = renderMinimap(320);
     mark('minimap');
@@ -889,6 +937,7 @@ export class Game {
   async enterLevel(id: string): Promise<boolean> {
     if (!this.started || this.disposed || !knownLevel(id) || id === levelId()) return false;
     const next = levelAssets(id);
+    this.warmColliders(id); // B7: va chạm của level mới (file nhỏ, nạp song song với asset)
     if (sameLayout(levelId(), id)) {
       // Cùng địa hình và cùng bố cục (thế giới ↔ bí cảnh Kiếm Trủng): chỉ đổi nhãn level và nạp trước nhạc, không dựng lại.
       setActiveLevel(id);
@@ -1503,6 +1552,9 @@ export class Game {
     this.pathAura?.dispose();
     this.pathAura = null;
     this.monFx = null;
+    this.hitFx = null;
+    this.envFx = null;
+    this.statusFx = null;
     this.suyFx?.dispose();
     this.suyFx = null;
     this.vfx?.dispose();

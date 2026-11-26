@@ -1,0 +1,44 @@
+{
+  "skillId": "fx_st_weak",
+  "idea": "LỘ YẾU ĐIỂM (nhận thêm sát thương): một khe nứt sáng vàng trắng rạch dọc thân, hai mép tối, vài hạt sáng thoát ra; không đỏ/cam. Lặp khi còn cờ.",
+  "element": "vo",
+  "path": "",
+  "scene": {
+    "palette": {
+      "core": "2a2210",
+      "body": "e0c050",
+      "rim": "fff6cf",
+      "accent": "ffffff",
+      "shadow": "14110a"
+    },
+    "impactAt": 0
+  },
+  "shapeLang": [
+    "line"
+  ],
+  "timing": {
+    "anticipationMs": 0,
+    "impactMs": 50,
+    "lingerMs": 900
+  },
+  "footprint": {
+    "lengthM": 2.2,
+    "widthM": 2.2,
+    "heightM": 2.4
+  },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": {
+    "drawCalls": 2,
+    "particles": 6,
+    "screenCover": 0.02,
+    "overdraw": 2
+  },
+  "textures": [],
+  "silhouette": "khe nứt sáng vàng rạch dọc thân",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles"
+  ]
+}

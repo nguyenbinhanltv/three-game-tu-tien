@@ -33,6 +33,8 @@ import map from './scenarios/map';
 import mons from './scenarios/mons';
 import camiso from './scenarios/camiso';
 import densefly from './scenarios/densefly';
+import flytrail from './scenarios/flytrail';
+import flybench from './scenarios/flybench';
 import densep00 from './scenarios/densep00';
 import densefade from './scenarios/densefade';
 import vista from './scenarios/vista';
@@ -57,7 +59,10 @@ import daotu from './scenarios/daotu';
 import cotu from './scenarios/cotu';
 import camchevfx from './scenarios/camchevfx';
 import animlab from './scenarios/animlab';
+import envreal from './scenarios/envreal';
+import hpl2ms from './scenarios/hpl2ms';
 import tpmove from './scenarios/tpmove';
+import tp2 from './scenarios/tp2';
 import vfxlab from './scenarios/vfxlab';
 import vfxmon from './scenarios/vfxmon';
 import path2428vfx from './scenarios/path2428vfx';
@@ -87,6 +92,8 @@ import collscan from './scenarios/collscan';
 const SCENARIOS: Scenario[] = [
   camiso,
   densefly,
+  flytrail,
+  flybench,
   densep00,
   densefade,
   vista,
@@ -142,7 +149,10 @@ const SCENARIOS: Scenario[] = [
   cotu,
   camchevfx,
   animlab,
+  envreal,
+  hpl2ms,
   tpmove,
+  tp2,
   vfxlab,
   vfxmon,
   path2428vfx,

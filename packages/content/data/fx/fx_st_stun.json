@@ -1,0 +1,75 @@
+{
+  "skill": "fx_st_stun",
+  "trigger": "fx",
+  "fxKind": "~st_stun",
+  "palette": "hit_chung",
+  "events": [
+    {
+      "type": "mesh",
+      "shape": "sprite",
+      "sprite": "chung_halo",
+      "billboard": true,
+      "at": "self",
+      "t": 0,
+      "dur": 0.95,
+      "offset": [
+        0,
+        1.5,
+        0
+      ],
+      "scale": 1.2,
+      "scaleTo": 1.2,
+      "sweep": 0,
+      "erodeFrom": 0.8,
+      "ragged": 0.5,
+      "tone": "body",
+      "alpha": 1,
+      "tier": 0,
+      "seed": 2400,
+      "follow": true
+    },
+    {
+      "type": "mesh",
+      "shape": "sprite",
+      "sprite": "chung_halo",
+      "billboard": true,
+      "at": "self",
+      "t": 0.03,
+      "dur": 0.1,
+      "offset": [
+        0,
+        1.5,
+        0
+      ],
+      "scale": 1.34,
+      "scaleTo": 1.56,
+      "sweep": 0,
+      "erodeFrom": 0.2,
+      "ragged": 0.5,
+      "tone": "accent",
+      "alpha": 0.85,
+      "tier": 1,
+      "seed": 2401,
+      "follow": true
+    },
+    {
+      "type": "particles",
+      "kind": "dust",
+      "t": 0.3,
+      "n": 1,
+      "speed": 0.5,
+      "spread": 0.6,
+      "life": 0.5,
+      "size": 0.12,
+      "at": "self",
+      "tone": "shadow",
+      "tier": 1,
+      "offset": [
+        0,
+        1.4,
+        0
+      ],
+      "grav": 0.5
+    }
+  ]
+}
