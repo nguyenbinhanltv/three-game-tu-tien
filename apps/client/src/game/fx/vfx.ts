@@ -146,6 +146,7 @@ export class Vfx {
       'bolt',
       'vortex',
       'trail',
+      'trailInk',
       'beam',
       'inkpool',
       'dome',
