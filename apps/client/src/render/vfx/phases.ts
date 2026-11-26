@@ -111,7 +111,10 @@ export function hazardDanger(o: { boss: boolean; mv?: string; big?: boolean; r: 
   return 0;
 }
 
-/** Màu vạch theo mức nguy hiểm trên nền đất sáng/tối đều đọc được: hổ phách → cam son → đỏ tươi. Thiên lôi giữ tím sét. */
+/**
+ * Màu vạch theo mức nguy hiểm trên nền đất sáng/tối đều đọc được: hổ phách → cam son → đỏ tươi. Từ V-P10 thiên lôi (độ kiếp, quái hệ lôi) cũng theo bảng này:
+ * chuẩn Họa Pháp Lô 2 dành đỏ/cam cho MỌI vạch cảnh báo của kẻ địch; màu tím sét chỉ còn ở thân tia.
+ */
 export const HAZARD_DANGER_COLORS = [0xe0a63a, 0xdc5a2c, 0xff2a4a] as const;
 /** Hệ số nhân HDR theo mức (mức cao sáng hơn, vẫn dưới trần `FX_MAX_HDR`). */
 export const HAZARD_DANGER_GAIN = [1, 1.1, 1.25] as const;
@@ -120,8 +123,7 @@ export const HAZARD_DANGER_GAIN = [1, 1.1, 1.25] as const;
 export const ISO_HAZARD_OPACITY = 0.62;
 
 /** Như `hazardStyle` nhưng theo mức nguy hiểm (chỉ dùng ở camera iso). */
-export function hazardStyleDanger(kind: string, danger: 0 | 1 | 2): { color: number; gain: number } {
-  if (kind === 'lightning') return hazardStyle(kind, false);
+export function hazardStyleDanger(_kind: string, danger: 0 | 1 | 2): { color: number; gain: number } {
   const color = HAZARD_DANGER_COLORS[danger];
   return { color, gain: hdrGain(color, 1) * HAZARD_DANGER_GAIN[danger] * 1.15 };
 }
