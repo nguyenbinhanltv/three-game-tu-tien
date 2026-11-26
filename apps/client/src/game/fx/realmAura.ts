@@ -12,19 +12,24 @@
 import * as THREE from 'three/webgpu';
 import { SKILL } from '@dtl/content';
 import { float, materialEmissive, normalView, positionViewDirection, uniform, vec3 } from 'three/tsl';
-import { PF_DEAD, PF_FLYING, PF_MEDITATING, type FxQuality } from '@dtl/shared';
+import { PF_DEAD, PF_FLYING, PF_MEDITATING, type FxQuality, type FxSprite } from '@dtl/shared';
 import type { FxKind, FxMesh } from '../../render/materials/vfx';
 import { shapeGeometry, swordFxGeometry, QUAD_XZ } from '../../render/vfx/fxShapes';
 import { DECAL_RUNE, DECAL_RUNE_INK } from '../../render/vfx/stylized';
+import { spriteCell, useSpriteGroup } from '../../render/vfx/art';
+import { FX_PALETTE } from '../../render/vfx/palette';
 import { G } from '../core/geo';
 import { groundAt } from '../../base/levelCtx';
 import type { CharacterView, SkillEvent } from '../character/view';
 import { OTHERS_FX_DIST } from './fxBudget';
 import { FLAGS } from '../../base/flags';
 import { realmSuppressed } from './pathAuraRules';
+import { SPRITE_STYLE } from './fxTimeline';
 import type { Vfx } from './vfx';
 import {
   AURA_COMBAT_SEC,
+  AURA_SPRITE_OTHERS,
+  refreshAuraSprites,
   auraCaps,
   auraStage,
   auraWeights,
@@ -339,6 +344,8 @@ export class RealmAuraFx {
       au = this.build(a.sid, key, stage, dao, nSwords, nPetals, caps.detail, caps.particles, bmode);
       this.auras.set(a.sid, au);
     }
+    // Atlas `hq` phải luôn được đánh dấu đang dùng khi hào quang sprite còn hiện (xem `refreshAuraSprites`).
+    refreshAuraSprites(stage, FLAGS.auraSprites, useSpriteGroup);
     const st = { fl: a.fl, sinceCast: this.clock - (this.lastCast.get(a.sid) ?? -99), speed: a.speed };
     const k = Math.min(1, dt * 4);
     au.vHalo += (haloVisibility(st) - au.vHalo) * k;
@@ -602,7 +609,9 @@ export class RealmAuraFx {
     };
     // Vai của từng lớp theo cảnh giới (xem bảng ở `realmAuraRules.ts`): cảnh giới mới THAY lớp chính, lớp cũ co về nền.
     // C5: ấn trận dưới chân là lớp CHÍNH; các lớp quanh người (kim đan + tia xoáy, vòng kiếm/đan, phù văn lưng) lùi một bậc để camera chéo bớt rối.
-    const ground = FLAGS.auraGround;
+    // V-P10 đợt 4: sprite vẽ tay thay ấn rune dưới chân, vòng ngũ hành và phù văn lưng (`?aurasprites=0` về bản cũ).
+    const spr = FLAGS.auraSprites;
+    const ground = FLAGS.auraGround || spr;
     const orbitRole: LayerRole = stage === 2 ? (ground ? 'sub' : 'main') : stage === 3 && !ground ? 'sub' : 'extra';
     const infantRole: LayerRole = stage === 2 || dao === 'ho' ? 'sub' : 'extra';
     const runeRole: LayerRole = stage === 3 && !ground ? 'main' : 'sub';
@@ -632,7 +641,135 @@ export class RealmAuraFx {
       }
     }
 
-    if (ground && stage >= 1 && ok('main')) {
+    if (spr && stage >= 1) {
+      // ---------- V-P10 đợt 4: hào quang bằng sprite vẽ tay (tranh đơn sắc tô theo bảng màu cảnh giới) ----------
+      // Kết Đan: vòng đan vân hở dưới chân + khói mực mảnh; Nguyên Anh: mây mực thấp quanh chân + năm đốm có đuôi quanh eo;
+      // Hóa Thần: vạt đạo văn rách SAU lưng (thấp hơn đầu). Đứng yên ≤ 0,05 màn, chuyển động chậm; người khác mờ một nửa.
+      useSpriteGroup('hq');
+      const pal = FX_PALETTE[stage >= 3 ? 'hq_hn' : stage === 2 ? 'hq_na' : 'hq_kd']!;
+      const own = sid === this.env.mySid() ? 1 : AURA_SPRITE_OTHERS;
+      const sp = (name: FxSprite, color: number = pal.body): FxMesh => {
+        const m = mk(shapeGeometry('sprite'), color, 'sprite_hq', pal.rim);
+        // Hóa Thần trở lên: kiểu 13 (đáy mực sáng, mực đặc trong suốt) để vạt đọc là hào quang chứ không phải bóng đổ trên nền sáng.
+        m.fxA.set(stage >= 3 ? 13 : (SPRITE_STYLE.hq_ ?? 12), 0, seed * 30, spriteCell(name).idx);
+        return m;
+      };
+      /** Tâm tấm cho tranh nằm bẹt trên đất: thấp hơn tâm đứng một chút (cắt một ít đáy trống thay vì nhấc lên ngang ngực). */
+      const flat = (c: Ctx, size: number): number => c.y0 + 0.17 * size;
+      const place = (c: Ctx, m: FxMesh, x: number, y: number, z: number, size: number, roll = 0): void => {
+        m.position.set(x, y, z);
+        m.quaternion.copy(c.camQ);
+        if (roll) m.quaternion.multiply(_q2.setFromAxisAngle(AX_Z, roll));
+        m.scale.setScalar(size * 0.5);
+      };
+      if (stage === 1 && ok('main')) {
+        const ring = sp('hq_dan');
+        ups.push((c) => {
+          place(c, ring, c.p.x, flat(c, 3.2), c.p.z, 3.2);
+          show(c, ring, c.gate * own * (0.8 + 0.12 * Math.sin(c.t * 1.1)), 'main');
+        });
+        if (detail && ok('sub')) {
+          const smokes = [sp('hq_smoke'), sp('hq_smoke')];
+          ups.push((c) => {
+            for (let i = 0; i < smokes.length; i++) {
+              const ph = (c.t * 0.3 + i * 0.5) % 1;
+              place(c, smokes[i]!, c.p.x + (i ? 0.5 : -0.5), c.y0 + 0.55 + ph * 1.1, c.p.z + (i ? -0.2 : 0.2), 1.2);
+              show(c, smokes[i]!, c.gate * own * Math.sin(Math.PI * ph) * 0.7, 'sub');
+            }
+          });
+        }
+      }
+      if (stage >= 2) {
+        // Mây mực thấp quanh chân, trôi rất chậm (một đám là lớp chính, hai đám còn lại là phụ).
+        const clouds = [sp('hq_cloud'), sp('hq_cloud2'), sp('hq_cloud')];
+        const csz = [1.5, 2.0, 1.2];
+        ups.push((c) => {
+          for (let i = 0; i < clouds.length; i++) {
+            const role: LayerRole = i === 0 ? 'main' : 'sub';
+            if (!ok(role)) {
+              clouds[i]!.visible = false;
+              continue;
+            }
+            const ang = c.t * 0.18 + i * 2.1;
+            place(c, clouds[i]!, c.p.x + Math.cos(ang) * 1.15, flat(c, csz[i]!) + 0.05, c.p.z + Math.sin(ang) * 1.15, csz[i]!);
+            show(c, clouds[i]!, c.gate * own * (stage === 2 ? 0.8 : 0.55), role);
+          }
+        });
+      }
+      if (stage === 2 && detail && ok('extra')) {
+        // Năm đốm có đuôi mực bay vòng quanh eo thay vòng ngũ hành: màu bảng (lam băng), không đỏ/cam.
+        const orbs = [0, 1, 2, 3, 4].map((i) => sp('hq_orb', i % 2 ? pal.rim : pal.accent));
+        ups.push((c) => {
+          for (let i = 0; i < orbs.length; i++) {
+            const ang = c.t * 0.8 + (i / orbs.length) * Math.PI * 2;
+            place(
+              c,
+              orbs[i]!,
+              c.p.x + Math.cos(ang) * 1.1,
+              c.p.y + 1.0 + Math.sin(c.t * 1.7 + i * 1.3) * 0.06,
+              c.p.z + Math.sin(ang) * 1.1,
+              0.7,
+              -ang + 0.6,
+            );
+            show(c, orbs[i]!, c.gate * own * 0.85, 'extra');
+          }
+        });
+      }
+      if (stage >= 3) {
+        // Vạt đạo văn rách sau lưng (xa camera, đỉnh vạt thấp hơn đầu) + vài nét đạo văn đứt đoạn.
+        const mantles = [sp('hq_mantle'), sp('hq_mantle')];
+        const glyph = sp('hq_glyph', pal.accent);
+        const wisp = sp('hq_wisp', pal.rim);
+        ups.push((c) => {
+          const sway = Math.sin(c.t * 0.6);
+          for (let i = 0; i < mantles.length; i++) {
+            const role: LayerRole = i === 0 ? 'main' : 'sub';
+            if (!ok(role)) {
+              mantles[i]!.visible = false;
+              continue;
+            }
+            const side = i ? 0.6 : -0.5;
+            const size = i ? 2.0 : 2.5;
+            place(
+              c,
+              mantles[i]!,
+              c.p.x + c.dx * 0.55 - c.dz * side,
+              c.y0 + size * 0.45,
+              c.p.z + c.dz * 0.55 + c.dx * side,
+              size,
+              sway * 0.05 * (i ? -1 : 1),
+            );
+            show(c, mantles[i]!, c.gate * own * (i ? 0.7 : 0.95), role);
+          }
+          if (detail && ok('extra')) {
+            // Nét đạo văn ngà sáng + sợi gió ngà cạnh vạt: viền sáng để đọc là hào quang trên nền đá sáng.
+            place(
+              c,
+              glyph,
+              c.p.x + c.dx * 0.7 + c.dz * 0.3,
+              c.y0 + 1.15 + Math.sin(c.t * 0.9) * 0.08,
+              c.p.z + c.dz * 0.7 - c.dx * 0.3,
+              1.9,
+            );
+            show(c, glyph, c.gate * own * 0.9, 'extra');
+            place(
+              c,
+              wisp,
+              c.p.x + c.dx * 0.4 - c.dz * 0.9,
+              c.y0 + 0.9 + Math.sin(c.t * 0.7 + 1) * 0.08,
+              c.p.z + c.dz * 0.4 + c.dx * 0.9,
+              1.8,
+            );
+            show(c, wisp, c.gate * own * 0.8, 'extra');
+          } else {
+            glyph.visible = false;
+            wisp.visible = false;
+          }
+        });
+      }
+    }
+
+    if (FLAGS.auraGround && !spr && stage >= 1 && ok('main')) {
       // ---------- C5: ấn trận dưới chân (chính, mọi cảnh giới từ Kết Đan) ----------
       // Hai vòng triện văn quay ngược chiều nằm sát sàn: vòng ngoài màu cảnh giới, vòng trong màu hướng tu (DAO_LOOK); lớn dần theo cảnh giới, chớp nhẹ theo nhịp kim đan.
       // Cùng loại `decal` gộp instance với các lớp khác nên không thêm draw call theo người.
@@ -705,7 +842,7 @@ export class RealmAuraFx {
           );
         });
       }
-      if (detail && ok('extra')) {
+      if (detail && !spr && ok('extra')) {
         // Vòng ngũ hành: 5 viên 5 màu xoay quanh eo + vòng sáng nối (chỉ chế độ Đầy đủ).
         const ring = mk(shapeGeometry('ripple'), JADE.body, 'toon', GOLD.rim);
         const orbs = WUXING.map((col) => mk(G.ico1, col, 'solid'));
@@ -788,7 +925,7 @@ export class RealmAuraFx {
     }
 
     // ---------- Hóa Thần: phù văn đạo luật ngang lưng (chính ở Hóa Thần, phụ ở Ảnh Biến) ----------
-    if (stage >= 3 && detail && ok(runeRole)) {
+    if (stage >= 3 && detail && !spr && ok(runeRole)) {
       const rune = mk(QUAD_XZ, SILVER.body, 'decal', SILVER.rim);
       rune.fxA.set(1, 0, seed * 30, DECAL_RUNE);
       rune.fxK = 1;
