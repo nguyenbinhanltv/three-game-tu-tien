@@ -17,8 +17,8 @@
         3.7,
         0
       ],
-      "scale": 1,
-      "scaleTo": 1.8,
+      "scale": 0.8,
+      "scaleTo": 1.4,
       "sweep": 0,
       "erodeFrom": 0.7,
       "ragged": 0.5,
@@ -40,8 +40,8 @@
         3.9,
         0
       ],
-      "scale": 1.1,
-      "scaleTo": 1.95,
+      "scale": 0.9,
+      "scaleTo": 1.5,
       "sweep": 0,
       "erodeFrom": 0.7,
       "ragged": 0.5,
@@ -82,8 +82,8 @@
         3.8,
         0
       ],
-      "scale": 1.1,
-      "scaleTo": 1.9,
+      "scale": 0.95,
+      "scaleTo": 1.5,
       "sweep": 0,
       "erodeFrom": 0.55,
       "ragged": 0.5,
