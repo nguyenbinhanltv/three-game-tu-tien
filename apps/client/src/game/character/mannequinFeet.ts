@@ -41,15 +41,20 @@ export const FEET = {
    */
   maxDown: 0.3,
   /**
-   * Tốc độ đổi tối đa (m/s) của mặt đứng dưới từng chân: lên rất nhanh (40: chân không lún vào mặt bậc, đo tpmove), xuống chậm hơn. Dốc liên tục (chân vung 14 m/s trên dốc 25°
+   * Tốc độ đổi tối đa (m/s) của mặt đứng dưới từng chân: lên 13 m/s (chân không lún vào mặt bậc nhờ `lookAhead`: bậc 0,2–0,3 m trải ra vài khung, đo tpmove), xuống chậm hơn (9). Dốc liên tục (chân vung 14 m/s trên dốc 25°
    * ≈ 6,5 m/s) nằm dưới ngưỡng nên bám tuyệt đối; chỉ bước nhảy ở mép bậc (0,2–0,3 m trong một khung) bị trải ra vài khung.
    */
   groundUp: 13,
   groundDown: 9,
   /** Chênh quá mức này (m) giữa mặt đứng thật và giá trị đang làm mượt là đã dịch chuyển: lấy ngay. */
   groundSnap: 0.7,
-  /** Nhìn trước (s): mặt đứng dưới chân lấy cao hơn giữa chỗ chân đang đứng và chỗ chân sẽ tới sau khoảng này, để mặt đứng bắt đầu nâng trước mép bậc (không lún) mà tốc độ nâng vẫn thấp. */
+  /**
+   * Nhìn trước (s): mặt đứng dưới chân lấy cao hơn giữa chỗ chân đang đứng và chỗ chân tới sau khoảng này theo vận tốc ngang của GỐC (không phải cổ chân clip:
+   * chân vung có thể ngược hướng chạy), để mặt đứng bắt đầu nâng trước mép bậc (không lún) mà tốc độ nâng vẫn thấp.
+   */
   lookAhead: 0.1,
+  /** Quãng nhìn trước tối đa (m): gờ/vật cứng xa hơn không được nâng mặt đứng dưới chân trên nền phẳng. */
+  lookMax: 0.4,
   /** Hằng số thời gian (s) ước lượng độ nhấc cố định của gốc so với mặt đứng (mây sen Nguyên Anh 0,2 m). */
   hoverTau: 0.5,
   /** Số nhân vật tối đa chạy IK chân trong một khung (bench 50 bot: 6,6 nhân vật ≈ 0,45 ms/khung, ngưỡng 0,3 ms). */
@@ -174,9 +179,6 @@ interface Leg {
   nq: THREE.Quaternion;
   /** Mặt đứng dưới chân (thế giới, đã giới hạn tốc độ đổi); NaN = chưa có. */
   g: number;
-  /** Cổ chân khung trước (x, z thế giới) để ước vận tốc ngang; NaN = chưa có. */
-  px: number;
-  pz: number;
 }
 
 const _v = new THREE.Vector3();
@@ -226,6 +228,9 @@ export class MqFeet {
   private hip = 0;
   private cool = 0;
   private nT = 0;
+  /** Gốc khung trước (x, z thế giới) để ước vận tốc nhìn trước; NaN = chưa có. */
+  private rx = Number.NaN;
+  private rz = Number.NaN;
   private ds = [0, 0];
   /** Độ nhấc cố định của gốc so với mặt đứng (m), ước lượng chậm; NaN = chưa có. */
   private hover = Number.NaN;
@@ -270,8 +275,6 @@ export class MqFeet {
         tilt: new THREE.Quaternion(),
         nq: new THREE.Quaternion(),
         g: Number.NaN,
-        px: Number.NaN,
-        pz: Number.NaN,
       });
     }
     return new MqFeet(root, pelvis, legs, FEET.hipLim * height);
@@ -300,13 +303,13 @@ export class MqFeet {
     this.undo();
     this.hip = 0;
     this.hover = Number.NaN;
+    this.rx = this.rz = Number.NaN;
     for (const l of this.legs) {
       l.plant.has = false;
       l.step = null;
       l.tilt.identity();
       l.nq.identity();
       l.g = Number.NaN;
-      l.px = l.pz = Number.NaN;
     }
   }
 
@@ -397,19 +400,27 @@ export class MqFeet {
         this.steps++;
       }
     }
+    // Nhìn trước theo vận tốc ngang của gốc (12 m/s là trần: khung khựng/nhảy vị trí không được bắn mẫu đi xa), tối đa `lookMax`.
+    let ax = 0;
+    let az = 0;
+    let reach = 0;
+    if (Number.isFinite(this.rx) && dt > 1e-4) {
+      const vx = Math.max(-12, Math.min(12, (rp.x - this.rx) / dt));
+      const vz = Math.max(-12, Math.min(12, (rp.z - this.rz) / dt));
+      const sp = Math.hypot(vx, vz);
+      reach = Math.min(FEET.lookMax, sp * FEET.lookAhead);
+      if (sp > 1e-3) {
+        ax = (vx / sp) * reach;
+        az = (vz / sp) * reach;
+      }
+    }
+    this.rx = rp.x;
+    this.rz = rp.z;
     // 4. Hông theo chân thấp, đích của từng chân.
     const lim = this.lim;
     this.legs.forEach((l, i) => {
       let target = ground(l.pos.x, l.pos.z);
-      if (Number.isFinite(l.px) && dt > 1e-4) {
-        // Vận tốc ngang (giới hạn 12 m/s: khung khựng hoặc nhảy vị trí không được bắn mẫu đi xa).
-        const k = FEET.lookAhead;
-        const vx = Math.max(-12, Math.min(12, (l.pos.x - l.px) / dt));
-        const vz = Math.max(-12, Math.min(12, (l.pos.z - l.pz) / dt));
-        target = Math.max(target, ground(l.pos.x + vx * k, l.pos.z + vz * k));
-      }
-      l.px = l.pos.x;
-      l.pz = l.pos.z;
+      if (reach > 0) target = Math.max(target, ground(l.pos.x + ax, l.pos.z + az));
       l.g = smoothGround(l.g, target, dt);
       this.ds[i] = supportY(l.g, base) - base;
     });

@@ -952,11 +952,12 @@ export class MannequinCharacter implements CharacterView {
     if (this.root.scale.x !== k) this.root.scale.setScalar(k);
   }
 
-  /** Hướng tu Thể tu: tay không, găng + giáp nhẹ (dựng lần đầu khi cần). Bỏ thì ẩn, không dựng lại. */
+  /** Thân Pháp: hướng Kiếm tu bật lớp riêng (idle xoay kiếm, dáng lướt thấp); `entities.ts` đặt theo công pháp mỗi khung. */
   setKiemTu(on: boolean): void {
     this.kiemTu = on;
   }
 
+  /** Hướng tu Thể tu: tay không, găng + giáp nhẹ (dựng lần đầu khi cần). Bỏ thì ẩn, không dựng lại. */
   setBrawlerGear(on: boolean, ancient = false): void {
     if (this.disposed || this.shadow) return;
     this.gearOn = on;
