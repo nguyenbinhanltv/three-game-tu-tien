@@ -35,7 +35,7 @@ Hai lớp, đừng trộn.
 - Mỗi kiểu một `MeshBasicNodeMaterial` cho cả game. Màu, opacity, tiến độ là uniform theo lưới; tham số riêng vào `fxA`/`fxB` (vec4, pool reset về 0).
 - Phát qua `vfx.fx(geo, màu, opacity, kind)`, trả tay cầm bằng `vfx.drop(m)` (`game/fx/vfx.ts`). Không `new MeshBasicMaterial`.
 - Đỉnh HDR chặn ở `FX_MAX_HDR` = 2,4. Material `forceSinglePass`.
-- Gộp draw call (`render/materials/fxBatch.ts`, `FxBatcher`): lưới cùng hình + lớp thành một `InstancedMesh`. `FxMesh` chỉ là tay cầm; shader không đọc `positionLocal` (three gán lại theo instance), dùng `uv()`. `sigil` không gộp.
+- Gộp draw call (`render/materials/fxBatch.ts`, `FxBatcher`): lưới cùng hình + lớp thành một `InstancedMesh`. `FxMesh` chỉ là tay cầm; shader không đọc `positionLocal` (three gán lại theo instance), dùng `uv()`. `sigil`/`sigilTop` (pháp trận, vạch báo) gộp từ B4: lỗi "gộp thì chỉ vẽ một cái" ở S2-C là lỗi UBO ma trận instance theo `mesh.count` của khung đầu, đã vá trong `FxBatcher.flush`; kiểu mới muốn gộp thì thêm vào `BATCH_KINDS` và `warmBatches`.
 
 **Shader stylized** (`render/vfx/stylized.ts`): `ramp3` (ba tầng), `jaggedCut`, `dissolve`, `flowNoise`, `fresnelRim`; builder `toonNodes`, `crystalNodes`, `burstNodes`, `decalNodes` (vết nứt, vòng triện văn, vết cháy, khói), `cardNodes`. Hình nền ở `render/vfx/fxShapes.ts` (`crescentGeometry`, `crystalGeometry`, `rippleGeometry`, `helixGeometry`, `dragonGeometry`, `shapeGeometry`, `shapeKind`).
 
