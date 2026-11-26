@@ -58,6 +58,12 @@ Hiệu ứng không thuộc chiêu hay hướng tu nào (đột phá, độ ki�
 - Tấm sprite là quad 2×2 (`scale` 0,5 = ô 1 m) quay mặt về camera chéo 52°: mép dưới thấp hơn tâm 0,31 × cạnh ô. Tâm thấp hơn mức đó thì nền cắt ngang hình; phiến đá Trúc Cơ dùng chính điều này để "trồi lên".
 - Atlas `dp` nạp sẵn khi vào game (lên tầng chỉ dài ~1 s) nhưng không được miễn giải phóng; runner cũng nạp atlas của mọi sprite ngay lúc timeline `trigger: fx` bắt đầu.
 
+### Ngự kiếm (V-P10 đợt 3)
+
+- **Cất cánh** `fx_fly_on` và **hạ cánh** `fx_fly_off` (MỚI) sinh bằng `node tools/vfx-forge/ngu-kiem.mjs` (ghi đè cả file; công thức cũ trong `tools/vfx/recipes_e.py` đã bỏ). Sprite nhóm `ngu` (8 ô đơn sắc, kiểu tô 12), bảng màu `ngu_kiem` (lam ngọc, bạc hà, không cam). Cất cánh (lặp rất thường nên gọn: cỡ ~105% concept, tổng ≤ 0,6 s; thu còn 65% thì kiếm khí không đọc được ở 720p): phi kiếm trượt vào dưới chân → vành bụi gió rách bung ra ở mốc nhấn (+30 ms vệt kiếm sáng) → một vệt gió xoắn quấn lên. Người khác thấy bản mờ còn ~50% (`dimFly` ở `flyFx`). Hạ cánh: kiếm thu về lưng thành vệt ngắn → nhịp va chạm (+30 ms mực/bụi bắn sát đất, vệt mực cháy đất) → xoáy nét cọ đứt tan.
+- Tranh nằm bẹt (vành bụi) vẫn là tấm billboard nên tâm đặt ở `FEET + GROUND × size × 0,55` (cắt một ít đáy trống thay vì nhấc vành lên ngang ngực).
+- **Cất cánh của mình** phát ngay ở `Game.toggleFly` (dự đoán). **Hạ cánh của mình và cả hai cảnh của người khác** suy từ cờ `PF_FLYING` đổi (`EntityManager.onFlyChange` → `flyFx` ở `apps/client/src/game/engine/fxMsgs.ts`), trong 60 m, bỏ qua lần đầu thấy người đó; không đổi giao thức.
+- Phòng thử: `pnpm shots vfxlab --skill fx_fly_on,fx_fly_off --at -200,0,30,150,400`; bản của NGƯỜI KHÁC (mờ ~50%, diễn viên giả cách 3 m; thêm `--nomon` để phòng trống không quái): `--skill lab_fly_on_other|lab_fly_off_other --at 0,150,280,430` (mốc 0 = lúc phát).
 ### Độ kiếp (V-P10 đợt 2)
 
 - **Mở kiếp** `fx_kiep_tc|kd|na|hn` và **cụm nổ chỗ sét rơi** `fx_kiep_strike` sinh bằng `node tools/vfx-forge/do-kiep.mjs` (sprite nhóm `kiep`, 8 ô đơn sắc, kiểu tô 12). Mở kiếp: hai tảng mây mực phình ra hai bên, trời rách ở mốc nhấn, tia sét đầu cắm xuống cạnh người. Bảng màu: Trúc Cơ `loi`, Kết Đan `kiep_hoa` (lửa kiếp tím hồng, hết cam), Nguyên Anh `dotpha_na`, Hóa Thần `dotpha_hn`.

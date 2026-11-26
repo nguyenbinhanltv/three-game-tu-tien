@@ -4,7 +4,7 @@
 // asset Mixamo có sẵn (`chr_v2_nam`), rồi `retargetClips` (cùng thuật toán retarget K-3/UAL: trong không gian thế giới, giữ độ lệch nghỉ riêng
 // của đích) với bảng đổi tên Mannequin → Mixamo. Clip che nửa thân (`upper`/`lower`) chỉ xuất kênh cho xương nguồn có kênh, nên chồng được lên
 // clip chạy như ở `SkinnedCharacter`. Nướng và retarget LƯỜI theo pose, bộ nhớ đệm theo template.
-import type * as THREE from 'three/webgpu';
+import * as THREE from 'three/webgpu';
 import { POSES } from '@dtl/content';
 import { retargetClips } from './animLib';
 import { bakePoseLibrary, poseClipName, type PoseClips, type PoseLibrary } from './poseLib';
@@ -43,6 +43,27 @@ export function mannequinToMixamo(name: string): string | undefined {
   return undefined;
 }
 
+/**
+ * Clip pose chỉ ghi xoay (và vị trí hông), nên khi clip nền UAL tắt, xương chi trở về độ dài bind (cánh tay trên +12%, cẳng tay +26% so với đo
+ * ở clip UAL) và tay "dài ra" ở khung chiêu. Bù: với mỗi xương chi mà clip pose có điều khiển xoay nhưng không có vị trí, thêm track vị trí hằng lấy
+ * khung đầu của clip nền `ref` (UAL `Idle_Loop`), để độ dài xương không đổi giữa chạy/idle và chiêu. Không đụng hông (`pelvis`).
+ */
+export function matchLimbLengths(clip: THREE.AnimationClip, ref: THREE.AnimationClip | undefined): void {
+  if (!ref) return;
+  const rotated = new Set<string>();
+  const placed = new Set<string>();
+  for (const t of clip.tracks) {
+    if (t.name.endsWith('.quaternion')) rotated.add(t.name.slice(0, -'.quaternion'.length));
+    else if (t.name.endsWith('.position')) placed.add(t.name.slice(0, -'.position'.length));
+  }
+  for (const t of ref.tracks) {
+    if (!t.name.endsWith('.position')) continue;
+    const bone = t.name.slice(0, -'.position'.length);
+    if (bone === 'pelvis' || placed.has(bone) || !rotated.has(bone)) continue;
+    clip.tracks.push(new THREE.VectorKeyframeTrack(t.name, [0], Array.from(t.values.slice(0, 3))));
+  }
+}
+
 /** Nguồn nướng pose dùng chung mọi template: thư viện pose lười trên asset Mixamo ở tư thế nghỉ. */
 export class PoseSource {
   readonly lib: PoseLibrary;
@@ -67,6 +88,8 @@ export class MannequinPoseBank {
   constructor(
     private src: PoseSource,
     private target: THREE.Object3D,
+    /** Clip nền UAL (`Idle_Loop`) của template, để khớp độ dài xương chi (xem `matchLimbLengths`); có thể chưa có. */
+    private limbRef: () => THREE.AnimationClip | undefined = () => undefined,
   ) {}
 
   has(id: string): boolean {
@@ -88,6 +111,8 @@ export class MannequinPoseBank {
       this.cache.set(id, null);
       return undefined;
     }
+    const ref = this.limbRef();
+    for (const cl of [full, upper, lower]) matchLimbLengths(cl, ref);
     const out: MqPose = { def: c.def, full, upper, lower };
     this.cache.set(id, out);
     return out;

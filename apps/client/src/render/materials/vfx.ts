@@ -90,6 +90,7 @@ export type FxKind =
   | 'sprite_kieu'
   | 'sprite_dp'
   | 'sprite_chung'
+  | 'sprite_ngu'
   | 'sprite_kiep'
   | 'sprite_dong'
   | 'sprite_guong'
@@ -138,6 +139,7 @@ const SPEC: Record<FxKind, { blending: THREE.Blending; boost: number; bloom: num
   sprite_kieu: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.2, fog: false },
   sprite_dp: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.2, fog: false },
   sprite_chung: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.2, fog: false },
+  sprite_ngu: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.2, fog: false },
   sprite_kiep: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.2, fog: false },
   sprite_dong: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.2, fog: false },
   sprite_guong: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.2, fog: false },
@@ -179,6 +181,7 @@ const BUILDERS: Partial<Record<FxKind, (u: FxUniforms) => { color: unknown; opac
   sprite_kieu: spriteNodesFor('kieu'),
   sprite_dp: spriteNodesFor('dp'),
   sprite_chung: spriteNodesFor('chung'),
+  sprite_ngu: spriteNodesFor('ngu'),
   sprite_kiep: spriteNodesFor('kiep'),
   sprite_dong: spriteNodesFor('dong'),
   sprite_guong: spriteNodesFor('guong'),
@@ -261,8 +264,9 @@ export function fxMaterial(kind: FxKind): THREE.MeshBasicNodeMaterial {
 export const BATCHING = FLAGS.batching;
 
 /**
- * `sigil` KHÔNG gộp (S2-C): nhiều pháp trận cùng lúc (lôi võng độ kiếp có 21 vòng cùng vòng nhắm, hay nhiều vùng báo của boss) khi gộp chỉ vẽ ra
- * MỘT cái (dữ liệu instance ghi đúng, vẽ thiếu; `?batch=0` vẽ đủ). Nguyên nhân chưa rõ. Giá: thêm chừng 23 draw call trong 1 giây mỗi đợt lôi võng.
+ * `sigil`/`sigilTop` (pháp trận, vạch báo) gộp từ B4. Ở S2-C chúng bị tắt gộp vì nhiều pháp trận cùng lúc (lôi võng 21 vòng, nhiều vùng báo của boss) chỉ vẽ ra
+ * MỘT cái: đó là lỗi UBO ma trận instance dựng theo `mesh.count` của khung đầu, đã vá ở `FxBatcher.flush` (khung đầu khai đủ `BATCH_CHUNK`) một ngày sau.
+ * Mỗi quái niệm chú/mỗi vùng báo từng tốn một draw call; nay cả đám một draw call.
  */
 export const BATCH_KINDS: ReadonlySet<FxKind> = new Set<FxKind>([
   'glow',
@@ -270,6 +274,8 @@ export const BATCH_KINDS: ReadonlySet<FxKind> = new Set<FxKind>([
   'solid',
   'slash',
   'ink',
+  'sigil',
+  'sigilTop',
   'dome',
   'inkpool',
   'toon',
@@ -306,7 +312,7 @@ export function fxBatchMaterial(kind: FxKind): THREE.MeshBasicNodeMaterial {
   const s = SPEC[kind];
   m = new THREE.MeshBasicNodeMaterial({ transparent: true, blending: s.blending, depthWrite: false, side: THREE.DoubleSide, fog: s.fog });
   m.forceSinglePass = true;
-  if (kind === 'decalTop' || kind === 'mapDecalTop') m.depthTest = false;
+  if (kind === 'decalTop' || kind === 'mapDecalTop' || kind === 'sigilTop') m.depthTest = false;
   const custom = BUILDERS[kind]?.(batchNodes);
   if (custom) {
     m.colorNode = custom.color as THREE.Node;
