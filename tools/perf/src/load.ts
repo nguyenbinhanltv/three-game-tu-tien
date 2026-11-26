@@ -15,6 +15,7 @@
 // Kết quả: bảng ra stdout, JSON ở bench/results/load-<ngày>.json, so với lần đo trước.
 //
 // Cờ: --runs N (mặc định 2, báo trung vị)   --mbps 20   --latency 20   --scenarios login,game
+//     --ts3d (login: bật cảnh nền 3D `?ts=3d` và đo `backdropLit`; mặc định là nền sơn thủy, chờ form đăng nhập)
 //     --no-build (dùng lại bản build tạm lần trước)   --renderer webgpu|webgl2   --headed   --channel chrome|msedge|chromium
 // Biến môi trường: PORT, CLIENT_PORT (mặc định 2655/5155), BENCH_CHANNEL.
 
@@ -24,7 +25,7 @@ import path from 'node:path';
 import type { Browser } from 'playwright';
 import { createDevServer, listeningPids, ROOT, sleep } from './lib/devserver';
 import { buildClient, serveDist } from './lib/dist';
-import { args, env, opt, ports } from './lib/env';
+import { args, env, flag, opt, ports } from './lib/env';
 import { launchChrome } from './lib/browser';
 import { at } from '@dtl/shared';
 
@@ -35,6 +36,7 @@ const MBPS = Number(opt('--mbps', '20'));
 const LATENCY = Number(opt('--latency', '20'));
 const SCENARIOS = opt('--scenarios', 'login,game').split(',').filter(Boolean);
 const RENDERER = opt('--renderer', 'webgpu');
+const TS3D = flag('--ts3d');
 const CHANNEL = opt('--channel', env('BENCH_CHANNEL', 'chrome'));
 const HEADED = args.includes('--headed');
 const NO_BUILD = args.includes('--no-build');
@@ -225,8 +227,14 @@ const rendererQ = RENDERER === 'webgl2' ? '&renderer=webgl2' : '';
 async function runLogin(browser: Browser): Promise<LoginRun> {
   const { ctx, page } = await newPage(browser);
   try {
-    await page.goto(`http://localhost:${CLIENT_PORT}/?mute=1${rendererQ}`, { waitUntil: 'load', timeout: 120_000 });
-    await page.waitForFunction(() => window.__load.marks.backdropLit !== undefined, undefined, { timeout: 60_000, polling: 100 });
+    await page.goto(`http://localhost:${CLIENT_PORT}/?mute=1${rendererQ}${TS3D ? '&ts=3d' : ''}`, { waitUntil: 'load', timeout: 120_000 });
+    // Cảnh nền 3D màn tiêu đề (`TitleBackdrop`, mốc `backdropLit`) chỉ dựng khi `?ts=3d`; mặc định là nền sơn thủy tĩnh, nên chờ form đăng nhập
+    // (trước đây chờ `backdropLit` vô điều kiện: bản đo hỏng, timeout 60 s). `--ts3d` đo cả cảnh nền 3D.
+    await page.waitForFunction(
+      (want3d) => window.__load.marks.loginForm !== undefined && (!want3d || window.__load.marks.backdropLit !== undefined),
+      TS3D,
+      { timeout: 60_000, polling: 100 },
+    );
     await sleep(500);
     const t = await readTiming(page);
     return {
@@ -363,7 +371,7 @@ async function main(): Promise<void> {
         const r = await runLogin(browser);
         login.push(r);
         console.log(
-          `[load] login #${i + 1}: FCP ${sec(r.fcp)}, JS ${sec(r.js)}, form ${sec(r.loginForm)}, cảnh nền 3D ${sec(r.backdropLit)}`,
+          `[load] login #${i + 1}: FCP ${sec(r.fcp)}, JS ${sec(r.js)}, form ${sec(r.loginForm)}${TS3D ? `, cảnh nền 3D ${sec(r.backdropLit)}` : ''}`,
         );
       }
       if (SCENARIOS.includes('game')) {
@@ -390,7 +398,7 @@ async function main(): Promise<void> {
     rows.push(['login: FCP (tiêu đề HTML)', median(login.map((r) => r.fcp)), pm('fcp')]);
     rows.push(['login: JS ban đầu tới', median(login.map((r) => r.js)), pm('js')]);
     rows.push(['login: form đăng nhập', median(login.map((r) => r.loginForm)), pm('loginForm')]);
-    rows.push(['login: cảnh nền 3D hiện', median(login.map((r) => r.backdropLit)), pm('backdropLit')]);
+    if (TS3D) rows.push(['login: cảnh nền 3D hiện', median(login.map((r) => r.backdropLit)), pm('backdropLit')]);
   }
   if (game.length) {
     const p = prev?.game;
