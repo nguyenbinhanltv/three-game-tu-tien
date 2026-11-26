@@ -1,0 +1,68 @@
+{
+  "skill": "fx_env_gate",
+  "trigger": "fx",
+  "fxKind": "~env_gate",
+  "palette": "env_gate",
+  "events": [
+    {
+      "type": "mesh",
+      "shape": "sprite",
+      "sprite": "canh_vortex",
+      "billboard": true,
+      "at": "target",
+      "t": 0,
+      "dur": 1.5,
+      "offset": [
+        0,
+        0,
+        0
+      ],
+      "scale": 2.3,
+      "scaleTo": 2.45,
+      "sweep": 0,
+      "erodeFrom": 0.75,
+      "ragged": 0.5,
+      "tone": "body",
+      "alpha": 0.9,
+      "tier": 0,
+      "seed": 2240
+    },
+    {
+      "type": "mesh",
+      "shape": "sprite",
+      "sprite": "canh_rift",
+      "billboard": true,
+      "at": "target",
+      "t": 0.03,
+      "dur": 0.12,
+      "offset": [
+        0,
+        0,
+        0
+      ],
+      "scale": 2.02,
+      "scaleTo": 2.34,
+      "sweep": 0,
+      "erodeFrom": 0.2,
+      "ragged": 0.5,
+      "tone": "rim",
+      "alpha": 0.85,
+      "tier": 1,
+      "seed": 2241
+    },
+    {
+      "type": "particles",
+      "kind": "dust",
+      "t": 0.3,
+      "n": 1,
+      "speed": 0.6,
+      "spread": 1,
+      "life": 0.8,
+      "size": 0.2,
+      "at": "target",
+      "tone": "rim",
+      "tier": 1,
+      "grav": -0.5
+    }
+  ]
+}

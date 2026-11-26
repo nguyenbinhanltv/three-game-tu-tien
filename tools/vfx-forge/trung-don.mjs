@@ -73,6 +73,8 @@ const PAL = {
   hit_chung: { core: '14161c', body: 'b9c6d6', rim: 'ffffff', accent: 'f0e6a8', shadow: '08090c' },
   hit_guard: { core: '10202e', body: '6fa8d0', rim: 'eaf6ff', accent: 'f0e6a8', shadow: '070d14' },
   hit_heal: { core: '0c3324', body: '4fd69a', rim: 'eafff2', accent: 'f4e9a0', shadow: '06160f' },
+  env_gate: { core: '0a2a40', body: '5fb8e8', rim: 'e6f8ff', accent: 'f0e6a8', shadow: '05121c' },
+  env_revive: { core: '2a2410', body: 'f0e6a8', rim: 'fffbe8', accent: 'bfe8ff', shadow: '14110a' },
   hit_dich: { core: '2a1030', body: 'a04ad8', rim: 'f3e2ff', accent: 'f0e6a8', shadow: '12061a' },
 };
 
@@ -329,6 +331,87 @@ const SCENES = [
       parts('dust', 0.02, 5, { speed: 1.4, spread: 0.8, life: 0.3, size: 0.2, tone: 'shadow', grav: -0.4, tier: 1 }),
     ],
   },
+  ...[
+    {
+      id: 'fx_env_gate',
+      pal: 'env_gate',
+      fxKind: '~env_gate',
+      idea: 'CỔNG ĐỨNG (phó bản / cổng ra): xoáy nước mực quay quanh tâm cổng, khe nứt không gian sáng mép hiện ở +30 ms; lam nước nhạt, lõi chàm, mép trắng. Lặp mỗi 1,4 giây khi người chơi ở gần.',
+      element: 'thuy',
+      shapeLang: ['spiral', 'ring'],
+      silhouette: 'xoáy nước mực quay quanh tâm cổng, khe nứt không gian ở giữa',
+      events: () => [
+        sprite('canh_vortex', { t: 0, dur: 1.5, size: 4.6, sizeTo: 4.9, erodeFrom: 0.75, alpha: 0.9 }),
+        accent('canh_rift', 0, 3.6, { dur: 0.12 }),
+        parts('dust', 0.3, 3, { speed: 0.6, spread: 1, life: 0.8, size: 0.2, tone: 'rim', grav: -0.5, tier: 1 }),
+      ],
+    },
+    {
+      id: 'fx_env_gate_flat',
+      pal: 'env_gate',
+      fxKind: '~env_gate_flat',
+      idea: 'CỔNG PHẲNG (hang, cổng ra trên nền): gợn nước mực lan trên nền kèm vài đốm linh khí bay lên; lam nước nhạt. Lặp mỗi 1,4 giây khi người chơi ở gần.',
+      element: 'thuy',
+      shapeLang: ['ring', 'cloud'],
+      silhouette: 'gợn nước mực lan trên nền, đốm linh khí bay lên',
+      events: () => [
+        sprite('canh_ripple', { t: 0, dur: 1.5, size: 6.4, sizeTo: 7.2, erodeFrom: 0.7, alpha: 1, off: [0, -0.9, 0] }),
+        accent('canh_ripple', 0, 6.4, { dur: 0.12, tone: 'accent', off: [0, -0.9, 0] }),
+        parts('dust', 0.3, 3, { speed: 0.6, spread: 1, life: 0.8, size: 0.2, tone: 'rim', grav: -0.6, tier: 1 }),
+      ],
+    },
+    {
+      id: 'fx_env_herb',
+      pal: 'hit_heal',
+      fxKind: '~env_herb',
+      idea: 'LINH THẢO (điểm hái): chùm đốm linh khí ngọc lục nhỏ trôi lên khỏi cây, mỗi đốm có đuôi sao chổi ngắn; nhẹ và thưa. Lặp mỗi 1,6 giây khi ở gần.',
+      element: 'moc',
+      shapeLang: ['cloud'],
+      silhouette: 'chùm đốm linh khí có đuôi trôi lên khỏi cây thuốc',
+      events: () => [
+        sprite('canh_sprout', { t: 0, dur: 1.7, size: 1.7, sizeTo: 1.9, erodeFrom: 0.7, alpha: 0.8, tone: 'core', off: [0, -0.35, 0] }),
+        sprite('canh_mote', { t: 0, dur: 1.7, size: 2.6, sizeTo: 3.0, erodeFrom: 0.5, alpha: 1, off: [0, 0.7, 0] }),
+        accent('canh_mote', 0, 2.6, { dur: 0.1, tone: 'accent', off: [0, 0.7, 0] }),
+      ],
+    },
+    {
+      id: 'fx_env_gather',
+      pal: 'hit_heal',
+      fxKind: '~env_gather',
+      idea: 'HÁI (nhổ linh thảo): lá bung tỏa từ gốc và mầm non vươn lên, ngọc lục; thay cho vòng nổ cầu. Tan trong 0,6 giây.',
+      element: 'moc',
+      shapeLang: ['burst', 'spiral'],
+      silhouette: 'lá bung tỏa từ gốc, mầm non vươn lên',
+      events: () => [
+        sprite('canh_leaf', { t: 0, dur: 0.6, size: 2.2, sizeTo: 3.0, erodeFrom: 0.4, alpha: 1 }),
+        accent('canh_leaf', 0, 2.2, { dur: 0.1, tone: 'accent' }),
+        sprite('canh_sprout', { t: 0.03, dur: 0.6, size: 1.9, sizeTo: 2.3, erodeFrom: 0.5, alpha: 0.95, off: [0, -0.4, 0], tier: 1 }),
+        parts('petal', 0.03, 4, { speed: 1.6, spread: 1, life: 0.6, size: 0.08, tone: 'rim', grav: 2, tier: 1 }),
+      ],
+    },
+    {
+      id: 'fx_env_revive',
+      pal: 'env_revive',
+      fxKind: '~env_revive',
+      idea: 'HỒI SINH (chỉ hiệu ứng, không có bia): đôi cánh hạc mực dang ra sau lưng người vừa đứng dậy, lông vũ rơi nhẹ và gợn nước mực dưới chân; vàng ngà, mép lam băng. KHÔNG cột sáng.',
+      element: 'moc',
+      shapeLang: ['burst', 'ring'],
+      silhouette: 'đôi cánh hạc mực dang sau lưng, lông vũ rơi, gợn nước dưới chân',
+      events: () => [
+        sprite('canh_ripple', { t: 0, dur: 1.2, size: 4.0, sizeTo: 5.0, erodeFrom: 0.5, alpha: 0.9, off: [0, -1.1, 0] }),
+        sprite('canh_wings', { t: 0.12, dur: 1.6, size: 3.6, sizeTo: 4.0, erodeFrom: 0.55, alpha: 1, off: [0, 0.2, 0] }),
+        accent('canh_wings', 0.12, 3.6, { dur: 0.12, tone: 'accent', off: [0, 0.2, 0] }),
+        sprite('canh_feather', { t: 0.3, dur: 1.7, size: 3.0, sizeTo: 3.2, erodeFrom: 0.5, alpha: 0.9, off: [0, 0.4, 0], tier: 1 }),
+        parts('petal', 0.3, 3, { speed: 0.8, spread: 1, life: 0.9, size: 0.09, tone: 'rim', grav: 1.2, tier: 1 }),
+      ],
+    },
+  ].map((x) => ({
+    ...x,
+    I: x.id === 'fx_env_revive' ? 0.12 : 0,
+    timing: { anticipationMs: 0, impactMs: 60, lingerMs: 1200 },
+    footprint: { lengthM: 4, widthM: 4, heightM: 4 },
+    budget: { drawCalls: 3, particles: 6, screenCover: 0.08, overdraw: 3 },
+  })),
 ];
 
 /** Dư ba (chuẩn 2): phải có sự kiện hình BẮT ĐẦU từ +150 ms; hiệu ứng tan ≤ 200 ms nên thêm vài hạt bụi mực rất nhỏ rơi nốt. */

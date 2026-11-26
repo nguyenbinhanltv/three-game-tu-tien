@@ -251,6 +251,7 @@ export function runFrame(eng: Game): void {
   eng.budget.mark('world'); // dấu nhiệm vụ trên đầu thực thể
   if (me) eng.vfx.trails.update(dt, eng.ents.players, eng.sid, eng.camera);
   eng.suyFx?.update();
+  eng.envFx?.update(dt);
   eng.skillFx?.update(dt, pscale);
   if (me) eng.realmAura?.update(dt);
   if (me) eng.pathAura?.update(dt);
@@ -601,7 +602,8 @@ function deathVisual(eng: Game, d: { ink: number; desat: number; drift: number }
   if (fx.revived) {
     const sid = eng.sid;
     eng.post?.flash(0.22);
-    eng.vfx.reviveGlow((out) => eng.ents.chestOf(sid, out));
+    const me = eng.ents.players.get(sid);
+    if (me) eng.envFx?.revive({ id: sid, x: me.x, y: me.y, z: me.z, chest: 1.15 }, true);
   }
   postParams.ink.value = d.ink;
   postParams.inkDesat.value = d.desat;

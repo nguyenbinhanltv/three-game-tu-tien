@@ -132,3 +132,9 @@ Thêm/đổi texture: thêm mục ở `tools/vfx-forge/src/sharedTex.ts` (`forge
 - Atlas `chung` (16 ô, đơn sắc, kiểu tô 12) thuộc `ALWAYS_GROUPS`: nạp sẵn, không bị giải phóng khi rỗi.
 - `evade`: server (`DeathSystem.damagePlayer`) phát FX chỉ hình khi đòn bị khung bất tử bỏ qua, giãn 400 ms; không đổi sát thương.
 - Phòng thử: `pnpm shots vfxlab --skill fx_hit_cut,... --clean 1`. Số "hạt" của phòng thử gồm cả hạt của luồng khác (~90), timeline chỉ phát ≤ 6 hạt.
+
+## Môi trường (HPL2 PR3: cổng, linh thảo, hồi sinh)
+
+- Nhóm atlas `canh` (8 ô, tranh đơn sắc, kiểu tô 12, nạp khi có cổng/linh thảo/hồi sinh trong tầm): `canh_vortex` (xoáy nước cổng), `canh_rift` (khe nứt không gian), `canh_mote` (đốm linh khí), `canh_leaf` (lá bung), `canh_wings` + `canh_feather` (cánh hạc, lông vũ), `canh_sprout` (mầm), `canh_ripple` (gợn nước nền). Timeline `fx_env_gate|gate_flat|herb|gather|revive` do `node tools/vfx-forge/trung-don.mjs` sinh.
+- `apps/client/src/game/fx/envFx.ts` (`EnvFx`): cổng (`engine.envGates` do `levelLoad` đặt; cổng đứng xoáy nước, cổng phẳng gợn nước) phát lại mỗi 1,4 s khi ≤ 60 m; điểm hái (`view.nodes` đang `on`) tối đa 6 điểm gần nhất ≤ 28 m, mỗi 1,6 s; `gather` (FX `gather`) lá bung + mầm; `revive` (FX `respawn` của người khác và `deathFx.revived` của mình) cánh hạc + lông vũ + gợn nước, thay cột sáng/`reviveGlow` cũ. Chỉ lớp hình, không thêm vật thể (không bia, không rương); đĩa cổng cũ giữ làm nền.
+- Phòng thử: `pnpm shots vfxlab --skill fx_env_gate,fx_env_gate_flat,fx_env_herb,fx_env_gather,fx_env_revive --clean 1 --notags 1 --nomon 1`.

@@ -115,6 +115,7 @@ import { groundAt } from '../base/levelCtx';
 import { PF_TRIBULATION } from '@dtl/shared';
 import { MonFx } from './fx/monFx';
 import { HitFx } from './fx/hitFx';
+import { EnvFx, type EnvGate } from './fx/envFx';
 import { variantFor } from './fx/fxTimeline';
 import {
   auraCombatOf,
@@ -340,6 +341,14 @@ export class Game {
   monFx: MonFx | null = null;
   /** Hình trúng đòn chung (HPL2): vết va theo hướng tu, chí mạng, chặn, quái đánh người, ngắt chú, nhịp hồi. */
   hitFx: HitFx | null = null;
+  envFx: EnvFx | null = null;
+  /** Cổng của level đang chơi (`levelLoad` đặt) để `EnvFx` vẽ xoáy nước/khe nứt. */
+  envGates: EnvGate[] = [];
+
+  /** Điểm hái đang có cây (cờ `on` do server đồng bộ). */
+  private *envHerbs(): Generator<{ id: string; x: number; y: number; z: number }> {
+    for (const [id, n] of this.view.nodes) if (n.on) yield { id, x: n.x, y: n.y, z: n.z };
+  }
   boltKinds = new Map<number, string>();
   /** Dấu trên sân mới nhất của Thiên Nhân Ngũ Suy của chính mình, theo khóa `<loại>:<ô>` (chỉ bản dev, cho Playwright: `__game.suyLog`). */
   suyLog?: Record<
@@ -804,6 +813,12 @@ export class Game {
     this.pathAura = new PathAuraFx(this.vfx, auraEnv);
     this.monFx = new MonFx(this.skillFx.runner, { camera: () => this.camera, live: () => this.vfx.pool.live });
     this.hitFx = new HitFx(this.skillFx.runner, { camera: () => this.camera, live: () => this.vfx.pool.live });
+    this.envFx = new EnvFx(this.skillFx.runner, {
+      camera: () => this.camera,
+      live: () => this.vfx.pool.live,
+      gates: () => this.envGates,
+      herbs: () => this.envHerbs(),
+    });
     this.suyFx = new SuyFx(this.skillFx.runner, {
       vfx: this.vfx,
       scene: this.scene,
@@ -1509,6 +1524,7 @@ export class Game {
     this.pathAura = null;
     this.monFx = null;
     this.hitFx = null;
+    this.envFx = null;
     this.suyFx?.dispose();
     this.suyFx = null;
     this.vfx?.dispose();

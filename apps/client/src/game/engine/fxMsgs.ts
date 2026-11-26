@@ -511,9 +511,11 @@ export function handleFx(eng: Game, m: FxMsg, held = false): void {
     case 'respawn':
       // Của mình: linh quang đầy đủ do deathVisual nổ khi cờ PF_DEAD tắt (khớp lúc mực rút). Người khác: cột sáng.
       if (src === eng.sid) break;
-      // Được Hồi Thiên Đan Lộ hồi sinh: cột sáng hẹp và mờ để nhìn rõ người vừa đứng dậy.
-      if (m.v === 'revive') v.pillar(posSrc, 0xbfe8ff, 1.2, 0.35, 6, 0.12);
-      else v.pillar(posSrc, 0xbfe8ff, 1.2, 1.0, 8);
+      // Cánh hạc + lông vũ + gợn nước (không cột sáng); được Hồi Thiên Đan Lộ hồi sinh cũng dùng chung hình.
+      {
+        const rp = hitPointOf(eng, src);
+        if (rp) eng.envFx?.revive(rp, false);
+      }
       break;
     case 'quest':
     case 'craft':
@@ -521,8 +523,8 @@ export function handleFx(eng: Game, m: FxMsg, held = false): void {
       v.pillar(posSrc, m.t === 'quest' ? 0xffd84a : 0xffa860, 0.9, 0.8, 3.5);
       break;
     case 'gather':
-      _v.set(m.x ?? 0, (m.y ?? 0) + 0.6, m.z ?? 0);
-      v.burst(_v, 0x8fffc0, 0.8, 0.35);
+      // Lá bung + mầm non tại gốc cây (không còn vòng nổ cầu).
+      eng.envFx?.gather({ id: 'gather', x: m.x ?? 0, y: m.y ?? 0, z: m.z ?? 0, chest: 0.6 }, src === eng.sid);
       break;
     case 'death':
       if (src === eng.sid) set({ tamCanh: -1, soulUntil: 0, nguHanh: null, cloneUntil: 0, steles: -1 });

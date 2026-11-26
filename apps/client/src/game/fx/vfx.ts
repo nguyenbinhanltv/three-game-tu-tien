@@ -44,18 +44,7 @@ import {
 } from './vfxParts/common';
 import { hazard, trailPool, venomPool } from './vfxParts/hazard';
 import { goldDrop, lootDrop } from './vfxParts/loot';
-import {
-  ascendGlow,
-  danTran,
-  kdStele,
-  mirrorDisc,
-  mirrorPillar,
-  reviveGlow,
-  soulOut,
-  tamMaAura,
-  thanNiem,
-  tribulationCloud,
-} from './vfxParts/scenes';
+import { ascendGlow, danTran, kdStele, mirrorDisc, mirrorPillar, soulOut, tamMaAura, thanNiem, tribulationCloud } from './vfxParts/scenes';
 import { logger } from '../../base/log';
 
 const vfxLog = logger('vfx');
@@ -177,6 +166,7 @@ export class Vfx {
       'sprite_dp',
       'sprite_chung',
       'sprite_ngu',
+      'sprite_canh',
       'sprite_kiep',
       'sprite_dong',
       'sprite_guong',
@@ -808,9 +798,6 @@ export class Vfx {
    * Hồi sinh (P2-B5): linh quang xanh ngọc nhạt dâng quanh người: ống sáng mảnh, hai vành sóng nối nhau và một vòng
    * hạt linh khí xoáy bay lên. Cộng sáng, mảnh, để lộ màu cảnh khi mực đang rút. 3 + 10 lưới trong ~2,4 giây.
    */
-  reviveGlow(pos: PosFn, dur = 2.4): void {
-    return reviveGlow(this, pos, dur);
-  }
 
   /** Lớp linh khí hộ thể bao quanh người. */
   shield(pos: PosFn, dur: number, stillOn: () => boolean, color = 0x7fd8ff, scale = 1, alpha = 0.28): void {

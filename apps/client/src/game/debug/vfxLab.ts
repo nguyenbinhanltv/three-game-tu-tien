@@ -134,6 +134,15 @@ const LAB_HIT: Record<string, string> = {
   fx_heal_tick: 'hit_heal',
 };
 
+/** Timeline môi trường (`fx_env_*`) → độ lệch +x so với người chơi (m) và độ cao ngực: cổng/linh thảo đặt cạnh người chơi, hồi sinh đặt lên chính mình. */
+const LAB_ENV: Record<string, { dx: number; chest: number }> = {
+  fx_env_gate: { dx: 4, chest: 3.6 },
+  fx_env_gate_flat: { dx: 4, chest: 1.15 },
+  fx_env_herb: { dx: 3, chest: 0.4 },
+  fx_env_gather: { dx: 3, chest: 0.6 },
+  fx_env_revive: { dx: 0, chest: 1.15 },
+};
+
 /** `MonsterBurrow` rút gọn: các trường phòng thử cần. */
 interface BurrowCfg {
   r: number;
@@ -234,6 +243,17 @@ export function installVfxLab(g: Game, onHazard?: (g: Game, m: HazardMsg) => voi
         gg.fxArea.set(gg.sid, { x: hit[1].x, z: hit[1].z, r: 9 });
         gg.fxDst.set(gg.sid, hit[0]);
       }
+      // Hình môi trường (HPL2 PR3): phát qua `EnvFx` cạnh người chơi (cổng, linh thảo) hoặc lên chính mình (hồi sinh).
+      const labEnv = LAB_ENV[skill];
+      if (labEnv) {
+        const h = g as unknown as {
+          envFx: { labPlay(key: string, p: { id: string; x: number; y: number; z: number; chest: number }): boolean } | null;
+          ents: { players: Map<string, { x: number; y: number; z: number }> };
+        };
+        const me = h.ents.players.get(gg.sid);
+        if (!h.envFx || !me) return false;
+        return h.envFx.labPlay(skill, { id: 'lab', x: me.x + labEnv.dx, y: me.y, z: me.z, chest: labEnv.chest });
+      }
       // Hình trúng đòn chung (HPL2): phát qua `HitFx` như lúc chơi. Vết va/chí mạng/chặn/ngắt chú đặt ở quái (tô theo hướng tu của mình, chặn có bảng riêng);
       // quái đánh người và nhịp hồi đặt ở mình (tô theo hệ của quái / bảng hồi).
       const labHit = LAB_HIT[skill];
@@ -282,6 +302,8 @@ export function installVfxLab(g: Game, onHazard?: (g: Game, m: HazardMsg) => voi
       // Hình trúng đòn chung cũng do tin server kích: phòng thử chỉ vẽ lời gọi `cast('fx_hit_*')`.
       const hf = (g as unknown as { hitFx: { lab: boolean } | null }).hitFx;
       if (hf) hf.lab = on;
+      const ef = (g as unknown as { envFx: { lab: boolean } | null }).envFx;
+      if (ef) ef.lab = on;
     },
     castMon(mon, mv) {
       const gg = g as unknown as {

@@ -91,6 +91,7 @@ export type FxKind =
   | 'sprite_dp'
   | 'sprite_chung'
   | 'sprite_ngu'
+  | 'sprite_canh'
   | 'sprite_kiep'
   | 'sprite_dong'
   | 'sprite_guong'
@@ -140,6 +141,7 @@ const SPEC: Record<FxKind, { blending: THREE.Blending; boost: number; bloom: num
   sprite_dp: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.2, fog: false },
   sprite_chung: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.2, fog: false },
   sprite_ngu: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.2, fog: false },
+  sprite_canh: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.2, fog: false },
   sprite_kiep: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.2, fog: false },
   sprite_dong: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.2, fog: false },
   sprite_guong: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.2, fog: false },
@@ -182,6 +184,7 @@ const BUILDERS: Partial<Record<FxKind, (u: FxUniforms) => { color: unknown; opac
   sprite_dp: spriteNodesFor('dp'),
   sprite_chung: spriteNodesFor('chung'),
   sprite_ngu: spriteNodesFor('ngu'),
+  sprite_canh: spriteNodesFor('canh'),
   sprite_kiep: spriteNodesFor('kiep'),
   sprite_dong: spriteNodesFor('dong'),
   sprite_guong: spriteNodesFor('guong'),

@@ -45,6 +45,8 @@ export const SPRITE_GROUPS = {
   // V-P10: ngự kiếm (cất cánh, hạ cánh, vệt bay), tranh đơn sắc tô theo bảng màu timeline; chỉ nạp khi có người bay.
   ngu: { file: 'hoa-truc/vfx_sprites_ngu.53d3b0c236.webp', cols: 4, rows: 2 },
   // V-P10: độ kiếp (mở kiếp, kiếp vân tầng thấp, chỗ sét đánh); chỉ nạp khi có người độ kiếp trong tầm nhìn.
+  // Môi trường (HPL2 PR3): xoáy nước cổng, khe nứt không gian, đốm linh khí linh thảo, lá bung khi hái, cánh hạc + lông vũ hồi sinh, mầm, gợn nước; nạp khi có cổng/linh thảo/hồi sinh trong tầm.
+  canh: { file: 'hoa-truc/vfx_sprites_canh.4de3f41ad0.webp', cols: 4, rows: 2 },
   kiep: { file: 'hoa-truc/vfx_sprites_kiep.d00db05f37.webp', cols: 4, rows: 2 },
 } as const;
 export type SpriteGroup = keyof typeof SPRITE_GROUPS;
