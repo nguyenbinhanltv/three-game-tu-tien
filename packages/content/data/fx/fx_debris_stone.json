@@ -15,10 +15,10 @@
       "offset": [
         0,
         0.2,
-        0
+        0.3
       ],
       "scale": 1.05,
-      "scaleTo": 1.65,
+      "scaleTo": 1.45,
       "sweep": 0,
       "erodeFrom": 0.45,
       "ragged": 0.5,
@@ -39,7 +39,7 @@
       "offset": [
         0,
         0.2,
-        0
+        0.3
       ],
       "scale": 1.18,
       "scaleTo": 1.37,

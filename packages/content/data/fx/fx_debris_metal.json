@@ -15,10 +15,10 @@
       "offset": [
         0,
         0.2,
-        0
+        0.3
       ],
-      "scale": 0.8,
-      "scaleTo": 1.25,
+      "scale": 0.6,
+      "scaleTo": 0.95,
       "sweep": 0,
       "erodeFrom": 0.35,
       "ragged": 0.5,
@@ -31,7 +31,7 @@
     {
       "type": "mesh",
       "shape": "sprite",
-      "sprite": "chung_spear",
+      "sprite": "chung_chips",
       "billboard": true,
       "at": "target",
       "t": 0.03,
@@ -39,10 +39,10 @@
       "offset": [
         0,
         0.2,
-        0
+        0.3
       ],
-      "scale": 1.01,
-      "scaleTo": 1.17,
+      "scale": 0.67,
+      "scaleTo": 0.78,
       "sweep": 0,
       "erodeFrom": 0.2,
       "ragged": 0.5,
@@ -56,28 +56,14 @@
       "type": "particles",
       "kind": "spark",
       "t": 0,
-      "n": 8,
-      "speed": 8,
-      "spread": 0.35,
+      "n": 12,
+      "speed": 9,
+      "spread": 0.25,
       "life": 0.22,
       "size": 0.07,
       "at": "target",
       "tone": "rim",
       "tier": 0
-    },
-    {
-      "type": "particles",
-      "kind": "spark",
-      "t": 0.03,
-      "n": 4,
-      "speed": 4,
-      "spread": 0.6,
-      "life": 0.3,
-      "size": 0.05,
-      "at": "target",
-      "tone": "accent",
-      "tier": 1,
-      "grav": 6
     },
     {
       "type": "particles",

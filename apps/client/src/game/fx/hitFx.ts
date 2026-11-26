@@ -13,6 +13,8 @@ import { OTHERS_FX_LIVE_MAX } from './fxBudget';
 export const HIT_FX_DIST = 55;
 /** Giãn cách tối thiểu (giây) giữa hai lần cùng loại trên cùng một nạn nhân. */
 export const HIT_GAP = { debris: 0.35, hit: 0.12, crit: 0.25, block: 0.3, mon: 0.3, brk: 0.5, evade: 0.4, heal: 1.2, tick: 0.9 } as const;
+/** Số lưới FX đang sống từ mức này trở lên thì bỏ mảnh vụn (kể cả của mình). */
+export const DEBRIS_LIVE_MAX = 20;
 /** Lượng hồi từ chừng này phần máu tối đa trở lên thì nở búp sen (`fx_heal`); nhỏ hơn chỉ là chùm cánh sen (`fx_heal_tick`). */
 export const HEAL_BIG_FRAC = 0.08;
 
@@ -123,6 +125,8 @@ export class HitFx {
    */
   debris(v: HitPoint, from: { x: number; z: number } | null, material: 'flesh' | 'stone' | 'metal', mine: boolean, force = false): void {
     if (!mine && !force) return;
+    // Lớp trang trí: chiêu vùng của mình trúng nhiều quái thì bỏ trước, để không đẩy số lưới sống qua ngưỡng tắt hình quái (`OTHERS_FX_LIVE_MAX`).
+    if (!force && this.env.live() >= DEBRIS_LIVE_MAX) return;
     const tl = this.ok('fx_debris_' + material, v, HIT_GAP.debris, mine, force);
     if (tl) this.play(tl, v, from, 'deb_' + material, mine);
   }

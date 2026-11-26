@@ -6,8 +6,8 @@
   "scene": {
     "palette": {
       "core": "0c0c10",
-      "body": "5a5068",
-      "rim": "d6d0e4",
+      "body": "8a7fa6",
+      "rim": "e2dcf0",
       "accent": "e8e2f0",
       "shadow": "050507"
     },
@@ -30,8 +30,8 @@
   "telegraph": false,
   "budget": {
     "drawCalls": 2,
-    "particles": 12,
-    "screenCover": 0.015,
+    "particles": 14,
+    "screenCover": 0.03,
     "overdraw": 2
   },
   "textures": [],

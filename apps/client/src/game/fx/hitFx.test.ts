@@ -80,6 +80,14 @@ describe('HitFx mảnh vụn theo chất liệu (HPL2 B)', () => {
     expect(t.calls.length).toBe(1);
   });
 
+  it('đông hiệu ứng (≥ 20 lưới sống): bỏ mảnh vụn kể cả của mình', () => {
+    const t = setup(20);
+    t.fx.debris(pt, null, 'metal', true);
+    expect(t.calls.length).toBe(0);
+    t.fx.debris(pt, null, 'metal', true, true);
+    expect(t.calls.length).toBe(1);
+  });
+
   it('ngân sách: mỗi timeline mảnh vụn tối đa 2 sprite (thân + điểm nhấn 70 ms), đều ở tier 1', () => {
     for (const m of ['flesh', 'stone', 'metal']) {
       const sp = FX_TIMELINE.get('fx_debris_' + m)!.events.filter((e) => 'sprite' in e && e.sprite);
