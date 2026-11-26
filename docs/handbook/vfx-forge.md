@@ -58,6 +58,12 @@ Hiệu ứng không thuộc chiêu hay hướng tu nào (đột phá, độ ki�
 - Tấm sprite là quad 2×2 (`scale` 0,5 = ô 1 m) quay mặt về camera chéo 52°: mép dưới thấp hơn tâm 0,31 × cạnh ô. Tâm thấp hơn mức đó thì nền cắt ngang hình; phiến đá Trúc Cơ dùng chính điều này để "trồi lên".
 - Atlas `dp` nạp sẵn khi vào game (lên tầng chỉ dài ~1 s) nhưng không được miễn giải phóng; runner cũng nạp atlas của mọi sprite ngay lúc timeline `trigger: fx` bắt đầu.
 
+### Ngự kiếm (V-P10 đợt 3)
+
+- **Cất cánh** `fx_fly_on` và **hạ cánh** `fx_fly_off` (MỚI) sinh bằng `node tools/vfx-forge/ngu-kiem.mjs` (ghi đè cả file; công thức cũ trong `tools/vfx/recipes_e.py` đã bỏ). Sprite nhóm `ngu` (8 ô đơn sắc, kiểu tô 12), bảng màu `ngu_kiem` (lam ngọc, bạc hà, không cam). Cất cánh (lặp rất thường nên gọn: cỡ ~105% concept, tổng ≤ 0,6 s; thu còn 65% thì kiếm khí không đọc được ở 720p): phi kiếm trượt vào dưới chân → vành bụi gió rách bung ra ở mốc nhấn (+30 ms vệt kiếm sáng) → một vệt gió xoắn quấn lên. Người khác thấy bản mờ còn ~50% (`dimFly` ở `flyFx`). Hạ cánh: kiếm thu về lưng thành vệt ngắn → nhịp va chạm (+30 ms mực/bụi bắn sát đất, vệt mực cháy đất) → xoáy nét cọ đứt tan.
+- Tranh nằm bẹt (vành bụi) vẫn là tấm billboard nên tâm đặt ở `FEET + GROUND × size × 0,55` (cắt một ít đáy trống thay vì nhấc vành lên ngang ngực).
+- **Cất cánh của mình** phát ngay ở `Game.toggleFly` (dự đoán). **Hạ cánh của mình và cả hai cảnh của người khác** suy từ cờ `PF_FLYING` đổi (`EntityManager.onFlyChange` → `flyFx` ở `apps/client/src/game/engine/fxMsgs.ts`), trong 60 m, bỏ qua lần đầu thấy người đó; không đổi giao thức.
+- Phòng thử: `pnpm shots vfxlab --skill fx_fly_on,fx_fly_off --at -200,0,30,150,400`; bản của NGƯỜI KHÁC (mờ ~50%, diễn viên giả cách 3 m; thêm `--nomon` để phòng trống không quái): `--skill lab_fly_on_other|lab_fly_off_other --at 0,150,280,430` (mốc 0 = lúc phát).
 ### Độ kiếp (V-P10 đợt 2)
 
 - **Mở kiếp** `fx_kiep_tc|kd|na|hn` và **cụm nổ chỗ sét rơi** `fx_kiep_strike` sinh bằng `node tools/vfx-forge/do-kiep.mjs` (sprite nhóm `kiep`, 8 ô đơn sắc, kiểu tô 12). Mở kiếp: hai tảng mây mực phình ra hai bên, trời rách ở mốc nhấn, tia sét đầu cắm xuống cạnh người. Bảng màu: Trúc Cơ `loi`, Kết Đan `kiep_hoa` (lửa kiếp tím hồng, hết cam), Nguyên Anh `dotpha_na`, Hóa Thần `dotpha_hn`.
@@ -119,3 +125,16 @@ Thêm/đổi texture: thêm mục ở `tools/vfx-forge/src/sharedTex.ts` (`forge
 - Chui đất/trồi lên của Thôn Mạch Ngô Công Vương (pha 65% máu): hai chiêu `burrow` (vòng tròn r4, báo `hide` 2,0 s, 3 vòng quanh người) và `emerge` (quạt r14, nửa góc 35°, báo 1,5 s) có thẻ `boss_thon_mach_ngo_cong_vuong__burrow|emerge.json` và timeline `mon_warn|mon_boom_circle__…__burrow`, `mon_warn_cone|mon_boom_cone__…__emerge` (sinh bằng `tools/vfx/gen-fx-a1.py`). `content:check` đọc vùng/nhịp báo của hai chiêu này từ `ai.burrow` (`burrow` = `r` + `hide`; `emerge` = `cone.r` + `cone.delay`), `moveOfHazard` đoán chiêu từ hình + r + thời gian báo, Hình chui đất do `game/fx/burrowFx.ts` (chỉ client, theo cờ MF_BURROW + vạch `burrow` đầu = điểm trồi): đất nứt + bụi + đất tung khi đầu cắm xuống, thân thụt dần (hạ y) rồi ẩn, ụ đất chạy dưới mặt đất tới điểm trồi, mặt đất phồng báo trước ở 0,8 s cuối, rồi thân nhô lên kèm đất đá bắn + bụi + vết nứt (màu nâu-xám, không đỏ/cam). Phòng thử tự dựng cùng hình đó cho `burrow`/`emerge` (không có cờ server): `pnpm shots vfxmon --mon boss_thon_mach_ngo_cong_vuong --move burrow,emerge` phát đúng đường S.HAZARD (phòng thử đặt vòng dưới chân người, quạt tại chỗ boss đứng).
 - Timeline riêng của quái: `mon_warn*|mon_boom_*|mon_cast__<quái>[__<chiêu>]`, sinh bằng `tools/vfx/gen-fx-han-giao.py` và `gen-fx-a1.py`; timeline riêng được chọn bảng màu riêng (`palette` của file). Không dùng hình `smoke` trong vùng nổ: nó luôn là khói toon trắng ngả lam.
 - Vạch riêng của chiêu quái (`MonFx.ownWarn`) chỉ thay vòng cũ khi `MonFx.warn` thật sự phát và atlas decal đã nạp; xa/đông FX/chưa nạp xong thì giữ vòng cũ để không mất hitbox.
+
+## Trúng đòn chung (HPL2, nhóm atlas `chung`)
+
+- `node tools/vfx-forge/trung-don.mjs` ghi đè timeline + thẻ cảnh `fx_hit_cut|smash|stab|crit|block|mon|bite`, `fx_break`, `fx_heal`, `fx_heal_tick`, `fx_potion`, `fx_mana`, `fx_evade`. Phát bởi `game/fx/hitFx.ts` (`HitFx`) theo `DmgMsg`/`FxMsg`; màu theo hướng tu người đánh, đòn quái theo hệ quái (không đỏ/cam).
+- Atlas `chung` (16 ô, đơn sắc, kiểu tô 12) thuộc `ALWAYS_GROUPS`: nạp sẵn, không bị giải phóng khi rỗi.
+- `evade`: server (`DeathSystem.damagePlayer`) phát FX chỉ hình khi đòn bị khung bất tử bỏ qua, giãn 400 ms; không đổi sát thương.
+- Phòng thử: `pnpm shots vfxlab --skill fx_hit_cut,... --clean 1`. Số "hạt" của phòng thử gồm cả hạt của luồng khác (~90), timeline chỉ phát ≤ 6 hạt.
+
+### Trạng thái kéo dài (HPL2 PR2)
+
+- Server chỉ gửi **bit hiển thị**, suy ra từ trạng thái server, không ảnh hưởng luật: `MF_SLOW`/`MF_POISON`/`MF_BURN`/`MF_DAZED` (`MonS.mf`, 1024/2048/4096/8192, `MF_DISP_MASK`; `MF_DAZED` = choáng THẬT, khác khựng 350 ms của đòn nặng vốn cũng bật `MF_STUN`; `syncDisplayFlags` ở `apps/server/src/game/monsters/tickMonster.ts`, `setMonFlags` giữ chúng; `MonEnt.poison.kind` tách bỏng khỏi độc) và `PF_HOT` (`PlayerS.fl`, 512, bật khi còn dòng hồi dần trong `CombatSystem.hots`).
+- Client `game/fx/statusFx.ts` (`StatusFx`): mỗi thực thể ≤ 1 trạng thái (choáng > bỏng > độc > chậm; người: hồi dần), tối đa 8 thực thể gần camera nhất, phát lại timeline `fx_st_slow|poison|burn|stun|hot` (≈1 s, bám thân) mỗi chu kỳ; bỏ phần của người khác khi đông. Sprite trong atlas `chung` (28 ô): dấu trạng thái `chung_chain` (xích kéo lùi, chậm), `chung_bubble` (độc), `chung_flame` (lưỡi mực-than viền vàng hổ phách, bỏng; không cam/đỏ), `chung_halo` (vòng chim + sao, choáng), `chung_leaf` (lá + giọt ngọc, hồi dần); còn `spear` (đâm dày), `frost`/`coal`/`dizzy` (bản cũ), `ward`/`crack`/`eye` dành cho PR2a.
+- Phòng thử: `pnpm shots vfxlab --skill fx_st_slow,... --clean 1 --notags 1`.

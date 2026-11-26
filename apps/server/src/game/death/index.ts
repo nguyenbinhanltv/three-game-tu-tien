@@ -24,6 +24,9 @@ import { TribSystem } from '../trib';
 import { ITEM_SYS, ITEMS, itemName, STARS, t } from '@dtl/content';
 import type { PlayerEnt, MonEnt, SimOptions } from '../entities';
 import { isInvulnerable } from '../entities';
+
+/** Giãn tối thiểu (ms) giữa hai FX `evade` của một người. */
+const EVADE_FX_GAP_MS = 400;
 import { RealmSystem } from '../realm';
 import { DuelSystem } from '../duel';
 import { MirrorSystem, wardMul } from '../mirror';
@@ -120,7 +123,14 @@ export class DeathSystem {
   damagePlayer(p: PlayerEnt, dmg: number, src: string, hv = false, ke?: 1 | -1): void {
     if (this.c.isDead(p) || this.c.soul.isScouting(p)) return;
     // Né (P1 Thiên Nhãn): trong khung bất tử do server cấp thì không nhận sát thương.
-    if (isInvulnerable(p, this.c.now)) return;
+    if (isInvulnerable(p, this.c.now)) {
+      // Chỉ là lớp hình: báo "đã né trúng" để client vẽ tàn ảnh; không đổi sát thương hay trạng thái.
+      if (this.c.now - p.evadeFxAt >= EVADE_FX_GAP_MS) {
+        p.evadeFxAt = this.c.now;
+        this.c.fx({ t: 'evade', dst: p.sid, src: src || undefined });
+      }
+      return;
+    }
     const c = p.char;
     let n = Math.max(1, Math.round(dmg));
     // Định Thần Phù (E3-M): giảm sát thương "gương" (quái `glass`, boss gương, bóng tâm ma trong cung).

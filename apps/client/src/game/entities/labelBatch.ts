@@ -185,6 +185,9 @@ class LabelBatch {
   }
 
   /** Gom nhãn đang hiện vào instance. Gọi mỗi khung sau khi `visible`/`scale`/`opacity` của nhãn đã được đặt. */
+  /** Phòng thử (`__vfxlab.tags(false)`): ẩn mọi bảng tên để chụp điểm trúng không bị che. */
+  hidden = false;
+
   update(): void {
     this.frame++;
     let n = 0;
@@ -218,7 +221,7 @@ class LabelBatch {
     }
     if (drew && this.tex) this.tex.needsUpdate = true;
     this.mesh.count = n;
-    this.mesh.visible = n > 0;
+    this.mesh.visible = n > 0 && !this.hidden;
     if (!n) return;
     const len = n * 4;
     this.attrA.clearUpdateRanges();

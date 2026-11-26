@@ -1,6 +1,7 @@
 // R-8: tách từ game/engine.ts (hàm nhận `g: Game`, trước là phương thức private của lớp Game).
 import { ANIM_FX, CUTIN_FREEZE_MS, cutinArt } from '../character/animFx';
 import { v3SetKeyOf } from '../character/mannequin';
+import { flyTimeline } from '../fx/flyTimeline';
 import { isKiemTu } from '../character/kiemTu';
 import * as THREE from 'three/webgpu';
 import {
@@ -59,6 +60,8 @@ import { SECT_LANTERNS } from '../world/sect';
 import { SoulVis, type SoulScout } from '../fx/soulVis';
 import { CloneVis } from '../fx/cloneVis';
 import { skipOthersFx } from '../fx/fxBudget';
+import { HEAL_BIG_FRAC, type HitPoint } from '../fx/hitFx';
+import { monScale } from '../fx/monFx';
 import { SHAKE } from '../camera/shake';
 import { fxTriggered, replacedFx } from '../fx/skillFx';
 import { type SkillEvent } from '../character/view';
@@ -407,14 +410,18 @@ export function handleFx(eng: Game, m: FxMsg, held = false): void {
       v.swordRain(m.x ?? 0, m.y ?? 0, m.z ?? 0, m.r ?? 8, tint(0x9fe0ff), m.sd, src === eng.sid);
       break;
     case 'bite': {
+      // Chỉ động tác: hình trúng (vệt cào / dấu cắn theo hệ quái) do `hitVisual` phát khi tin sát thương tới.
       e.monsters.get(src)?.model.attack();
-      if (!(QUIET && dst === eng.sid) && e.chestOf(dst, _v)) v.burst(_v, 0xe8c4a8, 0.6, 0.2, 0.25); // cắn: chỉ viền mờ màu kem, không cầu hồng đặc
       break;
     }
     case 'heal':
-    case 'potion':
-      v.pillar(posSrc, tint(0x7dffa0), 1.0, 0.9, 4);
+      // Hình hồi máu do `hitVisual` (DmgMsg heal → `HitFx.heal`) phát; không vẽ thêm trụ sáng.
       break;
+    case 'potion': {
+      const pp = hitPointOf(eng, src);
+      if (pp) eng.hitFx?.potion(pp, src === eng.sid);
+      break;
+    }
     case 'art': {
       // Pháp bảo phụ (P3-8): pháp bảo bay lên theo animation thủ tục; thêm một vòng sáng nhỏ dưới chân, không trụ sáng, không chớp toàn cảnh.
       if (m.s === BONDED_ARTIFACT_ID) e.players.get(src)?.lo?.trigger(m.d ?? 1.4);
@@ -544,12 +551,18 @@ export function handleFx(eng: Game, m: FxMsg, held = false): void {
       v.castSigil(posSrc, m.d ?? 2, 0x9fe6ff, 3.2, () => ((eng.view.monsters.get(src)?.mf ?? 0) & MF_CHANT) !== 0);
       break;
     case 'interrupt':
-      if (e.chestOf(dst, _v)) v.burst(_v, 0xfff2b0, 2.6, 0.45);
+    case 'break': {
+      // Ngắt chú (dst = boss, src = người phá) / boss mất thế (src = boss): sợi xích chú đứt trước ngực boss, tô theo hướng tu người phá.
+      const bp = hitPointOf(eng, m.t === 'interrupt' ? dst : src);
+      if (bp) eng.hitFx?.brk(bp, m.t === 'interrupt' ? eng.methodOfPlayer(src) : undefined, m.t === 'break' || src === eng.sid);
       break;
-    case 'break':
-      // Boss mất thế: chớp vàng lớn ở ngực boss.
-      if (e.chestOf(src, _v)) v.burst(_v, 0xffd36b, 3.2, 0.55);
+    }
+    case 'evade': {
+      // Chỉ là lớp hình: server báo đòn trúng khung né của `dst`.
+      const ep = hitPointOf(eng, dst);
+      if (ep) eng.hitFx?.evade(ep, dst === eng.sid);
       break;
+    }
     case 'phase': {
       const mt = eng.view.monsters.get(src)?.t;
       const cined = !!mt && phaseCine(eng, src, `mon.${mt}.say.${m.d ?? 1}`);
@@ -1113,16 +1126,7 @@ export function applyDmg(
   if (mine && !m.heal && !eng.targetId && m.src && eng.view.monsters.has(m.src)) eng.setTarget(m.src, 'mon');
   const foe = !m.heal && (mine || byMe) ? eng.ents.monsters.get((mine ? m.src : m.dst) ?? '') : undefined;
   if (foe) eng.music.engage(!!foe.model.def.boss);
-  // FX quái (V5): quái bị đánh → tia/mảnh theo hệ; quái đánh trúng người → vệt chém đỏ.
-  if (!m.heal && m.n > 0) {
-    const dm = eng.ents.monsters.get(m.dst);
-    if (dm) eng.monFx?.hit(dm);
-    else {
-      const sm = m.src ? eng.ents.monsters.get(m.src) : undefined;
-      const dp = sm ? eng.ents.players.get(m.dst) : undefined;
-      if (sm && dp) eng.monFx?.strike(sm, dp);
-    }
-  }
+  hitVisual(eng, m, mine, byMe);
   if (!mine && !byMe) {
     // Sát thương của người khác: chỉ hiện khi ở gần.
     if (_v.distanceTo(eng.renderPos) > 45) return;
@@ -1219,6 +1223,45 @@ export function applyDmg(
   const keNum = m.ke === 1 && !m.heal;
   const cls2 = cls + (heavyNum ? ' hv' : '') + (keNum && (cls === 'hit' || cls === 'crit') ? ' ke' : '');
   eng.dmg.spawn(keNum ? `${text} ${t('ui.dmg.ke')}` : text, _v, cls2, m.dst, !m.heal && !m.crit && !m.ke && m.n > 0 ? m.n : undefined);
+}
+
+/** Model quái đánh bằng miệng: đòn trúng người là dấu cắn thay cho vệt cào. */
+const BITERS = new Set(['wolf', 'serpent', 'fox']);
+
+/** Điểm phát hình trúng đòn của một thực thể (quái hoặc người); null nếu không còn trong cảnh. */
+function hitPointOf(eng: Game, id: string): HitPoint | null {
+  const mon = eng.ents.monsters.get(id);
+  if (mon) return { id, x: mon.x, y: mon.y, z: mon.z, chest: mon.model.height * 0.55, scale: monScale(mon.model.height) };
+  const pl = eng.ents.players.get(id);
+  return pl ? { id, x: pl.x, y: pl.y, z: pl.z, chest: 1.15 } : null;
+}
+
+/**
+ * Hình trúng đòn chung (HPL2, `HitFx`), chỉ là lớp hình theo `DmgMsg`: người đánh trúng → vết va tô theo hướng tu của người đánh (+ khe nứt khi chí mạng);
+ * quái đánh trúng người → vệt cào/dấu cắn tô theo hệ của quái (không đỏ: đỏ dành cho vạch báo); sát thương 0 → tấm khiên nứt; nhận hồi máu → sen.
+ * Sát thương lên quái không có cấp đòn `tr` (độc/bỏng mỗi giây, trận, pháp bảo: đã có hình riêng hoặc không phải một cú đánh) thì không vẽ vết va.
+ */
+function hitVisual(eng: Game, m: DmgMsg, mine: boolean, byMe: boolean): void {
+  const hf = eng.hitFx;
+  if (!hf) return;
+  const v = hitPointOf(eng, m.dst);
+  if (!v) return;
+  const involves = mine || byMe;
+  const victimIsPlayer = eng.ents.players.has(m.dst);
+  if (m.heal) {
+    const mhp = eng.view.players.get(m.dst)?.mhp ?? 0;
+    if (m.n > 0 && victimIsPlayer) hf.heal(v, mhp > 0 && m.n >= mhp * HEAL_BIG_FRAC, involves);
+    return;
+  }
+  const sp = m.src ? eng.ents.players.get(m.src) : undefined;
+  const sm = m.src && !sp ? eng.ents.monsters.get(m.src) : undefined;
+  if (m.n === 0) return hf.block(v, sp ?? sm ?? null, involves);
+  if (sp) {
+    if (m.tr !== undefined || victimIsPlayer) hf.hit(v, sp, eng.methodOfPlayer(m.src!), !!m.crit, involves);
+  } else if (sm && victimIsPlayer) {
+    const def = MONSTER.get(sm.s.t);
+    hf.monStrike(v, sm, def?.elem, BITERS.has(def?.model ?? ''), involves);
+  }
 }
 
 /** Vệt mực mờ dưới chân nạn nhân đòn nặng (M4-14), tối đa một vệt mỗi 0,4 giây mỗi nạn nhân. */
@@ -1393,4 +1436,11 @@ export function onSys(eng: Game, m: SysMsg): void {
     eng.wantFly = false;
     set({ wantFly: false });
   }
+}
+
+/** Cất/hạ cánh ngự kiếm (V-P10): cảnh `fx_fly_on`/`fx_fly_off` tại người đổi cờ bay. Cất cánh của mình đã phát ở `toggleFly` (dự đoán) nên bỏ qua. */
+export function flyFx(eng: Game, sid: string, flying: boolean, x: number, z: number): void {
+  if (!eng.skillFx || (flying && sid === eng.sid) || Math.hypot(x - eng.renderPos.x, z - eng.renderPos.z) > 60) return;
+  const tl = flyTimeline(flying, sid === eng.sid);
+  if (tl) eng.skillFx.startFromFx(sid, tl);
 }

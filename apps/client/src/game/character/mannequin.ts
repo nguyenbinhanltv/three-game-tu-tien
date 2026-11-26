@@ -2057,7 +2057,8 @@ export class MannequinPlayers {
     if (this.poseSrc) {
       if (this.poseSrc instanceof PoseSource)
         for (const t of this.tpl.values())
-          if (typeof t === 'object' && !t.bank) t.bank = new MannequinPoseBank(this.poseSrc, t.handle.scene);
+          if (typeof t === 'object' && !t.bank)
+            t.bank = new MannequinPoseBank(this.poseSrc, t.handle.scene, () => t.clips.get('Idle_Loop'));
       return;
     }
     this.poseSrc = 'loading';

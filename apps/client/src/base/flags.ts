@@ -124,8 +124,10 @@ interface Flags {
   isoFxCompress: boolean;
   /** `?style=painted` phong cách "Họa Cảnh" (nền hoạt hình vẽ tay, thử ở Vân Lam); mặc định không đổi gì. Giá trị lạ = tắt. */
   style: 'painted' | null;
-  /** `?paint=0..3` mức lớp Kuwahara của Họa Cảnh (0 tắt, mặc định 1 khi `?style=painted`). */
+  /** `?paint=0..3` mức lớp Kuwahara của Họa Cảnh (0 tắt; không có cờ: 3 = bút rộng bán kính 2). */
   paint: number | null;
+  /** `?painthalf=0` (cùng `?style=painted`): bút rộng Kuwahara tính tại chỗ ở mọi điểm ảnh như trước B6 (so ảnh/số đo); mặc định pass riêng cỡ ~màn hình. */
+  paintHalf: boolean;
   /** `?far=1|0` (cùng `?style=painted`): ép bật/tắt vùng xa nướng một lần (FarBackdrop). Không có cờ: theo bảng level (`render/painted/theme.ts` `far`; Vân Lam tắt vì thung lũng kín). */
   far: boolean | null;
   /** `?vistafly=<độ>`: ghi đè pitch camera vista khi ngự kiếm (chỉ với ?far=1; để so mức). */
@@ -147,7 +149,11 @@ export const FLAG_DOCS: Readonly<Record<string, { scope: 'user' | 'diag' | 'test
     doc: '=1: vùng xa Họa Cảnh (núi nướng một lần, render/painted/farBackdrop.ts); =0 tắt; chỉ có tác dụng với ?style=painted, WebGPU; mặc định theo level (Bắc Hoang bật)',
   },
   paintdbg: { scope: 'diag', doc: '=dry|vc: gỡ lỗi mảng đất trần của Họa Cảnh (xuất mặt nạ ra đất; xem render/painted/theme.ts dryMix)' },
-  paint: { scope: 'diag', doc: '0..3: mức Kuwahara của ?style=painted (0 tắt, mặc định 1)' },
+  paint: { scope: 'diag', doc: '0..3: mức Kuwahara của ?style=painted (0 tắt, mặc định 3)' },
+  painthalf: {
+    scope: 'diag',
+    doc: '=0: bút rộng Kuwahara của ?style=painted tính tại chỗ ở mọi điểm ảnh (trước B6); mặc định pass riêng cỡ ~màn hình',
+  },
   vista: { scope: 'diag', doc: '0: tắt camera mở tầm nhìn (hạ thấp khi ngự kiếm và ở điểm ngắm cảnh)' },
   paintedlab: {
     scope: 'test',
@@ -248,6 +254,7 @@ export function readFlags(search: string): Flags {
     paintDbg: q.get('paintdbg') === 'dry' ? 'dry' : q.get('paintdbg') === 'vc' ? 'vc' : null,
     vistaFlyPitch: Number.isFinite(Number(q.get('vistafly') ?? NaN)) && q.has('vistafly') ? Number(q.get('vistafly')) : null,
     paint: /^[0-3]$/.test(q.get('paint') ?? '') ? Number(q.get('paint')) : null,
+    paintHalf: !off(q.get('painthalf')),
     isoFxCompress: q.get('isofx') !== '0',
     vista: q.get('vista') !== '0',
     isoYaw: q.get('isoyaw') === null || Number.isNaN(Number(q.get('isoyaw'))) ? null : (Number(q.get('isoyaw')) * Math.PI) / 180,

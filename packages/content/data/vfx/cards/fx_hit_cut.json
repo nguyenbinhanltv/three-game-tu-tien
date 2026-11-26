@@ -1,0 +1,44 @@
+{
+  "skillId": "fx_hit_cut",
+  "idea": "Đòn SẮC (kiếm, đao, phi kiếm) trúng thân: MỘT nét cọ khô xẻ chéo qua điểm trúng, chạy theo hướng đòn, hai đầu tỏe sợi mực; lõi mực gần đen, thân màu hướng tu người đánh, mép trắng mảnh. Vài tia nhỏ văng theo hướng đòn. Nhỏ (khoảng 1,6 m), tan trong 0,18 giây. Không sao tỏa tia, không lưỡi liềm trơn.",
+  "element": "kim",
+  "path": "",
+  "scene": {
+    "palette": {
+      "core": "14161c",
+      "body": "b9c6d6",
+      "rim": "ffffff",
+      "accent": "f0e6a8",
+      "shadow": "08090c"
+    },
+    "impactAt": 0
+  },
+  "shapeLang": [
+    "line"
+  ],
+  "timing": {
+    "anticipationMs": 0,
+    "impactMs": 60,
+    "lingerMs": 150
+  },
+  "footprint": {
+    "lengthM": 1.8,
+    "widthM": 0.8,
+    "heightM": 1.6
+  },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": {
+    "drawCalls": 2,
+    "particles": 14,
+    "screenCover": 0.01,
+    "overdraw": 2
+  },
+  "textures": [],
+  "silhouette": "một nét cọ khô xẻ chéo qua thân, hai đầu tỏe sợi, nằm dọc hướng đòn",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles"
+  ]
+}

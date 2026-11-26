@@ -1,0 +1,45 @@
+{
+  "skillId": "fx_break",
+  "idea": "NGẮT CHÚ / MẤT THẾ (boss bị phá chú hoặc quỵ): một sợi xích chú bằng mực đang căng thì ĐỨT làm đôi ngay trước ngực boss, hai nửa bật ra hai phía, mắt xích vỡ rơi xuống; lõi mực, thân màu người phá, mép trắng. Có khói mực nhỏ ở điểm đứt. To hơn vết va (khoảng 2,6 m) vì là khoảnh khắc thưởng.",
+  "element": "vo",
+  "path": "",
+  "scene": {
+    "palette": {
+      "core": "14161c",
+      "body": "b9c6d6",
+      "rim": "ffffff",
+      "accent": "f0e6a8",
+      "shadow": "08090c"
+    },
+    "impactAt": 0
+  },
+  "shapeLang": [
+    "line",
+    "cloud"
+  ],
+  "timing": {
+    "anticipationMs": 0,
+    "impactMs": 90,
+    "lingerMs": 320
+  },
+  "footprint": {
+    "lengthM": 2.6,
+    "widthM": 1.4,
+    "heightM": 2
+  },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": {
+    "drawCalls": 3,
+    "particles": 20,
+    "screenCover": 0.025,
+    "overdraw": 3
+  },
+  "textures": [],
+  "silhouette": "sợi xích mực đứt đôi, hai nửa bật ra hai phía, mắt xích vỡ rơi",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles"
+  ]
+}

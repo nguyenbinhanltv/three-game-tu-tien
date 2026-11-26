@@ -1,0 +1,45 @@
+{
+  "skillId": "fx_st_burn",
+  "idea": "BỎNG (hỏa thiêu theo thời gian): những lưỡi mực-than cháy dựng từ đống than dưới chân, viền vàng hổ phách (KHÔNG cam/đỏ: đó là màu báo địch), vài tàn lửa bay lên. Lặp mỗi giây khi còn trạng thái.",
+  "element": "hoa",
+  "path": "",
+  "scene": {
+    "palette": {
+      "core": "1a1410",
+      "body": "d9b83c",
+      "rim": "fff3c2",
+      "accent": "ffffff",
+      "shadow": "0c0a06"
+    },
+    "impactAt": 0
+  },
+  "shapeLang": [
+    "burst",
+    "cloud"
+  ],
+  "timing": {
+    "anticipationMs": 0,
+    "impactMs": 50,
+    "lingerMs": 900
+  },
+  "footprint": {
+    "lengthM": 2.2,
+    "widthM": 2.2,
+    "heightM": 2.4
+  },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": {
+    "drawCalls": 2,
+    "particles": 6,
+    "screenCover": 0.02,
+    "overdraw": 2
+  },
+  "textures": [],
+  "silhouette": "năm lưỡi mực-than cháy dựng đứng từ đống than, viền vàng hổ phách",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles"
+  ]
+}

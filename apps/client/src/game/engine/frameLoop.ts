@@ -252,6 +252,7 @@ export function runFrame(eng: Game): void {
   eng.budget.mark('world'); // dấu nhiệm vụ trên đầu thực thể
   if (me) eng.vfx.trails.update(dt, eng.ents.players, eng.sid, eng.camera);
   eng.suyFx?.update();
+  eng.statusFx?.update(dt);
   eng.skillFx?.update(dt, pscale);
   if (me) eng.realmAura?.update(dt);
   if (me) eng.pathAura?.update(dt);
