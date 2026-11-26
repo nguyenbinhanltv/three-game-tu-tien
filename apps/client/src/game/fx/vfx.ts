@@ -175,6 +175,7 @@ export class Vfx {
       'sprite_dan',
       'sprite_kieu',
       'sprite_dp',
+      'sprite_hq',
       'sprite_chung',
       'sprite_ngu',
       'sprite_kiep',
