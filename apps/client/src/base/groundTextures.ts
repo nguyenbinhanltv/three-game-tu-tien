@@ -37,8 +37,9 @@ interface Manifest {
 /**
  * B9 (texture Vân Lam ≤ 450 MB): cạnh albedo tối đa của mảng mặt đất. Bộ 2K `terrain-lk` (8 lớp) chiếm ~180 MB albedo + 45 MB pháp tuyến. Ô lặp 6 m (đồng) / 2,4 m (lát đá):
  * ở 1536 là 3,9 mm / 1,6 mm mỗi texel, còn mịn hơn điểm ảnh màn hình 1080p ở camera chéo (~11–14 mm) và 4K (~5–7 mm); cắt từ 2048 xuống 1536 bớt ~78 MB VRAM (albedo 179 → 101 MB), pháp tuyến giữ 1024.
+ * B9 lần hai (Cực cao ≤ 480 MB @1080p): 1536 → 1280 (albedo 8 lớp 101 → 70 MB, −31 MB); ô 6 m → 4,7 mm/texel, ô lát đá 2,4 m → 1,9 mm, vẫn mịn hơn điểm ảnh 1080p (~11–14 mm) và 4K (~5–7 mm).
  */
-export const GROUND_ALBEDO_MAX = 1536;
+export const GROUND_ALBEDO_MAX = 1280;
 
 /**
  * B9 (Cực cao ≤ 512 MB): cạnh tối đa của mảng pháp tuyến/độ nhám mặt đất (8 lớp RGBA8 + mip). 1024 → 768: 45 → 25 MB (−20 MB); ô lặp 6 m → 7,8 mm/texel, vẫn nhỏ hơn điểm ảnh 1080p (~11–14 mm).

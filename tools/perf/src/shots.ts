@@ -60,6 +60,7 @@ import cotu from './scenarios/cotu';
 import camchevfx from './scenarios/camchevfx';
 import animlab from './scenarios/animlab';
 import envreal from './scenarios/envreal';
+import hpl2ms from './scenarios/hpl2ms';
 import tpmove from './scenarios/tpmove';
 import tp2 from './scenarios/tp2';
 import vfxlab from './scenarios/vfxlab';
@@ -149,6 +150,7 @@ const SCENARIOS: Scenario[] = [
   camchevfx,
   animlab,
   envreal,
+  hpl2ms,
   tpmove,
   tp2,
   vfxlab,

@@ -9,7 +9,7 @@
 // không bị trần 60 fps che. Camera đứng yên ở góc chéo khóa của level (không xoay, không zoom).
 //
 //   pnpm perf:iso [--presets medium,high,ultra] [--seconds 4] [--size 1280x720] [--out <thư mục>] [--baseline <iso-*.json>]
-//                 [--only van_lam,kiem_trung,kieu_3,trib:do_kiep,fight] [--quick] [--igpu] [--noshadow] [--bots 10] [--dump-inst] [--dump-draws] [--query a=b] [--renderer webgpu|webgl2] [--channel chrome|chromium]
+//                 [--only van_lam,kiem_trung,kieu_3,trib:do_kiep,fight] [--quick] [--igpu] [--noshadow] [--bots 10] [--dump-inst] [--dump-draws] [--dump-tex [--tex-top N]] [--query a=b] [--renderer webgpu|webgl2] [--channel chrome|chromium]
 // `--quick`: preset high, 2 giây/điểm, chỉ Vân Lam + một bí cảnh + một phòng cầu + cảnh đánh (cho máy người dùng tự chạy).
 // `--settle-max N`: trước mỗi điểm đo chờ cảnh NẠP XONG (tam giác, byte texture, số geometry ổn định 3 giây liền; tối đa N giây, mặc định 40);
 //   không chờ thì điểm đầu của level đo khi ô địa hình/prop/texture còn đang nạp (baseline cũ ghi Vân Lam 354k tam giác/94 MB so với 821k/460–500 MB thật).
@@ -90,6 +90,7 @@ function initScript(preset: string): void {
   const w = window as any;
   const tex = new Map<object, number>();
   const rtTex = new WeakSet<object>();
+  const texMeta = new Map<object, { w: number; h: number; lv: number; ms: number }>();
   const B = {
     rec: false,
     passes: {} as Record<string, number>,
@@ -116,6 +117,42 @@ function initScript(preset: string): void {
     let s = 0;
     for (const [t, v] of tex) if (rtTex.has(t)) s += v;
     return s;
+  };
+  /** Chẩn đoán B9 (`--dump-tex`): danh sách texture GPU hiện có, lớn nhất trước. `rt` = đích vẽ (MSAA/MRT), còn lại là tài sản. */
+  w.__isoTexList = (top: number) => {
+    const rows = [...tex].map(([t, bytes]: [any, number]) => {
+      const m = texMeta.get(t);
+      const src = t.source?.data;
+      return {
+        mb: bytes / 1048576,
+        name: String(t.name || t.userData?.url || (typeof src?.src === 'string' ? src.src.split('/').pop() : '') || t.uuid.slice(0, 8)),
+        w: m?.w ?? 0,
+        h: m?.h ?? 0,
+        mips: m?.lv ?? 1,
+        samples: m?.ms ?? 1,
+        fmt: t.isCompressedTexture
+          ? 'KTX2'
+          : t.isRenderTargetTexture
+            ? 'RT'
+            : t.isDepthTexture
+              ? 'depth'
+              : t.isDataTexture
+                ? 'data'
+                : 'raw',
+        type: t.type as number,
+        rt: rtTex.has(t),
+      };
+    });
+    rows.sort((a, b) => b.mb - a.mb);
+    const sum = (f: (r: (typeof rows)[number]) => boolean) => rows.filter(f).reduce((a, r) => a + r.mb, 0);
+    return {
+      total: sum(() => true),
+      rt: sum((r) => r.rt),
+      ktx2: sum((r) => r.fmt === 'KTX2' && !r.rt),
+      other: sum((r) => r.fmt !== 'KTX2' && !r.rt),
+      count: rows.length,
+      top: rows.slice(0, top),
+    };
   };
   const COMPS: Record<number, number> = { 1021: 1, 1022: 4, 1023: 4, 1026: 1, 1027: 1, 1028: 1, 1029: 1, 1030: 2, 1031: 2, 1033: 4 };
   const TYPE_B: Record<number, number> = {
@@ -175,10 +212,17 @@ function initScript(preset: string): void {
         be.createTexture = (t: object, o: unknown) => {
           create(t, o);
           tex.set(t, bytesOf(t, o));
+          texMeta.set(t, {
+            w: (o as any)?.width ?? (t as any).image?.width ?? 0,
+            h: (o as any)?.height ?? (t as any).image?.height ?? 0,
+            lv: (o as any)?.levels ?? 1,
+            ms: (t as any).isRenderTargetTexture ? ((o as any)?.sampleCount ?? 1) : 1,
+          });
           if ((t as any).isRenderTargetTexture) rtTex.add(t);
         };
         be.destroyTexture = (t: object) => {
           tex.delete(t);
+          texMeta.delete(t);
           destroy(t);
         };
         // Chẩn đoán khung dài: đếm pipeline mới và ghi tên vật liệu/đối tượng (biên dịch lúc vẽ lần đầu).
@@ -347,6 +391,26 @@ async function measure(page: Page, id: string, target: Target, preset: string, d
     };
   });
   const src = await drawSources(page, 40);
+  if (flag('--dump-tex')) {
+    // Chẩn đoán B9: texture GPU lớn nhất của điểm này (tên, cỡ, mip, số mẫu MSAA, loại), kèm tổng theo nhóm.
+    const tl = (await page.evaluate((n) => (window as any).__isoTexList(n), Number(opt('--tex-top', '25')) || 25)) as {
+      total: number;
+      rt: number;
+      ktx2: number;
+      other: number;
+      count: number;
+      top: { mb: number; name: string; w: number; h: number; mips: number; samples: number; fmt: string; rt: boolean }[];
+    };
+    console.log(
+      `  --- tex ${id}: ${tl.count} texture, tổng ${tl.total.toFixed(1)} MB = đích vẽ ${tl.rt.toFixed(1)} + KTX2 ${tl.ktx2.toFixed(1)} + khác ${tl.other.toFixed(1)}\n` +
+        tl.top
+          .map(
+            (r) =>
+              `    ${r.mb.toFixed(1).padStart(6)} MB  ${r.fmt.padEnd(5)} ${String(r.w).padStart(4)}×${String(r.h).padEnd(4)} mip${r.mips}${r.samples > 1 ? ` ×${r.samples}MS` : ''}${r.rt ? ' [đích vẽ]' : ''}  ${r.name}`,
+          )
+          .join('\n'),
+    );
+  }
   if (flag('--dump-draws')) {
     // Chẩn đoán B4: 40 nhóm draw call lớn nhất của điểm này (`nhóm cha | tên mesh | loại vật liệu`), kèm số lượt đổ bóng.
     console.log(

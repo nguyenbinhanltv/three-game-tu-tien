@@ -1,0 +1,44 @@
+{
+  "skillId": "fx_st_real",
+  "idea": "THỂ THẬT (Kính Nguyệt Chân Quân, bóng giả không có): gợn nước viền mực đậm, lõi lam ngọc quanh chân, suốt trận. Lặp.",
+  "element": "thuy",
+  "path": "",
+  "scene": {
+    "palette": {
+      "core": "0a2a40",
+      "body": "5fb8e8",
+      "rim": "e6f8ff",
+      "accent": "f0e6a8",
+      "shadow": "05121c"
+    },
+    "impactAt": 0
+  },
+  "shapeLang": [
+    "ring"
+  ],
+  "timing": {
+    "anticipationMs": 0,
+    "impactMs": 50,
+    "lingerMs": 900
+  },
+  "footprint": {
+    "lengthM": 2.2,
+    "widthM": 2.2,
+    "heightM": 2.4
+  },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": {
+    "drawCalls": 2,
+    "particles": 6,
+    "screenCover": 0.02,
+    "overdraw": 2
+  },
+  "textures": [],
+  "silhouette": "gợn nước viền mực đậm lõi lam ngọc quanh chân",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles"
+  ]
+}

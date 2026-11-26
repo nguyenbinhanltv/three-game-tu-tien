@@ -2,7 +2,17 @@ import { describe, expect, it } from 'vitest';
 import { POSE, SKILLS } from '@dtl/content';
 import { smearWindow, taperOf } from '../fx/bladeSmear';
 
-const IDS = ['kiem_khi_tram', 'phi_kiem', 'phi_kiem_2', 'phi_kiem_3', 'thien_kiem_vu'];
+const IDS = [
+  'kiem_khi_tram',
+  'phi_kiem',
+  'phi_kiem_2',
+  'phi_kiem_3',
+  'thien_kiem_vu',
+  'kiem_khi_tram_tt',
+  'phi_kiem_tt',
+  'phi_kiem_2_tt',
+  'phi_kiem_3_tt',
+];
 
 describe('pose Thân Pháp `_tp` (T4)', () => {
   for (const id of IDS) {

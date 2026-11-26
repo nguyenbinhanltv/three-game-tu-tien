@@ -427,6 +427,11 @@ export const FX_SPRITES = [
   'chung_flame',
   'chung_halo',
   'chung_leaf',
+  // Nhóm 2a (khiên fresnel, thể thật, phản đòn): lưới lục giác rỗng viền sáng, gợn nước viền mực, mảnh gương, vòng lục giác.
+  'chung_hexweb',
+  'chung_pool',
+  'chung_mirror',
+  'chung_hexring',
   // V-P10: nhóm atlas `ngu` (ngự kiếm: cất cánh, hạ cánh, vệt bay). Tranh đơn sắc, kiểu tô 12.
   'ngu_blade',
   'ngu_ring',
@@ -553,8 +558,13 @@ export interface FxMeshEvent extends FxBase {
   card?: 'arhat' | 'phoenix' | 'ghost' | 'colossus' | 'fist';
   /** Với `move`: giữ hướng thẳng đứng (chỉ xoay theo hướng nhìn) thay vì quay mũi theo hướng bay (rồng lao xuống). */
   keepUp?: boolean;
-  /** Quay quanh trục tiến (độ/giây), cho vòng xoắn. */
+  /** Quay quanh trục tiến (độ/giây), cho vòng xoắn. Sprite billboard KHÔNG quay theo `spin` (dùng `orbit`). */
   spin?: number;
+  /**
+   * Quay vòng quanh điểm đặt (kết hợp `follow`): hình đi trên đường tròn bán kính `r` mét ở mặt XZ, tốc độ `w` rad/s, pha đầu `phase` rad.
+   * Dùng cho mảnh gương xoay quanh thân (phản đòn). Chỉ là hình.
+   */
+  orbit?: { r: number; w: number; phase?: number };
   /** Seed hình (mặc định theo lần phát). */
   seed?: number;
   /** Bám theo mục tiêu/người ra chiêu suốt vòng đời (mặc định cố định tại điểm đặt). */

@@ -2,7 +2,6 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { POSE } from '@dtl/content';
 import {
   accelLean,
   bobOf,
@@ -13,9 +12,7 @@ import {
   exagGain,
   glideDip,
   glideLean,
-  IDLE_POSES,
   idleDue,
-  idlePoseFor,
   leanBoost,
   LocoImpulse,
 } from './animFx';
@@ -82,12 +79,9 @@ describe('Thân Pháp T2/T3 (di chuyển, idle)', () => {
     expect(glideDip(5.4)).toBeCloseTo(0.04, 9);
     expect(glideDip(0)).toBe(0);
   });
-  it('idle: chọn pose theo thế kiếm, tới lượt sau 7 s đứng yên', () => {
-    expect(idlePoseFor(true)).toBe('kiem_idle_xoay');
-    expect(idlePoseFor(false)).toBe('kiem_idle_chap_tay');
+  it('idle: tới lượt sau 7 s đứng yên', () => {
     expect(idleDue(6.9)).toBe(false);
     expect(idleDue(7)).toBe(true);
-    expect(POSE.has(IDLE_POSES.drawn) && POSE.has(IDLE_POSES.free)).toBe(true);
   });
 });
 

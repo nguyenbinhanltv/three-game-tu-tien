@@ -41,7 +41,7 @@ export const SPRITE_GROUPS = {
   // V-P10: cảnh đột phá (lên tầng + bốn cảnh giới), tranh đơn sắc tô theo bảng màu timeline; chỉ nạp khi có người đột phá.
   dp: { file: 'hoa-truc/vfx_sprites_dp.c0b797988b.webp', cols: 4, rows: 4 },
   // Trúng đòn chung (HPL2): vết va/chí mạng/chặn/hồi phục, tranh đơn sắc tô theo bảng màu lúc phát. Dùng liên tục khi đánh nhau nên luôn giữ (`ALWAYS_GROUPS`).
-  chung: { file: 'hoa-truc/vfx_sprites_chung.d2d2b8096f.webp', cols: 4, rows: 7 },
+  chung: { file: 'hoa-truc/vfx_sprites_chung.61d49e0191.webp', cols: 4, rows: 8 },
   // V-P10: ngự kiếm (cất cánh, hạ cánh, vệt bay), tranh đơn sắc tô theo bảng màu timeline; chỉ nạp khi có người bay.
   ngu: { file: 'hoa-truc/vfx_sprites_ngu.53d3b0c236.webp', cols: 4, rows: 2 },
   // V-P10: độ kiếp (mở kiếp, kiếp vân tầng thấp, chỗ sét đánh); chỉ nạp khi có người độ kiếp trong tầm nhìn.

@@ -1,0 +1,74 @@
+{
+  "skill": "fx_st_sensed",
+  "trigger": "fx",
+  "fxKind": "~st_sensed",
+  "palette": "st_gold",
+  "events": [
+    {
+      "type": "mesh",
+      "shape": "sprite",
+      "sprite": "chung_eye",
+      "billboard": true,
+      "at": "self",
+      "t": 0,
+      "dur": 1.1,
+      "offset": [
+        0,
+        2,
+        0
+      ],
+      "scale": 0.85,
+      "scaleTo": 0.9,
+      "sweep": 0,
+      "erodeFrom": 0.75,
+      "ragged": 0.5,
+      "tone": "body",
+      "alpha": 1,
+      "tier": 0,
+      "seed": 2520,
+      "follow": true
+    },
+    {
+      "type": "mesh",
+      "shape": "sprite",
+      "sprite": "chung_eye",
+      "billboard": true,
+      "at": "self",
+      "t": 0.03,
+      "dur": 0.1,
+      "offset": [
+        0,
+        2,
+        0
+      ],
+      "scale": 0.95,
+      "scaleTo": 1.11,
+      "sweep": 0,
+      "erodeFrom": 0.2,
+      "ragged": 0.5,
+      "tone": "accent",
+      "alpha": 0.85,
+      "tier": 1,
+      "seed": 2521,
+      "follow": true
+    },
+    {
+      "type": "particles",
+      "kind": "spark",
+      "t": 0.3,
+      "n": 1,
+      "speed": 0.8,
+      "spread": 0.9,
+      "life": 0.5,
+      "size": 0.05,
+      "at": "self",
+      "tone": "rim",
+      "tier": 1,
+      "offset": [
+        0,
+        2,
+        0
+      ]
+    }
+  ]
+}

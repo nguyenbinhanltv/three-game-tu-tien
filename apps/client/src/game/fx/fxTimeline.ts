@@ -704,6 +704,11 @@ export class FxRunner {
       } else if (ev.follow) {
         this.anchor(c, ev.at ?? 'self', ev.offset, yaw, this.tgtOf(c) ?? tgt, m.position);
       } else m.position.copy(start);
+      if (ev.orbit) {
+        const a = (ev.orbit.phase ?? 0) + ev.orbit.w * k * dur;
+        m.position.x += Math.cos(a) * ev.orbit.r;
+        m.position.z += Math.sin(a) * ev.orbit.r;
+      }
       if (ev.billboard ?? (kind === 'flip' || kind === 'mapFlip' || ev.shape === 'sprite')) {
         // Quay mặt về camera; `rot[2]` xoay thêm trong mặt phẳng hình (nét chém chéo).
         m.quaternion.copy(cam.quaternion);

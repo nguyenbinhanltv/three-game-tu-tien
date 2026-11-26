@@ -1,0 +1,44 @@
+{
+  "skillId": "fx_st_ward",
+  "idea": "HỘ THỂ / KHIÊN (người chơi): lưới lục giác lam thép viền sáng trùm quanh thân, giữa trong suốt (kiểu fresnel); đứng yên (khác phản đòn có mảnh gương xoay). Lặp khi còn cờ.",
+  "element": "kim",
+  "path": "",
+  "scene": {
+    "palette": {
+      "core": "10202e",
+      "body": "6fa8d0",
+      "rim": "eaf6ff",
+      "accent": "f0e6a8",
+      "shadow": "070d14"
+    },
+    "impactAt": 0
+  },
+  "shapeLang": [
+    "ring"
+  ],
+  "timing": {
+    "anticipationMs": 0,
+    "impactMs": 50,
+    "lingerMs": 900
+  },
+  "footprint": {
+    "lengthM": 2.2,
+    "widthM": 2.2,
+    "heightM": 2.4
+  },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": {
+    "drawCalls": 2,
+    "particles": 6,
+    "screenCover": 0.02,
+    "overdraw": 2
+  },
+  "textures": [],
+  "silhouette": "lưới lục giác lam thép viền sáng trùm thân, giữa trong suốt",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles"
+  ]
+}
