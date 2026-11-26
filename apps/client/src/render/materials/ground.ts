@@ -713,7 +713,7 @@ export function applyGroundShader(mat: THREE.MeshStandardNodeMaterial, tex: Grou
       mix(vec3(themeU.pShade), vec3(themeU.gShade), 0.35),
       sJoint.mul(0.85),
     );
-    const slabW: Node = smoothstep(0.5, 0.66, vcL).mul(
+    const slabW: Node = smoothstep(0.6, 0.74, vcL).mul(
       float(1).sub(smoothstep(themeU.slab.z.sub(6), themeU.slab.z, distance(p, themeU.slab.xy))),
     );
     const grassy: Node = mix(grassyV, slabTone.mul(mix(float(1), detail, 0.35)), slabW);
