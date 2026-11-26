@@ -26,7 +26,8 @@
       "alpha": 0.9,
       "tier": 0,
       "seed": 2440,
-      "follow": true
+      "follow": true,
+      "spriteStyle": 14
     },
     {
       "type": "mesh",

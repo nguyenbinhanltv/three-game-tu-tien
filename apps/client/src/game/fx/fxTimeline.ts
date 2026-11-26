@@ -821,7 +821,7 @@ export class FxRunner {
     // 7 = đất/đá/độc tho_/doc_ (bảng nâu, giữ phần ngả lục), 8 = sét tím tim_ (nguyên màu), 9 = đao dao_ (than thép), 10 = đan dan_ (lục), 11 = cổ thần cth_ (nâu sẫm + hổ phách).
     if (isSprite) {
       const sn = ev.sprite ?? '';
-      m.fxA.x = SPRITE_STYLE[sn.slice(0, sn.indexOf('_') + 1)] ?? 0;
+      m.fxA.x = ev.spriteStyle ?? SPRITE_STYLE[sn.slice(0, sn.indexOf('_') + 1)] ?? 0;
     }
   }
 
