@@ -23,6 +23,11 @@ export interface PaintedTheme {
   propMix?: number;
   /** Tương phản đêm Họa Cảnh quanh mức tối (1 = như Vân Lam; >1 kéo sáng/tối xa nhau để nhân vật, vách, tàn tích còn khối). */
   nightContrast?: number;
+  /**
+   * 0..1: ban đêm làm dải chuyển sáng↔tối của đất vẽ gắt lại (mảng sáng và mảng bóng tách bạch như nét cọ, không loang). Đêm đã mất màu (nhuộm trăng), chỉ còn độ chói:
+   * mảng chuyển mềm trên nền một tông đọc thành mây; hai tông có biên rõ đọc thành đất. 0 = không (mặc định).
+   */
+  nightSplit?: number;
   /** Màu nhuộm trăng (nhân, tuyến tính) của đêm Họa Cảnh; mặc định [0,3, 0,46, 0,88] của Vân Lam. Bớt xanh dương để nhân vật và vòng chọn không chìm. */
   nightTint?: [number, number, number];
   /** Nhân đèn trời/trăng của đêm Họa Cảnh (mặc định 1): nhân vật và quái là phần duy nhất nhận đèn, tăng để đọc rõ. */
@@ -101,6 +106,7 @@ export const PAINTED_THEMES: Record<string, PaintedTheme> = {
     nightContrast: 1.7,
     nightTint: [0.42, 0.52, 0.78],
     nightLift: 1.7,
+    nightSplit: 0.85,
     groundMix: 0.75,
     groundSat: 1,
     vcMix: 0.6,
@@ -128,6 +134,7 @@ export const themeU = {
   mistK: uniform(DEFAULT_MIST.k),
   propMix: uniform(0),
   nightContrast: uniform(1),
+  nightSplit: uniform(0),
   nightTint: uniform(new THREE.Vector3(0.3, 0.46, 0.88)),
   groundMix: uniform(1),
   groundSat: uniform(1),
@@ -143,6 +150,7 @@ export function setPaintedTheme(levelId: string): void {
   themeU.on.value = t ? 1 : 0;
   themeU.propMix.value = t?.propMix ?? 0;
   themeU.nightContrast.value = t?.nightContrast ?? 1;
+  themeU.nightSplit.value = t?.nightSplit ?? 0;
   themeU.nightTint.value.set(...(t?.nightTint ?? [0.3, 0.46, 0.88]));
   themeU.groundMix.value = t?.groundMix ?? 1;
   themeU.groundSat.value = t?.groundSat ?? 1;
