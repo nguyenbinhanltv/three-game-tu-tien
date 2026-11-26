@@ -25,9 +25,9 @@ export default {
     await gm(page, 'level 32', 1500);
     await gm(page, 'tp 2048 2095', 1800);
     await gm(page, 'killall', 800);
-    await page.evaluate(() => (window.__game as unknown as { toggleFly(): void }).toggleFly());
-    await sleep(1500);
-    const frames = Number(opt('--frames', '4'));
+    const fly = () => page.evaluate(() => (window.__game as unknown as { toggleFly(): void }).toggleFly());
+    const frames = Number(opt('--frames', '3'));
+    // Camera chéo MẶC ĐỊNH của game (không đặt lại); lúc ngự kiếm game kéo xa ×1,35 nên mỗi cỡ chụp thêm bản cắt cận chính giữa khung (nhân vật ở giữa).
     for (const [w, h, tag] of [
       [1920, 1080, '1080p'],
       [1280, 720, '720p'],
@@ -35,10 +35,19 @@ export default {
       await page.setViewportSize({ width: w, height: h });
       await sleep(700);
       await gm(page, 'tp 2040 2095', 1200);
+      await fly();
       await page.keyboard.down('KeyD');
+      // Khung +30 ms, +150 ms, +400 ms sau lúc bật ngự kiếm (vệt vừa mọc), rồi các khung bay ổn định.
+      let t = 0;
+      for (const ms of [30, 150, 400]) {
+        await snap(page, r.out, `bay-${tag}-+${ms}ms.jpg`, { wait: ms - t });
+        t = ms;
+      }
       await sleep(900);
-      for (let i = 0; i < frames; i++) await snap(page, r.out, `bay-${tag}-${i}.jpg`, { wait: 300 });
+      for (let i = 0; i < frames; i++) await snap(page, r.out, `bay-${tag}-on-dinh-${i}.jpg`, { wait: 300 });
       await page.keyboard.up('KeyD');
+      await fly();
+      await sleep(1200);
     }
     await ctx.close();
   },
