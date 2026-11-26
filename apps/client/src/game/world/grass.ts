@@ -32,6 +32,7 @@ import { tkGrassDensity } from './thienKhuyetArt';
 import type { N } from '../../render/vfx/common';
 import { logger } from '../../base/log';
 import { ASSET_BASE } from '../../base/assetBase';
+import { FLAGS } from '../../base/flags';
 
 const grassLog = logger('grass');
 
@@ -245,6 +246,9 @@ function ochreTuftAt(x: number, z: number, h: number, slope: number, r: number, 
 
 const C_STAR = new THREE.Color(0x9fb8c0);
 const C_STAR_DEEP = new THREE.Color(0x56807f);
+/** Họa Cảnh: cỏ sao xanh ngọc bão hòa lạc tông với đất ocher (ban đêm thành xanh hoàng gia): xanh xám ngả vàng, cùng họ với bảng `thien_khuyet`. */
+const C_STAR_P = new THREE.Color(0xa7ab8c);
+const C_STAR_DEEP_P = new THREE.Color(0x6c7060);
 /**
  * Cỏ sao Thiên Khuyết (E4-I): thẻ cỏ xanh lam sẫm của atlas `grass-night`, thưa, thành đám, chỉ lọt qua kẽ đá (không trên sân lát/đại lộ, mật độ ở `tkGrassDensity`).
  * Thẻ 0 (cỏ sao, có hoa) chủ đạo; màu trộn giữa xanh ngọc xỉn và lam nhạt như phủ sương đêm.
@@ -256,8 +260,9 @@ function tkTuftAt(x: number, z: number, h: number, slope: number, r: number, out
   const pick = hash01(Math.floor(x * 3.7), Math.floor(z * 3.7), 829);
   const card = pick < 0.5 ? 0 : pick < 0.75 ? 1 : pick < 0.9 ? 2 : 3;
   const n = fbm(x * 0.03, z * 0.03, 2, 20261116 + 5);
-  _c.copy(C_STAR_DEEP)
-    .lerp(C_STAR, Math.max(0, Math.min(1, 0.45 + n * 0.8)))
+  const painted = FLAGS.style === 'painted';
+  _c.copy(painted ? C_STAR_DEEP_P : C_STAR_DEEP)
+    .lerp(painted ? C_STAR_P : C_STAR, Math.max(0, Math.min(1, 0.45 + n * 0.8)))
     .multiplyScalar(0.8 + r2 * 0.32);
   out[o] = x;
   out[o + 1] = h - 0.03;
