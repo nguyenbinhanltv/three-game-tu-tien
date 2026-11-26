@@ -9,7 +9,7 @@ import { snap } from '../lib/shot';
 export default {
   name: 'flytrail',
   desc: 'Vệt phi kiếm khi ngự kiếm bay ngang sân tông môn (ngày/đêm, 1080p + 720p, trước/sau lớp mực)',
-  usage: '--out <thư mục> [--mood night] [--noink] [--frames 4]',
+  usage: '--out <thư mục> [--mood night] [--noink] [--other] [--frames 4]',
   async run(r) {
     const mood = opt('--mood', '');
     const { ctx, page } = await r.open({
@@ -25,6 +25,26 @@ export default {
     await gm(page, 'level 32', 1500);
     await gm(page, 'tp 2048 2095', 1800);
     await gm(page, 'killall', 800);
+    // `--other`: một người chơi thứ hai (trình duyệt phụ, 640×360) bay song song cách ~5 m để kiểm vệt của NGƯỜI KHÁC (mờ ×0,5).
+    let otherPage: import('playwright').Page | null = null;
+    let otherCtx: { close(): Promise<void> } | null = null;
+    if (flag('--other')) {
+      const o = await r.open({
+        name: 'FlyTrailB',
+        viewport: [640, 360],
+        dpr: 1,
+        quality: 'low',
+        look: { g: 'm' },
+        query: { realm: 'nk12', god: 1, quiet: 1, ...(mood ? { mood } : {}) },
+        hide: 'hud',
+        warnings: /models/,
+      });
+      otherPage = o.page;
+      otherCtx = o.ctx;
+      await otherPage.waitForFunction(() => !!window.__game, undefined, { timeout: 120_000 });
+      await sleep(2500);
+      await gm(otherPage, 'level 32', 1500);
+    }
     const fly = () => page.evaluate(() => (window.__game as unknown as { toggleFly(): void }).toggleFly());
     const frames = Number(opt('--frames', '3'));
     // Camera chéo MẶC ĐỊNH của game (không đặt lại); lúc ngự kiếm game kéo xa ×1,35 nên mỗi cỡ chụp thêm bản cắt cận chính giữa khung (nhân vật ở giữa).
@@ -35,6 +55,11 @@ export default {
       await page.setViewportSize({ width: w, height: h });
       await sleep(700);
       await gm(page, 'tp 2040 2095', 1200);
+      if (otherPage) {
+        await gm(otherPage, 'tp 2040 2090', 1200);
+        await otherPage.evaluate(() => (window.__game as unknown as { toggleFly(): void }).toggleFly());
+        await otherPage.keyboard.down('KeyD');
+      }
       await fly();
       await page.keyboard.down('KeyD');
       // Khung +30 ms, +150 ms, +400 ms sau lúc bật ngự kiếm (vệt vừa mọc), rồi các khung bay ổn định.
@@ -47,8 +72,13 @@ export default {
       for (let i = 0; i < frames; i++) await snap(page, r.out, `bay-${tag}-on-dinh-${i}.jpg`, { wait: 300 });
       await page.keyboard.up('KeyD');
       await fly();
+      if (otherPage) {
+        await otherPage.keyboard.up('KeyD');
+        await otherPage.evaluate(() => (window.__game as unknown as { toggleFly(): void }).toggleFly());
+      }
       await sleep(1200);
     }
+    await otherCtx?.close();
     await ctx.close();
   },
 } satisfies Scenario;
