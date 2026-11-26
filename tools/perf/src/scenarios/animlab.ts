@@ -236,13 +236,17 @@ async function run(r: Run, poses: string[], cams: string[], sizes: string[]): Pr
     if (stillsMode === 'pin') {
       // A/B lò xo ghim gốc-thả ngọn (`?pin=1` so với không): đứng, chạy (giữa và cuối), dừng lại, né (Roll), chém — thời gian thật, ảnh cắt rộng quanh nhân vật theo cỡ màn hình.
       const setId = opt('--set', 'none');
-      if (setId !== 'none') await gm(page, `set ${setId}`, 1500);
-      await page.evaluate(() => window.__animlab!.cam('iso'));
+      if (setId !== 'none') await gm(page, `outfit ${setId} ${opt('--gender', 'f')}`, 3500);
+      const pinCam = opt('--cam', 'close') as 'iso' | 'close' | 'front' | 'side';
+      await page.evaluate((c) => window.__animlab!.cam(c), pinCam);
       await sleep(1500);
       const wideShot = async (name: string) => {
-        const buf = await page.screenshot({ clip: { x: 540 * sk, y: 270 * sk, width: 200 * sk, height: 190 * sk }, type: 'png' });
+        // camera cận: cả khung; camera chéo: cắt quanh nhân vật theo cỡ màn hình.
+        const buf = await page.screenshot(
+          pinCam === 'iso' ? { clip: { x: 540 * sk, y: 270 * sk, width: 200 * sk, height: 190 * sk }, type: 'png' } : { type: 'png' },
+        );
         await sharp(buf)
-          .resize(400, 300)
+          .resize(pinCam === 'iso' ? 400 : 640, pinCam === 'iso' ? 300 : 360)
           .png()
           .toFile(path.join(r.out, `${stillsMode}-${name}.png`));
         console.log('  ảnh', `${stillsMode}-${name}.png`);
@@ -256,8 +260,10 @@ async function run(r: Run, poses: string[], cams: string[], sizes: string[]): Pr
       await page.keyboard.up('w');
       await sleep(120);
       await wideShot('2-dung-lai');
-      await sleep(450);
+      await wideShot('2a-lang');
       await wideShot('2b-lang');
+      await sleep(250);
+      await wideShot('2c-lang');
       await page.keyboard.press('Space');
       await sleep(240);
       await wideShot('3-ne');
