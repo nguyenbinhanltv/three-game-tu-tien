@@ -43,6 +43,20 @@ const KNOCKABLE_BODY: ReadonlySet<string> = new Set(['small', 'medium']);
 /** Cấp đòn S1 từ mức này (chiêu cuối) mới hất ngã; và nghỉ giữa hai lần ngã của cùng một thực thể (giây). */
 export const KNOCK_TIER = 3;
 export const KNOCK_COOLDOWN_S = 4;
+/** Trần tổng thời gian ngã + nằm + đứng dậy (giây): ngã chỉ là hình, phải nhường server nên không được kéo dài. */
+export const KNOCK_TOTAL_S = 1.2;
+/** Thời gian nằm giữa clip ngã và clip đứng dậy (giây, chỉ model có hai clip riêng). */
+export const KNOCK_LIE_S = 0.1;
+/** Tốc độ phát chung (≥ 1) cho clip ngã và clip đứng dậy sao cho `(dKnock + dGetup) / rate + lie ≤ KNOCK_TOTAL_S`. */
+export function knockRate(dKnock: number, dGetup: number, lie = 0): number {
+  const sum = dKnock + dGetup;
+  return sum <= 0 ? 1 : Math.max(1, sum / (KNOCK_TOTAL_S - lie));
+}
+/** Đang ngã mà server báo thực thể di chuyển, niệm chú, bay/nhảy thì hủy ngã (đứng dậy ngay); ra chiêu hủy trực tiếp ở model. */
+export const KNOCK_CANCEL_SPEED = 1;
+export function knockCancelled(a: { speed: number; casting: boolean; flying: boolean; airborne: boolean; sky?: boolean }): boolean {
+  return a.speed > KNOCK_CANCEL_SPEED || a.casting || a.flying || a.airborne || !!a.sky;
+}
 
 /**
  * Có cho model phát ngã + đứng dậy (`knockdown`) khi trúng đòn không. Chỉ lớp hình: chiêu cuối (cấp ≥ `KNOCK_TIER`) lên NGƯỜI KHÁC (không phải

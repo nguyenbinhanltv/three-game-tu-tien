@@ -1,7 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import {
   FLINCH_BY_TIER,
+  KNOCK_CANCEL_SPEED,
   KNOCK_COOLDOWN_S,
+  KNOCK_LIE_S,
+  KNOCK_TOTAL_S,
+  knockCancelled,
+  knockRate,
   dashClipOf,
   holdHipsInPlace,
   deathYawOffset,
@@ -91,5 +96,29 @@ describe('knockdownWanted (TP-2: ngã + đứng dậy)', () => {
     expect(knockdownWanted(3, { self: false, body: 'medium' }, 99)).toBe(true);
     expect(knockdownWanted(3, { self: false, body: 'large' }, 99)).toBe(false);
     expect(knockdownWanted(3, { self: false, body: 'boss' }, 99)).toBe(false);
+  });
+});
+
+describe('ngã chỉ là hình: trần thời gian và hủy', () => {
+  it('knockRate: UAL Hit_Knockback 0,83 s + LayToIdle 1,53 s gói vào KNOCK_TOTAL_S', () => {
+    const r = knockRate(0.83, 1.53);
+    expect(r).toBeGreaterThan(1);
+    expect((0.83 + 1.53) / r).toBeLessThanOrEqual(KNOCK_TOTAL_S + 1e-9);
+    const r2 = knockRate(0.83, 1.53, KNOCK_LIE_S);
+    expect((0.83 + 1.53) / r2 + KNOCK_LIE_S).toBeLessThanOrEqual(KNOCK_TOTAL_S + 1e-9);
+  });
+  it('knockRate: clip đã ngắn thì giữ 1×, không có clip thì 1', () => {
+    expect(knockRate(0.4, 0.5)).toBe(1);
+    expect(knockRate(0, 0)).toBe(1);
+  });
+  it('knockCancelled: đi nhanh, niệm chú, bay, nhảy thì hủy; đứng yên hoặc nhích nhẹ thì không', () => {
+    const base = { speed: 0, casting: false, flying: false, airborne: false };
+    expect(knockCancelled(base)).toBe(false);
+    expect(knockCancelled({ ...base, speed: KNOCK_CANCEL_SPEED })).toBe(false);
+    expect(knockCancelled({ ...base, speed: KNOCK_CANCEL_SPEED + 0.1 })).toBe(true);
+    expect(knockCancelled({ ...base, casting: true })).toBe(true);
+    expect(knockCancelled({ ...base, flying: true })).toBe(true);
+    expect(knockCancelled({ ...base, airborne: true })).toBe(true);
+    expect(knockCancelled({ ...base, sky: true })).toBe(true);
   });
 });
