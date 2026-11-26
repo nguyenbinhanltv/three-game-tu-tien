@@ -752,7 +752,7 @@ export function applyGroundShader(mat: THREE.MeshStandardNodeMaterial, tex: Grou
     const groundBase = paintedT.mul(grassW).add(pavTone.mul(pavW));
     // bóng mặt trời trên đất (theme.albedoMix; Vấn Đỉnh): đất vẽ phát sáng nên không nhận bóng, vật thể như lơ lửng. Cho một phần màu đất đi qua đèn (albedo, chỉ ban ngày; đêm giữ như cũ, nhận bóng
     // đổ của cột, đá, cổng, viền mềm theo bản đồ bóng), phần còn lại vẫn phát sáng; tổng giữ độ sáng của bản vẽ khi không có bóng. 0 = như cũ (mọi level khác)
-    const lit: Node = themeU.albedoMix.mul(0.85).mul(float(1).sub(paintedNight));
+    const lit: Node = max(themeU.albedoMix, themeU.shadowMix).mul(0.85).mul(float(1).sub(paintedNight));
     // sương thấp tính một lần: phần qua đèn nhân (1 − sương), phần phát sáng trộn về màu sương, nên khi không bóng tổng vẫn là mix(đất, sương, m) như cũ
     const mist: Node = lowMistAt(F, positionWorld.xz, positionWorld.y).mul(grassW.add(pavW).min(1));
     mat.colorNode = mix(col, rTone.mul(float(1).add(paintedNight.mul(themeU.nightSplit).mul(0.7))), themeU.on.mul(themeU.rockMix))
