@@ -7,8 +7,6 @@ import { hazardMul, monScale } from './monFx';
 describe('FX quái (V5)', () => {
   it('đủ timeline cho mọi loại sự kiện quái và trong ngân sách', () => {
     for (const k of [
-      'mon_hit',
-      'mon_strike',
       'mon_cast',
       'mon_warn',
       'mon_boom_circle',

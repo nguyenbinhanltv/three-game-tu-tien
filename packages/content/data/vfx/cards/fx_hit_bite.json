@@ -1,0 +1,44 @@
+{
+  "skillId": "fx_hit_bite",
+  "idea": "QUÁI CẮN trúng người chơi: dấu cắn bằng mực, hai hàng răng nhọn (hàm trên và hàm dưới) khép lại quanh điểm trúng rồi tan, vài giọt mực văng. Lõi mực, thân theo HỆ của quái (KHÔNG đỏ/cam), đầu răng trắng. Nhỏ, không che nhân vật.",
+  "element": "am",
+  "path": "",
+  "scene": {
+    "palette": {
+      "core": "2a1030",
+      "body": "a04ad8",
+      "rim": "f3e2ff",
+      "accent": "f0e6a8",
+      "shadow": "12061a"
+    },
+    "impactAt": 0
+  },
+  "shapeLang": [
+    "spike"
+  ],
+  "timing": {
+    "anticipationMs": 0,
+    "impactMs": 60,
+    "lingerMs": 160
+  },
+  "footprint": {
+    "lengthM": 1.4,
+    "widthM": 1.2,
+    "heightM": 1.6
+  },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": {
+    "drawCalls": 2,
+    "particles": 8,
+    "screenCover": 0.01,
+    "overdraw": 2
+  },
+  "textures": [],
+  "silhouette": "hai hàng răng nhọn mực khép lại quanh điểm trúng như một dấu cắn",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles"
+  ]
+}

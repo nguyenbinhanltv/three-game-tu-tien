@@ -40,6 +40,7 @@ export interface VfxLabDebug {
   cast(skill: string): boolean;
   castMon(mon: string, mv: string): boolean;
   monLab(on: boolean): void;
+  tags(show: boolean): void;
   pause(on: boolean): void;
   scale(x: number): void;
   step(ms: number): void;

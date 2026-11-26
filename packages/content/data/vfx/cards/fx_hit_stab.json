@@ -1,0 +1,45 @@
+{
+  "skillId": "fx_hit_stab",
+  "idea": "Đòn PHÁP/XUYÊN (tia, đạn, sét, hồn, cổ, đan hỏa) trúng thân: một chùm giọt mực nhọn bắn xuyên qua điểm trúng theo MỘT hướng (hình nón hẹp văng ra sau nạn nhân), đầu vào gọn, đầu ra tỏe; lõi mực, thân màu hướng tu, đầu giọt trắng.",
+  "element": "vo",
+  "path": "",
+  "scene": {
+    "palette": {
+      "core": "14161c",
+      "body": "b9c6d6",
+      "rim": "ffffff",
+      "accent": "f0e6a8",
+      "shadow": "08090c"
+    },
+    "impactAt": 0
+  },
+  "shapeLang": [
+    "line",
+    "burst"
+  ],
+  "timing": {
+    "anticipationMs": 0,
+    "impactMs": 60,
+    "lingerMs": 150
+  },
+  "footprint": {
+    "lengthM": 2,
+    "widthM": 1,
+    "heightM": 1.6
+  },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": {
+    "drawCalls": 2,
+    "particles": 14,
+    "screenCover": 0.01,
+    "overdraw": 2
+  },
+  "textures": [],
+  "silhouette": "chùm giọt mực nhọn bắn xuyên theo một hướng, đầu vào gọn đầu ra tỏe",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles"
+  ]
+}

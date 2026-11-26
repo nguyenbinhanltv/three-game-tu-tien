@@ -189,7 +189,8 @@ export class EntityManager {
   /** Người đồng hành của nhiệm vụ hộ tống (E2-H), theo id `escorts` của level. Không phải NPC tương tác. */
   escorts = new Map<string, NpcVis>();
   ring: THREE.Mesh;
-  private bars = new HeadBars();
+  /** Công khai cho phòng thử (`__vfxlab.tags`). */
+  readonly bars = new HeadBars();
   /** Bật khi có cắt cảnh: thanh máu và nhãn tên trên đầu ẩn đi. */
   tagsHidden = false;
   /** Boss đang có thanh máu lớn trên HUD (engine đặt mỗi lần đồng bộ HUD): bảng tên 3D của nó ẩn đi. */

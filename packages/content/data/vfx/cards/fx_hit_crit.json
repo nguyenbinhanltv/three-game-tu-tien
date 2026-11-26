@@ -1,0 +1,45 @@
+{
+  "skillId": "fx_hit_crit",
+  "idea": "CHÍ MẠNG (phát thêm lên trên vết va): một khe nứt gãy khúc chữ chi như vết rách trên giấy, dựng đứng hơi nghiêng qua điểm trúng, lõi mực đen rộng, mép trắng sắc, vài mảnh giấy rách bật ra hai bên. To hơn vết va thường (khoảng 2,4 m) để nhìn là biết chí mạng. Không sao, không tia tỏa.",
+  "element": "kim",
+  "path": "",
+  "scene": {
+    "palette": {
+      "core": "14161c",
+      "body": "b9c6d6",
+      "rim": "ffffff",
+      "accent": "f0e6a8",
+      "shadow": "08090c"
+    },
+    "impactAt": 0
+  },
+  "shapeLang": [
+    "line",
+    "spike"
+  ],
+  "timing": {
+    "anticipationMs": 0,
+    "impactMs": 80,
+    "lingerMs": 220
+  },
+  "footprint": {
+    "lengthM": 1.2,
+    "widthM": 1.2,
+    "heightM": 2.4
+  },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": {
+    "drawCalls": 3,
+    "particles": 16,
+    "screenCover": 0.02,
+    "overdraw": 3
+  },
+  "textures": [],
+  "silhouette": "khe nứt gãy khúc chữ chi dựng đứng như vết rách giấy, mảnh rách bật hai bên",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles"
+  ]
+}
