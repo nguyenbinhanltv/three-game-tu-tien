@@ -49,16 +49,18 @@ export default {
       }
     };
     if (only !== 'herb') {
-      // Cổng thật: đứng cách tâm 4 m về phía +z (camera chéo nhìn từ phía +z).
-      await gm(page, `tp ${PORTAL.x} ${PORTAL.z + 4}`, 5000);
-      out.gate = {
-        at: [PORTAL.x, PORTAL.z + 4],
-        envGates: await page.evaluate(() => {
-          const g = window.__game as unknown as { envGates: unknown[]; envFx?: { log: { key: string }[] } };
-          return { n: g.envGates.length, gates: g.envGates, plays: g.envFx?.log.map((l) => l.key) ?? [] };
-        }),
-      };
-      await shoot('gate');
+      // Cổng thật: đứng CẠNH cổng (không đè lên đĩa). `--gateat "dx,dz;dx,dz"`: thử nhiều chỗ (độ lệch so với tâm cổng, m), mỗi chỗ một bộ ảnh `gate<i>-*`.
+      const spots = opt('--gateat', '-4,14')
+        .split(';')
+        .map((t) => t.split(',').map(Number) as [number, number]);
+      const gates: unknown[] = [];
+      for (let k = 0; k < spots.length; k++) {
+        const [dx, dz] = spots[k]!;
+        await gm(page, `tp ${PORTAL.x + dx} ${PORTAL.z + dz}`, 7000);
+        gates.push({ at: [PORTAL.x + dx, PORTAL.z + dz] });
+        await shoot(spots.length > 1 ? `gate${k}` : 'gate');
+      }
+      out.gate = gates;
     }
     if (only !== 'gate') {
       await gm(page, `tp ${HERB_AREA.x} ${HERB_AREA.z}`, 5000);
