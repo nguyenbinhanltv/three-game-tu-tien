@@ -124,6 +124,8 @@ interface Perform {
 const LUNGE_MAX = 1.5;
 /** Nằm sau khi ngã trước khi đứng dậy (giây) và thời gian tối thiểu nằm trước khi di chuyển kéo dậy sớm. */
 const KNOCK_LIE = KNOCK_LIE_S;
+/** Làm mờ về nền (giây) khi hủy ngã vì server báo di chuyển/ra chiêu: dưới 0,2 s theo yêu cầu. */
+const KNOCK_CANCEL_FADE = 0.18;
 /** Tốc độ phát clip tiếp đất (UAL) và nhịp nhảy: lấy đà phát 1,5×, tiếp đất 2,2× (≈0,6 s) và bị ngắt khi đi lại. */
 const JUMP_START_RATE = 1.5;
 const JUMP_LAND_RATE = 2.2;
@@ -654,7 +656,8 @@ export class SkinnedCharacter implements CharacterView {
       // Ngã chỉ là hình: server báo di chuyển/niệm/bay thì hủy ngay, blend về nền trong FADE_BASE (0,22 s).
       if (this.shot?.knock && knockCancelled(a)) {
         this.shot = null;
-        this.base = null;
+        this.enterBase(want, KNOCK_CANCEL_FADE);
+        this.base = want;
       }
       if (this.shot) {
         this.shot.left -= dt;
