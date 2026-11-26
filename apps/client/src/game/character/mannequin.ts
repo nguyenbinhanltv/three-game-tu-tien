@@ -66,7 +66,7 @@ import { SWORD_MODEL_DEFAULT } from '@dtl/content';
 import { canCancel, POSE_CAST, POSE_FLY, POSE_SKY, silkTier, v3SilkOf, type MonsterDef, type V3Silk } from '@dtl/shared';
 import { type AssetCache, type AssetHandle, assetKey, assets } from '../core/assets';
 import { HitReact, type HitOpts } from '../combat/hitreact';
-import { adoptGltfMaterials, cloneWorldMaterial, rimLight } from '../../render/materials/world';
+import { adoptGltfMaterials, cloneWorldMaterial, rimLight, toonBands } from '../../render/materials/world';
 import { lodLevel, mixerDue, mixerInterval, mixerPhase } from './skinned';
 import { SpringBones, type SpringCollider, type SpringDef, type SpringParams } from './spring';
 import { attachBrawlerGear, gearShown, snapshotBind, type BindSnapshot, type BrawlerGear } from './brawlerGear';
@@ -427,6 +427,8 @@ export function mannequinTemplate(handle: AssetHandle, lib: AssetHandle, robe?: 
   // Viền sáng + hero light (Chân Cảnh C1): trước đây chỉ đường nhân vật v1 và NPC gọi `rimLight`, nên v3 không có viền theo hướng tu dù `userData.hero`
   // đã được đặt. Gọi SAU voan/da (cộng dồn vào emissive đã có) và TRƯỚC khi gộp lưới/nhân bản vật liệu nhuộm (bản nhuộm thừa hưởng).
   for (const m of mats) rimLight(m);
+  // Dạ Cảnh (phương án 1 người dùng chọn 27/11): giữ model v3, tô bóng chia bậc.
+  if (FLAGS.style === 'da') for (const m of mats) toonBands(m);
   // Mặt nạ nhuộm theo xương (đầu/tay/tóc không nhuộm): thêm trước khi gộp lưới để mọi lưới cùng bộ thuộc tính.
   if (v3DyeRefOf(handle.id)) addDyeMask(handle.scene);
   // Sau khi đã đổi vật liệu: các lưới cùng LOD dùng chung một vật liệu thì gộp làm một (1 draw call mỗi người ở LOD1/LOD2).
