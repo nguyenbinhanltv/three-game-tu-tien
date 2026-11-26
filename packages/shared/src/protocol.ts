@@ -40,6 +40,8 @@ export const PF_DUEL = 64;
 export const PF_SOUL = 128;
 /** Đang khựng vì trúng đòn (Chân Cảnh S1): server không cho đi trong lúc này (≤ `PLAYER_STAGGER_MAX_MS`); client dùng để dự đoán đứng yên và vào dáng trúng đòn. */
 export const PF_STAGGER = 256;
+/** Đang nhận hồi dần (Hồi Xuân Quyết...): CHỈ để vẽ hình (cánh sen bay lên), suy ra từ trạng thái server, không ảnh hưởng luật. */
+export const PF_HOT = 512;
 
 // Trạng thái quái (trường `st`).
 export const MS_IDLE = 0;
@@ -70,6 +72,11 @@ export const MF_SENSED = 128;
 export const MF_FACE = 256;
 /** Boss hai mặt đang giao chiến (cả mặt Dương lẫn Âm): `ce` = lúc lật tiếp, để client đếm ngược. */
 export const MF_FACE_T = 512;
+/** Chỉ để vẽ hình (suy ra từ trạng thái server mỗi tick, không ảnh hưởng luật): đang bị làm chậm / độc / bỏng. `ce` không dùng cho các cờ này. */
+export const MF_SLOW = 1024;
+export const MF_POISON = 2048;
+export const MF_BURN = 4096;
+export const MF_DISP_MASK = MF_SLOW | MF_POISON | MF_BURN;
 export const MF_MX_MASK = MF_REFLECT | MF_WEAK | MF_BURROW | MF_REAL | MF_SENSED | MF_FACE | MF_FACE_T;
 
 /** Client → server. */

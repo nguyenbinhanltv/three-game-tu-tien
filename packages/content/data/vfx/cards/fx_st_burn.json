@@ -1,0 +1,45 @@
+{
+  "skillId": "fx_st_burn",
+  "idea": "BỎNG (hỏa thiêu theo thời gian): đống than đen nứt vân vàng trắng dưới chân, vài tàn lửa bay lên; KHÔNG cam phẳng. Lặp mỗi giây khi còn trạng thái.",
+  "element": "hoa",
+  "path": "",
+  "scene": {
+    "palette": {
+      "core": "1a1410",
+      "body": "e8d27a",
+      "rim": "fff6d0",
+      "accent": "ffffff",
+      "shadow": "0c0a06"
+    },
+    "impactAt": 0
+  },
+  "shapeLang": [
+    "cloud",
+    "burst"
+  ],
+  "timing": {
+    "anticipationMs": 0,
+    "impactMs": 50,
+    "lingerMs": 900
+  },
+  "footprint": {
+    "lengthM": 2.2,
+    "widthM": 2.2,
+    "heightM": 2.4
+  },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": {
+    "drawCalls": 2,
+    "particles": 6,
+    "screenCover": 0.02,
+    "overdraw": 2
+  },
+  "textures": [],
+  "silhouette": "đống than đen nứt vân vàng trắng dưới chân, tàn lửa bay lên",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles"
+  ]
+}

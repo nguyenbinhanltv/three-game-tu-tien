@@ -1,0 +1,75 @@
+{
+  "skill": "fx_st_poison",
+  "trigger": "fx",
+  "fxKind": "~st_poison",
+  "palette": "st_poison",
+  "events": [
+    {
+      "type": "mesh",
+      "shape": "sprite",
+      "sprite": "chung_bubble",
+      "billboard": true,
+      "at": "self",
+      "t": 0,
+      "dur": 1.2,
+      "offset": [
+        0,
+        0.9,
+        0
+      ],
+      "scale": 0.85,
+      "scaleTo": 1,
+      "sweep": 0,
+      "erodeFrom": 0.55,
+      "ragged": 0.5,
+      "tone": "body",
+      "alpha": 0.9,
+      "tier": 0,
+      "seed": 2280,
+      "follow": true
+    },
+    {
+      "type": "mesh",
+      "shape": "sprite",
+      "sprite": "chung_bubble",
+      "billboard": true,
+      "at": "self",
+      "t": 0.03,
+      "dur": 0.08,
+      "offset": [
+        0,
+        0.9,
+        0
+      ],
+      "scale": 0.95,
+      "scaleTo": 1.11,
+      "sweep": 0,
+      "erodeFrom": 0.2,
+      "ragged": 0.5,
+      "tone": "rim",
+      "alpha": 0.85,
+      "tier": 1,
+      "seed": 2281,
+      "follow": true
+    },
+    {
+      "type": "particles",
+      "kind": "dust",
+      "t": 0.3,
+      "n": 1,
+      "speed": 0.7,
+      "spread": 0.8,
+      "life": 0.8,
+      "size": 0.18,
+      "at": "self",
+      "tone": "body",
+      "tier": 1,
+      "offset": [
+        0,
+        0.6,
+        0
+      ],
+      "grav": -1.2
+    }
+  ]
+}

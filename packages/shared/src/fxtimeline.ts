@@ -404,6 +404,15 @@ export const FX_SPRITES = [
   'chung_snap',
   'chung_puff',
   'chung_splat',
+  // Trạng thái kéo dài (HPL2 PR2): chậm (sương băng), độc (bọt), bỏng (than hồng), choáng (đốm mực xoáy), đâm dày, khiên mai rùa, yếu điểm, mắt soi.
+  'chung_frost',
+  'chung_bubble',
+  'chung_coal',
+  'chung_dizzy',
+  'chung_spear',
+  'chung_ward',
+  'chung_crack',
+  'chung_eye',
   // V-P10: nhóm atlas `kiep` (độ kiếp: mở kiếp, kiếp vân, chỗ sét đánh). Tranh đơn sắc, kiểu tô 12.
   'kiep_rift',
   'kiep_cloud',

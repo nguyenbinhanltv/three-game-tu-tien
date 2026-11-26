@@ -1,0 +1,45 @@
+{
+  "skillId": "fx_st_hot",
+  "idea": "HỒI DẦN (nhận hồi theo thời gian): cánh sen mực ngọc lục nhẹ nhàng bay lên quanh thân; không cột sáng. Lặp khi còn trạng thái.",
+  "element": "moc",
+  "path": "",
+  "scene": {
+    "palette": {
+      "core": "0c3324",
+      "body": "4fd69a",
+      "rim": "eafff2",
+      "accent": "f4e9a0",
+      "shadow": "06160f"
+    },
+    "impactAt": 0
+  },
+  "shapeLang": [
+    "cloud",
+    "spiral"
+  ],
+  "timing": {
+    "anticipationMs": 0,
+    "impactMs": 50,
+    "lingerMs": 900
+  },
+  "footprint": {
+    "lengthM": 2.2,
+    "widthM": 2.2,
+    "heightM": 2.4
+  },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": {
+    "drawCalls": 2,
+    "particles": 6,
+    "screenCover": 0.02,
+    "overdraw": 2
+  },
+  "textures": [],
+  "silhouette": "cánh sen ngọc lục bay lên quanh thân",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles"
+  ]
+}

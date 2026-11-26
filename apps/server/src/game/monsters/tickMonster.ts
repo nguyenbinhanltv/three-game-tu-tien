@@ -1,7 +1,31 @@
-import { computeDamage, postureDecay, MS_ATTACK, MS_CHASE, MS_DEAD, MS_IDLE, MS_RETURN, WATER_Y, marksPrune, packMarks } from '@dtl/shared';
+import {
+  MF_BURN,
+  MF_DISP_MASK,
+  MF_POISON,
+  MF_SLOW,
+  computeDamage,
+  postureDecay,
+  MS_ATTACK,
+  MS_CHASE,
+  MS_DEAD,
+  MS_IDLE,
+  MS_RETURN,
+  WATER_Y,
+  marksPrune,
+  packMarks,
+} from '@dtl/shared';
 import { LEASH } from '../combat/consts';
 import type { MonEnt, PlayerEnt } from '../entities';
 import type { MonsterSystem } from './index';
+
+/** Cờ chỉ-để-vẽ (làm chậm, độc, bỏng) suy ra từ trạng thái server; chỉ ghi khi đổi. Không ảnh hưởng gameplay. */
+function syncDisplayFlags(sys: MonsterSystem, m: MonEnt): void {
+  const now = sys.c.now;
+  let want = 0;
+  if (m.slow && now < m.slow.until) want |= MF_SLOW;
+  if (m.poison && now < m.poison.until) want |= m.poison.kind === 'burn' ? MF_BURN : MF_POISON;
+  if ((m.s.mf & MF_DISP_MASK) !== want) m.s.mf = (m.s.mf & ~MF_DISP_MASK) | want;
+}
 
 export function tickMonsterImpl(sys: MonsterSystem, m: MonEnt, dt: number): void {
   if (m.state === MS_DEAD) {
@@ -14,6 +38,7 @@ export function tickMonsterImpl(sys: MonsterSystem, m: MonEnt, dt: number): void
     return;
   }
   const def = m.def;
+  syncDisplayFlags(sys, m);
   if (m.poison) {
     if (sys.c.now >= m.poison.until) m.poison = undefined;
     else if (sys.c.now >= m.poison.nextAt) {
