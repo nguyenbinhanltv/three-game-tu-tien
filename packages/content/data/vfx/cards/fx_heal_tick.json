@@ -1,0 +1,44 @@
+{
+  "skillId": "fx_heal_tick",
+  "idea": "NHỊP HỒI (mỗi lần nhận số hồi máu từ người khác hoặc hồi dần): chỉ một chùm cánh sen nhỏ bay lên từ vai rồi tan, không có búp sen. Rất nhỏ vì lặp mỗi giây.",
+  "element": "moc",
+  "path": "",
+  "scene": {
+    "palette": {
+      "core": "0c3324",
+      "body": "4fd69a",
+      "rim": "eafff2",
+      "accent": "f4e9a0",
+      "shadow": "06160f"
+    },
+    "impactAt": 0
+  },
+  "shapeLang": [
+    "cloud"
+  ],
+  "timing": {
+    "anticipationMs": 0,
+    "impactMs": 60,
+    "lingerMs": 400
+  },
+  "footprint": {
+    "lengthM": 1.2,
+    "widthM": 1.2,
+    "heightM": 2.4
+  },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": {
+    "drawCalls": 1,
+    "particles": 10,
+    "screenCover": 0.01,
+    "overdraw": 1
+  },
+  "textures": [],
+  "silhouette": "một chùm cánh sen nhỏ bay lên từ vai rồi tan",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles"
+  ]
+}

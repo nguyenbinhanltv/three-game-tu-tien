@@ -1,0 +1,104 @@
+{
+  "skill": "fx_hit_crit",
+  "trigger": "fx",
+  "fxKind": "~hit_crit",
+  "palette": "hit_chung",
+  "events": [
+    {
+      "type": "mesh",
+      "shape": "sprite",
+      "sprite": "chung_crit",
+      "billboard": true,
+      "at": "target",
+      "t": 0,
+      "dur": 0.26,
+      "offset": [
+        0,
+        0.2,
+        0
+      ],
+      "scale": 0.9,
+      "scaleTo": 1.2,
+      "sweep": 0,
+      "erodeFrom": 0.5,
+      "ragged": 0.5,
+      "tone": "body",
+      "alpha": 0.95,
+      "tier": 0,
+      "seed": 2060
+    },
+    {
+      "type": "mesh",
+      "shape": "sprite",
+      "sprite": "chung_crit",
+      "billboard": true,
+      "at": "target",
+      "t": 0.03,
+      "dur": 0.08,
+      "offset": [
+        0,
+        0.2,
+        0
+      ],
+      "scale": 1.06,
+      "scaleTo": 1.23,
+      "sweep": 0,
+      "erodeFrom": 0.2,
+      "ragged": 0.5,
+      "tone": "rim",
+      "alpha": 0.85,
+      "tier": 1,
+      "seed": 2061
+    },
+    {
+      "type": "mesh",
+      "shape": "sprite",
+      "sprite": "chung_chips",
+      "billboard": true,
+      "at": "target",
+      "t": 0.03,
+      "dur": 0.24,
+      "offset": [
+        0,
+        0,
+        0
+      ],
+      "scale": 0.6,
+      "scaleTo": 1.1,
+      "sweep": 0,
+      "erodeFrom": 0.3,
+      "ragged": 0.5,
+      "tone": "rim",
+      "alpha": 0.8,
+      "tier": 1,
+      "seed": 2062
+    },
+    {
+      "type": "particles",
+      "kind": "shard",
+      "t": 0,
+      "n": 10,
+      "speed": 5,
+      "spread": 0.9,
+      "life": 0.45,
+      "size": 0.1,
+      "at": "target",
+      "tone": "rim",
+      "tier": 0,
+      "grav": 8
+    },
+    {
+      "type": "particles",
+      "kind": "spark",
+      "t": 0.03,
+      "n": 6,
+      "speed": 7,
+      "spread": 1,
+      "life": 0.2,
+      "size": 0.06,
+      "at": "target",
+      "tone": "accent",
+      "tier": 1
+    }
+  ]
+}

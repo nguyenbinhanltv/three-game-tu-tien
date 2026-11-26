@@ -1,0 +1,84 @@
+{
+  "skill": "fx_hit_smash",
+  "trigger": "fx",
+  "fxKind": "~hit_smash",
+  "palette": "hit_chung",
+  "events": [
+    {
+      "type": "mesh",
+      "shape": "sprite",
+      "sprite": "chung_smash",
+      "billboard": true,
+      "at": "target",
+      "t": 0,
+      "dur": 0.2,
+      "offset": [
+        0,
+        0,
+        0
+      ],
+      "scale": 0.65,
+      "scaleTo": 1,
+      "sweep": 0,
+      "erodeFrom": 0.4,
+      "ragged": 0.5,
+      "tone": "body",
+      "alpha": 0.95,
+      "tier": 0,
+      "seed": 2020,
+      "align": "aim"
+    },
+    {
+      "type": "mesh",
+      "shape": "sprite",
+      "sprite": "chung_smash",
+      "billboard": true,
+      "at": "target",
+      "t": 0.03,
+      "dur": 0.07,
+      "offset": [
+        0,
+        0,
+        0
+      ],
+      "scale": 0.78,
+      "scaleTo": 0.91,
+      "sweep": 0,
+      "erodeFrom": 0.2,
+      "ragged": 0.5,
+      "tone": "rim",
+      "alpha": 0.85,
+      "tier": 1,
+      "seed": 2021,
+      "align": "aim"
+    },
+    {
+      "type": "particles",
+      "kind": "shard",
+      "t": 0,
+      "n": 8,
+      "speed": 4.2,
+      "spread": 0.65,
+      "life": 0.42,
+      "size": 0.11,
+      "at": "target",
+      "tone": "core",
+      "tier": 0,
+      "grav": 9
+    },
+    {
+      "type": "particles",
+      "kind": "dust",
+      "t": 0.02,
+      "n": 5,
+      "speed": 1.6,
+      "spread": 0.9,
+      "life": 0.5,
+      "size": 0.3,
+      "at": "target",
+      "tone": "shadow",
+      "tier": 1,
+      "grav": -0.6
+    }
+  ]
+}

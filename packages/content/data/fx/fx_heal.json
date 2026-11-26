@@ -1,0 +1,161 @@
+{
+  "skill": "fx_heal",
+  "trigger": "fx",
+  "fxKind": "~heal",
+  "palette": "hit_heal",
+  "events": [
+    {
+      "type": "mesh",
+      "shape": "sprite",
+      "sprite": "chung_eddy",
+      "billboard": true,
+      "at": "target",
+      "t": 0,
+      "dur": 0.17,
+      "offset": [
+        0,
+        -0.7,
+        0
+      ],
+      "scale": 1.1,
+      "scaleTo": 0.5,
+      "sweep": 0,
+      "erodeFrom": 0.8,
+      "ragged": 0.5,
+      "tone": "core",
+      "alpha": 0.6,
+      "tier": 0,
+      "seed": 2160
+    },
+    {
+      "type": "particles",
+      "kind": "spark",
+      "t": 0,
+      "n": 14,
+      "speed": 3,
+      "spread": 0.8,
+      "life": 0.14,
+      "size": 0.08,
+      "at": "target",
+      "tone": "body",
+      "tier": 0,
+      "offset": [
+        0,
+        -0.5,
+        0
+      ],
+      "inward": true
+    },
+    {
+      "type": "mesh",
+      "shape": "sprite",
+      "sprite": "chung_lotus",
+      "billboard": true,
+      "at": "target",
+      "t": 0.15,
+      "dur": 0.5,
+      "offset": [
+        0,
+        -0.25,
+        0
+      ],
+      "scale": 0.5,
+      "scaleTo": 1.05,
+      "sweep": 0,
+      "erodeFrom": 0.45,
+      "ragged": 0.5,
+      "tone": "body",
+      "alpha": 0.95,
+      "tier": 0,
+      "seed": 2161
+    },
+    {
+      "type": "mesh",
+      "shape": "sprite",
+      "sprite": "chung_lotus",
+      "billboard": true,
+      "at": "target",
+      "t": 0.18,
+      "dur": 0.07,
+      "offset": [
+        0,
+        -0.25,
+        0
+      ],
+      "scale": 0.73,
+      "scaleTo": 0.95,
+      "sweep": 0,
+      "erodeFrom": 0.2,
+      "ragged": 0.5,
+      "tone": "rim",
+      "alpha": 0.85,
+      "tier": 1,
+      "seed": 2162
+    },
+    {
+      "type": "mesh",
+      "shape": "sprite",
+      "sprite": "chung_petals",
+      "billboard": true,
+      "at": "target",
+      "t": 0.3,
+      "dur": 0.6,
+      "offset": [
+        0,
+        0.3,
+        0
+      ],
+      "scale": 0.7,
+      "scaleTo": 1,
+      "sweep": 0,
+      "erodeFrom": 0.4,
+      "ragged": 0.5,
+      "tone": "rim",
+      "alpha": 0.85,
+      "tier": 1,
+      "seed": 2163,
+      "move": {
+        "to": "target",
+        "offset": [
+          0,
+          1.4,
+          0
+        ],
+        "ease": "out"
+      }
+    },
+    {
+      "type": "particles",
+      "kind": "petal",
+      "t": 0.18,
+      "n": 16,
+      "speed": 1.6,
+      "spread": 1,
+      "life": 0.9,
+      "size": 0.1,
+      "at": "target",
+      "tone": "rim",
+      "tier": 0,
+      "offset": [
+        0,
+        -0.2,
+        0
+      ],
+      "grav": -1.4
+    },
+    {
+      "type": "particles",
+      "kind": "spark",
+      "t": 0.3,
+      "n": 8,
+      "speed": 1.2,
+      "spread": 1,
+      "life": 0.7,
+      "size": 0.06,
+      "at": "target",
+      "tone": "accent",
+      "tier": 1,
+      "grav": -1.2
+    }
+  ]
+}

@@ -1,0 +1,85 @@
+{
+  "skill": "fx_potion",
+  "trigger": "fx",
+  "fxKind": "potion",
+  "palette": "hit_heal",
+  "replaces": [
+    "potion"
+  ],
+  "events": [
+    {
+      "type": "mesh",
+      "shape": "sprite",
+      "sprite": "chung_puff",
+      "billboard": true,
+      "at": "self",
+      "t": 0,
+      "dur": 0.34,
+      "offset": [
+        0,
+        0,
+        0
+      ],
+      "scale": 0.35,
+      "scaleTo": 0.8,
+      "sweep": 0,
+      "erodeFrom": 0.35,
+      "ragged": 0.5,
+      "tone": "body",
+      "alpha": 0.7,
+      "tier": 0,
+      "seed": 2200,
+      "move": {
+        "to": "self",
+        "offset": [
+          0,
+          0.6,
+          0
+        ],
+        "ease": "out"
+      }
+    },
+    {
+      "type": "particles",
+      "kind": "spark",
+      "t": 0,
+      "n": 8,
+      "speed": 2.4,
+      "spread": 0.8,
+      "life": 0.12,
+      "size": 0.08,
+      "at": "self",
+      "tone": "body",
+      "tier": 0,
+      "inward": true
+    },
+    {
+      "type": "particles",
+      "kind": "petal",
+      "t": 0.12,
+      "n": 10,
+      "speed": 1.5,
+      "spread": 1,
+      "life": 0.8,
+      "size": 0.09,
+      "at": "self",
+      "tone": "rim",
+      "tier": 0,
+      "grav": -1.4
+    },
+    {
+      "type": "particles",
+      "kind": "spark",
+      "t": 0.15,
+      "n": 6,
+      "speed": 1.2,
+      "spread": 1,
+      "life": 0.6,
+      "size": 0.06,
+      "at": "self",
+      "tone": "accent",
+      "tier": 1,
+      "grav": -1.2
+    }
+  ]
+}

@@ -1,0 +1,83 @@
+{
+  "skill": "fx_hit_mon",
+  "trigger": "fx",
+  "fxKind": "~hit_mon",
+  "palette": "hit_dich",
+  "events": [
+    {
+      "type": "mesh",
+      "shape": "sprite",
+      "sprite": "chung_claw",
+      "billboard": true,
+      "at": "target",
+      "t": 0,
+      "dur": 0.2,
+      "offset": [
+        0,
+        0,
+        0
+      ],
+      "scale": 0.75,
+      "scaleTo": 0.95,
+      "sweep": 0,
+      "erodeFrom": 0.45,
+      "ragged": 0.5,
+      "tone": "body",
+      "alpha": 0.95,
+      "tier": 0,
+      "seed": 2100,
+      "align": "aim"
+    },
+    {
+      "type": "mesh",
+      "shape": "sprite",
+      "sprite": "chung_claw",
+      "billboard": true,
+      "at": "target",
+      "t": 0.03,
+      "dur": 0.07,
+      "offset": [
+        0,
+        0,
+        0
+      ],
+      "scale": 0.84,
+      "scaleTo": 0.98,
+      "sweep": 0,
+      "erodeFrom": 0.2,
+      "ragged": 0.5,
+      "tone": "rim",
+      "alpha": 0.85,
+      "tier": 1,
+      "seed": 2101,
+      "align": "aim"
+    },
+    {
+      "type": "particles",
+      "kind": "spark",
+      "t": 0,
+      "n": 6,
+      "speed": 5,
+      "spread": 0.6,
+      "life": 0.24,
+      "size": 0.07,
+      "at": "target",
+      "tone": "rim",
+      "tier": 0
+    },
+    {
+      "type": "particles",
+      "kind": "shard",
+      "t": 0.03,
+      "n": 5,
+      "speed": 3.2,
+      "spread": 0.8,
+      "life": 0.4,
+      "size": 0.09,
+      "at": "target",
+      "tone": "core",
+      "tier": 1,
+      "grav": 9
+    }
+  ]
+}

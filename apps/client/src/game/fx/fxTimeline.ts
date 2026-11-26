@@ -84,6 +84,8 @@ export const SPRITE_STYLE: Record<string, number> = {
   may_: 8,
   // V-P10 đột phá: tranh đơn sắc, tô theo bảng màu của timeline (màu sự kiện = thân, `rim` của bảng = viền).
   dp_: 12,
+  // Trúng đòn chung: cũng tranh đơn sắc tô theo bảng màu lúc phát (hướng tu người đánh / hệ của quái).
+  chung_: 12,
 };
 
 export interface FxTarget {
@@ -600,7 +602,8 @@ export class FxRunner {
             | 'sprite_guong'
             | 'sprite_dong'
             | 'sprite_kieu'
-            | 'sprite_dp')
+            | 'sprite_dp'
+            | 'sprite_chung')
       : kind0;
     const isSprite = cell !== null;
     if (cell) useSpriteGroup(cell.group);

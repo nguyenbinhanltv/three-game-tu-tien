@@ -6,6 +6,8 @@ import * as THREE from 'three/webgpu';
 import { FX_TIMELINE, MONSTER, SKILL } from '@dtl/content';
 import type { HazardMsg } from '@dtl/shared';
 import { movesOf } from '../fx/monMove';
+import { monScale } from '../fx/monFx';
+import { monHitPalette } from '../fx/hitFx';
 import { FxMesh } from '../../render/materials/vfx';
 import { PARTICLES } from '../../render/vfx/particles';
 import { evictSpriteGroups, residentSpriteGroups } from '../../render/vfx/art';
@@ -113,6 +115,20 @@ export interface VfxLabApi {
   skills(): string[];
 }
 
+/** Timeline trúng đòn chung phát được trong phòng thử: `mon` = ở quái, tô theo hướng tu của mình; `me` = ở mình, tô theo hệ của quái; còn lại = khóa bảng màu cố định. */
+const LAB_HIT: Record<string, string> = {
+  fx_hit_cut: 'mon',
+  fx_hit_smash: 'mon',
+  fx_hit_stab: 'mon',
+  fx_hit_crit: 'mon',
+  fx_break: 'mon',
+  fx_hit_block: 'hit_guard',
+  fx_hit_mon: 'me',
+  fx_hit_bite: 'me',
+  fx_heal: 'hit_heal',
+  fx_heal_tick: 'hit_heal',
+};
+
 /** `MonsterBurrow` rút gọn: các trường phòng thử cần. */
 interface BurrowCfg {
   r: number;
@@ -138,6 +154,28 @@ export function installVfxLab(g: Game, onHazard?: (g: Game, m: HazardMsg) => voi
         gg.fxArea.set(gg.sid, { x: hit[1].x, z: hit[1].z, r: 9 });
         gg.fxDst.set(gg.sid, hit[0]);
       }
+      // Hình trúng đòn chung (HPL2): phát qua `HitFx` như lúc chơi. Vết va/chí mạng/chặn/ngắt chú đặt ở quái (tô theo hướng tu của mình, chặn có bảng riêng);
+      // quái đánh người và nhịp hồi đặt ở mình (tô theo hệ của quái / bảng hồi).
+      const labHit = LAB_HIT[skill];
+      if (labHit) {
+        const h = g as unknown as {
+          hitFx: { labPlay(k: string, v: object, from: object | null, pal: string): boolean } | null;
+          ents: {
+            monsters: Map<string, { x: number; y: number; z: number; s: { t: string }; model: { height: number } }>;
+            players: Map<string, { x: number; y: number; z: number }>;
+          };
+          methodOfPlayer(id: string): string | undefined;
+        };
+        const mon = hit ? h.ents.monsters.get(hit[0]) : undefined;
+        const me = h.ents.players.get(gg.sid);
+        if (!h.hitFx || !mon || !me) return false;
+        const monPt = { id: hit![0], x: mon.x, y: mon.y, z: mon.z, chest: mon.model.height * 0.55, scale: monScale(mon.model.height) };
+        const mePt = { id: gg.sid, x: me.x, y: me.y, z: me.z, chest: 1.15 };
+        const onMe = labHit === 'me';
+        const pal =
+          labHit === 'mon' ? (h.methodOfPlayer(gg.sid) ?? 'hit_chung') : labHit === 'me' ? monHitPalette(MONSTER.get(mon.s.t)?.elem) : labHit;
+        return h.hitFx.labPlay(skill, onMe || labHit === 'hit_heal' ? mePt : monPt, onMe ? mon : labHit === 'hit_heal' ? null : me, pal);
+      }
       // Timeline kích theo S.FX (lướt, thuấn di...): chạy đường `startFromFx` như khi nhận tin từ server; còn lại phát từ sự kiện `windup`.
       const tl = FX_TIMELINE.get(skill);
       if (tl?.trigger === 'fx') gg.skillFx.startFromFx(gg.sid, tl);
@@ -150,6 +188,9 @@ export function installVfxLab(g: Game, onHazard?: (g: Game, m: HazardMsg) => voi
         mf.lab = on;
         mf.bypass = on;
       }
+      // Hình trúng đòn chung cũng do tin server kích: phòng thử chỉ vẽ lời gọi `cast('fx_hit_*')`.
+      const hf = (g as unknown as { hitFx: { lab: boolean } | null }).hitFx;
+      if (hf) hf.lab = on;
     },
     castMon(mon, mv) {
       const gg = g as unknown as {
