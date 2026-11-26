@@ -150,7 +150,10 @@ export const FLAG_DOCS: Readonly<Record<string, { scope: 'user' | 'diag' | 'test
   },
   paintdbg: { scope: 'diag', doc: '=dry|vc: gỡ lỗi mảng đất trần của Họa Cảnh (xuất mặt nạ ra đất; xem render/painted/theme.ts dryMix)' },
   paint: { scope: 'diag', doc: '0..3: mức Kuwahara của ?style=painted (0 tắt, mặc định 3)' },
-  painthalf: { scope: 'diag', doc: '=0: bút rộng Kuwahara của ?style=painted tính tại chỗ ở mọi điểm ảnh (trước B6); mặc định pass riêng cỡ ~màn hình' },
+  painthalf: {
+    scope: 'diag',
+    doc: '=0: bút rộng Kuwahara của ?style=painted tính tại chỗ ở mọi điểm ảnh (trước B6); mặc định pass riêng cỡ ~màn hình',
+  },
   vista: { scope: 'diag', doc: '0: tắt camera mở tầm nhìn (hạ thấp khi ngự kiếm và ở điểm ngắm cảnh)' },
   paintedlab: {
     scope: 'test',
