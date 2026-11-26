@@ -14,10 +14,6 @@ import { moveOfHazard } from './monMove';
 
 /** Xa hơn mức này (m, tới camera) thì không phát FX quái. */
 const MON_FX_DIST = 60;
-/** Khoảng giãn tối thiểu giữa hai lần cùng loại của một quái (giây): quái bị đánh liên tục không sinh hạt liên tục. */
-const MON_HIT_GAP = 0.12;
-const MON_STRIKE_GAP = 0.3;
-
 /** Hệ ngũ hành theo loại vùng khi không biết quái thả vùng. */
 const ELEM_OF_KIND: Record<string, string> = { fire: 'hoa', frost: 'thuy', lightning: 'kim', spirit: 'moc' };
 
@@ -122,33 +118,6 @@ export class MonFx {
   /** Biến thức `boss` của timeline (sự kiện thêm cho boss). */
   private variantOf(m: MonLike | undefined): string | undefined {
     return this.bossOf(m) ? 'boss' : undefined;
-  }
-
-  /** Quái bị đánh (sát thương lên quái). `victim` = chân quái; chest = 55% chiều cao. */
-  hit(m: MonLike): void {
-    const tl = this.tl('mon_hit');
-    if (this.lab) return;
-    if (!tl || !this.near(m.x, m.z) || !this.gap('hit', m.id, MON_HIT_GAP)) return;
-    const tgt: FxTarget = { x: m.x, y: m.y, z: m.z, chest: m.model.height * 0.55 };
-    this.runner.startAt(tl, { actor: this.actorOf(m), palette: this.elemOf(m), tgt, mul: Math.min(1.6, monScale(m.model.height)) });
-    this.note('mon_hit', m.id);
-  }
-
-  /** Quái đánh trúng người/vật: vệt chém ở người bị đánh. */
-  strike(m: MonLike, dst: { x: number; y: number; z: number }): void {
-    const tl = this.tl('mon_strike');
-    if (this.lab) return; // phòng thử chỉ phát FX của chiêu đang xem: đòn đánh thường của boss (đỏ/cam) làm lẫn với vạch báo
-    if (!tl || !this.near(dst.x, dst.z) || !this.gap('strike', m.id, MON_STRIKE_GAP)) return;
-    const yaw = Math.atan2(dst.x - m.x, dst.z - m.z);
-    const tgt: FxTarget = { x: dst.x, y: dst.y, z: dst.z, chest: 1.1 };
-    this.runner.startAt(tl, {
-      actor: this.actorOf({ ...m, yaw }),
-      palette: this.elemOf(m),
-      tgt,
-      mul: Math.min(2.2, monScale(m.model.height)),
-      variant: this.variantOf(m),
-    });
-    this.note('mon_strike', m.id);
   }
 
   /** Quái niệm/tụ lực (cờ chant bật). */

@@ -1,0 +1,44 @@
+{
+  "skillId": "fx_hit_smash",
+  "idea": "Đòn NẶNG/TÙ (quyền, chưởng, cự quyền) trúng thân: một mảng mực vỡ dẹt bất đối xứng như vết đập lên giấy ướt, giữa có khe trắng gãy, mảnh mực văng lệch về phía sau nạn nhân. Lõi mực, thân màu hướng tu, khe trắng. Không tròn đều, không tia thẳng.",
+  "element": "tho",
+  "path": "",
+  "scene": {
+    "palette": {
+      "core": "14161c",
+      "body": "b9c6d6",
+      "rim": "ffffff",
+      "accent": "f0e6a8",
+      "shadow": "08090c"
+    },
+    "impactAt": 0
+  },
+  "shapeLang": [
+    "burst"
+  ],
+  "timing": {
+    "anticipationMs": 0,
+    "impactMs": 70,
+    "lingerMs": 160
+  },
+  "footprint": {
+    "lengthM": 1.8,
+    "widthM": 1.6,
+    "heightM": 1.6
+  },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": {
+    "drawCalls": 2,
+    "particles": 14,
+    "screenCover": 0.012,
+    "overdraw": 2
+  },
+  "textures": [],
+  "silhouette": "mảng mực vỡ dẹt lệch một bên, khe trắng gãy ở giữa, mảnh văng về phía sau",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles"
+  ]
+}

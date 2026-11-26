@@ -1,0 +1,45 @@
+{
+  "skillId": "fx_heal",
+  "idea": "HỒI MÁU (người NHẬN một lượng hồi lớn: được đồng đội hồi, đan hồi máu, pháp bảo; chiêu hồi của Đan sư đã có hình riêng): linh khí ngọc lục thu về chân người trong 0,15 giây, rồi MỘT búp sen mực nở bung ngang thắt lưng (nhìn chéo từ trên), cánh sen tách ra bay lên quá đầu rồi tan. Lõi mực lục thẫm, thân ngọc lục, mép trắng ngọc, vài đốm vàng nhạt. Không cột sáng, không vòng dưới chân.",
+  "element": "moc",
+  "path": "",
+  "scene": {
+    "palette": {
+      "core": "0c3324",
+      "body": "4fd69a",
+      "rim": "eafff2",
+      "accent": "f4e9a0",
+      "shadow": "06160f"
+    },
+    "impactAt": 0.15
+  },
+  "shapeLang": [
+    "spiral",
+    "cloud"
+  ],
+  "timing": {
+    "anticipationMs": 150,
+    "impactMs": 80,
+    "lingerMs": 600
+  },
+  "footprint": {
+    "lengthM": 2.2,
+    "widthM": 2.2,
+    "heightM": 2.8
+  },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": {
+    "drawCalls": 4,
+    "particles": 60,
+    "screenCover": 0.03,
+    "overdraw": 3
+  },
+  "textures": [],
+  "silhouette": "một búp sen mực nở bung quanh thắt lưng, cánh sen tách ra bay lên quá đầu",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles"
+  ]
+}

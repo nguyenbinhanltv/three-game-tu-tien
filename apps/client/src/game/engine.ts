@@ -114,6 +114,7 @@ import { SuyFx } from './fx/suyFx';
 import { groundAt } from '../base/levelCtx';
 import { PF_TRIBULATION } from '@dtl/shared';
 import { MonFx } from './fx/monFx';
+import { HitFx } from './fx/hitFx';
 import { variantFor } from './fx/fxTimeline';
 import {
   auraCombatOf,
@@ -151,7 +152,7 @@ import { ANIM_LAB, VFX_LAB } from './engine/common';
 import { installAnimLab } from './debug/animLab';
 import { LoginOptions, QUALITY, isWebGPU, isWorldRoom, levelOfInit, levelOfRoom, serverUrl } from './engine/common';
 import { describeGpu, fireSkill, pickRenderer, runFrame, watchGpuDevice } from './engine/frameLoop';
-import { handleFx, monFlagFx, monsterInk, onSwingEvent, resetSound, volumeAt } from './engine/fxMsgs';
+import { handleFx, flyFx, monFlagFx, monsterInk, onSwingEvent, resetSound, volumeAt } from './engine/fxMsgs';
 import { fxTargetOf } from './engine/hudSync';
 import { bindInput, onResize } from './engine/input';
 import {
@@ -337,6 +338,8 @@ export class Game {
   pathAura: PathAuraFx | null = null;
   /** Hiệu ứng quái/tinh anh/boss (V5). */
   monFx: MonFx | null = null;
+  /** Hình trúng đòn chung (HPL2): vết va theo hướng tu, chí mạng, chặn, quái đánh người, ngắt chú, nhịp hồi. */
+  hitFx: HitFx | null = null;
   boltKinds = new Map<number, string>();
   /** Dấu trên sân mới nhất của Thiên Nhân Ngũ Suy của chính mình, theo khóa `<loại>:<ô>` (chỉ bản dev, cho Playwright: `__game.suyLog`). */
   suyLog?: Record<
@@ -800,6 +803,7 @@ export class Game {
     this.realmAura = new RealmAuraFx(this.vfx, auraEnv);
     this.pathAura = new PathAuraFx(this.vfx, auraEnv);
     this.monFx = new MonFx(this.skillFx.runner, { camera: () => this.camera, live: () => this.vfx.pool.live });
+    this.hitFx = new HitFx(this.skillFx.runner, { camera: () => this.camera, live: () => this.vfx.pool.live });
     this.suyFx = new SuyFx(this.skillFx.runner, {
       vfx: this.vfx,
       scene: this.scene,
@@ -826,6 +830,7 @@ export class Game {
     this.ents.onSkillEvent = (sid, e) => this.emitSkillEvent(sid, e);
     this.ents.onMonsterDeath = (m) => monsterInk(this, m);
     this.ents.onMonFlags = (m, e) => monFlagFx(this, m, e);
+    this.ents.onFlyChange = (sid, flying, x, z) => flyFx(this, sid, flying, x, z);
     this.ents.burrow = this.burrowFx;
     this.minimap = renderMinimap(320);
     mark('minimap');
@@ -1503,6 +1508,7 @@ export class Game {
     this.pathAura?.dispose();
     this.pathAura = null;
     this.monFx = null;
+    this.hitFx = null;
     this.suyFx?.dispose();
     this.suyFx = null;
     this.vfx?.dispose();

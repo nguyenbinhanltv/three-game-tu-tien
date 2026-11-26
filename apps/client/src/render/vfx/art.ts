@@ -40,6 +40,10 @@ export const SPRITE_GROUPS = {
   kieu: { file: 'hoa-truc/vfx_sprites_kieu.27c9c1ffe4.webp', cols: 4, rows: 6 },
   // V-P10: cảnh đột phá (lên tầng + bốn cảnh giới), tranh đơn sắc tô theo bảng màu timeline; chỉ nạp khi có người đột phá.
   dp: { file: 'hoa-truc/vfx_sprites_dp.c0b797988b.webp', cols: 4, rows: 4 },
+  // Trúng đòn chung (HPL2): vết va/chí mạng/chặn/hồi phục, tranh đơn sắc tô theo bảng màu lúc phát. Dùng liên tục khi đánh nhau nên luôn giữ (`ALWAYS_GROUPS`).
+  chung: { file: 'hoa-truc/vfx_sprites_chung.1741d9852c.webp', cols: 4, rows: 4 },
+  // V-P10: ngự kiếm (cất cánh, hạ cánh, vệt bay), tranh đơn sắc tô theo bảng màu timeline; chỉ nạp khi có người bay.
+  ngu: { file: 'hoa-truc/vfx_sprites_ngu.53d3b0c236.webp', cols: 4, rows: 2 },
   // V-P10: độ kiếp (mở kiếp, kiếp vân tầng thấp, chỗ sét đánh); chỉ nạp khi có người độ kiếp trong tầm nhìn.
   kiep: { file: 'hoa-truc/vfx_sprites_kiep.d00db05f37.webp', cols: 4, rows: 2 },
   // V-P10: hào quang cảnh giới (đan vân, mây mực thấp, đốm có đuôi, vạt đạo văn), tranh đơn sắc tô theo bảng màu cảnh giới; nạp khi có người đạt Kết Đan trở lên trong tầm nhìn.
@@ -58,6 +62,8 @@ export const PATH_SPRITE_GROUP: Record<string, SpriteGroup> = {
 };
 /** Số nhóm tối đa giữ trong GPU cùng lúc (không tính nhóm của người chơi) và thời gian rỗi (ms) trước khi một nhóm bị giải phóng. */
 export const SPRITE_MAX_RESIDENT = 3;
+/** Nhóm dùng chung cho mọi người chơi (trúng đòn): không tính vào `SPRITE_MAX_RESIDENT` và không bao giờ bị giải phóng vì rỗi. */
+export const ALWAYS_GROUPS: ReadonlySet<SpriteGroup> = new Set<SpriteGroup>(['chung']);
 export const SPRITE_IDLE_MS = 90_000;
 
 /** Tiền tố tên sprite → nhóm atlas khi nhóm KHÔNG trùng tiền tố (sprite của quái gom chung một atlas nhỏ). */
@@ -174,7 +180,7 @@ function releaseGroup(st: GroupState): void {
 
 /** Giải phóng nhóm rỗi quá `SPRITE_IDLE_MS` khi đang giữ quá `SPRITE_MAX_RESIDENT` nhóm (trừ nhóm của người chơi). Gọi định kỳ. */
 export function sweepSpriteGroups(now = performance.now()): void {
-  const loaded = [...groupState.entries()].filter(([, st]) => st.state !== 0);
+  const loaded = [...groupState.entries()].filter(([g, st]) => st.state !== 0 && !ALWAYS_GROUPS.has(g));
   if (loaded.length <= SPRITE_MAX_RESIDENT) return;
   const idle = loaded.filter(([g, st]) => g !== keepGroup && now - st.last > SPRITE_IDLE_MS).sort((a, b) => a[1].last - b[1].last);
   for (const [, st] of idle.slice(0, loaded.length - SPRITE_MAX_RESIDENT)) {

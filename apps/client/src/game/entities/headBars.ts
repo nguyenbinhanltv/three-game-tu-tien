@@ -195,9 +195,12 @@ export class HeadBars {
     this.b[i + 3] = alpha;
   }
 
+  /** Phòng thử (`__vfxlab.tags(false)`): ẩn mọi thanh máu để chụp điểm trúng không bị che. */
+  hidden = false;
+
   end(): void {
     this.mesh.count = this.n;
-    this.mesh.visible = this.n > 0;
+    this.mesh.visible = this.n > 0 && !this.hidden;
     if (!this.n) return;
     const len = this.n * 4;
     this.attrA.clearUpdateRanges();

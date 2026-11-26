@@ -146,6 +146,7 @@ export class PlayerSystem {
       variantAt: -1e9,
       hazardWin: { until: 0, taken: 0 },
       dodgeUntil: 0,
+      evadeFxAt: -1e9,
       dodgeAt: -1e9,
       dodge: newDodgeBank(),
       staggerUntil: 0,
