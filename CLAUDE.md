@@ -65,6 +65,7 @@ CLAUDE.md giữ phần lõi. Chi tiết từng hệ thống và lệnh nằm ở
 | `gameplay-systems.md` | công pháp, trang bị, độ kiếp, thần thức, nguyên anh, GM |
 | `quests.md` | nhiệm vụ theo chương |
 | `lore-boundary.md` | ranh giới Tiên Nghịch: được/không được dùng gì, thuật ngữ đã chốt, danh sách tên cấm (`content:check`) |
+| `da-canh.md` | hướng hình ảnh chính Dạ Cảnh `?style=da` (nền đêm, viền mực, chuỗi đòn hành động): đã có gì, lộ trình D0–D5, ngoại lệ luật mỹ thuật |
 | `painted.md` | phong cách Họa Cảnh `?style=painted` (nền hoạt hình vẽ tay, pilot Vân Lam): ranh giới giấy phép, các bước P1–P8, đo |
 | `status.md` | hiện trạng 2026-11-15 và việc còn mở (lịch sử, đã sửa mục lệch thời) |
 
