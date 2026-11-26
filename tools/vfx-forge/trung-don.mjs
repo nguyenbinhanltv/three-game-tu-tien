@@ -301,6 +301,24 @@ const SCENES = [
       parts('petal', 0.03, 6, { speed: 1.3, spread: 1, life: 0.7, size: 0.08, grav: -1.4, tone: 'rim' }),
     ],
   },
+  {
+    id: 'fx_evade',
+    pal: 'hit_chung',
+    fxKind: '~evade',
+    I: 0,
+    idea: 'NÉ TRÚNG (đòn bị khung bất tử của thân pháp bỏ qua, server báo): một tàn ảnh mực mờ của người vừa lách khỏi chỗ cũ, ba bóng chồng nhạt dần, kèm một làn bụi mực. Lõi mực, thân xám lạnh, không sáng chói. Rất nhẹ, tan trong 0,3 giây.',
+    element: 'vo',
+    shapeLang: ['line', 'cloud'],
+    silhouette: 'ba bóng người mực chồng nhau nhạt dần lách ngang, một làn bụi mực',
+    timing: { anticipationMs: 0, impactMs: 50, lingerMs: 250 },
+    footprint: { lengthM: 1.8, widthM: 1.2, heightM: 1.8 },
+    budget: { drawCalls: 2, particles: 6, screenCover: 0.01, overdraw: 2 },
+    events: () => [
+      sprite('chung_dodge', { size: 1.7, sizeTo: 1.9, dur: 0.3, erodeFrom: 0.3, alpha: 0.75, tone: 'core' }),
+      accent('chung_dodge', 0, 1.6, { dur: 0.07, alpha: 0.6 }),
+      parts('dust', 0.02, 5, { speed: 1.4, spread: 0.8, life: 0.3, size: 0.2, tone: 'shadow', grav: -0.4, tier: 1 }),
+    ],
+  },
 ];
 
 /** Dư ba (chuẩn 2): phải có sự kiện hình BẮT ĐẦU từ +150 ms; hiệu ứng tan ≤ 200 ms nên thêm vài hạt bụi mực rất nhỏ rơi nốt. */

@@ -122,6 +122,7 @@ const LAB_HIT: Record<string, string> = {
   fx_hit_stab: 'mon',
   fx_hit_crit: 'mon',
   fx_break: 'mon',
+  fx_evade: 'hit_chung',
   fx_hit_block: 'hit_guard',
   fx_hit_mon: 'me',
   fx_hit_bite: 'me',

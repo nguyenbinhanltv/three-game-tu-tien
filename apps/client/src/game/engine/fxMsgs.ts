@@ -549,6 +549,12 @@ export function handleFx(eng: Game, m: FxMsg, held = false): void {
       if (bp) eng.hitFx?.brk(bp, m.t === 'interrupt' ? eng.methodOfPlayer(src) : undefined, m.t === 'break' || src === eng.sid);
       break;
     }
+    case 'evade': {
+      // Chỉ là lớp hình: server báo đòn trúng khung né của `dst`.
+      const ep = hitPointOf(eng, dst);
+      if (ep) eng.hitFx?.evade(ep, dst === eng.sid);
+      break;
+    }
     case 'phase': {
       const mt = eng.view.monsters.get(src)?.t;
       const cined = !!mt && phaseCine(eng, src, `mon.${mt}.say.${m.d ?? 1}`);

@@ -69,6 +69,8 @@ export interface PlayerEnt {
   /** Né (P1 Thiên Nhãn): hết khung bất tử lúc `dodgeUntil`, lần né gần nhất `dodgeAt` (giờ server, ms). Không lưu DB. */
   dodgeUntil: number;
   dodgeAt: number;
+  /** Lần phát FX hình `evade` gần nhất (giờ server, ms): đòn bị khung bất tử bỏ qua chỉ vẽ tàn ảnh, giãn để vùng nổ nhiều nhịp không spam. Không lưu DB. */
+  evadeFxAt: number;
   /** Kho lượt né (S5): số lượt còn và mốc nạp. Không lưu DB. */
   dodge: DodgeBank;
   /** Chân Cảnh S1: khựng vì trúng đòn đến lúc này (giờ server, ms): không đi được. `staggerOkAt`: sau mốc này mới khựng/đẩy lùi tiếp (chống khóa liên tục). Không lưu DB. */

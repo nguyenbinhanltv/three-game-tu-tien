@@ -175,6 +175,7 @@ import fx_fx_hit_block from '../data/fx/fx_hit_block.json';
 import fx_fx_hit_mon from '../data/fx/fx_hit_mon.json';
 import fx_fx_hit_bite from '../data/fx/fx_hit_bite.json';
 import fx_fx_break from '../data/fx/fx_break.json';
+import fx_fx_evade from '../data/fx/fx_evade.json';
 import fx_fx_heal from '../data/fx/fx_heal.json';
 import fx_fx_mana from '../data/fx/fx_mana.json';
 import fx_fx_potion from '../data/fx/fx_potion.json';
@@ -459,6 +460,7 @@ export const FX_TIMELINES = [
   fx_fx_hit_mon,
   fx_fx_hit_bite,
   fx_fx_break,
+  fx_fx_evade,
   fx_fx_heal,
   fx_fx_mana,
   fx_fx_potion,

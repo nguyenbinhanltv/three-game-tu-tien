@@ -12,7 +12,7 @@ import { OTHERS_FX_LIVE_MAX } from './fxBudget';
 /** Xa hơn mức này (m, tới camera) thì không phát. */
 export const HIT_FX_DIST = 55;
 /** Giãn cách tối thiểu (giây) giữa hai lần cùng loại trên cùng một nạn nhân. */
-export const HIT_GAP = { hit: 0.12, crit: 0.25, block: 0.3, mon: 0.3, brk: 0.5, heal: 1.2, tick: 0.9 } as const;
+export const HIT_GAP = { hit: 0.12, crit: 0.25, block: 0.3, mon: 0.3, brk: 0.5, evade: 0.4, heal: 1.2, tick: 0.9 } as const;
 /** Lượng hồi từ chừng này phần máu tối đa trở lên thì nở búp sen (`fx_heal`); nhỏ hơn chỉ là chùm cánh sen (`fx_heal_tick`). */
 export const HEAL_BIG_FRAC = 0.08;
 
@@ -127,6 +127,12 @@ export class HitFx {
   monStrike(v: HitPoint, from: { x: number; z: number } | null, elem: string | undefined, bite: boolean, mine: boolean, force = false): void {
     const tl = this.ok(bite ? 'fx_hit_bite' : 'fx_hit_mon', v, HIT_GAP.mon, mine, force);
     if (tl) this.play(tl, v, from, monHitPalette(elem), mine);
+  }
+
+  /** Nạn nhân vừa NÉ trúng (server báo đòn bị khung bất tử bỏ qua): tàn ảnh mực mờ. */
+  evade(v: HitPoint, mine: boolean, force = false): void {
+    const tl = this.ok('fx_evade', v, HIT_GAP.evade, mine, force);
+    if (tl) this.play(tl, v, null, 'hit_chung', mine);
   }
 
   /** Ngắt chú / mất thế: sợi xích chú đứt trước ngực boss, tô theo hướng tu của người phá (không biết thì bảng chung). */

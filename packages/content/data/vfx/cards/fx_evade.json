@@ -1,0 +1,45 @@
+{
+  "skillId": "fx_evade",
+  "idea": "NÉ TRÚNG (đòn bị khung bất tử của thân pháp bỏ qua, server báo): một tàn ảnh mực mờ của người vừa lách khỏi chỗ cũ, ba bóng chồng nhạt dần, kèm một làn bụi mực. Lõi mực, thân xám lạnh, không sáng chói. Rất nhẹ, tan trong 0,3 giây.",
+  "element": "vo",
+  "path": "",
+  "scene": {
+    "palette": {
+      "core": "14161c",
+      "body": "b9c6d6",
+      "rim": "ffffff",
+      "accent": "f0e6a8",
+      "shadow": "08090c"
+    },
+    "impactAt": 0
+  },
+  "shapeLang": [
+    "line",
+    "cloud"
+  ],
+  "timing": {
+    "anticipationMs": 0,
+    "impactMs": 50,
+    "lingerMs": 250
+  },
+  "footprint": {
+    "lengthM": 1.8,
+    "widthM": 1.2,
+    "heightM": 1.8
+  },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": {
+    "drawCalls": 2,
+    "particles": 6,
+    "screenCover": 0.01,
+    "overdraw": 2
+  },
+  "textures": [],
+  "silhouette": "ba bóng người mực chồng nhau nhạt dần lách ngang, một làn bụi mực",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles"
+  ]
+}
