@@ -107,7 +107,7 @@ export const PAINTED_THEMES: Record<string, PaintedTheme> = {
   // lam; bản sắc năm đảo (Tùng Đài rêu thẫm, Thạch Quy đá cát, Kính Hồ phù sa lục nhạt, Lôi Vân đá cháy sấm, Kình Ngư trắng xương) đi qua `vcMix`
   van_hai: {
     ground: [0xa9ad50, 0x3d6351],
-    rock: [0xc2bba6, 0x5c5e7c],
+    rock: [0xc4b9a0, 0x6e645c],
     paving: [0xdcd3ba, 0x6c6c8c],
     mist: 0xf4e6dc,
     // sương chỉ ở chân đảo và sàn mây (sàn 60 m, mặt đảo 122–140 m): mặt đảo trong, không phủ lên chỗ đánh
