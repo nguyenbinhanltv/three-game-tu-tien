@@ -736,7 +736,7 @@ export function applyGroundShader(mat: THREE.MeshStandardNodeMaterial, tex: Grou
     // đá/vách/tuyết đổi tông ở ALBEDO (vẫn qua đèn, bóng và pháp tuyến như Vân Lam), không đi qua emissive
     const rockInk: Node = dot(col.rgb, vec3(0.299, 0.587, 0.114));
     const rTone: Node = mix(vec3(themeU.rShade), vec3(themeU.rLit), smoothstep(0.1, 0.6, rockInk));
-    mat.colorNode = mix(col, rTone, themeU.on).mul(keep);
+    mat.colorNode = mix(col, rTone.mul(float(1).add(paintedNight.mul(themeU.nightSplit).mul(0.7))), themeU.on).mul(keep);
     // + sương thấp sát đáy thung lũng (render/painted/lowMist.ts), chỉ trên phần đất tô phẳng
     const groundBase = paintedT.mul(grassW).add(pavTone.mul(pavW));
     mat.emissiveNode = withLowMist(F, groundBase, positionWorld.xz, positionWorld.y, grassW.add(pavW).min(1));
