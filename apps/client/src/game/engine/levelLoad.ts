@@ -71,6 +71,7 @@ import { loadGroundTextures, resolveGroundSet } from '../../base/groundTextures'
 import { FLAGS } from '../../base/flags';
 import { kieuIndex, startKieuRoomFx } from '../fx/kieuRoomFx';
 import { LANTERN_LIGHT, QUALITY, isWebGPU, isWorldRoom } from './common';
+import { DA_FLAME, DA_LAMP_K } from './daMood';
 import type { Game } from '../engine';
 import { logger } from '../../base/log';
 import { addSectSigns } from '../world/sectSigns';
@@ -419,13 +420,17 @@ export function buildLevelA(eng: Game, id: string, q: (typeof QUALITY)[string]):
         )
       : id === 'bac_hoang'
         ? createLanternHalos(pts, 2.8, 0xffb868)
-        : createLanternHalos(pts);
+        : // Dạ Cảnh: đèn đá thành "lửa lạnh" (lam bạc), quầng nhỏ hơn: là điểm sáng dẫn đường chứ không rọi ấm cả sân.
+          FLAGS.style === 'da'
+          ? createLanternHalos(pts, 1.9, DA_FLAME)
+          : createLanternHalos(pts);
     eng.scene.add(halos);
     eng.levelObjs.push(halos);
-    eng.lanterns = new LanternLights(eng.scene, pts);
+    const daLamps = FLAGS.style === 'da' && !levelAssets(id).palace && id !== 'bac_hoang';
+    eng.lanterns = new LanternLights(eng.scene, daLamps ? pts.map((p) => ({ ...p, color: DA_FLAME })) : pts);
     eng.lanterns.setEnabled(q.lights && isWebGPU(eng.renderer)); // T6: đèn lồng point light thật chỉ ở WebGPU
     eng.lanterns.setIntensityScale(
-      (LANTERN_LIGHT[mood] ?? 1) * (levelAssets(id).palace ? (levelAssets(id).kinhNguyetArt ? 0.9 : 0.35) : 1),
+      (LANTERN_LIGHT[mood] ?? 1) * (levelAssets(id).palace ? (levelAssets(id).kinhNguyetArt ? 0.9 : 0.35) : 1) * (daLamps ? DA_LAMP_K : 1),
     );
   }
   const cave = levelAssets(id).cave;
