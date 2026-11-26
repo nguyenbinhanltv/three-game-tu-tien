@@ -45,6 +45,7 @@ export const TRAIL_OTHERS = 0.5;
 const MAX_PUFFS = 10;
 const PUFF_LIFE = 0.7;
 const PUFF_EVERY = 0.2;
+const C_CLOUD = 0xcfe9f2; // thân mây thủy mặc: ngà/lam nhạt
 const C_INK = 0x0a3550; // lõi mực vệt phi kiếm (xanh thẫm) // giữa stone_light và leaf_dry
 
 /**
@@ -550,11 +551,12 @@ export class Trails {
     const pal = FX_PALETTE.ngu_kiem!;
     const wisp = Math.random() < 0.4;
     const cell = spriteCell(wisp ? 'ngu_wisp' : 'ngu_puffs');
-    const m = this.src.fx(shapeGeometry('sprite'), wisp ? pal.rim : pal.body, 0, 'sprite_ngu');
-    m.fxA.set(12, 0, Math.random() * 40, cell.idx);
+    // Thủy mặc: lõi ngà/lam NHẠT sáng (kiểu tô 13: đáy mực nâng lên, mực đặc trong suốt hơn), viền sáng mềm; không dùng thân teal đặc (ban ngày thành mảng đá vụn).
+    const m = this.src.fx(shapeGeometry('sprite'), wisp ? pal.rim : C_CLOUD, 0, 'sprite_ngu');
+    m.fxA.set(13, 0, Math.random() * 40, cell.idx);
     m.fxB.set(((pal.rim >> 16) & 255) / 255, ((pal.rim >> 8) & 255) / 255, (pal.rim & 255) / 255, 0.5);
     // Lệch ngang và hơi xuống khỏi dải để cụm mây đọc được ngoài mép dải, không chìm trong nó.
-    m.position.set(x + (Math.random() - 0.5) * 0.9, y - 0.15 - Math.random() * 0.3, z + (Math.random() - 0.5) * 0.9);
+    m.position.set(x + (Math.random() - 0.5) * 0.8, y + 0.1 + Math.random() * 0.25, z + (Math.random() - 0.5) * 0.8);
     m.quaternion.copy(camera.quaternion);
     p.m = m;
     p.age = 0;
@@ -562,9 +564,9 @@ export class Trails {
     const back = 0.8 + 0.8 * fast;
     p.vx = -Math.sin(yaw) * back + (Math.random() - 0.5) * 0.5;
     p.vz = -Math.cos(yaw) * back + (Math.random() - 0.5) * 0.5;
-    p.vy = 0.15 + Math.random() * 0.25;
-    p.size = (wisp ? 1.5 : 1.2) * (0.8 + Math.random() * 0.5);
-    p.alpha = (mine ? 0.9 : 0.9 * TRAIL_OTHERS) * (wisp ? 0.8 : 1);
+    p.vy = 0.05 + Math.random() * 0.2;
+    p.size = (wisp ? 2.0 : 2.4) * (0.85 + Math.random() * 0.4);
+    p.alpha = (mine ? 0.85 : 0.85 * TRAIL_OTHERS) * (wisp ? 0.8 : 1);
     m.scale.setScalar(p.size * 0.5);
   }
 
@@ -584,9 +586,9 @@ export class Trails {
       m.position.y += p.vy * dt;
       m.position.z += p.vz * dt;
       m.quaternion.copy(camera.quaternion);
-      m.scale.setScalar(p.size * 0.5 * (1 + 0.8 * k));
+      m.scale.setScalar(p.size * 0.5 * (1 + 0.6 * k));
       m.fxA.y = Math.min(1.1, Math.max(0, (k - 0.3) / 0.7) * 1.1);
-      m.fxOpacity = p.alpha * (1 - k * 0.6);
+      m.fxOpacity = p.alpha * (1 - k * k * 0.85);
       m.visible = true;
     }
   }
