@@ -9,6 +9,8 @@ export const INK_HULL_MAX = 10;
 /** Bề dày viền (m, không gian thế giới) và màu mực mặc định. */
 export const INK_WIDTH = 0.03;
 export const INK_COLOR = 0x05040a;
+/** Bậc LOD của lưới dùng làm vỏ (1 = lưới gộp ít tam giác của v3); thể không có bậc này thì dùng bậc 0. */
+export const INK_LOD = 1;
 
 /** Màu và hệ số bề dày viền theo trạng thái quái: lộ yếu điểm = vàng (hue > 45°, không cam), vỡ thế = lam nhạt, boss đổi pha = đỏ thẫm dày. */
 export const INK_STATE = {
@@ -28,7 +30,10 @@ export function inkStateOf(weak: boolean, broken: boolean, phase: number): InkSt
 
 interface Hull {
   mesh: THREE.SkinnedMesh;
+  /** Lưới cho hình học + bộ xương của vỏ (ưu tiên LOD thấp để bớt tam giác). */
   src: THREE.SkinnedMesh;
+  /** Mọi lưới thân của `root`: vỏ hiện khi BẤT KỲ lưới nào đang hiện (LOD nào đang vẽ cũng có viền). */
+  bodies: THREE.SkinnedMesh[];
 }
 
 const _s = new THREE.Vector3();
@@ -50,18 +55,18 @@ export class InkHulls {
   attach(root: THREE.Object3D): boolean {
     if (this.hulls.has(root)) return true;
     if (this.hulls.size >= INK_HULL_MAX) return false;
-    let best: THREE.SkinnedMesh | null = null;
-    let bestN = 0;
+    // Lưới lớn nhất của từng bậc LOD. Vỏ lấy bậc `INK_LOD` nếu có (lưới gộp ít tam giác), không thì bậc 0.
+    const byLod = new Map<number, THREE.SkinnedMesh>();
+    const bodies: THREE.SkinnedMesh[] = [];
     root.traverse((o) => {
       const m = o as THREE.SkinnedMesh;
-      if (!m.isSkinnedMesh || m.userData.heroGhost || m.userData.inkHull || (m.userData.lod ?? 0) > 0) return;
-      const n = m.geometry.attributes.position?.count ?? 0;
-      if (n > bestN && m.geometry.attributes.normal) {
-        best = m;
-        bestN = n;
-      }
+      if (!m.isSkinnedMesh || m.userData.heroGhost || m.userData.inkHull || !m.geometry.attributes.normal) return;
+      bodies.push(m);
+      const lod = (m.userData.lod as number | undefined) ?? 0;
+      const cur = byLod.get(lod);
+      if (!cur || (m.geometry.attributes.position?.count ?? 0) > (cur.geometry.attributes.position?.count ?? 0)) byLod.set(lod, m);
     });
-    const src = best as THREE.SkinnedMesh | null;
+    const src = byLod.get(INK_LOD) ?? byLod.get(0) ?? null;
     if (!src || !src.parent) return false;
     const g = new THREE.SkinnedMesh(src.geometry, this.mat);
     g.userData.inkHull = true;
@@ -74,7 +79,7 @@ export class InkHulls {
     g.castShadow = false;
     g.receiveShadow = false;
     src.parent.add(g);
-    this.hulls.set(root, { mesh: g, src });
+    this.hulls.set(root, { mesh: g, src, bodies });
     this.style(root, 'normal');
     return true;
   }
@@ -93,7 +98,7 @@ export class InkHulls {
 
   /** Đồng bộ hiện/ẩn với lưới gốc (LOD, chết, chui đất). Gọi mỗi khung. */
   sync(): void {
-    for (const h of this.hulls.values()) h.mesh.visible = this.enabled && h.src.visible && h.src.parent !== null;
+    for (const h of this.hulls.values()) h.mesh.visible = this.enabled && h.src.parent !== null && h.bodies.some((b) => b.visible);
   }
 
   release(root: THREE.Object3D): void {

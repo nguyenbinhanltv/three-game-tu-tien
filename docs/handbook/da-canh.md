@@ -21,12 +21,14 @@ Người dùng chốt 27/11: thiết kế lại MỘT bản đồ theo chất ga
 
 1. [x] Nền lùi lại: `daPreset` bớt nắng trăng (`DA_SUN`) và ánh trời (`DA_SKY`), hạ bão hòa; nhân vật tô chia bậc theo màu gốc nên tự nổi trên nền.
 2. [x] Đèn đá thành "lửa lạnh" (`DA_FLAME`, quầng nhỏ, đèn thật × `DA_LAMP_K`): điểm sáng dẫn đường, không rọi ấm cả sân.
-3. [ ] Lớp tối quanh trận (mặt đất quanh vùng đánh hạ tương phản thêm) để vạch báo và chiêu nổi.
+3. [x] Lớp tối quanh trận: hậu kỳ trong `feedbackLayers` (`render/post.ts`, `postParams.focusDark/focus/focusAspect`, hằng `FOCUS_*`), điều khiển bởi `game/engine/daFocus.ts` theo cờ giao chiến của camera (vào 3/s, ra 1,2/s); điểm ảnh sáng (chiêu, vạch báo, đèn) được giữ. Không thêm draw call.
 4. [ ] Rim + fill cho đạo cụ và kiến trúc xa để khối không chìm vào nền.
 5. [ ] Bố cục: phía gần camera chỉ để vật thấp; thêm điểm nhấn phát sáng (đốm linh khí, rêu sáng) theo bảng màu hẹp của khu.
 6. [ ] Quái ở Vân Lam: tô chia bậc + mắt hoặc điểm phát sáng làm dấu nhận diện.
 
-Số đo viền mực (27/11, `pnpm shots herolight --bots 8 --view 1080p`, một mẫu): draw call 129 → 137, tam giác 1,01 → 1,24 triệu, thời gian khung 10,2 → 10,7 ms. Việc cần làm: cho vỏ viền dùng lưới LOD thấp hơn để bớt tam giác.
+Số đo viền mực (27/11, `pnpm shots herolight --bots 8 --view 1080p`, một mẫu mỗi cấu hình): không viền 129 draw / 1,01 triệu tam giác / 10,2 ms khung; viền dùng lưới LOD0 137 / 1,24 triệu / 10,7 ms; viền dùng lưới LOD1 (`INK_LOD`, hiện tại) 136 / 1,16 triệu / 10,3 ms.
+
+Rung camera: khi `?style=da`, `CameraShake.trauma` bật (`game/camera/shake.ts`): các cú rung cộng dồn vào mức trauma (trần `TRAUMA_MAX`), biên độ = trauma², tắt dần `TRAUMA_DECAY`/giây, có lăn nhẹ `TRAUMA_ROLL`; một cú lẻ giữ đúng biên độ cũ.
 
 ## Lộ trình
 

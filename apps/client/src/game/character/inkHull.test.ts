@@ -82,3 +82,28 @@ describe('InkHulls', () => {
     h.dispose();
   });
 });
+
+describe('InkHulls chọn lưới LOD thấp cho vỏ', () => {
+  it('có lưới LOD 1 thì vỏ dùng hình học của nó; vỏ hiện khi bất kỳ bậc nào đang hiện', () => {
+    const h = new InkHulls();
+    const a = body();
+    const lod0 = a.children[0] as THREE.SkinnedMesh;
+    const lod1 = (body().children[0] as THREE.SkinnedMesh).clone();
+    lod1.geometry = lod0.geometry.clone();
+    lod1.userData.lod = 1;
+    lod1.visible = false;
+    a.add(lod1);
+    expect(h.attach(a)).toBe(true);
+    const hull = a.children.find((o) => o.userData.inkHull) as THREE.SkinnedMesh;
+    expect(hull.geometry).toBe(lod1.geometry);
+    h.sync();
+    expect(hull.visible).toBe(true);
+    lod0.visible = false;
+    h.sync();
+    expect(hull.visible).toBe(false);
+    lod1.visible = true;
+    h.sync();
+    expect(hull.visible).toBe(true);
+    h.dispose();
+  });
+});
