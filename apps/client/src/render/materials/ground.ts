@@ -699,7 +699,7 @@ export function applyGroundShader(mat: THREE.MeshStandardNodeMaterial, tex: Grou
     const detail: Node = mix(float(1), clamp(ink.div(0.17), 0.55, 1.35), 0.7);
     // xa (ngự kiếm, điểm ngắm cảnh): mảng sáng/tối dịu lại về một tông sáng, đảo xa không loang lổ
     const strokeV: Node = mix(stroke, float(0.72), smoothstep(60, 220, dist).mul(0.65));
-// đêm (theme.nightSplit): đêm đã mất màu nên chỉ còn độ chói. Mảng 17 m (`patch`) bỏ đi (thành vệt mực lớn như mây), chỉ còn nét cọ nhỏ của đất vẽ; biên sáng/tối
+    // đêm (theme.nightSplit): đêm đã mất màu nên chỉ còn độ chói. Mảng 17 m (`patch`) bỏ đi (thành vệt mực lớn như mây), chỉ còn nét cọ nhỏ của đất vẽ; biên sáng/tối
     // gắt hơn một chút và mảng sáng hạ xuống để đọc là đất (đá cháy sấm), không phải tuyết hay mây
     const nSplit: Node = paintedNight.mul(themeU.nightSplit);
     const brush: Node = smoothstep(0.09, 0.26, ink).mul(0.62).add(patch.mul(0.38));

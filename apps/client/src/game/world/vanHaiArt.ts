@@ -303,7 +303,9 @@ export function vhPaintedGrass(def: TerrainDef, x: number, z: number, slope: num
   const P = isl.pal;
   const rock = art.rockW(isl, x, z, slope / 1.5);
   const c = fbm(x * 0.055 + 3, z * 0.055 - 8, 2, def.seed + 777);
-  let k = P.grassDensity * 1.5 * (VH_PAINT_BOOST[isl.kind] ?? 1) * (1 - P.grassClump + P.grassClump * Math.max(0, Math.min(1.7, c * 2.6 + 0.3))) + pw * 0.35;
+  let k =
+    P.grassDensity * 1.5 * (VH_PAINT_BOOST[isl.kind] ?? 1) * (1 - P.grassClump + P.grassClump * Math.max(0, Math.min(1.7, c * 2.6 + 0.3))) +
+    pw * 0.35;
   k *= 1 - smoothstep(0.05, 0.45, art.trailW(isl, x, z));
   k *= Math.max(0, 1 - rock * 1.4) * (d > isl.r - 14 ? 0.55 : 1);
   out.k = Math.max(0, Math.min(1, k));
