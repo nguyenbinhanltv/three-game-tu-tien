@@ -28,6 +28,10 @@ export interface PaintedTheme {
    * mảng chuyển mềm trên nền một tông đọc thành mây; hai tông có biên rõ đọc thành đất. 0 = không (mặc định).
    */
   nightSplit?: number;
+  /** 0..1: giữ bóng đổ mặt trời trên đất ban ngày (phần màu đất đi qua đèn, như `albedoMix` nhưng không đổi nền); `albedoMix` > 0 đã gồm. 0 = không (mặc định). */
+  shadowMix?: number;
+  /** 0..1: thu mảng sáng/tối lớn (17 m) của đất về giữa và nhân vết nứt/tro/mảnh đá của albedo gốc, cả ngày lẫn đêm. 0 = không (mặc định). */
+  groundFlat?: number;
   /** 0..1: ban đêm thu mảng sáng/tối lớn (17 m) của đất về giữa và nhân vết nứt của albedo gốc, để đất không loang như mây. 0 = không (mặc định). */
   nightFlat?: number;
   /** Màu nhuộm trăng (nhân, tuyến tính) của đêm Họa Cảnh; mặc định [0,3, 0,46, 0,88] của Vân Lam. Bớt xanh dương để nhân vật và vòng chọn không chìm. */
@@ -163,6 +167,24 @@ export const PAINTED_THEMES: Record<string, PaintedTheme> = {
     rockMix: 0.35,
     face: { x: 1024, w: 30, west: [0.4, 0.46, 0.86], east: [1.2, 1.0, 0.74] },
   },
+  // Xích Tẫn Khích (phó bản, E4): hẻm đá đỏ cháy, mặt đất đất nung đỏ nâu sẫm, kiến trúc đen có ánh lửa cam. Đất đỏ gạch ấm / bóng nâu mận; đá đen nâu tím; không sương (phó
+  // bản nhỏ, đáy chưa đo); đêm giữ ấm (tông lửa, không nhuộm lam)
+  xich_tan_khich: {
+    ground: [0x944a2e, 0x3a2030],
+    rock: [0x7c5a4c, 0x2e2430],
+    paving: [0x9a7058, 0x3e2e3c],
+    mist: 0xd89a78,
+    mistBand: [0, 1],
+    mistK: 0,
+    propMix: 0.4,
+    nightContrast: 1.6,
+    nightTint: [0.62, 0.5, 0.62],
+    nightLift: 1.6,
+    groundMix: 1,
+    groundSat: 1,
+    shadowMix: 1,
+    groundFlat: 0.9,
+  },
   // Thiên Khuyết Cổ Thành (E4-A): cổ thành sa thạch nứt trên cao nguyên (đáy 80 m). Đất vàng đất nung ấm, bóng mận tím nhạt (pha tay); đá/tường ngà xám ấm với bóng tím
   // chàm; đá lát ngà. Không cỏ xanh: mặt đất là đất nứt vốn nằm ở albedo, nên chỉ ánh xạ qua cặp `ground` (`groundMix` 1)
   thien_khuyet: {
@@ -202,6 +224,8 @@ export const themeU = {
   propMix: uniform(0),
   nightContrast: uniform(1),
   nightSplit: uniform(0),
+  shadowMix: uniform(0),
+  groundFlat: uniform(0),
   nightFlat: uniform(0),
   nightTint: uniform(new THREE.Vector3(0.3, 0.46, 0.88)),
   groundMix: uniform(1),
@@ -225,6 +249,8 @@ export function setPaintedTheme(levelId: string): void {
   themeU.propMix.value = t?.propMix ?? 0;
   themeU.nightContrast.value = t?.nightContrast ?? 1;
   themeU.nightSplit.value = t?.nightSplit ?? 0;
+  themeU.shadowMix.value = t?.shadowMix ?? 0;
+  themeU.groundFlat.value = t?.groundFlat ?? 0;
   themeU.nightFlat.value = t?.nightFlat ?? 0;
   themeU.nightTint.value.set(...(t?.nightTint ?? [0.3, 0.46, 0.88]));
   themeU.groundMix.value = t?.groundMix ?? 1;
