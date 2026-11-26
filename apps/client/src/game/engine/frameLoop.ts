@@ -281,11 +281,11 @@ export function runFrame(eng: Game): void {
   if (eng.riftMood) updateRiftMood(eng, dt, rp.z, rp.x);
   if (levelId() === 'gioi_tri') updateFaceMood(eng, dt);
   // Dạ Cảnh: mood theo loại trận (tinh anh/boss gần thì ngả đỏ sẫm). Level đã có mood động riêng (khe Bắc Hoang, Vấn Đỉnh, Giới Trì) giữ cơ chế của nó.
-  else if (FLAGS.style === 'da' && !eng.riftMood) updateDaMood(eng, dt, rp.x, rp.z);
+  else if (FLAGS.da && !eng.riftMood) updateDaMood(eng, dt, rp.x, rp.z);
   eng.aurora?.update(eng.camera.position);
   updateEclipse(eng, dt);
   eng.lanterns?.update(_v.set(rp.x, rp.y, rp.z));
-  if (FLAGS.style === 'painted') updateLampPools(eng.lanterns?.lights ?? []); // level không có đèn: xóa vũng của level trước
+  if (FLAGS.painted) updateLampPools(eng.lanterns?.lights ?? []); // level không có đèn: xóa vũng của level trước
   if (me) eng.ambient.update(dt, eng.camera.position, rp);
   if (me) eng.butterflies?.update(dt, rp);
   eng.lacKiemBirds?.update(rp.x, rp.y, rp.z, eng.camera.position);
@@ -470,7 +470,7 @@ function updateCamera(eng: Game, dt: number): void {
           break;
         }
     // Dạ Cảnh: lớp tối quanh trận bật khi đang giao chiến.
-    if (FLAGS.style === 'da') updateDaFocus(eng.camera, dt, combat, rp.x, rp.y, rp.z);
+    if (FLAGS.da) updateDaFocus(eng.camera, dt, combat, rp.x, rp.y, rp.z);
     const spot = combat ? null : spotAt(levelId(), rp.x, rp.z);
     const vv = vistaView(eng.vista.update(dt, flying, spot, FLAGS.vista && !eng.cine.active, combat), flying ? 'fly' : 'spot');
     if (eng.vista.hint(spot) && FLAGS.vista) pushToast(t('ui.vista_hint'));
@@ -508,7 +508,7 @@ function updateCamera(eng: Game, dt: number): void {
     cy = Math.max(ty + (cy - ty) * k, groundAt(cx, cz) + 0.7 - (4 - i) * 0.5);
   }
   // Dạ Cảnh: rung kiểu trauma (cộng dồn, bình phương, có lăn). Đặt mỗi khung để bật/tắt theo cờ mà không đụng nơi tạo.
-  eng.shake.trauma = FLAGS.style === 'da';
+  eng.shake.trauma = FLAGS.da;
   eng.shake.update(dt, _shakePos, _shakeLook);
   const fc = FLAGS.debug || ANIM_LAB ? eng.freeCam : null;
   if (fc) {

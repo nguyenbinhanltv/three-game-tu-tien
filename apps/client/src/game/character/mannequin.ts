@@ -428,7 +428,7 @@ export function mannequinTemplate(handle: AssetHandle, lib: AssetHandle, robe?: 
   // đã được đặt. Gọi SAU voan/da (cộng dồn vào emissive đã có) và TRƯỚC khi gộp lưới/nhân bản vật liệu nhuộm (bản nhuộm thừa hưởng).
   for (const m of mats) rimLight(m);
   // Dạ Cảnh (phương án 1 người dùng chọn 27/11): giữ model v3, tô bóng chia bậc.
-  if (FLAGS.style === 'da') for (const m of mats) toonBands(m);
+  if (FLAGS.da) for (const m of mats) toonBands(m);
   // Mặt nạ nhuộm theo xương (đầu/tay/tóc không nhuộm): thêm trước khi gộp lưới để mọi lưới cùng bộ thuộc tính.
   if (v3DyeRefOf(handle.id)) addDyeMask(handle.scene);
   // Sau khi đã đổi vật liệu: các lưới cùng LOD dùng chung một vật liệu thì gộp làm một (1 draw call mỗi người ở LOD1/LOD2).

@@ -315,7 +315,7 @@ function moodOf(_eng: Game, id: string): GradingName {
   // `?mood=dawn|day|night` thắng; level có bộ mood riêng (ochre) lấy biến thể cùng thời điểm.
   if (URL_MOOD) return moodVariant(m as GradingName, URL_MOOD);
   // Dạ Cảnh (`?style=da`): mọi level lấy biến thể ĐÊM của bộ mood riêng (level mood cố định như bí cảnh giữ nguyên).
-  if (FLAGS.style === 'da') return moodVariant(m as GradingName, 'night');
+  if (FLAGS.da) return moodVariant(m as GradingName, 'night');
   return m as GradingName;
 }
 
@@ -342,7 +342,7 @@ export function buildLevelA(eng: Game, id: string, q: (typeof QUALITY)[string]):
       if (flat && !g.flat) {
         // Iso: đĩa dựng đứng đổi sang nằm phẳng thì mờ và nhỏ (như vòng cổng phẳng trong hang), không thành mảng sáng chói phủ góc màn hình.
         // Họa Cảnh: nền sáng pastel làm vòng mờ mất, nâng độ đậm (không bloom nên không có quầng bù)
-        d.userData.op = Math.min(d.userData.op as number, FLAGS.style === 'painted' ? ISO_GATE_OPACITY * 1.7 : ISO_GATE_OPACITY);
+        d.userData.op = Math.min(d.userData.op as number, FLAGS.painted ? ISO_GATE_OPACITY * 1.7 : ISO_GATE_OPACITY);
         d.scale.multiplyScalar(ISO_GATE_SCALE);
         d.userData.isoFlat = true; // không đánh dấu bloom: bloom làm đĩa chói thành mảng trắng
       }
@@ -421,12 +421,12 @@ export function buildLevelA(eng: Game, id: string, q: (typeof QUALITY)[string]):
       : id === 'bac_hoang'
         ? createLanternHalos(pts, 2.8, 0xffb868)
         : // Dạ Cảnh: đèn đá thành "lửa lạnh" (lam bạc), quầng nhỏ hơn: là điểm sáng dẫn đường chứ không rọi ấm cả sân.
-          FLAGS.style === 'da'
+          FLAGS.da
           ? createLanternHalos(pts, 1.9, DA_FLAME)
           : createLanternHalos(pts);
     eng.scene.add(halos);
     eng.levelObjs.push(halos);
-    const daLamps = FLAGS.style === 'da' && !levelAssets(id).palace && id !== 'bac_hoang';
+    const daLamps = FLAGS.da && !levelAssets(id).palace && id !== 'bac_hoang';
     eng.lanterns = new LanternLights(eng.scene, daLamps ? pts.map((p) => ({ ...p, color: DA_FLAME })) : pts);
     eng.lanterns.setEnabled(q.lights && isWebGPU(eng.renderer)); // T6: đèn lồng point light thật chỉ ở WebGPU
     eng.lanterns.setIntensityScale(
@@ -655,8 +655,8 @@ export function buildLevelB(eng: Game, id: string, q: (typeof QUALITY)[string]):
   }
   // Họa Cảnh: cỏ lá mảnh thay bụi cỏ thường ở level dùng bụi lá thủ tục (level dùng thẻ cỏ khô/đảo giữ nguyên)
   // Thiên Khuyết (Họa Cảnh): thẻ `grass-night` xanh lam sẫm lạc tông với đất ocher (đêm thành xanh hoàng gia): dùng thẻ cỏ khô `grass-ochre` của Đoạn Mạch
-  const cards = FLAGS.style === 'painted' && id === 'thien_khuyet' ? 'grass-ochre' : levelAssets(id).grassCards;
-  eng.grass = FLAGS.style === 'painted' && !cards ? new PaintedGameField() : new Grass(cards);
+  const cards = FLAGS.painted && id === 'thien_khuyet' ? 'grass-ochre' : levelAssets(id).grassCards;
+  eng.grass = FLAGS.painted && !cards ? new PaintedGameField() : new Grass(cards);
   eng.grass.setQuality(get().quality, q.shadows);
   eng.grass.setEnabled(F.grass);
   eng.grass.mesh.visible = F.grass;
