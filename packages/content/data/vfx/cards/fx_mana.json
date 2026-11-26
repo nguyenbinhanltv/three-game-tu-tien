@@ -1,0 +1,45 @@
+{
+  "skillId": "fx_mana",
+  "idea": "HỒI LINH LỰC (uống đan hồi khí; server gắn `v: mp` vào tin `potion`): một xoáy linh khí mực chàm cuộn thu về đan điền trong 0,15 giây, rồi MỘT chùm giọt linh dịch lam bật lên từ thắt lưng tới quá vai và tan. Lõi mực chàm, thân lam, mép trắng lam. Khác hồi máu ở cả hình (xoáy + giọt, không sen) lẫn màu (lam, không lục). Không cột sáng, không vòng dưới chân.",
+  "element": "thuy",
+  "path": "",
+  "scene": {
+    "palette": {
+      "core": "0e1a3c",
+      "body": "4f8cf0",
+      "rim": "e6f0ff",
+      "accent": "f0e6a8",
+      "shadow": "070b1a"
+    },
+    "impactAt": 0.15
+  },
+  "shapeLang": [
+    "spiral",
+    "cloud"
+  ],
+  "timing": {
+    "anticipationMs": 150,
+    "impactMs": 70,
+    "lingerMs": 500
+  },
+  "footprint": {
+    "lengthM": 2,
+    "widthM": 2,
+    "heightM": 2.6
+  },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": {
+    "drawCalls": 3,
+    "particles": 40,
+    "screenCover": 0.03,
+    "overdraw": 3
+  },
+  "textures": [],
+  "silhouette": "một xoáy mực cuộn thu vào bụng rồi chùm giọt nước dài bật lên quá vai",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles"
+  ]
+}

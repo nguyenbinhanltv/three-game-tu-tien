@@ -337,7 +337,10 @@ export interface FxMsg {
   sd?: number;
   /** id chiêu (FX `cast` của người chơi): client chọn đúng động tác cho chiêu đang niệm. Chỉ là lớp hình. */
   s?: string;
-  /** Biến thức đã chọn của chiêu (`fx` của `SkillVariant`) và cấp chiêu: client đổi hình dạng hiệu ứng. Chỉ là lớp hình. */
+  /**
+   * Biến thức đã chọn của chiêu (`fx` của `SkillVariant`) và cấp chiêu: client đổi hình dạng hiệu ứng. Chỉ là lớp hình.
+   * Với `potion`: `'mp'` = đan vừa hồi linh lực cho `src` (hình hồi linh lực thay cho khói đan).
+   */
   v?: string;
   lv?: number;
   /** Màu công pháp (hex, không có `#`) của chiêu công pháp; chỉ là lớp hình. */

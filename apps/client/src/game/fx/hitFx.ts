@@ -154,6 +154,12 @@ export class HitFx {
     if (tl) this.play(tl, v, null, 'hit_heal', mine);
   }
 
+  /** `v` vừa được đan hồi LINH LỰC (`FxMsg` `potion` có `v: 'mp'`): xoáy linh khí thu về đan điền rồi chùm giọt lam bật lên; khác hồi máu cả hình lẫn màu. */
+  mana(v: HitPoint, mine: boolean, force = false): void {
+    const tl = this.ok('fx_mana', v, HIT_GAP.heal, mine, force);
+    if (tl) this.play(tl, v, null, 'hit_mana', mine);
+  }
+
   /** `v` vừa nhận hồi máu: lượng lớn nở búp sen (mốc nhấn 0,15 s), nhỏ chỉ chùm cánh sen. */
   heal(v: HitPoint, big: boolean, mine: boolean, force = false): void {
     const tl = big ? this.ok('fx_heal', v, HIT_GAP.heal, mine, force) : this.ok('fx_heal_tick', v, HIT_GAP.tick, mine, force);

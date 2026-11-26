@@ -405,7 +405,8 @@ export function handleFx(eng: Game, m: FxMsg, held = false): void {
       break;
     case 'potion': {
       const pp = hitPointOf(eng, src);
-      if (pp) eng.hitFx?.potion(pp, src === eng.sid);
+      if (pp && m.v === 'mp') eng.hitFx?.mana(pp, src === eng.sid);
+      else if (pp) eng.hitFx?.potion(pp, src === eng.sid);
       break;
     }
     case 'art': {

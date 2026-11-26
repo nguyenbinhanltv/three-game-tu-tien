@@ -198,6 +198,7 @@ import fx_fx_st_slow from '../data/fx/fx_st_slow.json';
 import fx_fx_heal from '../data/fx/fx_heal.json';
 import fx_fx_potion from '../data/fx/fx_potion.json';
 import fx_fx_heal_tick from '../data/fx/fx_heal_tick.json';
+import fx_fx_mana from '../data/fx/fx_mana.json';
 import fx_fx_kiep_kd from '../data/fx/fx_kiep_kd.json';
 import fx_fx_kiep_hn from '../data/fx/fx_kiep_hn.json';
 import fx_fx_kiep_na from '../data/fx/fx_kiep_na.json';
@@ -501,6 +502,7 @@ export const FX_TIMELINES = [
   fx_fx_heal,
   fx_fx_potion,
   fx_fx_heal_tick,
+  fx_fx_mana,
   fx_fx_fly_on,
   fx_fx_fly_off,
   fx_fx_kiep_hn,
