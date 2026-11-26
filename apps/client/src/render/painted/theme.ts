@@ -114,6 +114,25 @@ export const PAINTED_THEMES: Record<string, PaintedTheme> = {
     // Phù Đảo Các (đảo trung tâm r 85 + mép 12)
     slab: [1024, 1024, 97],
   },
+  // Đoạn Mạch Cổ Cốc (MAP-2): hẻm sa thạch mùa thu. Đất son vàng (nắng nằm sẵn trong màu, vì đất vẽ không nhận đèn của mood), bóng nâu mận lạnh hơn và ít bão
+  // hòa hơn (pha tay); thảm lá phong đỏ/vàng, lòng sông cạn và sa thạch lộ ở dốc vốn nằm ở màu đỉnh nên đi qua `vcMix`. Cỏ là thẻ cỏ khô của level (không lá mảnh)
+  doan_mach: {
+    ground: [0xdf8330, 0x74506a],
+    rock: [0xc98c62, 0x5a3c58],
+    paving: [0xd2bc94, 0x6c5a74],
+    mist: 0xe8c49a,
+    // bụi mù chỉ đọng ở lòng sông cạn thấp (đáy 58–70 m); bãi đánh và trạm (80–90 m) trong
+    mistBand: [58, 74],
+    mistK: 0.25,
+    propMix: 0.25,
+    // đêm: hai tông đất cách nhau rõ về độ chói (sáng 0,42 ↔ tối 0,13) + tương phản 1,8 để mặt đất còn mảng sáng/tối, không thành một tấm lam phẳng
+    nightContrast: 1.8,
+    nightTint: [0.44, 0.5, 0.8],
+    nightLift: 1.7,
+    groundMix: 1,
+    groundSat: 1,
+    vcMix: 0.2,
+  },
 };
 
 /** Vân Lam (pilot) và level chưa có bảng: sương cũ của P4. */
