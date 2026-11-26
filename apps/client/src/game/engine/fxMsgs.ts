@@ -1,4 +1,5 @@
 // R-8: tách từ game/engine.ts (hàm nhận `g: Game`, trước là phương thức private của lớp Game).
+import type { FxCaster } from '../fx/fxTimeline';
 import { ANIM_FX, CUTIN_FREEZE_MS, cutinArt } from '../character/animFx';
 import { v3SetKeyOf } from '../character/mannequin';
 import { flyTimeline } from '../fx/flyTimeline';
@@ -514,7 +515,7 @@ export function handleFx(eng: Game, m: FxMsg, held = false): void {
       // Cánh hạc + lông vũ + gợn nước (không cột sáng); được Hồi Thiên Đan Lộ hồi sinh cũng dùng chung hình.
       {
         const rp = hitPointOf(eng, src);
-        if (rp) eng.envFx?.revive(rp, false);
+        if (rp) eng.envFx?.revive(rp, false, e.players.get(src) as unknown as FxCaster);
       }
       break;
     case 'quest':

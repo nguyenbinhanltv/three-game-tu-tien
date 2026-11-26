@@ -9,12 +9,12 @@
       "shape": "sprite",
       "sprite": "canh_ripple",
       "billboard": true,
-      "at": "target",
+      "at": "self",
       "t": 0,
       "dur": 1.2,
       "offset": [
         0,
-        -1.1,
+        0.05,
         0
       ],
       "scale": 2,
@@ -25,19 +25,20 @@
       "tone": "body",
       "alpha": 0.9,
       "tier": 0,
-      "seed": 2320
+      "seed": 2320,
+      "follow": true
     },
     {
       "type": "mesh",
       "shape": "sprite",
       "sprite": "canh_wings",
       "billboard": true,
-      "at": "target",
+      "at": "self",
       "t": 0.12,
       "dur": 1.6,
       "offset": [
         0,
-        0.2,
+        1.35,
         0
       ],
       "scale": 1.8,
@@ -48,19 +49,20 @@
       "tone": "body",
       "alpha": 1,
       "tier": 0,
-      "seed": 2321
+      "seed": 2321,
+      "follow": true
     },
     {
       "type": "mesh",
       "shape": "sprite",
       "sprite": "canh_wings",
       "billboard": true,
-      "at": "target",
+      "at": "self",
       "t": 0.15,
       "dur": 0.12,
       "offset": [
         0,
-        0.2,
+        1.35,
         0
       ],
       "scale": 2.02,
@@ -71,19 +73,20 @@
       "tone": "accent",
       "alpha": 0.85,
       "tier": 1,
-      "seed": 2322
+      "seed": 2322,
+      "follow": true
     },
     {
       "type": "mesh",
       "shape": "sprite",
       "sprite": "canh_feather",
       "billboard": true,
-      "at": "target",
+      "at": "self",
       "t": 0.3,
       "dur": 1.7,
       "offset": [
         0,
-        0.4,
+        1.55,
         0
       ],
       "scale": 1.5,
@@ -94,7 +97,8 @@
       "tone": "body",
       "alpha": 0.9,
       "tier": 1,
-      "seed": 2323
+      "seed": 2323,
+      "follow": true
     },
     {
       "type": "particles",
@@ -105,9 +109,14 @@
       "spread": 1,
       "life": 0.9,
       "size": 0.09,
-      "at": "target",
+      "at": "self",
       "tone": "rim",
       "tier": 1,
+      "offset": [
+        0,
+        1,
+        0
+      ],
       "grav": 1.2
     }
   ]

@@ -1,4 +1,5 @@
 // R-8: tách từ game/engine.ts (hàm nhận `g: Game`, trước là phương thức private của lớp Game).
+import type { FxCaster } from '../fx/fxTimeline';
 import { updateLampPools } from '../../render/painted/lampPools';
 import { FLAGS } from '../../base/flags';
 import { spotAt, vistaView } from '../camera/vista';
@@ -604,7 +605,7 @@ function deathVisual(eng: Game, d: { ink: number; desat: number; drift: number }
     const sid = eng.sid;
     eng.post?.flash(0.22);
     const me = eng.ents.players.get(sid);
-    if (me) eng.envFx?.revive({ id: sid, x: me.x, y: me.y, z: me.z, chest: 1.15 }, true);
+    if (me) eng.envFx?.revive({ id: sid, x: me.x, y: me.y, z: me.z, chest: 1.15 }, true, me as unknown as FxCaster);
   }
   postParams.ink.value = d.ink;
   postParams.inkDesat.value = d.desat;

@@ -66,11 +66,11 @@ export class EnvFx {
     private env: EnvEnv,
   ) {}
 
-  private start(key: string, p: EnvPoint, mine: boolean, palette: string): boolean {
+  private start(key: string, p: EnvPoint, mine: boolean, palette: string, actor?: FxCaster): boolean {
     const tl = FX_TIMELINE.get(key);
     if (!tl) return false;
     this.runner.startAt(tl, {
-      actor: { ...NO_ACTOR, x: p.x, y: p.y, z: p.z },
+      actor: actor ?? { ...NO_ACTOR, x: p.x, y: p.y, z: p.z },
       palette,
       tgt: { x: p.x, y: p.y, z: p.z, chest: p.chest },
       mine,
@@ -124,15 +124,19 @@ export class EnvFx {
     this.start('fx_env_gather', p, mine, 'hit_heal');
   }
 
-  /** Người vừa hồi sinh (mình hoặc người khác): cánh hạc + lông vũ + gợn nước, không cột sáng. */
-  revive(p: EnvPoint, mine: boolean, force = false): void {
+  /**
+   * Người vừa hồi sinh (mình hoặc người khác): cánh hạc + lông vũ + gợn nước, không cột sáng.
+   * `actor` = thực thể SỐNG của người đó: tin `respawn` tới trước bản vá vị trí mới (server dời `p.move` rồi gửi FX ngay), nên timeline phải bám theo
+   * thực thể để hình theo sang chỗ đứng dậy thay vì ở lại xác cũ.
+   */
+  revive(p: EnvPoint, mine: boolean, actor?: FxCaster, force = false): void {
     if (!force && !mine && this.env.live() >= OTHERS_FX_LIVE_MAX) return;
-    this.start('fx_env_revive', p, mine, 'env_revive');
+    this.start('fx_env_revive', p, mine, 'env_revive', actor);
   }
 
   /** Phòng thử: phát thẳng một timeline môi trường. */
   labPlay(key: string, p: EnvPoint): boolean {
     const pal = key === 'fx_env_revive' ? 'env_revive' : key.startsWith('fx_env_gate') ? 'env_gate' : 'hit_heal';
-    return this.start(key, p, true, pal);
+    return this.start(key, p, true, pal, key === 'fx_env_revive' ? { ...NO_ACTOR, x: p.x, y: p.y, z: p.z } : undefined);
   }
 }

@@ -6,9 +6,15 @@ import type { FxRunner } from './fxTimeline';
 
 function setup(gates: EnvGate[], herbs: EnvHerb[]) {
   const started: string[] = [];
-  const runner = { startAt: (tl: { skill: string }) => void started.push(tl.skill) } as unknown as FxRunner;
+  const actors: unknown[] = [];
+  const runner = {
+    startAt: (tl: { skill: string }, o: { actor: unknown }) => {
+      started.push(tl.skill);
+      actors.push(o.actor);
+    },
+  } as unknown as FxRunner;
   const fx = new EnvFx(runner, { camera: () => ({ position: { x: 0, z: 0 } }), live: () => 0, gates: () => gates, herbs: () => herbs });
-  return { fx, started };
+  return { fx, started, actors };
 }
 
 describe('hình môi trường (HPL2 PR3)', () => {
@@ -47,5 +53,24 @@ describe('hình môi trường (HPL2 PR3)', () => {
     fx.gather({ id: 'g', x: 1, y: 0, z: 1, chest: 0.6 }, true);
     fx.revive({ id: 'p', x: 0, y: 0, z: 0, chest: 1.15 }, false);
     expect(started).toEqual(['fx_env_gather', 'fx_env_revive']);
+  });
+  it('hồi sinh bám theo thực thể sống: tin respawn tới trước bản vá vị trí mới nên không chụp toạ độ chỗ chết', () => {
+    const { fx, started, actors } = setup([], []);
+    const live = { x: 10, y: 0, z: 10, yaw: 0, model: {} };
+    // Toạ độ trong EnvPoint là chỗ chết (vị trí cũ); thực thể sống sẽ được dời sang điểm hồi sinh sau đó.
+    fx.revive({ id: 'p', x: 10, y: 0, z: 10, chest: 1.15 }, false, live);
+    expect(started).toEqual(['fx_env_revive']);
+    expect(actors[0]).toBe(live);
+    live.x = 500;
+    expect((actors[0] as typeof live).x).toBe(500);
+  });
+  it('timeline hồi sinh dùng at self + follow cho mọi hình để bám thực thể', () => {
+    const tl = FX_TIMELINE.get('fx_env_revive')!;
+    const meshes = tl.events.filter((e) => e.type === 'mesh') as { at?: string; follow?: boolean }[];
+    expect(meshes.length).toBeGreaterThan(0);
+    for (const m of meshes) {
+      expect(m.at).toBe('self');
+      expect(m.follow).toBe(true);
+    }
   });
 });
