@@ -164,7 +164,7 @@ export class PivotTurn {
     this.speedMul = 1;
   }
 
-  /** Đặt lại (đổi LOD, hồi sinh, dịch chuyển). */
+  /** Đặt lại (đổi LOD, chết, hồi sinh; `mannequin.ts` gọi ở các chỗ đó). Dịch chuyển không cần: hướng nhớ phai về 0 khi đứng lại. */
   reset(): void {
     this.end();
     this.fx = this.fz = 0;

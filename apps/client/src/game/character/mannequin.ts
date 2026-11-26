@@ -1604,6 +1604,7 @@ export class MannequinCharacter implements CharacterView {
     const level = lodLevel(v.dist, this.lodDist, v.allowLod0, this.lods.length, v.minLod);
     this.applyLod(level, !!v.self);
     this.setParked(this.disposed || V3_OFF.has('park') ? 0 : level >= 2 ? 2 : level === 1 && !V3_OFF.has('park1') ? 1 : 0);
+    if (level !== this.lodLevel) this.pivot.reset();
     this.lodLevel = level;
     this.gear?.setVisible(gearShown(this.gearOn, level));
     this.coGear?.setVisible(gearShown(this.coOn, level));
@@ -1636,6 +1637,8 @@ export class MannequinCharacter implements CharacterView {
       const lh = this.lastHit;
       (this.rag ??= new RagRig(this.rig)).down(this.root.rotation.y, lh.dx, lh.dz);
     }
+    // Chết/hồi sinh: quên hướng chạy nhớ được, để bước nhảy vị trí lúc hồi sinh không thành cú đảo chiều giả.
+    if (a.dead !== this.dead) this.pivot.reset();
     this.dead = a.dead;
     if (this.dead && this.deathTurn.t < 1) {
       this.deathTurn.t = Math.min(1, this.deathTurn.t + realDt / DEATH_TURN_S);
