@@ -140,7 +140,7 @@ export const PAINTED_THEMES: Record<string, PaintedTheme> = {
     nightLift: 1.6,
     albedoMix: 1,
     rockMix: 0.35,
-    face: { x: 1024, w: 40, west: [0.46, 0.5, 0.8], east: [1.08, 0.98, 0.8] },
+    face: { x: 1024, w: 30, west: [0.4, 0.46, 0.86], east: [1.2, 1.0, 0.74] },
   },
 };
 

@@ -727,7 +727,7 @@ export function applyGroundShader(mat: THREE.MeshStandardNodeMaterial, tex: Grou
     // phải ảnh chụp): bỏ đèn, nâng sáng có nén (mặt Dương vốn sáng không cháy), hai tông theo mảng lớn vài chục mét: sáng ngả ấm, tối ngả lam; khe nứt giữ nét
     const aL: Node = dot(col.rgb, vec3(0.299, 0.587, 0.114));
     const aGain: Node = float(2.3).div(aL.mul(2.2).add(1));
-    const aTone: Node = col.rgb.mul(aGain).mul(mix(vec3(0.56, 0.63, 0.86), vec3(1.08, 1.02, 0.9), patch.mul(0.6).add(0.4)));
+    const aTone: Node = col.rgb.mul(aGain).mul(mix(vec3(0.5, 0.57, 0.84), vec3(1.12, 1.04, 0.9), patch.mul(0.8).add(0.2)));
     // level hai mặt (theme.face): đất vẽ không nhận đèn nên mood từng mặt (Âm tối lạnh, Dương sáng ấm) phải nằm trong màu
     const aFace: Node = mix(
       vec3(themeU.faceW),
@@ -748,10 +748,13 @@ export function applyGroundShader(mat: THREE.MeshStandardNodeMaterial, tex: Grou
     // đá/vách/tuyết đổi tông ở ALBEDO (vẫn qua đèn, bóng và pháp tuyến như Vân Lam), không đi qua emissive
     const rockInk: Node = dot(col.rgb, vec3(0.299, 0.587, 0.114));
     const rTone: Node = mix(vec3(themeU.rShade), vec3(themeU.rLit), smoothstep(0.1, 0.6, rockInk));
-    mat.colorNode = mix(col, rTone, themeU.on.mul(themeU.rockMix)).mul(keep);
     // + sương thấp sát đáy thung lũng (render/painted/lowMist.ts), chỉ trên phần đất tô phẳng
     const groundBase = paintedT.mul(grassW).add(pavTone.mul(pavW));
-    mat.emissiveNode = withLowMist(F, groundBase, positionWorld.xz, positionWorld.y, grassW.add(pavW).min(1));
+    // bóng mặt trời trên đất (theme.albedoMix; Vấn Đỉnh): đất vẽ phát sáng nên không nhận bóng, vật thể như lơ lửng. Cho một phần màu đất đi qua đèn (albedo, chỉ ban ngày; đêm giữ như cũ, nhận bóng
+    // đổ của cột, đá, cổng, viền mềm theo bản đồ bóng), phần còn lại vẫn phát sáng; tổng giữ độ sáng của bản vẽ khi không có bóng. 0 = như cũ (mọi level khác)
+    const lit: Node = themeU.albedoMix.mul(0.85).mul(float(1).sub(paintedNight));
+    mat.colorNode = mix(col, rTone, themeU.on.mul(themeU.rockMix)).mul(keep).add(groundBase.mul(lit));
+    mat.emissiveNode = withLowMist(F, groundBase.mul(float(1).sub(lit)), positionWorld.xz, positionWorld.y, grassW.add(pavW).min(1));
     if (FLAGS.paintDbg === 'vc') {
       // gỡ lỗi: màu đỉnh thô (tuyến tính) ×2
       mat.colorNode = vec3(0);
