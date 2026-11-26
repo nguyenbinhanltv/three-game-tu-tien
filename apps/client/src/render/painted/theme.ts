@@ -44,6 +44,18 @@ export interface PaintedTheme {
    * 0 = không (mặc định). Dùng cho level mà bản sắc vùng nằm ở màu đỉnh (Vân Hải: năm đảo năm bảng).
    */
   vcMix?: number;
+  /**
+   * 0..1: đất vẽ lấy ALBEDO THỦ TỤC của level làm nền (chỉ cho level mà shader đất mặc định dựng nền bằng mã, không ảnh chụp: Vấn Đỉnh hai mặt), bỏ đèn, tô hai
+   * tông theo mảng lớn. 1 = thay hẳn đất cỏ painted-valley (level không có cỏ). 0 = không (mặc định).
+   */
+  albedoMix?: number;
+  /** 0..1: mức đổi tông đá/vách/tuyết của địa hình sang cặp `rock` (mặc định 1). Thấp hơn giữ sắc riêng từng vùng của vách (Vấn Đỉnh: vách Âm tím lạnh, vách Dương vàng đồng). */
+  rockMix?: number;
+  /**
+   * Level hai mặt theo trục x (Vấn Đỉnh): vật thể tĩnh (`paintedProp`) và đất `albedoMix` nhân tông `west` ở phía tây `x`, `east` ở phía đông, đổi dần trong ±`w` m quanh `x`
+   * (vật thể tĩnh Họa Cảnh không nhận đèn nên mood hai mặt không tự nhuộm chúng). Bỏ trống = không nhuộm.
+   */
+  face?: { x: number; w: number; west: readonly [number, number, number]; east: readonly [number, number, number] };
   /** Sân lát đá vẽ tay [x, z, bán kính m]: trong đĩa, chỗ màu đỉnh sáng (lối lát đá) vẽ thành phiến đá xếp so le theo cặp `paving`. Bỏ trống = không. */
   slab?: readonly [number, number, number];
   /** 0..1: lá cỏ Họa Cảnh đổi tông theo cặp `ground` (theo độ chói của lá, giữ nét sáng/tối từng lá). 0 = lá xanh painted-valley (mặc định). */
@@ -108,6 +120,22 @@ export const PAINTED_THEMES: Record<string, PaintedTheme> = {
     // Phù Đảo Các (đảo trung tâm r 85 + mép 12)
     slab: [1024, 1024, 97],
   },
+  // Vấn Đỉnh Âm Dương Giới (TN-3): không cỏ. Tây = mặt Âm Hư (đá phiến tím lam lạnh), đông = mặt Dương Thực (đất nung nứt vàng đồng); nền hai mặt là albedo
+  // thủ tục của level (`albedoMix`), vách giữ sắc từng mặt (`rockMix` thấp), vật thể tĩnh nhuộm theo mặt (`face`)
+  van_dinh: {
+    ground: [0xa89f98, 0x4a4868],
+    rock: [0xa8a09c, 0x3c3854],
+    mist: 0xcfc8dc,
+    mistBand: [60, 76],
+    mistK: 0.35,
+    propMix: 0.15,
+    nightContrast: 1.6,
+    nightTint: [0.42, 0.5, 0.78],
+    nightLift: 1.6,
+    albedoMix: 1,
+    rockMix: 0.35,
+    face: { x: 1024, w: 40, west: [0.46, 0.5, 0.8], east: [1.08, 0.98, 0.8] },
+  },
 };
 
 /** Vân Lam (pilot) và level chưa có bảng: sương cũ của P4. */
@@ -133,6 +161,12 @@ export const themeU = {
   groundSat: uniform(1),
   dryMix: uniform(0),
   vcMix: uniform(0),
+  albedoMix: uniform(0),
+  rockMix: uniform(1),
+  /** x = toạ độ Giới Tuyến, y = nửa bề rộng vùng chuyển (m); `faceW`/`faceE` = tông nhân phía tây/đông (1,1,1 = không nhuộm). */
+  face: uniform(new THREE.Vector2(0, 1)),
+  faceW: uniform(new THREE.Vector3(1, 1, 1)),
+  faceE: uniform(new THREE.Vector3(1, 1, 1)),
   /** xy = tâm, z = bán kính của sân lát đá vẽ tay (0 = không có). */
   slab: uniform(new THREE.Vector3(0, 0, 0)),
 };
@@ -149,6 +183,11 @@ export function setPaintedTheme(levelId: string): void {
   themeU.dryMix.value = t?.dryMix ?? 0;
   themeU.vcMix.value = t?.vcMix ?? 0;
   themeU.slab.value.set(...(t?.slab ?? [0, 0, 0]));
+  themeU.albedoMix.value = t?.albedoMix ?? 0;
+  themeU.rockMix.value = t?.rockMix ?? 1;
+  themeU.face.value.set(t?.face?.x ?? 0, t?.face?.w ?? 1);
+  themeU.faceW.value.set(...(t?.face?.west ?? [1, 1, 1]));
+  themeU.faceE.value.set(...(t?.face?.east ?? [1, 1, 1]));
   bladeTone.mix.value = t?.bladeMix ?? 0;
   const pv = t?.paving ?? PAINTED.paving;
   themeU.pLit.value.setHex(pv[0], THREE.SRGBColorSpace);
