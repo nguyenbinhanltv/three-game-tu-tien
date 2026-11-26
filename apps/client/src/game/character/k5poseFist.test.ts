@@ -51,11 +51,14 @@ describe('K-5/TP-3a: pose quyền Thể tu', () => {
       const travel = Math.max(len(sub(b.handR ?? [0, 0, 0], a.handR ?? [0, 0, 0])), len(sub(b.handL ?? [0, 0, 0], a.handL ?? [0, 0, 0])));
       expect(travel).toBeGreaterThanOrEqual(0.4);
     });
-    it(`${id}: không còn khóa kiếm (sword/edge) ở các khung giữa, quyền không cầm gì`, () => {
-      const def = P(id);
-      for (const k of def.keys) {
-        expect((k as { sword?: unknown }).sword, `${id} t=${k.t}`).toBeUndefined();
+    it(`${id}: mọi khung có hướng nắm đấm (sword/edge) để tay đấm thẳng ra, không dựng như cầm kiếm`, () => {
+      for (const k of P(id).keys) {
+        expect((k as { sword?: number[] }).sword, `${id} t=${k.t}`).toHaveLength(3);
+        expect((k as { edge?: number[] }).edge, `${id} t=${k.t}`).toHaveLength(3);
       }
+      // Khung trúng đầu: nắm đấm dẫn đường thẳng ra trước hoặc quét ngang (không hướng lên trời).
+      const hit = (P(id).keys[4] as { sword: number[] }).sword;
+      expect(hit[1]!).toBeLessThanOrEqual(0.4);
     });
     it(`${id}: +30 ms sau va chạm bản gốc đã rút tay, bản _tp còn duỗi (khác rõ)`, () => {
       const base = P(id);

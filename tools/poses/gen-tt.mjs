@@ -11,6 +11,8 @@ import { fileURLToPath } from 'node:url';
 
 const DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../packages/content/data/poses');
 const r = (a) => JSON.stringify(a);
+/** Hệ số bù độ cao tay theo độ hạ hông (xem `write`). */
+const HAND_Y_COMP = 1.6;
 
 /** Thế thủ: orthodox (trái trước), nắm đấm ngang cằm-ngực, khuỷu khép. */
 const G = {
@@ -19,6 +21,9 @@ const G = {
   head: [0, 6, 0],
   handR: [-0.14, 0.36, 0.3],
   elbowR: [-0.3, -0.9, -0.1],
+  // `sword` = hướng cẳng tay/nắm đấm tay phải (không có lưỡi): thiếu khóa này bộ giải IK mặc định dựng tay như cầm kiếm dựng đứng (cẳng tay hướng lên trời).
+  sword: [0.1, 0.35, 1],
+  edge: [0, -1, 0],
   handL: [0.12, 0.38, 0.34],
   elbowL: [0.3, -0.9, -0.1],
   footR: [-0.14, 0, -0.12],
@@ -28,7 +33,15 @@ const G = {
 /** Key từ thế thủ + ghi đè. */
 const K = (t, o = {}, ease = 'inOut') => ({ t, ease, ...G, ...o, hips: { ...G.hips, ...(o.hips ?? {}) } });
 
-function write(id, duration, hit, keys) {
+function write(id, duration, hit, keys, sw = {}) {
+  for (const [i, v] of Object.entries(sw)) keys[Number(i)].sword = v;
+  // Bù lệch retarget Mixamo→Mannequin (đo bằng `window.__animlab` trên pose kiếm cũ và pose này): khi hông hạ `d` m, cổ tay thật cao hơn lệnh ~1,6·d m
+  // (hạ hông 0,17 m → tay cao hơn 0,3 m: nắm đấm bị nâng lên quá đầu). Hạ lệnh y của hai tay đúng mức đó để tay thật rơi vào tầm vai-ngực.
+  for (const k of keys) {
+    const comp = HAND_Y_COMP * k.hips.pos[1];
+    k.handR = [k.handR[0], Math.round((k.handR[1] + comp) * 1000) / 1000, k.handR[2]];
+    k.handL = [k.handL[0], Math.round((k.handL[1] + comp) * 1000) / 1000, k.handL[2]];
+  }
   const first = { ...keys[0] };
   delete first.ease;
   const ks = [first, ...keys.slice(1)];
@@ -36,7 +49,8 @@ function write(id, duration, hit, keys) {
     const parts = [`"t":${k.t}`];
     if (k.ease) parts.push(`"ease":"${k.ease}"`);
     parts.push(`"hips":{ "pos":${r(k.hips.pos)}, "rot":${r(k.hips.rot)}}`);
-    for (const f of ['spine', 'head', 'handR', 'elbowR', 'handL', 'elbowL', 'footR', 'footL']) parts.push(`"${f}":${r(k[f])}`);
+    for (const f of ['spine', 'head', 'handR', 'elbowR', 'sword', 'edge', 'handL', 'elbowL', 'footR', 'footL'])
+      parts.push(`"${f}":${r(k[f])}`);
     return `    { ${parts.join(', ')} }`;
   };
   const txt = `{\n  "id": "${id}",\n  "duration": ${duration},\n  "loop": false,\n  "hit": ${r(hit)},\n  "keys": [\n${ks.map(row).join(',\n')}\n  ]\n}\n`;
@@ -119,6 +133,7 @@ const T9 = (hit, hit2, dur) => {
       K(t[7], { hips: { pos: [0, -0.13, 0.04], rot: [0, -14, 0] }, spine: [9, -8, 0], footL: [0.12, 0, 0.26] }),
       K(t[8]),
     ],
+    { 1: [0, 0.2, 0.7], 2: [0, 0.1, 0.4], 3: [0, 0.1, 0.4], 4: [0, 0, 1] },
   );
 }
 
@@ -189,6 +204,7 @@ const T9 = (hit, hit2, dur) => {
       K(t[7], { hips: { pos: [0, -0.13, 0.04], rot: [0, -12, 0] }, spine: [9, -8, 0], footL: [0.12, 0, 0.26] }),
       K(t[8]),
     ],
+    { 1: [-0.2, 0.1, 0.4], 2: [-0.5, 0.05, 0.2], 3: [-0.5, 0.05, 0.2], 4: [0.6, 0, 0.8] },
   );
 }
 
@@ -260,6 +276,7 @@ const T9 = (hit, hit2, dur) => {
       K(t[7], { hips: { pos: [0, -0.13, 0.04], rot: [0, 4, 0] }, spine: [9, 2, 0], footL: [0.12, 0, 0.26] }),
       K(t[8]),
     ],
+    { 5: [0, 0.4, 0.9], 6: [0, 0.9, 0.4] },
   );
 }
 
@@ -336,5 +353,6 @@ const T9 = (hit, hit2, dur) => {
       K(t[7], { hips: { pos: [0, -0.14, 0.08], rot: [0, -12, 0] }, spine: [9, -8, 0], footL: [0.12, 0, 0.3], footR: [-0.14, 0, -0.14] }),
       K(t[8]),
     ],
+    { 1: [0, 0.2, 0.7], 2: [0, 0.1, 0.4], 3: [0, 0.1, 0.4], 4: [0, 0, 1] },
   );
 }
