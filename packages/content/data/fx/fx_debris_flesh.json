@@ -17,13 +17,13 @@
         0.1,
         0
       ],
-      "scale": 1.1,
-      "scaleTo": 1.55,
+      "scale": 0.9,
+      "scaleTo": 1.3,
       "sweep": 0,
       "erodeFrom": 0.4,
       "ragged": 0.5,
       "tone": "body",
-      "alpha": 0.9,
+      "alpha": 0.8,
       "tier": 1,
       "seed": 2620,
       "align": "aim"
@@ -41,8 +41,8 @@
         0.1,
         0
       ],
-      "scale": 1.23,
-      "scaleTo": 1.43,
+      "scale": 1.01,
+      "scaleTo": 1.17,
       "sweep": 0,
       "erodeFrom": 0.2,
       "ragged": 0.5,
