@@ -177,13 +177,24 @@ export default {
             await shotBoth(page, r.out, `${d.label}-${re.label}-${vn}`, vw, vh);
           }
           if (flag('--run')) {
-            // Đang chạy: chỉ còn lớp chính mờ bớt.
-            await cam(page, { yaw: Math.PI + 0.5, pitch: 0.16, dist: 4.4 });
-            await page.keyboard.down('KeyW');
-            await sleep(900);
-            await snap(page, r.out, `${d.label}-${re.label}-chay-1080p.jpg`, { wait: 0 });
-            await page.keyboard.up('KeyW');
-            await gm(page, 'tp 2048 2088', 1400);
+            // Đang chạy: chỉ còn lớp chính mờ bớt. `--iso` giữ camera chéo khóa góc (chụp cả 1080p và 720p, mỗi cỡ một lượt chạy).
+            for (const [w, h, tag] of [
+              [vw, vh, '1080p'],
+              [1280, 720, '720p'],
+            ] as const) {
+              if (!ISO) await cam(page, { yaw: Math.PI + 0.5, pitch: 0.16, dist: 4.4 });
+              if (tag === '720p') {
+                await page.setViewportSize({ width: w, height: h });
+                await sleep(700);
+              }
+              await page.keyboard.down('KeyW');
+              await sleep(900);
+              await snap(page, r.out, `${d.label}-${re.label}-chay-${tag}.jpg`, { wait: 0 });
+              await page.keyboard.up('KeyW');
+              await gm(page, 'tp 2048 2088', 1400);
+            }
+            await page.setViewportSize({ width: vw, height: vh });
+            await sleep(500);
           }
           // Đang ngự kiếm: hào quang quanh người phải tắt (soát ở Nguyên Anh+).
           if (re.lv >= 24 && rk === 'na') {
@@ -282,17 +293,19 @@ async function party5(r: Parameters<Scenario['run']>[0], realms: string[], quali
       viewport: [1920, 1080],
       dpr: 1,
       quality,
-      query: { fxq, ...(flag('--body') ? { auraground: 0 } : {}) },
+      query: { fxq, ...(opt('--mood', '') ? { mood: opt('--mood', '') } : {}), ...(flag('--body') ? { auraground: 0 } : {}) },
       hide: 'hud',
       warnings: /models/,
     });
     await page.evaluate(`window.__game.setAuraMode(${JSON.stringify(mode)})`);
     await setup(page, keys[0]!, re.lv);
     const extra: { close(): Promise<void> }[] = [];
-    for (let i = 0; i < 4; i++) {
+    // `--others N` (mặc định 4): số người khác cùng cảnh, xếp hai hàng sau/trước người chơi để kiểm cảnh đông.
+    const nOthers = num('--others', 4);
+    for (let i = 0; i < nOthers; i++) {
       const o = await r.open({ name: `Ap5o${i}`, viewport: [640, 360], dpr: 1, quality: 'low', hide: 'hud', warnings: /models/ });
       await setup(o.page, keys[(i + 1) % keys.length]!, re.lv);
-      await gm(o.page, `tp ${2044 + i * 2.6} ${2094 + (i % 2) * 2.4}`, 800);
+      await gm(o.page, `tp ${2044 + (i % 4) * 2.6} ${2094 + (i % 2) * 2.4 + Math.floor(i / 4) * 4.8}`, 800);
       extra.push(o.ctx);
     }
     await gm(page, 'tp 2048 2090', 1500);

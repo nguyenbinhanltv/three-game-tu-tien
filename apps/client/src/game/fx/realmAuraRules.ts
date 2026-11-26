@@ -46,6 +46,17 @@ export function cothanAura(mt: string | undefined, giant: number | undefined, mo
   return { mode: mode === 'off' ? 'off' : 'min', hidden: (giant ?? 0) > 0.02 };
 }
 
+/** Hào quang sprite của người khác mờ còn một nửa (V-P10): mình rõ nhất, đám đông không rối. Số người được vẽ do `OTHERS_MAX` ở `realmAura.ts` (≤ 8). */
+export const AURA_SPRITE_OTHERS = 0.5;
+
+/**
+ * Hào quang sprite còn sống thì phải làm mới `last` của atlas `hq` MỖI KHUNG: `sweepSpriteGroups` giải phóng nhóm rỗi > 90 s khi đang giữ > 3 nhóm, và hào quang
+ * hiện hàng phút nên chỉ gọi lúc dựng là không đủ (sprite trong suốt cho tới khi đổi cảnh giới). `use` = `useSpriteGroup` (rẻ: gán mốc, tự nạp lại nếu đã bị giải phóng).
+ */
+export function refreshAuraSprites(stage: AuraStage, spritesOn: boolean, use: (g: 'hq') => void): void {
+  if (spritesOn && stage >= 1) use('hq');
+}
+
 /** Số phi kiếm xếp vòng quanh lưng: đủ 9 thanh đều từ Nguyên Anh (hạ theo preset bằng `orbitScale`). */
 export function swordCount(lv: number): number {
   return lv >= NGUYEN_ANH_LEVEL ? 9 : 0;
