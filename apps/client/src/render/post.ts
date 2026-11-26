@@ -87,7 +87,25 @@ export const postParams = {
   ink: uniform(0),
   /** 0..1: khử bão hòa và hạ sáng cả khung theo cảnh chết. */
   inkDesat: uniform(0),
+  /**
+   * Dạ Cảnh, "lớp tối quanh trận": 0..1 mức làm tối phần khung hình XA tâm trận (`focus`, UV màn hình của người chơi; `focusAspect` = rộng/cao),
+   * để vạch báo và chiêu quanh mình nổi lên. 0 = không vẽ gì. Điểm ảnh sáng (chiêu, đèn) được giữ. Đặt bởi `game/engine/daFocus.ts`.
+   */
+  focusDark: uniform(0),
+  focus: uniform(new THREE.Vector2(0.5, 0.5)),
+  focusAspect: uniform(16 / 9),
 };
+
+/** Bán kính trong/ngoài (theo chiều cao khung hình) của vùng được giữ sáng quanh tâm trận, và mức tối tối đa ở ngoài cùng. */
+export const FOCUS_R0 = 0.26;
+export const FOCUS_R1 = 0.78;
+export const FOCUS_MAX = 0.42;
+
+/** Hệ số tối (0..FOCUS_MAX) của một điểm cách tâm trận `d` (đơn vị chiều cao khung) khi lớp tối bật hết; thuần số, cùng công thức với shader. */
+export function focusDarkAt(d: number): number {
+  const x = Math.min(1, Math.max(0, (d - FOCUS_R0) / (FOCUS_R1 - FOCUS_R0)));
+  return x * x * (3 - 2 * x) * FOCUS_MAX;
+}
 
 /** Nạp số của một preset chỉnh màu (grading.ts) vào uniform. */
 export function applyGrading(p: GradingPreset): void {
@@ -194,6 +212,11 @@ export function hideRenderables(root: THREE.Object3D, keep: THREE.Object3D): () 
  */
 function feedbackLayers(rgb: Node, fromCenter: Node): Node {
   let g = rgb;
+  // Dạ Cảnh: tối dần ra xa tâm trận (chỉ khi `focusDark` > 0). Điểm ảnh sáng (chiêu, vạch báo, đèn) giữ nguyên.
+  const fd = screenUV.sub(postParams.focus).mul(vec2(postParams.focusAspect, 1));
+  const fDark = smoothstep(FOCUS_R0, FOCUS_R1, length(fd)).mul(FOCUS_MAX).mul(postParams.focusDark);
+  const fKeep = smoothstep(0.5, 0.85, luminance(vec3(g)));
+  g = vec3(vec3(g).mul(float(1).sub(fDark.mul(float(1).sub(fKeep)))));
   // Trúng đòn: viền đỏ ở mép. Chớp: sáng trắng cả màn.
   const edge = smoothstep(0.3, 0.75, length(fromCenter));
   g = vec3(mix(g, vec3(0.75, 0.05, 0.04), edge.mul(postParams.hit).mul(0.55)));
