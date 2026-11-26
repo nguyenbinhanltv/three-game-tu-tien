@@ -272,6 +272,16 @@ export function installVfxLab(g: Game, onHazard?: (g: Game, m: HazardMsg) => voi
         return h.envFx.labPlay(skill, { id: 'lab', x: me.x + labEnv.dx, y: me.y, z: me.z, chest: labEnv.chest });
       }
       // Hình trạng thái kéo dài (HPL2 PR2): phát một lượt qua `StatusFx` lên quái (chậm/độc/bỏng/choáng) hoặc lên mình (hồi dần).
+      if (skill === 'fx_st_ward_end') {
+        const h = g as unknown as {
+          statusFx: { playEnd(e: object): void } | null;
+          ents: { players: Map<string, { x: number; y: number; z: number }> };
+        };
+        const me = h.ents.players.get(gg.sid);
+        if (!h.statusFx || !me) return false;
+        h.statusFx.playEnd({ id: gg.sid, x: me.x, y: me.y, z: me.z, scale: 1, kind: 'ward', mine: true, actor: me });
+        return true;
+      }
       const stKind = LAB_ST[skill];
       if (stKind) {
         const h = g as unknown as {

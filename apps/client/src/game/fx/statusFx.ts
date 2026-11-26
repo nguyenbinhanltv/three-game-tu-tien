@@ -146,7 +146,8 @@ export class StatusFx {
     if (this.next.size > 64) for (const [k, at] of this.next) if (this.clock - at > 5) this.next.delete(k);
   }
 
-  private playEnd(e: StatusEnt): void {
+  /** Phát cảnh khiên vỡ (cũng dùng cho phòng thử `fx_st_ward_end`). */
+  playEnd(e: StatusEnt): void {
     const tl = FX_TIMELINE.get(WARD_END_KEY);
     if (!tl) return;
     if (!e.mine && this.env.live() >= OTHERS_FX_LIVE_MAX) return;
