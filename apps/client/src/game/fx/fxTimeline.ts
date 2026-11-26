@@ -89,6 +89,8 @@ export const SPRITE_STYLE: Record<string, number> = {
   chung_: 12,
   ngu_: 12,
   kiep_: 12,
+  // Môi trường (cổng, linh thảo, hồi sinh): tranh đơn sắc tô theo bảng màu timeline.
+  canh_: 12,
 };
 
 export interface FxTarget {
@@ -610,6 +612,7 @@ export class FxRunner {
             | 'sprite_hq'
             | 'sprite_chung'
             | 'sprite_ngu'
+            | 'sprite_canh'
             | 'sprite_kiep')
       : kind0;
     const isSprite = cell !== null;

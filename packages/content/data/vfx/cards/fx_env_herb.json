@@ -1,0 +1,44 @@
+{
+  "skillId": "fx_env_herb",
+  "idea": "LINH THẢO (điểm hái): chùm đốm linh khí ngọc lục nhỏ trôi lên khỏi cây, mỗi đốm có đuôi sao chổi ngắn; nhẹ và thưa. Lặp mỗi 1,6 giây khi ở gần.",
+  "element": "moc",
+  "path": "",
+  "scene": {
+    "palette": {
+      "core": "0c3324",
+      "body": "4fd69a",
+      "rim": "eafff2",
+      "accent": "f4e9a0",
+      "shadow": "06160f"
+    },
+    "impactAt": 0
+  },
+  "shapeLang": [
+    "cloud"
+  ],
+  "timing": {
+    "anticipationMs": 0,
+    "impactMs": 60,
+    "lingerMs": 1200
+  },
+  "footprint": {
+    "lengthM": 4,
+    "widthM": 4,
+    "heightM": 4
+  },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": {
+    "drawCalls": 3,
+    "particles": 6,
+    "screenCover": 0.08,
+    "overdraw": 3
+  },
+  "textures": [],
+  "silhouette": "chùm đốm linh khí có đuôi trôi lên khỏi cây thuốc",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles"
+  ]
+}

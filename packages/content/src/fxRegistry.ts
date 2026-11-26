@@ -177,6 +177,11 @@ import fx_fx_hit_mon from '../data/fx/fx_hit_mon.json';
 import fx_fx_hit_bite from '../data/fx/fx_hit_bite.json';
 import fx_fx_break from '../data/fx/fx_break.json';
 import fx_fx_evade from '../data/fx/fx_evade.json';
+import fx_fx_env_revive from '../data/fx/fx_env_revive.json';
+import fx_fx_env_gather from '../data/fx/fx_env_gather.json';
+import fx_fx_env_herb from '../data/fx/fx_env_herb.json';
+import fx_fx_env_gate_flat from '../data/fx/fx_env_gate_flat.json';
+import fx_fx_env_gate from '../data/fx/fx_env_gate.json';
 import fx_fx_st_hot from '../data/fx/fx_st_hot.json';
 import fx_fx_st_stun from '../data/fx/fx_st_stun.json';
 import fx_fx_st_burn from '../data/fx/fx_st_burn.json';
@@ -467,6 +472,11 @@ export const FX_TIMELINES = [
   fx_fx_hit_bite,
   fx_fx_break,
   fx_fx_evade,
+  fx_fx_env_revive,
+  fx_fx_env_gather,
+  fx_fx_env_herb,
+  fx_fx_env_gate_flat,
+  fx_fx_env_gate,
   fx_fx_st_hot,
   fx_fx_st_stun,
   fx_fx_st_burn,

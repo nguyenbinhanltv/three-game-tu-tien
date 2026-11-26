@@ -1,0 +1,45 @@
+{
+  "skillId": "fx_env_gate",
+  "idea": "CỔNG ĐỨNG (phó bản / cổng ra): xoáy nước mực quay quanh tâm cổng, khe nứt không gian sáng mép hiện ở +30 ms; lam nước nhạt, lõi chàm, mép trắng. Lặp mỗi 1,4 giây khi người chơi ở gần.",
+  "element": "thuy",
+  "path": "",
+  "scene": {
+    "palette": {
+      "core": "0a2a40",
+      "body": "5fb8e8",
+      "rim": "e6f8ff",
+      "accent": "f0e6a8",
+      "shadow": "05121c"
+    },
+    "impactAt": 0
+  },
+  "shapeLang": [
+    "spiral",
+    "ring"
+  ],
+  "timing": {
+    "anticipationMs": 0,
+    "impactMs": 60,
+    "lingerMs": 1200
+  },
+  "footprint": {
+    "lengthM": 4,
+    "widthM": 4,
+    "heightM": 4
+  },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": {
+    "drawCalls": 3,
+    "particles": 6,
+    "screenCover": 0.08,
+    "overdraw": 3
+  },
+  "textures": [],
+  "silhouette": "xoáy nước mực quay quanh tâm cổng, khe nứt không gian ở giữa",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles"
+  ]
+}
