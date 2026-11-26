@@ -2,6 +2,12 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import {
   computeDamage,
   groundAt,
+  MF_BURN,
+  MF_DAZED,
+  MF_POISON,
+  MF_SLOW,
+  MF_STUN,
+  PF_HOT,
   MAX_LEVEL,
   monsterStats,
   playerBaseStats,
@@ -159,6 +165,60 @@ describe('bản sắc công pháp (số)', () => {
     sim.tick(250);
     expect(m.s.hp).toBeLessThan(hp0);
     expect(dmgOn(m.id).length).toBeGreaterThan(0);
+  });
+  it('cờ hiển thị chậm/độc/bỏng của quái suy ra từ trạng thái server, không đổi sát thương, giữ qua cờ choáng', () => {
+    const { sim, mon } = setup(10, 'thanh_moc_dan_kinh');
+    const m = mon('mon_soi_xam', 4);
+    expect(m.s.mf & (MF_SLOW | MF_POISON | MF_BURN)).toBe(0);
+    m.slow = { until: Date.now() + 5000, mul: 0.5 };
+    m.poison = { sid: 'x', until: Date.now() + 5000, nextAt: Date.now() + 5000, per: 1, kind: 'burn' };
+    sim.tick(250);
+    expect(m.s.mf & MF_SLOW).toBe(MF_SLOW);
+    expect(m.s.mf & MF_BURN).toBe(MF_BURN);
+    expect(m.s.mf & MF_POISON).toBe(0);
+    // Choáng ghi đè cờ chú/choáng nhưng không xóa cờ hiển thị.
+    (sim as unknown as { setMonFlags(m: unknown, mf: number, ce: number): void }).setMonFlags(m, MF_STUN, Date.now() + 1000);
+    expect(m.s.mf & MF_STUN).toBe(MF_STUN);
+    expect(m.s.mf & MF_SLOW).toBe(MF_SLOW);
+    m.poison.kind = 'poison';
+    sim.tick(250);
+    expect(m.s.mf & MF_POISON).toBe(MF_POISON);
+    expect(m.s.mf & MF_BURN).toBe(0);
+    m.slow = undefined;
+    m.poison = undefined;
+    sim.tick(250);
+    expect(m.s.mf & (MF_SLOW | MF_POISON | MF_BURN)).toBe(0);
+  });
+  it('MF_DAZED chỉ bật với choáng thật: khựng/ngã của đòn nặng (stunUntil = staggerUntil) không bật', () => {
+    const { sim, mon } = setup(10, 'thanh_moc_dan_kinh');
+    const m = mon('mon_soi_xam', 4);
+    const setFlags = sim as unknown as { setMonFlags(m: unknown, mf: number, ce: number): void };
+    sim.tick(250);
+    // Khựng: giống `reactMonster` (MF_STUN + stunUntil = staggerUntil).
+    m.stunUntil = m.staggerUntil = sim.now + 350;
+    setFlags.setMonFlags(m, MF_STUN, m.stunUntil);
+    sim.tick(50);
+    expect(m.s.mf & MF_STUN).toBe(MF_STUN);
+    expect(m.s.mf & MF_DAZED).toBe(0);
+    // Choáng thật dài hơn khựng: bật.
+    m.stunUntil = sim.now + 3000;
+    setFlags.setMonFlags(m, MF_STUN, m.stunUntil);
+    sim.tick(50);
+    expect(m.s.mf & MF_DAZED).toBe(MF_DAZED);
+    // Hết choáng: tắt.
+    m.stunUntil = 0;
+    m.staggerUntil = 0;
+    sim.tick(50);
+    expect(m.s.mf & MF_DAZED).toBe(0);
+  });
+  it('PF_HOT bật khi có hồi dần và tắt khi hết', () => {
+    const { sim, p } = setup(10, 'thanh_moc_dan_kinh');
+    expect(p.s.fl & PF_HOT).toBe(0);
+    (sim as unknown as { combat: { addHot(sid: string, per: number, sec: number): void } }).combat.addHot(p.sid, 5, 3);
+    expect(p.s.fl & PF_HOT).toBe(PF_HOT);
+    (sim as unknown as { combat: { hots: unknown[] } }).combat.hots.length = 0;
+    sim.tick(250);
+    expect(p.s.fl & PF_HOT).toBe(0);
   });
   it('Đan sư: tầm đánh xa hơn Kiếm tu 4 m', () => {
     const far = SKILL.get('skl_phi_kiem')!.range + 2; // trong tầm đan sư nhưng ngoài tầm kiếm tu
