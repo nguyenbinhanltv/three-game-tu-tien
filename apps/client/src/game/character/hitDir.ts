@@ -38,6 +38,21 @@ export function deathYawOffset(yaw: number, dx: number, dz: number): number {
   return d;
 }
 
+/** Hạng thân đủ nhẹ để bị hất ngã bởi chiêu cuối (quái lớn/boss đứng vững). */
+const KNOCKABLE_BODY: ReadonlySet<string> = new Set(['small', 'medium']);
+/** Cấp đòn S1 từ mức này (chiêu cuối) mới hất ngã; và nghỉ giữa hai lần ngã của cùng một thực thể (giây). */
+export const KNOCK_TIER = 3;
+export const KNOCK_COOLDOWN_S = 4;
+
+/**
+ * Có cho model phát ngã + đứng dậy (`knockdown`) khi trúng đòn không. Chỉ lớp hình: chiêu cuối (cấp ≥ `KNOCK_TIER`) lên NGƯỜI KHÁC (không phải
+ * mình: giữ cảm giác điều khiển, server không khóa mình) hoặc quái nhỏ/vừa; boss/quái lớn không ngã; nghỉ `KNOCK_COOLDOWN_S` giữa hai lần.
+ */
+export function knockdownWanted(tier: number | undefined, who: { self: boolean; body?: string }, sinceLast: number): boolean {
+  if ((tier ?? 0) < KNOCK_TIER || who.self || sinceLast < KNOCK_COOLDOWN_S) return false;
+  return who.body === undefined || KNOCKABLE_BODY.has(who.body);
+}
+
 /** Hướng hạ gục còn dùng được (đòn trúng cuối cách chết không quá `DEATH_DIR_TTL` giây). */
 export const DEATH_DIR_TTL = 1.5;
 /** Thời gian (giây) xoay thân sang hướng ngã. */

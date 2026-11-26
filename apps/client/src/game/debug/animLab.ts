@@ -4,6 +4,7 @@
 
 import * as THREE from 'three/webgpu';
 import { POSE, SKILLS } from '@dtl/content';
+import { C } from '@dtl/shared';
 import type { Game } from '../engine';
 import { ANIM_FX, CUTIN_FREEZE_MS, cutinArt, type AnimFxFlags } from '../character/animFx';
 import { set } from '../../ui/store';
@@ -52,6 +53,12 @@ export interface AnimLabApi {
   hitSelf(from: 'front' | 'back' | 'left' | 'right', tier: number, knock?: boolean): boolean;
   /** T5: như `hitSelf` nhưng cho quái đầu tiên trong cảnh; trả toạ độ màn hình (px) của quái để cắt ảnh, hoặc null nếu không có quái. */
   hitMon(from: 'front' | 'back' | 'left' | 'right', tier: number, knock?: boolean): { x: number; y: number } | null;
+  /** TP-2: đòn thật qua `ents.hitReact` (cùng đường với S.DMG) lên quái đầu tiên, từ chính mình, cấp `tier`; trả toạ độ màn hình của quái hoặc null. */
+  hitReal(tier: number): { x: number; y: number } | null;
+  /** Toạ độ màn hình (px) của quái đầu tiên (không gây đòn), hoặc null. */
+  probeMon(): { x: number; y: number } | null;
+  /** TP-2: gửi `C.RESPAWN` như bấm nút hồi sinh (sau `/gm die`). */
+  respawn(): void;
   /** T7: phát cut-in chiêu cuối `skill` như khi mình tung chiêu (khựng + thẻ); trả false nếu chiêu chưa có tranh. */
   cutin(skill: string, setKey?: string, g?: string): boolean;
   /**
@@ -164,6 +171,24 @@ export function installAnimLab(g: Game): void {
       v.y += m.height * 0.5;
       v.project(g.camera);
       return { x: (v.x * 0.5 + 0.5) * window.innerWidth, y: (-v.y * 0.5 + 0.5) * window.innerHeight };
+    },
+    hitReal(tier) {
+      const e = [...g.ents.monsters.entries()][0];
+      if (!e) return null;
+      g.ents.hitReact(e[0], g.sid, false, 0, tier >= 2, undefined, tier);
+      return api.probeMon();
+    },
+    probeMon() {
+      const e = [...g.ents.monsters.values()][0];
+      if (!e) return null;
+      const m = e.model as unknown as { root: THREE.Object3D; height: number };
+      const v = m.root.getWorldPosition(new THREE.Vector3());
+      v.y += m.height * 0.5;
+      v.project(g.camera);
+      return { x: (v.x * 0.5 + 0.5) * window.innerWidth, y: (-v.y * 0.5 + 0.5) * window.innerHeight };
+    },
+    respawn() {
+      g.send(C.RESPAWN);
     },
     probe() {
       const m = self() as unknown as { root: THREE.Object3D; inner?: THREE.Object3D; rig?: THREE.Object3D } | undefined;

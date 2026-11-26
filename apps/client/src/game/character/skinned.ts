@@ -1,5 +1,6 @@
 import { applyProportions, type BoneScale } from './hero';
 import * as THREE from 'three/webgpu';
+import { DEATH_DIR_TTL, DEATH_TURN_S, deathYawOffset } from './hitDir';
 import { bodyClassOf, canCancel, HIT_FEEL, hitDirOf, hitsPassed, lungeOffset, type MonsterDef, type SkillTiming } from '@dtl/shared';
 import { groundAt } from '../../base/levelCtx';
 import { HitReact, type HitOpts } from '../combat/hitreact';
@@ -262,6 +263,9 @@ export class SkinnedCharacter implements CharacterView {
   /** Thân Pháp T5: ragdoll nhẹ (tạo lười ở lần trúng đòn đầu khi bật cờ `ragdoll`); xem `ragdollRig.ts`. */
   protected ragRig: RagRig | null = null;
   private lastHitDir = { dx: 0, dz: 0 };
+  /** Giây từ đòn trúng gần nhất, và độ xoay thân phụ khi chết (ngã ra xa người đánh, như người chơi). */
+  private hitAge = 99;
+  private deathTurn = { to: 0, t: 1 };
   /** Lớp con tắt ragdoll (boss). */
   protected ragEnabled = true;
   private ragOf(): RagRig | null {
@@ -548,7 +552,10 @@ export class SkinnedCharacter implements CharacterView {
 
   hitReact(o: HitOpts): void {
     this.hit.react(o);
-    if (o.dirX || o.dirZ) this.lastHitDir = { dx: o.dirX ?? 0, dz: o.dirZ ?? 0 };
+    if (o.dirX || o.dirZ) {
+      this.lastHitDir = { dx: o.dirX ?? 0, dz: o.dirZ ?? 0 };
+      this.hitAge = 0;
+    }
     if (ANIM_FX.ragdoll && this.lodLevel === 0 && !this.dead)
       this.ragOf()?.hit(this.root.rotation.y, o.dirX ?? 0, o.dirZ ?? 0, o.tier, !!o.heavy, !!o.crit);
     this.hitOpts = o;
@@ -592,6 +599,8 @@ export class SkinnedCharacter implements CharacterView {
 
   update(realDt: number, a: AnimState): void {
     const dt = this.hit.update(realDt);
+    this.hitAge += realDt;
+    if (this.dead && this.deathTurn.t < 1) this.deathTurn.t = Math.min(1, this.deathTurn.t + realDt / DEATH_TURN_S);
     this.inner.position.x = this.hit.shake;
     if (this.pendingHit >= 0) {
       this.pendingHit -= realDt;
@@ -605,6 +614,10 @@ export class SkinnedCharacter implements CharacterView {
         this.shot = null;
         this.pendingHit = -1;
         this.pendingMove = null;
+        this.deathTurn =
+          this.hitAge <= DEATH_DIR_TTL
+            ? { to: deathYawOffset(this.root.rotation.y, this.lastHitDir.dx, this.lastHitDir.dz), t: 0 }
+            : { to: 0, t: 1 };
         if (ANIM_FX.ragdoll && this.lodLevel === 0) this.ragOf()?.down(this.root.rotation.y, this.lastHitDir.dx, this.lastHitDir.dz);
         this.enterBase('death', FADE_DEATH);
       }
@@ -694,6 +707,7 @@ export class SkinnedCharacter implements CharacterView {
       this.acc = 0;
     }
     if (this.quad) this.tiltToSlope(dt);
+    else if (this.dead || this.inner.rotation.y !== 0) this.inner.rotation.y = this.dead ? this.deathTurn.to * this.deathTurn.t : 0;
     this.postPose(dt, a);
     // `RagRig` ghi tuyệt đối (tư thế gốc + góc), không cộng dồn, nên áp mỗi khung kể cả khung mixer không chạy.
     if (this.ragRig && ANIM_FX.ragdoll) this.ragRig.apply(dt, this.root.rotation.y, this.dead, this.lodLevel === 0 && this.inner.visible);
@@ -773,7 +787,7 @@ export class SkinnedCharacter implements CharacterView {
     this.tiltX += (tx - this.tiltX) * k;
     this.tiltZ += (tz - this.tiltZ) * k;
     if (Math.abs(this.tiltX) < 1e-4 && Math.abs(this.tiltZ) < 1e-4 && tx === 0 && tz === 0) this.tiltX = this.tiltZ = 0;
-    this.inner.rotation.set(this.tiltX, 0, this.tiltZ);
+    this.inner.rotation.set(this.tiltX, this.dead ? this.deathTurn.to * this.deathTurn.t : 0, this.tiltZ);
   }
 
   /** Số xương lò xo đang mô phỏng (0 nếu không có hoặc đang nghỉ ở LOD xa). Cho đo hiệu năng. */

@@ -99,6 +99,9 @@ export interface AnimLabDebug {
   poses(): string[];
   hitSelf(from: 'front' | 'back' | 'left' | 'right', tier: number, knock?: boolean): boolean;
   hitMon(from: 'front' | 'back' | 'left' | 'right', tier: number, knock?: boolean): { x: number; y: number } | null;
+  hitReal(tier: number): { x: number; y: number } | null;
+  probeMon(): { x: number; y: number } | null;
+  respawn(): void;
   cutin(skill: string, setKey?: string, g?: string): boolean;
   probe(): {
     root: [number, number, number];

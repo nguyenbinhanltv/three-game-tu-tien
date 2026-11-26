@@ -215,6 +215,20 @@ async function run(r: Run, poses: string[], cams: string[], sizes: string[]): Pr
         ['4-phai', 'right', 2, false],
         ['5-nga', 'front', 3, true],
       ];
+      // TP-2: đòn thật (cấp 3 qua `ents.hitReact`, như S.DMG) lên quái nhỏ/vừa: phải tự ngã rồi đứng dậy; dải khung theo thời gian.
+      await page.evaluate(() => window.__animlab!.pause(false));
+      await sleep(1800);
+      await page.evaluate(() => window.__animlab!.pause(true));
+      await frame(page);
+      let tHit = 0;
+      for (const ms of [0, 200, 450, 800, 1300]) {
+        if (ms > tHit) await advance(page, ms - tHit);
+        tHit = ms;
+        if (ms === 0) await page.evaluate(() => window.__animlab!.hitReal(3));
+        for (let k = 0; k < SETTLE_FRAMES; k++) await frame(page);
+        const p = await page.evaluate(() => window.__animlab!.probeMon());
+        await monShot(`7-that-${ms}ms`, p);
+      }
       for (const [name, from, tier, knock] of mcases) {
         await page.evaluate(() => window.__animlab!.pause(false));
         await sleep(1800);
@@ -290,6 +304,12 @@ async function run(r: Run, poses: string[], cams: string[], sizes: string[]): Pr
       await sleep(1500);
       await gm(page, 'die', 900);
       await shot('6-chet');
+      // TP-2: hồi sinh (C.RESPAWN) — đứng dậy từ tư thế nằm; dải khung theo thời gian thật.
+      await page.evaluate(() => window.__animlab!.respawn());
+      for (const ms of [120, 350, 700]) {
+        await sleep(ms === 120 ? 120 : ms === 350 ? 230 : 350);
+        await shot(`8-hoisinh-${ms}ms`);
+      }
     }
     await ctx.close();
     return { ...out, stills: stillsMode };

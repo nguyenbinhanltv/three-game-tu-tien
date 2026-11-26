@@ -1,5 +1,15 @@
 import { describe, expect, it } from 'vitest';
-import { FLINCH_BY_TIER, dashClipOf, holdHipsInPlace, deathYawOffset, flinchAmpOf, hitClipOf, hitSideOf } from './hitDir';
+import {
+  FLINCH_BY_TIER,
+  KNOCK_COOLDOWN_S,
+  dashClipOf,
+  holdHipsInPlace,
+  deathYawOffset,
+  flinchAmpOf,
+  hitClipOf,
+  hitSideOf,
+  knockdownWanted,
+} from './hitDir';
 
 // Người bị đánh nhìn về +z (yaw 0).
 describe('trúng đòn theo hướng (C3b)', () => {
@@ -64,5 +74,22 @@ describe('holdHipsInPlace', () => {
     holdHipsInPlace(v);
     expect([v[3], v[5], v[6], v[8]]).toEqual([0.1, 0.2, 0.1, 0.2].map(Math.fround));
     expect([v[1], v[4], v[7]]).toEqual([1, Math.fround(1.1), Math.fround(0.95)]);
+  });
+});
+
+describe('knockdownWanted (TP-2: ngã + đứng dậy)', () => {
+  it('chỉ chiêu cuối (cấp ≥ 3), không phải mình, và đã nghỉ đủ', () => {
+    expect(knockdownWanted(3, { self: false }, 99)).toBe(true);
+    expect(knockdownWanted(2, { self: false }, 99)).toBe(false);
+    expect(knockdownWanted(undefined, { self: false }, 99)).toBe(false);
+    expect(knockdownWanted(3, { self: true }, 99)).toBe(false);
+    expect(knockdownWanted(3, { self: false }, KNOCK_COOLDOWN_S - 0.1)).toBe(false);
+    expect(knockdownWanted(3, { self: false }, KNOCK_COOLDOWN_S)).toBe(true);
+  });
+  it('quái nhỏ/vừa ngã, quái lớn và boss đứng vững', () => {
+    expect(knockdownWanted(3, { self: false, body: 'small' }, 99)).toBe(true);
+    expect(knockdownWanted(3, { self: false, body: 'medium' }, 99)).toBe(true);
+    expect(knockdownWanted(3, { self: false, body: 'large' }, 99)).toBe(false);
+    expect(knockdownWanted(3, { self: false, body: 'boss' }, 99)).toBe(false);
   });
 });
