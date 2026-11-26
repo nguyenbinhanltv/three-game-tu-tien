@@ -916,6 +916,7 @@ const SCENES = [
     footprint: { lengthM: 2.2, widthM: 2.2, heightM: 2.4 },
     budget: x.budget ?? { drawCalls: 2, particles: 6, screenCover: 0.02, overdraw: 2 },
   })),
+  // `fx_mana` neo `target` (= người nhận, như `fx_heal`): neo `self` của HitFx là diễn viên giả lệch 1 m về phía camera.
   // Thêm SAU CÙNG: seed của mỗi cảnh tính theo thứ tự trong mảng, chèn giữa sẽ đổi hình các hiệu ứng đã duyệt.
   {
     id: 'fx_mana',
@@ -930,11 +931,11 @@ const SCENES = [
     footprint: { lengthM: 2.0, widthM: 2.0, heightM: 2.6 },
     budget: { drawCalls: 3, particles: 40, screenCover: 0.03, overdraw: 3 },
     events: () => [
-      sprite('chung_eddy', { at: 'self', t: 0, dur: 0.24, off: [0, 0.7, 0], size: 2.6, sizeTo: 1.2, alpha: 0.9, erodeFrom: 0.7 }),
-      parts('spark', 0, 12, { at: 'self', offset: [0, 0.7, 0], speed: 3, life: 0.14, inward: true, tone: 'body' }),
-      sprite('chung_drops', { at: 'self', t: 0.15, dur: 0.5, off: [0, 1.0, 0], size: 1.7, sizeTo: 2.4, up: 0.9, erodeFrom: 0.5, alpha: 1 }),
-      accent('chung_drops', 0.15, 1.9, { at: 'self', off: [0, 1.1, 0], sizeTo: 2.3 }),
-      parts('spark', 0.3, 8, { at: 'self', offset: [0, 1.2, 0], speed: 1.2, spread: 1, life: 0.6, size: 0.06, grav: -1.2, tone: 'rim', tier: 1 }),
+      sprite('chung_eddy', { t: 0, dur: 0.24, off: [0, -0.45, 0], size: 2.6, sizeTo: 1.2, alpha: 0.9, erodeFrom: 0.7 }),
+      parts('spark', 0, 12, { offset: [0, -0.45, 0], speed: 3, life: 0.14, inward: true, tone: 'body' }),
+      sprite('chung_drops', { t: 0.15, dur: 0.5, off: [0, 0.05, 0], size: 1.5, sizeTo: 2.2, up: 0.9, erodeFrom: 0.5, alpha: 0.85 }),
+      accent('chung_drops', 0.15, 1.7, { off: [0, 0.15, 0], sizeTo: 2.1 }),
+      parts('spark', 0.3, 8, { offset: [0, 0.4, 0], speed: 1.2, spread: 1, life: 0.6, size: 0.06, grav: -1.2, tone: 'rim', tier: 1 }),
     ],
   },
 ];
