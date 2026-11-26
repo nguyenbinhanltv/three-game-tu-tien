@@ -1,6 +1,6 @@
 // V-P10: ảnh độ kiếp TẠI CHỖ ở camera chơi thật (camera chéo khóa góc, không đổi góc máy): vào kiếp bằng GM với tài khoản thử bất tử rồi chụp liên tiếp
 // để bắt được mở kiếp, kiếp vân, vạch báo và tia sét. Dùng cho hai sân độ kiếp và kiếp ngoài thế giới.
-//   pnpm shots kiepsan --out <thư mục> [--trib truc_co,hoa_than,anh_bien] [--frames 28] [--gap 350] [--size 720p]
+//   pnpm shots kiepsan --out <thư mục> [--trib truc_co,hoa_than,anh_bien] [--frames 28] [--gap 350] [--size 720p|1080p] [--mood night]
 // Ảnh chụp theo thời gian thật (không tạm dừng) nên mốc không chính xác từng mili giây: số đo và khung +30 ms lấy ở `pnpm shots vfxlab --skill lab_loi`.
 import fs from 'node:fs';
 import path from 'node:path';
@@ -16,7 +16,7 @@ import { snap, UI_SIZES } from '../lib/shot';
 export default {
   name: 'kiepsan',
   desc: 'V-P10: ảnh độ kiếp tại chỗ ở camera chơi thật (mở kiếp, kiếp vân, vạch báo, tia sét) trong sân độ kiếp hoặc ngoài thế giới',
-  usage: '[--trib truc_co,hoa_than,anh_bien] [--frames 28] [--gap 350] [--size 720p]',
+  usage: '[--trib truc_co,hoa_than,anh_bien] [--frames 28] [--gap 350] [--size 720p|1080p] [--mood night]',
   async run(r) {
     const ids = list('--trib', 'truc_co,hoa_than,anh_bien') as TribId[];
     const frames = num('--frames', 28);
@@ -26,7 +26,14 @@ export default {
       const def = tribDef(id);
       const dir = path.join(r.out, id);
       fs.mkdirSync(dir, { recursive: true });
-      const { ctx, page } = await r.open({ name: 'Ks' + id.slice(0, 4), quality: 'high', seenIntro: true, viewport: [w, h], hide: 'hud' });
+      const { ctx, page } = await r.open({
+        name: 'Ks' + id.slice(0, 4),
+        quality: 'high',
+        seenIntro: true,
+        viewport: [w, h],
+        hide: 'hud',
+        ...(opt('--mood', '') ? { query: { mood: opt('--mood', '') } } : {}),
+      });
       await gm(page, 'god on', 1300);
       await gm(page, `trib ${id}`, 600);
       if (def.room !== 'world') {
