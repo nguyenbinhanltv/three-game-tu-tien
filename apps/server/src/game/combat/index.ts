@@ -47,6 +47,10 @@ import {
   BLINK_DIST,
   blinkReplaces,
   comboNext,
+  COMBO_BUFFER_MS,
+  comboDefScale,
+  COMBO_LOCK_MARGIN,
+  skillLock,
   dashDir,
   DASH_MIN_GAP_MS,
   DASH_MAX_DIST,
@@ -107,7 +111,7 @@ export interface CombatCtx {
   emit(type: string, payload: object): void;
   fx(m: FxMsg): void;
   /** Trả true nếu đòn có hiệu lực (quái còn sống, không miễn sát thương, không phải bóng của người khác). */
-  hitMonster(p: PlayerEnt, mon: MonEnt, basePower: number, mul?: number, elem?: string, tier?: HitTier): boolean;
+  hitMonster(p: PlayerEnt, mon: MonEnt, basePower: number, mul?: number, elem?: string, tier?: HitTier, defScale?: number): boolean;
   homeDist(m: MonEnt): number;
   isDead(p: PlayerEnt): boolean;
   readonly level: LevelDef;
@@ -174,8 +178,13 @@ export class CombatSystem {
       if (aim) p.s.yaw = Math.atan2(aim.x - p.move.x, aim.z - p.move.z);
       return this.onDash(p, skill, typeof m.t === 'string' ? m.t : '');
     }
-    if (p.casting || p.flow.pending) return;
-    if (this.c.now < p.gcdAt - 60) return;
+    if (p.casting) return;
+    if (p.flow.pending || this.c.now < p.gcdAt - 60) {
+      // Đòn chuỗi tới sớm trong bộ đệm: giữ MỘT ý định (lệnh sau đè lệnh trước), ra lúc hết khóa (`tickBuffered`). Chiêu khác vẫn bỏ im lặng như cũ.
+      if (skill.combo && p.gcdAt - this.c.now <= COMBO_BUFFER_MS) p.flow.buffered = { msg, at: p.gcdAt };
+      return;
+    }
+    p.flow.buffered = null;
     if ((p.cds.get(skill.id) ?? 0) > this.c.now) return this.c.warn(p, 'sys.cooldown');
     // VS-2b: chiêu đang mở chuỗi có thể tốn ít linh lực hơn.
     if (c.mp < chainMp(skill.mp, chainOf(p.flow, skill, this.c.now))) return this.c.warn(p, 'sys.not_enough_mp');
@@ -283,9 +292,13 @@ export class CombatSystem {
       f.comboIdx = combo;
       f.comboAt = this.c.now;
       mul *= at(skill.combo.hits, combo, 'combo.hits').power / Math.max(0.01, skill.power);
-      // Kiếm tu: đòn cuối chuỗi hoàn lại một phần GCD (đánh nhanh hơn).
+      // Đòn chuỗi khóa theo `lock` của từng đòn (thay GCD): hết khóa là ra được đòn kế, phần thu đòn còn lại bị cắt ngang.
+      const hit = at(skill.combo.hits, combo, 'combo.hits');
+      p.gcdAt = this.c.now + skillLock(skill, combo) * 1000;
+      // Kiếm tu: đòn cuối chuỗi hoàn lại một phần khóa (đánh nhanh hơn), nhưng không sớm hơn lúc đòn này trúng xong.
       const refund = passiveOf(p.char.meta)?.gcdRefund;
-      if (refund && combo === skill.combo.hits.length - 1) p.gcdAt -= refund * 1000;
+      if (refund && combo === skill.combo.hits.length - 1)
+        p.gcdAt = Math.max(this.c.now + (hit.hitAt + COMBO_LOCK_MARGIN) * 1000, p.gcdAt - refund * 1000);
     }
     // VS-2b: đang trong cửa sổ chuỗi thì nhận thưởng (sức mạnh, linh lực, hồi chiêu) và đóng cửa sổ ngay lúc bấm.
     const ch = takeChain(f, skill, this.c.now);
@@ -305,7 +318,22 @@ export class CombatSystem {
   }
 
   /** Hủy đòn đang chờ. `refund`: hoàn linh lực, hồi chiêu, vòng sạc (chỉ khi mục tiêu mất, không phải do người chơi tự hủy). */
+  /** Ra đòn chuỗi đang nằm trong bộ đệm khi hết khóa (gọi mỗi tick, sau `resolvePending`). Quá hạn 200 ms mà chưa ra được thì bỏ. */
+  tickBuffered(p: PlayerEnt): void {
+    const b = p.flow.buffered;
+    if (!b || this.c.now < b.at - 60) return;
+    if (this.c.now > b.at + 200) {
+      p.flow.buffered = null;
+      return;
+    }
+    if (p.casting || p.flow.pending) return;
+    p.flow.buffered = null;
+    this.onSkill(p, b.msg);
+  }
+
   abortStrike(p: PlayerEnt, refund: boolean, notify = true): void {
+    // Né, lướt, chết, bay: bỏ luôn đòn chuỗi đang đệm (không để đòn tự ra sau khi đã né).
+    if (!refund) p.flow.buffered = null;
     const st = p.flow.pending;
     if (!st) return;
     p.flow.pending = null;
@@ -800,7 +828,8 @@ export class CombatSystem {
 
   /** Đòn của chiêu `skill` lên `mon`: trúng đích thì tích tài nguyên theo chiêu. */
   strike(p: PlayerEnt, mon: MonEnt, skill: SkillDef, power: number, elemMul: number, combo?: number): void {
-    if (this.c.hitMonster(p, mon, power, elemMul, skill.elem, strikeTier(skill, combo))) this.addRes(p, this.resGainOf(p, skill));
+    if (this.c.hitMonster(p, mon, power, elemMul, skill.elem, strikeTier(skill, combo), comboDefScale(skill, combo)))
+      this.addRes(p, this.resGainOf(p, skill));
   }
 
   gainCharge(p: PlayerEnt, n: number): void {

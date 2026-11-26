@@ -91,7 +91,7 @@ export interface SimPrivates {
   feedArtifact(p: PlayerEnt, mon: MonEnt): void;
   duelStrike(p: PlayerEnt, o: PlayerEnt, powers: number[], elemMul: number): void;
   addPosture(m: MonEnt, n: number): void;
-  hitMonster(p: PlayerEnt, mon: MonEnt, basePower: number, mul?: number, elem?: string, tier?: HitTier): boolean;
+  hitMonster(p: PlayerEnt, mon: MonEnt, basePower: number, mul?: number, elem?: string, tier?: HitTier, defScale?: number): boolean;
   homeDist(m: MonEnt): number;
   killMonster(mon: MonEnt): void;
   removeMonster(m: MonEnt): void;
@@ -459,7 +459,7 @@ export function wireCombat(s: GameSim, priv: SimPrivates): CombatCtx {
     duelStrike: (p, o, powers, elemMul) => priv.duelStrike(p, o, powers, elemMul),
     emit: (type, payload) => priv.emit(type, payload),
     fx: (m) => s.fx(m),
-    hitMonster: (p, mon, basePower, mul, elem, tier) => priv.hitMonster(p, mon, basePower, mul, elem, tier),
+    hitMonster: (p, mon, basePower, mul, elem, tier, defScale) => priv.hitMonster(p, mon, basePower, mul, elem, tier, defScale),
     homeDist: (m) => priv.homeDist(m),
     isDead: (p) => priv.isDead(p),
     get level() {

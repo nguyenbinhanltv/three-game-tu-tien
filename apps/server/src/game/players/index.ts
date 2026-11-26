@@ -430,6 +430,7 @@ export class PlayerSystem {
       }
       if (p.casting && this.c.now >= p.casting.endAt) this.c.finishCast(p);
       if (p.flow.pending && this.c.now >= p.flow.pending.at) this.c.resolvePending(p);
+      if (p.flow.buffered) this.c.combat.tickBuffered(p);
       if (p.shield && this.c.now >= p.shield.until) {
         p.shield = null;
         this.c.setFlag(p, PF_SHIELD, false);

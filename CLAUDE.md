@@ -9,7 +9,7 @@ Spec đầy đủ (Claude Doc): https://claude.ai/artifact/S6ZYqLfR37PYy8NyccDjJ
 | Chủ đề | Quyết định |
 | --- | --- |
 | Nền tảng MVP | Chỉ desktop web (Chrome, Edge, Firefox, Safari). Mobile để sau |
-| Combat + camera | Từ 2026-11-23 (Thiên Nhãn): camera chéo khóa góc mặc định (FOV 32°, nghiêng 52°, khoảng cách cố định ~20 m, hướng cố định theo bản đồ, KHÔNG xoay, KHÔNG zoom); chuột phải đi tới điểm + WASD, Space né, chiêu ngắm theo con trỏ (server kiểm), chiêu đơn tự khóa mục tiêu gần con trỏ, Tab-target giữ làm phụ; GCD 1 giây |
+| Combat + camera | Từ 2026-11-23 (Thiên Nhãn): camera chéo khóa góc mặc định (FOV 32°, nghiêng 52°, khoảng cách cố định ~20 m, hướng cố định theo bản đồ, KHÔNG xoay, KHÔNG zoom); chuột phải đi tới điểm + WASD, Space né, chiêu ngắm theo con trỏ (server kiểm), chiêu đơn tự khóa mục tiêu gần con trỏ, Tab-target giữ làm phụ; chiêu khóa GCD 1 giây; **đòn thường là chuỗi hành động** (từ 2026-11-27, Dạ Cảnh): mỗi đòn khóa theo `lock` riêng (0,42 / 0,42 / 0,6 s), server giữ một lệnh bấm sớm ≤ 250 ms (`COMBO_BUFFER_MS`), né xóa lệnh đang giữ |
 | Client | TypeScript, Vite, Three.js `WebGPURenderer` (tự lùi WebGL2), shader viết bằng TSL, UI bằng React |
 | Server | Một tiến trình Node.js chạy Colyseus. Mỗi bản đồ × kênh, mỗi bí cảnh, mỗi lần độ kiếp là một room |
 | Đăng nhập | Chỉ Google. Server kiểm tra ID token, chỉ email trong danh sách mời mới vào được |
@@ -77,6 +77,7 @@ Script `node tools/docs/check-paths.mjs` (chạy ở CI) kiểm mọi đường 
 - Playtest **luôn tắt tiếng**: URL game/viewer có `?mute=1` (ghép tham số khác bằng `&`, ví dụ `?mute=1&auto=<tên>`), kể cả trong `ao browser`; Chromium/Playwright thêm cờ `--mute-audio`. Tab của mình đang phát tiếng thì đóng hoặc tải lại với `?mute=1` (xem skill `playtest`).
 - `pnpm lint` (R-9, ESLint + typescript-eslint, `eslint.config.mjs`): chỉ luật ranh giới/an toàn — cấm import tương đối xuyên gói (dùng `@dtl/*`), `render/` và `base/` không import `game/`/`ui/`, client không import `@dtl/content/loot`; chạy ở CI. Thêm luật theo nhóm, mỗi nhóm một PR sạch lỗi.
 - `pnpm typecheck`, `pnpm test`, `pnpm content:check`, `pnpm sim:progress`
+- **Quy trình từ 2026-11-27 (người dùng chốt):** làm thẳng trên `main`, commit nhỏ và thường xuyên; KHÔNG có cổng CI (workflow GitHub đã tắt tự chạy, không chạy bộ CI ở máy). Chỉ chạy typecheck và test của phần vừa sửa. Đưa lên GitHub: đẩy các commit của `main` lên một nhánh `ao/…` rồi merge PR bằng `gh` (không squash).
 
 
 Điều đã rút ra từ lần soát netcode (đừng làm hỏng lại):

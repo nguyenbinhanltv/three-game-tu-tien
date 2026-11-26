@@ -1,4 +1,4 @@
-import { comboNext, GCD, lungeReach, poseIdFor, skillTiming, usesStrikeTiming, type SkillDef } from '@dtl/shared';
+import { comboNext, skillLock, GCD, lungeReach, poseIdFor, skillTiming, usesStrikeTiming, type SkillDef } from '@dtl/shared';
 import { METHOD_SKILLS, POSE, SKILL, SKILLS } from '@dtl/content';
 import type { CharacterView, PerformOpts } from '../character/view';
 import { ANIM_FX } from '../character/animFx';
@@ -70,21 +70,25 @@ export class SkillPoses {
   private combo = { idx: -1, at: 0 };
   /** Lúc dự đoán gần nhất (ms): tự đánh gửi lặp mỗi 220 ms tới khi tin hồi chiêu của server về, mỗi lần gửi lặp không được dự đoán lại. */
   private lastPredictAt = -Infinity;
+  /** Khóa (ms) của đòn vừa dự đoán: đòn chuỗi khóa theo `lock` riêng (0,42 s…), chiêu khác 1 GCD. */
+  private lastLockMs = GCD * 1000;
   /** Hiệu ứng đòn của mình đang được giữ tới lúc này (performance.now, ms). */
   private holdUntil = 0;
 
   /** Người chơi vừa gửi chiêu và mọi điều kiện kiểm được ở client đều qua: vào thế ngay. */
   predict(model: CharacterView | undefined, skill: SkillDef, now: number, gap?: number, method?: string): void {
     if (!model?.perform || !skill.pose || skill.cast > 0) return;
-    // Mỗi đòn dự đoán một lần: server chỉ nhận một chiêu mỗi GCD, nên trong GCD (trừ dung sai 100 ms của `ready` ở engine) mọi lần gọi
-    // thêm chỉ là gửi lặp, không khởi động lại nhát vung, không tăng chỉ số liên hoàn, không phát lại sự kiện windup/hit.
-    if (now - this.lastPredictAt < GCD * 1000 - PREDICT_GAP_SLACK) return;
+    // Mỗi đòn dự đoán một lần: server chỉ nhận một chiêu mỗi lần hết khóa của đòn trước (đòn chuỗi: `lock` của đòn đó; chiêu khác: GCD), nên
+    // trong lúc còn khóa (trừ dung sai 100 ms của `ready` ở engine) mọi lần gọi thêm chỉ là gửi lặp, không khởi động lại nhát vung,
+    // không tăng chỉ số liên hoàn, không phát lại sự kiện windup/hit.
+    if (now - this.lastPredictAt < this.lastLockMs - PREDICT_GAP_SLACK) return;
     const idx = skill.combo ? comboNext(skill.combo, this.combo.idx, this.combo.at, now) : undefined;
     // Chỉ ghi dự đoán khi động tác thật sự bắt đầu: bị bỏ qua (trên không, bay, chết) thì FX về phải phát ngay,
     // không giữ hiệu ứng chờ một nhát vung không có.
     const pose = poseOf(skill, idx, method);
     if (!model.perform(pose, performOpts(skill, idx, gap)) || !model.performing?.(pose)) return;
     this.lastPredictAt = now;
+    this.lastLockMs = skillLock(skill, idx) * 1000;
     if (idx !== undefined) this.combo = { idx, at: now };
     this.predicted = { fx: skill.fx, at: now, release: now + releaseAt(skill, pose) * 1000 };
   }
