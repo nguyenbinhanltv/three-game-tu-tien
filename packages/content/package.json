@@ -9,7 +9,8 @@
     ".": "./src/index.ts",
     "./loot": "./src/loot.ts",
     "./places": "./src/places.ts",
-    "./fixtures": "./src/fixtures.ts"
+    "./fixtures": "./src/fixtures.ts",
+    "./colliders-lazy": "./src/colliders.lazy.ts"
   },
   "scripts": {
     "typecheck": "tsc -p tsconfig.json",
