@@ -41,6 +41,7 @@ import points from './scenarios/points';
 import propstc from './scenarios/propstc';
 import huyenkiep from './scenarios/huyenkiep';
 import kiepch6 from './scenarios/kiepch6';
+import kiepsan from './scenarios/kiepsan';
 import ual from './scenarios/ual';
 import chrv3 from './scenarios/chrv3';
 import chrv3anim from './scenarios/chrv3anim';
@@ -56,6 +57,7 @@ import daotu from './scenarios/daotu';
 import cotu from './scenarios/cotu';
 import camchevfx from './scenarios/camchevfx';
 import animlab from './scenarios/animlab';
+import tpmove from './scenarios/tpmove';
 import vfxlab from './scenarios/vfxlab';
 import vfxmon from './scenarios/vfxmon';
 import path2428vfx from './scenarios/path2428vfx';
@@ -124,6 +126,7 @@ const SCENARIOS: Scenario[] = [
   thiengiai,
   huyenkiep,
   kiepch6,
+  kiepsan,
   ual,
   chrv3,
   chrv3anim,
@@ -139,6 +142,7 @@ const SCENARIOS: Scenario[] = [
   cotu,
   camchevfx,
   animlab,
+  tpmove,
   vfxlab,
   vfxmon,
   path2428vfx,

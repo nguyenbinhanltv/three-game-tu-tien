@@ -16,41 +16,7 @@ def register(R, H):
 
     # Đột phá cảnh giới + lên tầng: từ V-P10 do `node tools/vfx-forge/dot-pha.mjs` sinh (sprite vẽ tay Họa Pháp Lô 2); không còn ở đây.
 
-    # ---------- Độ kiếp: khởi vòng trận lôi văn + sét mảnh nối tiếp (mây kiếp cũ giữ nguyên) ----------
-    def kiep(tid, pal, when, r, nbolt):
-        def make():
-            ev = [
-                decal('rune', -0.3, r * 0.5, 6.0, at='self', offset=[0, -1.15, 0], grow=0.6, tone='core', alpha=0.6, tier=0),
-                decal('crack', 0.0, r * 0.4, 5.5, at='self', offset=[0, -1.15, 0], grow=0.4, tone='body', alpha=0.6, tier=0),
-                decal('rune', 0.1, r * 0.3, 5.0, at='self', offset=[0, -1.15, 0], grow=0.5, tone='accent', alpha=0.35, yaw=23, tier=1),
-                mesh('ripple', 0.0, 1.4, at='self', offset=[0, -1.1, 0], scale=0.3, scaleTo=r * 0.4, sweep=0.4, erodeFrom=0.4, ragged=0.6, tone='core', alpha=0.45, seed=2, tier=0),
-                mesh('burst', 0.0, 0.11, at='self', scale=1.6, billboard=True, sweep=0.0, tone='body', alpha=0.8, tier=0),
-                parts('spark', 0.0, 60, 4.0, 1, 1.6, 0.07, at='self', offset=[0, -0.5, 0], grav=-1.2, tone='accent', tier=0),
-                shake(0.0, 0.18, tier=1),
-                cam(-0.1, 0.1, 3.0),
-            ]
-            # Sét dày, lõi trắng viền màu, rẽ nhánh: tia chính đánh thẳng xuống người, các tia sau quanh vòng trận; chớp ngắn + vết cháy đất.
-            ev += [decal('scorch', 0.1, r * 0.4, 5.0, at='self', offset=[0, -1.15, 0], grow=0.1, tone='core', alpha=0.9, tier=0),
-                   flash(0.12, 0.2, tier=0),
-                   mesh('burst', 0.12, 0.11, at='self', scale=2.4, billboard=True, sweep=0.0, tone='rim', tier=0)]
-            # Hai tia DÀY (lõi trắng gấp ~4 lần cũ) đánh thẳng người ở 0,1 s và 0,95 s (kèm chớp + cháy), hai tia mảnh gần chân ở 0,5 s và 1,4 s: nhịp sét ~1,8 s.
-            ev += [flash(0.97, 0.15, tier=0),
-                   decal('scorch', 0.95, 0.9, 3.0, at='self', offset=[0, -1.15, 0], grow=0.1, tone='core', alpha=0.9, tier=0)]
-            offs = [[0, -1.15, 0], [1.4, -1.15, 0.6], [0, -1.15, 0], [-1.2, -1.15, -0.8]]
-            ts = [0.1, 0.5, 0.95, 1.4]
-            for i in range(min(nbolt, 4)):
-                big = i % 2 == 0
-                ev.append(bolt(ts[i], 'self', offs[i], 1.0 if big else 0.9, 'body' if big else 'accent', 30 + i, 0, thick=4.5 if big else 1))
-            tl = {'skill': tid, 'trigger': 'fx', 'fxKind': 'tribstart', 'palette': pal, 'events': ev}
-            if when:
-                tl['when'] = when
-            return tl
-        return make
-
-    R['fx_kiep_tc'] = kiep('fx_kiep_tc', 'loi', None, 8.0, 3)
-    R['fx_kiep_kd'] = kiep('fx_kiep_kd', 'dotpha_kd', 'ket_dan', 9.0, 4)
-    R['fx_kiep_na'] = kiep('fx_kiep_na', 'dotpha_na', 'nguyen_anh', 11.0, 4)
-    R['fx_kiep_hn'] = kiep('fx_kiep_hn', 'dotpha_hn', 'hoa_than', 12.0, 4)
+    # Độ kiếp (mở kiếp + chỗ sét đánh): từ V-P10 do `node tools/vfx-forge/do-kiep.mjs` sinh; không còn ở đây.
 
     # ---------- Nguyên anh xuất khiếu / nhập thể: hồn thể bán trong suốt (bản sao nhân vật màu lam) tách ra bay lên / hạ xuống nhập thể ----------
     R['fx_soul_out'] = lambda: {

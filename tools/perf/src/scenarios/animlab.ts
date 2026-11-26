@@ -42,7 +42,7 @@ async function run(r: Run, poses: string[], cams: string[], sizes: string[]): Pr
     seenIntro: true,
     look: { g: opt('--gender', 'm') },
     extra: opt('--query', ''),
-    query: { realm: 'nk12', god: 1, chr: 'v3', animlab: 1, quiet: 1, thanphap: opt('--thanphap', '0') === '1' ? 1 : undefined },
+    query: { realm: 'nk12', god: 1, chr: 'v3', animlab: 1, quiet: 1, thanphap: opt('--thanphap', '1') === '1' ? 1 : 0 },
     ...(clip ? { video: path.join(r.out, 'clip') } : {}),
     hide: opt('--cutin', '') ? undefined : 'hud',
   });
@@ -56,7 +56,7 @@ async function run(r: Run, poses: string[], cams: string[], sizes: string[]): Pr
   await gm(page, 'tp 2048 2095', 1800);
   await gm(page, 'spawn clear', 1400);
   await gm(page, 'cd', 1300);
-  const out: Record<string, unknown> = { thanphap: opt('--thanphap', '0') === '1', poses: {} };
+  const out: Record<string, unknown> = { thanphap: opt('--thanphap', '1') === '1', poses: {} };
   const stillsMode = opt('--stills', '');
   if (stillsMode) {
     // Ảnh tĩnh PNG (không quay video: video Playwright của game WebGPU ra khung trắng). Cắt quanh nhân vật ở tâm khung, phóng ×2.

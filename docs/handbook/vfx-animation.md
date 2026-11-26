@@ -63,9 +63,27 @@ Kiểm từng bộ: `pnpm shots clothcheck --out <thư mục> --set <bộ> --gen
 | Kính Quang | 0,37 | đợt 3 |
 | Địa Giáp (`dia_long`) | 0,33 | đợt 3 |
 
-## Clip Patch (CC0) nối locomotion Thân Pháp (`?thanphap=1`, cờ `patch`)
+## Clip Patch (CC0) nối locomotion Thân Pháp (Thân Pháp, mặc định bật, cờ `patch`)
 
 Nguồn: 10 clip "anymove" của Patch (CC0 1.0) trong `starter-man-clips.glb` (dự án painted-valley), cùng bộ xương UE5 Mannequin với `anim_ual_native`. Lưu bản gốc trong kho nguồn asset (thư mục `anim/patch`, ngoài repo); `tools/asset-pipeline/src/patch-clips.ts` lọc 10 clip, đổi tên `PM_*`, BỎ `root.translation` (vị trí do server quyết) và in bảng chuyển động gốc (đo): `PM_Run` 3,68 m/chu kỳ 0,67 s (5,5 m/s), `PM_Sprint` 4,06 m/0,60 s (6,8 m/s), `PM_Idle_To_Run` 2,33 s, `PM_Run_To_Idle` 2,23 s, `PM_Sprint_To_Idle` 2,53 s, `PM_Idle_Tired` 2,67 s. Lệnh: `pnpm --filter @dtl/asset-pipeline exec tsx src/patch-clips.ts` rồi `... tsx src/cli.ts optimize --only anim_patch_move --force`, `pnpm assets:push --only assets/anim_patch_move.<hash10>.glb` (tên có hash; xem mục R2 bất biến).
 
 Nối vào locomotion (`patchMove.ts`, `MannequinCharacter.stepPatch`): bắt đầu (vọt qua 0,8 m/s, chờ 0,12 s lấy tốc độ đích: đi / chạy / chạy nhanh → `PM_Idle_To_Walk/Run/Sprint`), dừng (`PM_Walk/Run/Sprint_To_Idle` theo tốc độ đỉnh), thở dốc (`PM_Idle_Tired` sau clip dừng nếu vừa chạy liên tục ≥ 8 s). Clip dài 2–2,5 s phát nhanh (bắt đầu ~0,85 s, dừng ~1,0 s) như đòn một lần đè nền; hủy khi có việc khác chen vào (đòn, bay, chết, lại chạy giữa clip dừng). `pelvis.position` nhân theo tỉ lệ hông như clip UAL; ARM_FIT/procedural giữ nguyên. Chỉ nạp thư viện khi bật cờ. **Vòng chạy Patch** (`patchLoop.ts`, cờ `ANIM_FX.patchLoop`, mặc định theo `?thanphap=1`; `?ploop=0` giữ vòng UAL để so): `PM_Run` (5,5 m/s, chu kỳ 3,68 m) và `PM_Sprint` (6,8 m/s, 4,06 m) thay `Jog_Fwd_Loop`/`Sprint_Loop` HƯỚNG TỚI trong hệ trộn đi/chạy/chạy nhanh; đi bộ và lùi/ngang vẫn UAL, chung MỘT pha. Mỗi clip Patch lệch pha (`PATCH_PHASE`: -0,029 và -0,025 chu kỳ) để chân trái chạm đất cùng nhịp `Jog_Fwd_Loop` (clip tham chiếu của dải chạy, cùng pha với bản lùi/ngang dựng từ nó); `patchLoopPhase.test.ts` đo bước chạm đất trên file clip thật và đỏ nếu lệch > 0,02 chu kỳ. Thiếu `PM_Run` hoặc `PM_Sprint` trong template thì giữ UAL. Độ dài chu kỳ nhân `STRIDE_SCALE` = 1,1 (đo trong game, trượt chân khi tiếp đất, trung vị m/s: UAL cũ 3,25; Patch 1,0 → 0,78; 1,05 → 0,41; **1,1 → 0,08**; 1,15 → 0,22; `SLIDE_SEC=8`): tốc độ `AnimState` (~7,6 m/s) cao hơn quãng thân thực đi trên màn hình (~6,7), không phải sai số clip. `?pstride=<k>` nhân thêm để quét. Chu kỳ theo HƯỚNG: chỉ hướng tới dùng chu kỳ Patch; lùi/ngang vẫn là clip UAL nên `locoMix(speed, table, fwd)` trộn độ dài chu kỳ theo trọng số hướng tới (`dir.f`) giữa bảng Patch và bảng UAL, không thì chân trụ clip lùi/ngang chạy nhanh hơn thân ~35% (`patchLoop.test.ts`). Clip ngang UAL chung pha với `PM_Run` (lệch ≤ 0,03, `patchLoopPhase.test.ts`). So trượt chân/dải khung: `pnpm shots chrv3 --variants v3tpold,v3tpnew --genders m --slide` (số đo) và `--runstop` (khung chạy–dừng–chạy).
 
+
+## Đảo chiều gấp (pivot) và IK chân Thân Pháp (Thân Pháp, mặc định bật, cờ `pivot`)
+
+`pivotTurn.ts` nhận ra đảo chiều ≥ ~115° khi chạy > 3,2 m/s rồi dàn nhịp 0,38 s "phanh → xoay → đạp đi" (hông hạ, thân ngả, vai trễ, tay dạng); `mannequinFeet.ts` giữ bàn chân trên đất khi hông hạ (`drop`), giới hạn chân với xuống (`maxDown`) và tốc độ đổi mặt đứng (`smoothGround`). Đo: `pnpm shots tpmove --out <thư mục> --thanphap 0|1 --stills 1 --sizes 720p,1080p`. Thân quay 50% từ ~30 ms (trước) còn ~150 ms; còn mở: chân trụ lún tới ~7 cm ở một lượt chạy cầu thang.
+
+## Thân Pháp bật mặc định (TP-1, bước 3)
+
+Từ bước này `?thanphap` mặc định **bật**, `?thanphap=0` tắt (so A/B). Phân lớp: **chung mọi hệ** = `exaggerate`, `bounce`, `loco` (xung bắt đầu/dừng, nghiêng theo gia tốc), `impulse`, `pivot`, `ragdoll`, `patch`, `patchLoop`, `spring`; **riêng Kiếm tu** (công pháp thuộc hướng `kiem_tu`, `kiemTu.ts` → `isKiemTu`) = `idle` (xoay kiếm/chắp tay), pose `_tp` (kéo theo nét kéo kiếm `smear`), cut-in chiêu cuối, dáng lướt thấp (`glideLean`/`glideDip`). Model nhận hướng qua `CharacterView.setKiemTu` (đặt trong `entities.ts`). IK chân: mặt đứng dưới chân nhìn trước `FEET.lookAhead` = 0,1 s (lấy cao hơn giữa chỗ đang đứng và chỗ sắp tới) nên `groundUp` hạ về 13 m/s mà chân không lún vào bậc; đo `pnpm shots tpmove` (12 lượt thang): lún tối đa 0,7–2,8 cm, p99 tốc độ dọc cổ chân 14–16,7 m/s.
+
+Đo `pnpm bench:crowd --bots 50 --renderers webgpu --presets medium --size 1920x1080 --scenes san,rung,boss` (2026-11-26, lượt riêng, `CROWD_QUERY=&thanphap=0` so với mặc định mới); CPU `Game.frame()` p50/p95 (ms), draw call, tam giác:
+
+| cảnh | `?thanphap=0` | mặc định mới (Thân Pháp bật) |
+| --- | --- | --- |
+| sân | 6,2 / 8,9 · 123 DC · 1044k | 6,1 / 8,5 · 121 DC · 1010k |
+| rừng | 7,8 / 10,3 · 156 DC · 1036k | 5,1 / 8,3 · 141 DC · 977k |
+| boss | 6,3 / 8,8 · 130 DC · 1195k | 5,9 / 8,1 · 132 DC · 1187k |
+
+Chênh lệch nằm trong nhiễu đo (bật không chậm hơn tắt); p95 > 8 ms ở cả hai là mức có sẵn của máy đo, không do Thân Pháp. Số riêng IK chân: 6,6 nhân vật ≈ 0,45 ms/khung (trần `FEET.maxPerFrame` = 4 nhân vật/khung giữ nguyên).

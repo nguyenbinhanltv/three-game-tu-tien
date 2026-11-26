@@ -1,6 +1,7 @@
 import * as THREE from 'three/webgpu';
 import { describe, expect, it } from 'vitest';
 import { PAINTED } from './palette';
+import { bladeTone } from './bladeTone';
 import { PAINTED_THEMES, setPaintedTheme, themeU } from './theme';
 
 const hex = (c: THREE.Color) => c.getHex(THREE.SRGBColorSpace);
@@ -28,6 +29,48 @@ describe('bảng Họa Cảnh theo level', () => {
     expect(lum(t.paving![0])).toBeGreaterThan(lum(PAINTED.paving[0]));
     const shade = new THREE.Color().setHex(t.paving![1], THREE.SRGBColorSpace);
     expect(shade.b).toBeGreaterThan(shade.r);
+  });
+
+  it('Vân Hải: màu đỉnh làm nền + lá theo bảng + sân lát Phù Đảo Các; rời level thì tắt hết', () => {
+    const t = PAINTED_THEMES.van_hai!;
+    setPaintedTheme('van_hai');
+    expect(themeU.vcMix.value).toBe(t.vcMix);
+    expect(bladeTone.mix.value).toBe(t.bladeMix);
+    expect(hex(bladeTone.lit.value)).toBe(t.ground[0]);
+    expect(themeU.slab.value.z).toBeGreaterThan(0);
+    // tông tối pha lam lục, lạnh hơn tông sáng (không phải sáng nhân cho tối)
+    const lit = new THREE.Color().setHex(t.ground[0], THREE.SRGBColorSpace);
+    const shade = new THREE.Color().setHex(t.ground[1], THREE.SRGBColorSpace);
+    expect(shade.b / shade.r).toBeGreaterThan(lit.b / lit.r);
+    expect(sat(t.ground[0])).toBeGreaterThan(0.3);
+    // không vùng xa nướng (đảo nổi: biển mây là cảnh xa)
+    expect(t.far).toBeUndefined();
+    for (const other of ['van_lam', 'cuu_kieu', 'bac_hoang']) {
+      setPaintedTheme(other);
+      expect(themeU.vcMix.value).toBe(0);
+      expect(bladeTone.mix.value).toBe(0);
+      expect(themeU.slab.value.z).toBe(0);
+    }
+  });
+
+  it('Vấn Đỉnh: nền là albedo thủ tục hai mặt, mặt Âm tối và lạnh hơn mặt Dương; rời level thì về mặc định', () => {
+    const t = PAINTED_THEMES.van_dinh!;
+    setPaintedTheme('van_dinh');
+    expect(themeU.albedoMix.value).toBe(1);
+    expect(themeU.rockMix.value).toBeLessThan(1);
+    expect(themeU.face.value.x).toBe(t.face!.x);
+    const [wr, wg, wb] = t.face!.west;
+    const [er, eg, eb] = t.face!.east;
+    expect(wr + wg + wb).toBeLessThan(er + eg + eb);
+    expect(wb / wr).toBeGreaterThan(eb / er);
+    expect(t.far).toBeUndefined();
+    for (const other of ['van_lam', 'van_hai', 'cuu_kieu', 'bac_hoang']) {
+      setPaintedTheme(other);
+      expect(themeU.albedoMix.value).toBe(0);
+      expect(themeU.rockMix.value).toBe(1);
+      expect(themeU.faceW.value.toArray()).toEqual([1, 1, 1]);
+      expect(themeU.faceE.value.toArray()).toEqual([1, 1, 1]);
+    }
   });
 
   it('Cửu Kiều: cỏ không pastel (bão hòa cặp đất và groundSat đủ đậm), vẫn trong dải vừa phải', () => {

@@ -27,6 +27,8 @@ import {
   varyingProperty,
 } from 'three/tsl';
 import { cellRand } from './hash';
+import { paintedNight } from '../frame';
+import { themeU } from '../theme';
 import { TAU, type N, type RefField } from './field';
 
 /**
@@ -353,7 +355,9 @@ function flowerMaterial(F: RefField, geometry: THREE.InstancedBufferGeometry, uH
   let Nn: N = normalize(pNormal.add(vec3(0, 1e-4, 0)));
   Nn = select(dot(Nn, V).lessThan(0), Nn.negate(), Nn);
   const c: N = min(F.leafLight(pAlbedo, Nn, V, pLightZ, float(0.04), pLightX).mul(0.62), vec3(1.25, 1.25, 1.25));
-  material.colorNode = F.applyFog(c, positionWorld);
+  // đêm (theme.nightSplit): cánh hoa tối xuống để không thành chấm trắng như sao trên nền đất
+  const cN: N = c.mul(float(1).sub(paintedNight.mul(themeU.nightSplit).mul(0.5)));
+  material.colorNode = F.applyFog(cN, positionWorld);
   void dot;
   return material;
 }

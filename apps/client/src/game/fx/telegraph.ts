@@ -4,6 +4,7 @@ import { groundAt } from '../../base/levelCtx';
 import { SIGIL_CONE, SIGIL_RECT } from '../../render/vfx/sigil';
 import { hazardFlash, hazardStyleDanger, ISO_HAZARD_OPACITY } from '../../render/vfx/phases';
 import type { Vfx } from './vfx';
+import { HOT_BOLT_CORE } from './vfxParts/common';
 
 /**
  * Vùng báo trước hình chữ nhật/quạt (đòn của quái đánh xa). Chỉ vẽ; ai trúng do server phán định
@@ -19,7 +20,7 @@ const _p = new THREE.Vector3();
 export function telegraph(v: Vfx, m: HazardMsg, boss = false, danger: 0 | 1 | 2 = boss ? 2 : 1, top = false): void {
   if (!m.sh || !(m.r > 0) || !(m.delay > 0)) return;
   const style = hazardStyleDanger(m.kind, danger);
-  const light = m.hot && m.kind === 'lightning' ? 0xff9a5a : style.color;
+  const light = style.color;
   const yaw = m.yaw ?? 0;
   const fx = Math.sin(yaw);
   const fz = Math.cos(yaw);
@@ -50,7 +51,8 @@ export function telegraph(v: Vfx, m: HazardMsg, boss = false, danger: 0 | 1 | 2 
         _p.y = groundAt(_p.x, _p.z) + 0.6;
         v.burst(_p, light, rect ? (m.w ?? 2) * 0.9 : 1 + d * 0.35, 0.35);
         // Tia quét của thiên kiếp (vạch sét): mỗi chớp kèm một tia đánh thật; lôi hỏa nhuốm cam.
-        if (m.kind === 'lightning') v.lightning(_p.x, _p.y - 0.6, _p.z, m.hot ? 0xffc89a : 0xe2d4ff, 0.9, (m.sd ?? 7) + i * 131);
+        if (m.kind === 'lightning')
+          v.lightning(_p.x, _p.y - 0.6, _p.z, m.hot ? HOT_BOLT_CORE : 0xe2d4ff, 0.9, (m.sd ?? 7) + i * 131, 0, 1, undefined, true);
       }
     },
   );
