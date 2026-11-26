@@ -74,6 +74,8 @@ export interface AnimLabApi {
   monFacingErr(): number | null;
   /** TP-2: độ xoay thân phụ (độ) của quái đầu tiên (xoay ngã chết) và toạ độ màn hình của điểm cách quái 2,2 m PHÍA SAU nó (nơi đặt người đánh giả). */
   monTurn(): { deg: number; behind: { x: number; y: number } } | null;
+  /** TP-2: dùng CHIÊU CUỐI thật của mình lên quái đầu tiên (chọn mục tiêu rồi `useSkill` như bấm phím); false nếu không có quái hoặc chiêu chưa sẵn. */
+  ultOnMon(): boolean;
   /** TP-2: ẩn/hiện nhóm VFX (cột sáng hồi sinh che nhân vật khi chụp). */
   hideVfx(on: boolean): void;
   /** TP-2: gửi `C.RESPAWN` như bấm nút hồi sinh (sau `/gm die`). */
@@ -283,6 +285,14 @@ export function installAnimLab(g: Game): void {
         deg: Math.round(((m.inner?.rotation.y ?? 0) * 180) / Math.PI),
         behind: { x: (v.x * 0.5 + 0.5) * window.innerWidth, y: (-v.y * 0.5 + 0.5) * window.innerHeight },
       };
+    },
+    ultOnMon() {
+      const id = [...g.ents.monsters.keys()][0];
+      const i = g.bar().findIndex((sk) => sk.ult);
+      if (!id || i < 0) return false;
+      g.setTarget(id, 'mon');
+      g.useSkill(i);
+      return true;
     },
     hideVfx(on) {
       g.vfx.group.visible = !on;

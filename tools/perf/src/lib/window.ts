@@ -109,6 +109,7 @@ export interface AnimLabDebug {
     mon: { knock: boolean; speed: number; state: string } | null;
   };
   hideVfx(on: boolean): void;
+  ultOnMon(): boolean;
   monFacingErr(): number | null;
   monTurn(): { deg: number; behind: { x: number; y: number } } | null;
   orderMon(kind: 'attack'): void;
