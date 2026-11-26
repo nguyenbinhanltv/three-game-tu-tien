@@ -11,7 +11,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { args, flag, opt as optEnv } from './lib/env';
-import { failed, findingsToMarkdown, gate, toBaseline, type Baseline } from './lib/gate';
+import { BASELINE_METHOD, failed, findingsToMarkdown, defaultPresets, gate, toBaseline, type Baseline } from './lib/gate';
 import type { IsoRun } from './lib/isoreport';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
@@ -70,6 +70,12 @@ if (has('--make-baseline')) {
     console.error('--make-baseline cần --out <file>');
     process.exit(2);
   }
+  if (run.method !== BASELINE_METHOD) {
+    console.error(
+      `lần chạy này không có method=${BASELINE_METHOD} (đo non: bản perf:iso trước #675 hoặc --settle-max 0): không lập baseline từ nó. Chạy lại perf:iso mới.`,
+    );
+    process.exit(2);
+  }
   const b = toBaseline(run, opt('--note') || undefined);
   fs.mkdirSync(path.dirname(resolveArg(out)), { recursive: true });
   fs.writeFileSync(resolveArg(out), JSON.stringify(b, null, 1) + '\n');
@@ -83,7 +89,7 @@ const base: Baseline | null =
 if (baseFile && !base) console.warn(`[perf-gate] không thấy baseline ${baseFile}: chỉ xét ngân sách vùng`);
 const findings = gate(run, base, {
   tol: Number(opt('--tol', '0.1')),
-  presets: opt('--presets', 'high').split(','),
+  presets: defaultPresets(opt('--presets') || undefined, base),
   ignoreBaselineMismatch: has('--ignore-baseline-mismatch'),
 });
 const md = findingsToMarkdown(findings, run, base);

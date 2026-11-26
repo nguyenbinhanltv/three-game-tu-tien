@@ -72,6 +72,7 @@ export * from './ngusuy';
 export * from './huyenkiep';
 export * from './propLib';
 export * from './fxtimeline';
+export * from './fxcover';
 export * from './vfxcard';
 export * from './chapters';
 export * from './arr';

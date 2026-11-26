@@ -3,6 +3,8 @@
 // (đáp xuống/ra khỏi điểm thì mượt về 52°). Tắt bằng `?vista=0`.
 
 import { FLAGS } from '../../base/flags';
+import { levelId } from '../../base/levelCtx';
+import { paintedFarOn } from '../../render/painted/theme';
 import { ISO_FOV, ISO_PITCH, ISO_FAR } from './iso';
 
 /** Một điểm ngắm cảnh: đứng trong `r` mét (mặt phẳng) thì camera mở tầm nhìn, trừ khi người chơi đã bấm thoát. */
@@ -105,7 +107,7 @@ export interface VistaView {
 /** Nội suy các thông số camera theo `amount` (0..1). `amount = 0` trả đúng giá trị camera chéo gốc. */
 export function vistaView(amount: number, mode: 'spot' | 'fly' = 'spot'): VistaView {
   const a = Math.max(0, Math.min(1, amount));
-  const far = FLAGS.style === 'painted' && FLAGS.far;
+  const far = paintedFarOn(levelId());
   const tune =
     mode === 'fly'
       ? { ...VISTA_FAR_FLY, pitch: FLAGS.vistaFlyPitch !== null ? (FLAGS.vistaFlyPitch * Math.PI) / 180 : VISTA_FAR_FLY.pitch }

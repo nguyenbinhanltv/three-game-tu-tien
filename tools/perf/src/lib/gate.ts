@@ -1,7 +1,7 @@
 // Cổng đo bản đồ (B2 của kế hoạch hiệu năng): phần thuần, không đụng trình duyệt nên có test.
 // Đầu vào là kết quả `pnpm perf:iso` (IsoRun) và, nếu có, baseline gọn của `main`.
 // Luật:
-//  - CHẶN (fail) trên SỐ ĐẾM không phụ thuộc máy: draw call, tam giác, texture MB, heap JS MB, lỗi console.
+//  - CHẶN (fail) trên SỐ ĐẾM không phụ thuộc máy: draw call, tam giác, texture MB, lỗi console. Heap JS và ms CPU chỉ cảnh báo (heap dao động theo GC và độ dài lần chạy: cùng điểm 189 và 259 MB ở hai lần chạy khác nhau).
 //  - Vượt ngân sách vùng mà baseline đã vượt sẵn thì chỉ chặn khi TỆ HƠN baseline quá `tol` (ratchet: không ai làm xấu thêm).
 //  - Mọi chỉ số tệ hơn baseline quá `tol` (và quá ngưỡng tuyệt đối nhỏ) đều chặn, dù chưa vượt ngân sách.
 //  - ms (CPU p95) chỉ GHI/cảnh báo: phụ thuộc máy, nhiễu giữa các lượt, không chặn.
@@ -43,11 +43,21 @@ export interface BaselinePoint {
   dc: number;
   tris: number;
   texMB: number;
+  /** Tách `texMB`: tài sản (không phụ thuộc viewport) và đích vẽ (phình theo viewport). Thiếu ở baseline cũ. */
+  texAssetMB?: number;
+  texRtMB?: number;
   heapMB: number | null;
   cpu95: number;
 }
+/**
+ * Phương pháp đo của `perf:iso` đã ghi baseline. `settled-v1`: chờ cảnh nạp xong trước mỗi điểm (`--settle-max`, #675).
+ * Baseline không có trường này đo non (cảnh còn nạp: Vân Lam 354k tam giác/94 MB thay vì ~821k/460–500 MB) nên KHÔNG dùng được.
+ */
+export const BASELINE_METHOD = 'settled-v1';
+
 export interface Baseline {
   version: 1;
+  method?: string;
   date: string;
   note?: string;
   /** Backend/viewport lúc đo: số đếm khác nhau thật giữa WebGPU và WebGL2 (đèn điểm chỉ WebGPU, trần pixel WebGL2…), nên không so chéo. */
@@ -61,6 +71,8 @@ export interface Baseline {
 export function toBaseline(run: IsoRun, note?: string): Baseline {
   return {
     version: 1,
+    // Nhãn chép từ chính lần chạy (không phải từ mã ghi baseline): chạy cũ/`--settle-max 0` không có nhãn thì baseline cũng không có.
+    ...(run.method ? { method: run.method } : {}),
     date: run.date,
     ...(note ? { note } : {}),
     backend: run.backend,
@@ -72,6 +84,7 @@ export function toBaseline(run: IsoRun, note?: string): Baseline {
       dc: p.drawCalls.max,
       tris: p.triangles.max,
       texMB: p.textureMB,
+      ...(p.textureAssetMB === undefined ? {} : { texAssetMB: p.textureAssetMB, texRtMB: p.textureRtMB ?? 0 }),
       heapMB: p.jsHeapMB,
       cpu95: p.cpuMs.p95,
     })),
@@ -87,7 +100,15 @@ export interface Finding {
   value: number;
   /** Giới hạn đã áp (ngân sách hoặc baseline×(1+tol)). */
   limit: number;
-  why: 'vượt ngân sách' | 'tệ hơn baseline' | 'cảnh báo ms' | 'lỗi console' | 'thiếu điểm' | 'baseline khác backend';
+  why:
+    | 'vượt ngân sách'
+    | 'tệ hơn baseline'
+    | 'cảnh báo không chặn'
+    | 'lỗi console'
+    | 'thiếu điểm'
+    | 'baseline khác backend'
+    | 'baseline lỗi thời'
+    | 'không điểm nào khớp preset';
 }
 
 export interface GateOptions {
@@ -117,7 +138,7 @@ function metricsOf(p: IsoPoint, b: BaselinePoint | undefined, z: ZoneBudget): Me
     { name: 'texture MB', value: p.textureMB, base: b?.texMB ?? null, budget: z.textureMB, minAbs: 4, soft: false },
     ...(p.jsHeapMB === null
       ? []
-      : [{ name: 'heap JS MB', value: p.jsHeapMB, base: b?.heapMB ?? null, budget: HEAP_MB_MAX, minAbs: 8, soft: false }]),
+      : [{ name: 'heap JS MB', value: p.jsHeapMB, base: b?.heapMB ?? null, budget: HEAP_MB_MAX, minAbs: 8, soft: true }]),
     { name: 'CPU p95 ms', value: p.cpuMs.p95, base: b?.cpu95 ?? null, budget: z.cpuP95, minAbs: 0.5, soft: true },
   ];
 }
@@ -126,6 +147,20 @@ function metricsOf(p: IsoPoint, b: BaselinePoint | undefined, z: ZoneBudget): Me
 export function gate(run: IsoRun, baseIn: Baseline | null, opts: GateOptions = {}): Finding[] {
   let base = baseIn;
   const early: Finding[] = [];
+  if (base && base.method !== BASELINE_METHOD) {
+    // Baseline đo bằng phương pháp cũ (chưa chờ nạp xong): so với nó sẽ báo gần như mọi điểm là 'tệ hơn' (+100% tam giác, +400% texture).
+    return [
+      {
+        severity: 'fail',
+        id: '(baseline)',
+        preset: '-',
+        metric: `baseline đo bằng phương pháp cũ (method=${base.method ?? 'không có'}, cần ${BASELINE_METHOD}): sinh lại bằng perf:iso mới (--make-baseline)`,
+        value: 0,
+        limit: 0,
+        why: 'baseline lỗi thời',
+      },
+    ];
+  }
   if (base && ((base.backend && base.backend !== run.backend) || (base.viewport && base.viewport !== run.viewport))) {
     const f: Finding = {
       severity: opts.ignoreBaselineMismatch ? 'warn' : 'fail',
@@ -162,7 +197,7 @@ export function gate(run: IsoRun, baseIn: Baseline | null, opts: GateOptions = {
           metric: m.name,
           value: m.value,
           limit: round(m.base! * (1 + tol)),
-          why: m.soft ? 'cảnh báo ms' : 'tệ hơn baseline',
+          why: m.soft ? 'cảnh báo không chặn' : 'tệ hơn baseline',
         });
       } else if (over && (m.base === null || m.base <= m.budget!)) {
         // Ngân sách vùng là cổng cứng, trừ điểm mà CHÍNH baseline đã vượt (ratchet: chỉ chặn khi tệ hơn baseline, xét ở nhánh trên).
@@ -174,13 +209,27 @@ export function gate(run: IsoRun, baseIn: Baseline | null, opts: GateOptions = {
           metric: m.name,
           value: m.value,
           limit: m.budget!,
-          why: m.soft ? 'cảnh báo ms' : 'vượt ngân sách',
+          why: m.soft ? 'cảnh báo không chặn' : 'vượt ngân sách',
         });
       }
     }
   }
+  // Lọc preset không khớp điểm nào (ví dụ baseline Vừa nhưng quên `--presets medium`) thì cổng không xét gì: KHÔNG được báo ĐẠT im lặng.
+  if (seen.size === 0)
+    out.push({
+      severity: 'fail',
+      id: '(cổng)',
+      preset: [...presets].join(','),
+      metric: `--presets ${[...presets].join(',')} (lần chạy có: ${[...new Set(run.points.map((p) => p.preset))].join(',') || 'không điểm nào'})`,
+      value: 0,
+      limit: 0,
+      why: 'không điểm nào khớp preset',
+    });
+  // Chỉ báo thiếu điểm của mục tiêu mà lần chạy CÓ đo (chạy `--only` một vài bản đồ không bị báo thiếu các bản đồ còn lại).
+  const ranTargets = new Set(run.points.map((p) => `${p.preset}|${p.target}`));
   for (const b of base?.points ?? []) {
-    if (presets.has(b.preset) && !seen.has(`${b.preset}|${b.id}`))
+    const target = b.id.slice(0, b.id.indexOf('/'));
+    if (presets.has(b.preset) && ranTargets.has(`${b.preset}|${target}`) && !seen.has(`${b.preset}|${b.id}`))
       out.push({ severity: 'warn', id: b.id, preset: b.preset, metric: 'điểm đo', value: 0, limit: 0, why: 'thiếu điểm' });
   }
   const known = new Set(base?.errors ?? []);
@@ -223,4 +272,11 @@ export function findingsToMarkdown(f: Finding[], run: IsoRun, base: Baseline | n
     L.push('');
   }
   return L.join('\n');
+}
+
+/** Preset mặc định của cổng: người dùng chỉ định thì theo đó; không thì các preset CÓ trong baseline (nếu có), không thì `high`. */
+export function defaultPresets(explicit: string | undefined, base: { points: { preset: string }[] } | null): string[] {
+  if (explicit) return explicit.split(',').filter(Boolean);
+  const inBase = [...new Set((base?.points ?? []).map((q) => q.preset))];
+  return inBase.length ? inBase : ['high'];
 }

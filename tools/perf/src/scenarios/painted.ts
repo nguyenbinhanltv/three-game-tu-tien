@@ -1,9 +1,10 @@
 // Họa Cảnh (`?style=painted`): ảnh so sánh mặc định | painted cùng điểm, cùng góc camera chéo, kèm số đo draw call/khung.
-//   pnpm shots painted --out <thư mục tuyệt đối> [--moods day,night] [--views 720p,1080p] [--points a,b|all] [--styles off,painted] [--preset high] [--renderer webgpu|webgl2]
+//   pnpm shots painted --out <thư mục tuyệt đối> [--level <id>] [--moods day,night] [--views 720p,1080p] [--points a,b|all] [--styles off,painted] [--preset high] [--renderer webgpu|webgl2]
 // Ảnh: <style>-<view>-<mood>-<điểm>.png; số đo: perf.json (drawCalls, triangles, textures, frameMs, heapMB mỗi điểm).
 import { sleep } from '../lib/devserver';
 import { list, num, opt } from '../lib/env';
-import { gm, perfSample, tp } from '../lib/game';
+import { enterLevel, gm, perfSample, tp } from '../lib/game';
+import { levelPoints, requireLevel } from '../lib/levelpoints';
 import type { Scenario } from '../lib/scenario';
 import { snap, writeJson } from '../lib/shot';
 
@@ -17,16 +18,20 @@ export const POINTS: { name: string; x: number; z: number }[] = [
   { name: 'sonmon', x: 2048, z: 2120 },
 ];
 
+/** Điểm của level đang chụp: Vân Lam giữ danh sách đặt tay; level khác suy từ dữ liệu (P9), ảnh tên `<style>-<view>-<mood>-<điểm>.png`. */
+const LEVEL = opt('--level', 'van_lam');
+const pointsOf = (): { name: string; x: number; z: number }[] => (LEVEL === 'van_lam' ? POINTS : levelPoints(requireLevel(LEVEL).id));
+
 const SIZES: Record<string, [number, number]> = { '720p': [1280, 720], '1080p': [1920, 1080] };
 
 export default {
   name: 'painted',
   desc: 'Họa Cảnh: ảnh so sánh mặc định | ?style=painted ở Thung Lũng Thanh Phong (ngày/đêm × 720p/1080p) + số đo',
   usage:
-    '[--styles off,painted] [--moods day,night] [--views 720p,1080p] [--points a,b|all] [--preset high] [--burst N] [--spawn <id quái> --spawn-n N] [--cast 0,1,2: bấm chiêu ở ô số này giữa các khung burst]',
+    '[--level <id>] [--styles off,painted] [--moods day,night] [--views 720p,1080p] [--points a,b|all] [--preset high] [--burst N] [--spawn <id quái> --spawn-n N] [--cast 0,1,2: bấm chiêu ở ô số này giữa các khung burst]',
   async run(r) {
     const only = list('--points', 'all');
-    const pts = POINTS.filter((p) => only.includes('all') || only.includes(p.name));
+    const pts = pointsOf().filter((p) => only.includes('all') || only.includes(p.name));
     const perf: Record<string, unknown> = {};
     for (const style of list('--styles', 'off,painted')) {
       for (const view of list('--views', '720p,1080p')) {
@@ -40,7 +45,8 @@ export default {
             seenIntro: true,
             warnings: true,
           });
-          await gm(page, 'level 15', 2500);
+          await gm(page, `level ${LEVEL === 'van_lam' ? 15 : Math.max(27, requireLevel(LEVEL).minLevel ?? 0)}`, 2500);
+          if (LEVEL !== 'van_lam') await enterLevel(page, LEVEL);
           await gm(page, 'god on', 2500);
           await gm(page, 'killall', 2500);
           // --spawn <id quái> [--spawn-n N]: đặt quái quanh người để bắt chiêu vùng (telegraph) trên nền cỏ

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { bucketGroups, type IsoPoint, type IsoRun } from './isoreport';
-import { classify, failed, findingsToMarkdown, gate, toBaseline, ZONE_BUDGETS, type Baseline } from './gate';
+import { classify, defaultPresets, failed, findingsToMarkdown, gate, toBaseline, ZONE_BUDGETS, type Baseline } from './gate';
 
 const pt = (
   id: string,
@@ -28,6 +28,7 @@ const pt = (
   byCat: bucketGroups([]),
   topGroups: [],
 });
+/** Lần chạy giả LẬP đã chờ nạp xong (có `method`), như `perf:iso` hiện tại. */
 const run = (points: IsoPoint[], errors: string[] = []): IsoRun => ({
   version: 1,
   date: 'd',
@@ -35,6 +36,7 @@ const run = (points: IsoPoint[], errors: string[] = []): IsoRun => ({
   backend: 'WebGPU',
   viewport: '1280x720',
   quick: false,
+  method: 'settled-v1',
   devBytesMB: null,
   points,
   errors,
@@ -98,12 +100,17 @@ describe('gate', () => {
     const base = toBaseline(run([pt('a/x', 'map'), pt('b/y', 'map')]));
     const f = gate(run([pt('a/x', 'map'), pt('c/z', 'map', { preset: 'ultra', dc: 999 })]), base);
     expect(failed(f)).toBe(false);
-    expect(f.filter((x) => x.why === 'thiếu điểm').map((x) => x.id)).toEqual(['b/y']);
+    // `b/y` thuộc mục tiêu `b` mà lần chạy không đo: không báo thiếu.
+    expect(f.filter((x) => x.why === 'thiếu điểm')).toEqual([]);
+    const g = gate(run([pt('a/x', 'map')]), toBaseline(run([pt('a/x', 'map'), pt('a/y', 'map')])));
+    expect(g.filter((x) => x.why === 'thiếu điểm').map((x) => x.id)).toEqual(['a/y']);
   });
 
-  it('lỗi console luôn chặn; heap vượt chặn', () => {
+  it('lỗi console luôn chặn; heap vượt chỉ cảnh báo (dao động theo GC)', () => {
     expect(failed(gate(run([pt('a/x', 'map')], ['TypeError: x']), null))).toBe(true);
-    expect(failed(gate(run([pt('a/x', 'map', { heap: 450 })]), null))).toBe(true);
+    const f = gate(run([pt('a/x', 'map', { heap: 450 })]), null);
+    expect(failed(f)).toBe(false);
+    expect(f.some((x) => x.severity === 'warn' && x.metric === 'heap JS MB')).toBe(true);
     expect(failed(gate(run([pt('a/x', 'map', { heap: null })]), null))).toBe(false);
   });
 
@@ -122,6 +129,32 @@ describe('gate', () => {
     expect(md).toContain('KHÔNG ĐẠT');
     expect(md).toContain('phuc_mach/giua');
     expect(findingsToMarkdown([], r, null)).toContain('ĐẠT');
+  });
+});
+
+describe('method chép từ lần chạy', () => {
+  it('toBaseline của lần chạy không có method KHÔNG ra baseline settled-v1', () => {
+    const old = { ...run([pt('a/x', 'map')]), method: undefined };
+    expect(old.method).toBeUndefined();
+    const b = toBaseline(old);
+    expect(b.method).toBeUndefined();
+    expect(failed(gate(run([pt('a/x', 'map')]), b))).toBe(true); // baseline không nhãn bị từ chối
+  });
+  it('lần chạy có method thì baseline mang đúng nhãn đó', () => {
+    const r = { ...run([pt('a/x', 'map')]), method: 'settled-v1' };
+    const b = toBaseline(r);
+    expect(b.method).toBe('settled-v1');
+    expect(failed(gate(r, b))).toBe(false);
+  });
+});
+
+describe('baseline lỗi thời', () => {
+  it('baseline không có method (đo non) bị chặn, không so số', () => {
+    const base = toBaseline(run([pt('a/x', 'map')]));
+    delete base.method;
+    const f = gate(run([pt('a/x', 'map')]), base);
+    expect(f).toHaveLength(1);
+    expect(f[0]).toMatchObject({ why: 'baseline lỗi thời', severity: 'fail' });
   });
 });
 
@@ -161,10 +194,49 @@ describe('baseline khác backend', () => {
   });
 });
 
+describe('tách texture tài sản và đích vẽ', () => {
+  it('toBaseline chép phần tài sản/đích vẽ khi có; kết quả cũ không có thì bỏ qua', () => {
+    const p = { ...pt('a/x', 'map', { tex: 300 }), textureAssetMB: 120, textureRtMB: 180 };
+    const b = toBaseline(run([p, pt('a/y', 'map')]));
+    expect(b.points[0]).toMatchObject({ texMB: 300, texAssetMB: 120, texRtMB: 180 });
+    expect(b.points[1]).not.toHaveProperty('texAssetMB');
+  });
+});
+
 describe('toBaseline', () => {
   it('giữ đủ trường gọn', () => {
     const b = toBaseline(run([pt('a/x', 'map', { dc: 90, tris: 123_000, tex: 150, cpu: 5, heap: 220 })]), 'ghi chú');
     expect(b).toMatchObject({ version: 1, note: 'ghi chú', backend: 'WebGPU', viewport: '1280x720' });
     expect(b.points[0]).toEqual({ id: 'a/x', preset: 'high', dc: 90, tris: 123_000, texMB: 150, heapMB: 220, cpu95: 5 });
+  });
+});
+
+describe('lọc preset không được báo ĐẠT im lặng (review #694)', () => {
+  const med = (id: string, o = {}) => pt(id, 'map', { preset: 'medium', ...o });
+
+  it('baseline và lần chạy đều medium nhưng cổng lọc high: CHẶN, không im lặng', () => {
+    const base = toBaseline(run([med('van_hai/giua')]));
+    const f = gate(run([med('van_hai/giua', { dc: 9999 })]), base); // presets mặc định của gate() = high
+    expect(failed(f)).toBe(true);
+    expect(f[0]).toMatchObject({ why: 'không điểm nào khớp preset', severity: 'fail' });
+    expect(f[0]!.metric).toContain('medium');
+  });
+
+  it('đúng preset thì xét bình thường (vi phạm vẫn bị bắt)', () => {
+    const base = toBaseline(run([med('van_hai/giua')]));
+    const f = gate(run([med('van_hai/giua', { dc: 9999 })]), base, { presets: ['medium'] });
+    expect(f.some((x) => x.metric === 'draw call (max)')).toBe(true);
+    expect(f.some((x) => x.why === 'không điểm nào khớp preset')).toBe(false);
+  });
+
+  it('lần chạy không có điểm nào cũng chặn', () => {
+    expect(failed(gate(run([]), null))).toBe(true);
+  });
+
+  it('defaultPresets: chỉ định thì theo đó; không thì lấy từ baseline; không baseline thì high', () => {
+    const base = toBaseline(run([med('a/b')]));
+    expect(defaultPresets('high,medium', base)).toEqual(['high', 'medium']);
+    expect(defaultPresets(undefined, base)).toEqual(['medium']);
+    expect(defaultPresets(undefined, null)).toEqual(['high']);
   });
 });

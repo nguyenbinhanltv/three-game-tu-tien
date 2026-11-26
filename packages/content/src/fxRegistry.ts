@@ -334,6 +334,7 @@ import fx_skl_phich_lich from '../data/fx/skl_phich_lich.json';
 import fx_skl_loi_vong from '../data/fx/skl_loi_vong.json';
 import fx_skl_thiem_loi_bo from '../data/fx/skl_thiem_loi_bo.json';
 import fx_skl_pha_phong_tien from '../data/fx/skl_pha_phong_tien.json';
+import fx_skl_cu_bo_xung from '../data/fx/skl_cu_bo_xung.json';
 import fx_skl_loi_chich from '../data/fx/skl_loi_chich.json';
 import fx_skl_loi_the from '../data/fx/skl_loi_the.json';
 import fx_skl_loi_lien from '../data/fx/skl_loi_lien.json';
@@ -361,6 +362,73 @@ import fx_skl_thuan_di_ho_the from '../data/fx/skl_thuan_di_ho_the.json';
 import fx_skl_thuan_di_tram from '../data/fx/skl_thuan_di_tram.json';
 import fx_skl_tran_son_an from '../data/fx/skl_tran_son_an.json';
 import fx_skl_van_kiem_quy_tong from '../data/fx/skl_van_kiem_quy_tong.json';
+import fx_mon_boom_circle__boss_dao_linh__slam from '../data/fx/mon_boom_circle__boss_dao_linh__slam.json';
+import fx_mon_boom_circle__boss_dinh_linh__slam from '../data/fx/mon_boom_circle__boss_dinh_linh__slam.json';
+import fx_mon_boom_circle__boss_hu_anh_chu__slam from '../data/fx/mon_boom_circle__boss_hu_anh_chu__slam.json';
+import fx_mon_boom_circle__boss_kieu_thu__slam from '../data/fx/mon_boom_circle__boss_kieu_thu__slam.json';
+import fx_mon_boom_circle__boss_lo_linh__slam from '../data/fx/mon_boom_circle__boss_lo_linh__slam.json';
+import fx_mon_boom_circle__boss_phu_chu__slam from '../data/fx/mon_boom_circle__boss_phu_chu__slam.json';
+import fx_mon_boom_circle__boss_thach_tuong__slam from '../data/fx/mon_boom_circle__boss_thach_tuong__slam.json';
+import fx_mon_boom_circle__boss_tu_quang_duc_chu__chant from '../data/fx/mon_boom_circle__boss_tu_quang_duc_chu__chant.json';
+import fx_mon_boom_circle__boss_tu_quang_duc_chu__slam from '../data/fx/mon_boom_circle__boss_tu_quang_duc_chu__slam.json';
+import fx_mon_boom_circle__elite_lo_thach_tuong__leap from '../data/fx/mon_boom_circle__elite_lo_thach_tuong__leap.json';
+import fx_mon_boom_circle__elite_may_lang_vuong__leap from '../data/fx/mon_boom_circle__elite_may_lang_vuong__leap.json';
+import fx_mon_boom_circle__elite_sa_tuong__leap from '../data/fx/mon_boom_circle__elite_sa_tuong__leap.json';
+import fx_mon_boom_cone__boss_dao_linh__sweep from '../data/fx/mon_boom_cone__boss_dao_linh__sweep.json';
+import fx_mon_boom_cone__boss_dinh_linh__sweep from '../data/fx/mon_boom_cone__boss_dinh_linh__sweep.json';
+import fx_mon_boom_cone__boss_hu_anh_chu__sweep from '../data/fx/mon_boom_cone__boss_hu_anh_chu__sweep.json';
+import fx_mon_boom_cone__boss_kieu_thu__sweep from '../data/fx/mon_boom_cone__boss_kieu_thu__sweep.json';
+import fx_mon_boom_cone__boss_lo_linh__sweep from '../data/fx/mon_boom_cone__boss_lo_linh__sweep.json';
+import fx_mon_boom_cone__boss_phu_chu__sweep from '../data/fx/mon_boom_cone__boss_phu_chu__sweep.json';
+import fx_mon_boom_cone__boss_tu_quang_duc_chu__sweep from '../data/fx/mon_boom_cone__boss_tu_quang_duc_chu__sweep.json';
+import fx_mon_boom_line__boss_dao_linh__line from '../data/fx/mon_boom_line__boss_dao_linh__line.json';
+import fx_mon_boom_line__boss_dinh_linh__line from '../data/fx/mon_boom_line__boss_dinh_linh__line.json';
+import fx_mon_boom_line__boss_hu_anh_chu__line from '../data/fx/mon_boom_line__boss_hu_anh_chu__line.json';
+import fx_mon_boom_line__boss_kieu_thu__line from '../data/fx/mon_boom_line__boss_kieu_thu__line.json';
+import fx_mon_boom_line__boss_lo_linh__line from '../data/fx/mon_boom_line__boss_lo_linh__line.json';
+import fx_mon_boom_line__boss_phu_chu__line from '../data/fx/mon_boom_line__boss_phu_chu__line.json';
+import fx_mon_boom_line__boss_thach_tuong__line from '../data/fx/mon_boom_line__boss_thach_tuong__line.json';
+import fx_mon_boom_line__boss_tu_quang_duc_chu__line from '../data/fx/mon_boom_line__boss_tu_quang_duc_chu__line.json';
+import fx_mon_boom_line__boss_ve_kieu__line from '../data/fx/mon_boom_line__boss_ve_kieu__line.json';
+import fx_mon_boom_line__elite_anh_hac_vuong__charge from '../data/fx/mon_boom_line__elite_anh_hac_vuong__charge.json';
+import fx_mon_boom_line__elite_hu_anh_nhan__line from '../data/fx/mon_boom_line__elite_hu_anh_nhan__line.json';
+import fx_mon_boom_line__elite_lo_thach_tuong__line from '../data/fx/mon_boom_line__elite_lo_thach_tuong__line.json';
+import fx_mon_boom_line__elite_may_lang_vuong__charge from '../data/fx/mon_boom_line__elite_may_lang_vuong__charge.json';
+import fx_mon_boom_line__elite_sa_tuong__line from '../data/fx/mon_boom_line__elite_sa_tuong__line.json';
+import fx_mon_cast__boss_tu_quang_duc_chu from '../data/fx/mon_cast__boss_tu_quang_duc_chu.json';
+import fx_mon_warn__boss_dao_linh__slam from '../data/fx/mon_warn__boss_dao_linh__slam.json';
+import fx_mon_warn__boss_dinh_linh__slam from '../data/fx/mon_warn__boss_dinh_linh__slam.json';
+import fx_mon_warn__boss_hu_anh_chu__slam from '../data/fx/mon_warn__boss_hu_anh_chu__slam.json';
+import fx_mon_warn__boss_kieu_thu__slam from '../data/fx/mon_warn__boss_kieu_thu__slam.json';
+import fx_mon_warn__boss_lo_linh__slam from '../data/fx/mon_warn__boss_lo_linh__slam.json';
+import fx_mon_warn__boss_phu_chu__slam from '../data/fx/mon_warn__boss_phu_chu__slam.json';
+import fx_mon_warn__boss_thach_tuong__slam from '../data/fx/mon_warn__boss_thach_tuong__slam.json';
+import fx_mon_warn__boss_tu_quang_duc_chu__chant from '../data/fx/mon_warn__boss_tu_quang_duc_chu__chant.json';
+import fx_mon_warn__boss_tu_quang_duc_chu__slam from '../data/fx/mon_warn__boss_tu_quang_duc_chu__slam.json';
+import fx_mon_warn__elite_lo_thach_tuong__leap from '../data/fx/mon_warn__elite_lo_thach_tuong__leap.json';
+import fx_mon_warn__elite_may_lang_vuong__leap from '../data/fx/mon_warn__elite_may_lang_vuong__leap.json';
+import fx_mon_warn__elite_sa_tuong__leap from '../data/fx/mon_warn__elite_sa_tuong__leap.json';
+import fx_mon_warn_cone__boss_dao_linh__sweep from '../data/fx/mon_warn_cone__boss_dao_linh__sweep.json';
+import fx_mon_warn_cone__boss_dinh_linh__sweep from '../data/fx/mon_warn_cone__boss_dinh_linh__sweep.json';
+import fx_mon_warn_cone__boss_hu_anh_chu__sweep from '../data/fx/mon_warn_cone__boss_hu_anh_chu__sweep.json';
+import fx_mon_warn_cone__boss_kieu_thu__sweep from '../data/fx/mon_warn_cone__boss_kieu_thu__sweep.json';
+import fx_mon_warn_cone__boss_lo_linh__sweep from '../data/fx/mon_warn_cone__boss_lo_linh__sweep.json';
+import fx_mon_warn_cone__boss_phu_chu__sweep from '../data/fx/mon_warn_cone__boss_phu_chu__sweep.json';
+import fx_mon_warn_cone__boss_tu_quang_duc_chu__sweep from '../data/fx/mon_warn_cone__boss_tu_quang_duc_chu__sweep.json';
+import fx_mon_warn_line__boss_dao_linh__line from '../data/fx/mon_warn_line__boss_dao_linh__line.json';
+import fx_mon_warn_line__boss_dinh_linh__line from '../data/fx/mon_warn_line__boss_dinh_linh__line.json';
+import fx_mon_warn_line__boss_hu_anh_chu__line from '../data/fx/mon_warn_line__boss_hu_anh_chu__line.json';
+import fx_mon_warn_line__boss_kieu_thu__line from '../data/fx/mon_warn_line__boss_kieu_thu__line.json';
+import fx_mon_warn_line__boss_lo_linh__line from '../data/fx/mon_warn_line__boss_lo_linh__line.json';
+import fx_mon_warn_line__boss_phu_chu__line from '../data/fx/mon_warn_line__boss_phu_chu__line.json';
+import fx_mon_warn_line__boss_thach_tuong__line from '../data/fx/mon_warn_line__boss_thach_tuong__line.json';
+import fx_mon_warn_line__boss_tu_quang_duc_chu__line from '../data/fx/mon_warn_line__boss_tu_quang_duc_chu__line.json';
+import fx_mon_warn_line__boss_ve_kieu__line from '../data/fx/mon_warn_line__boss_ve_kieu__line.json';
+import fx_mon_warn_line__elite_anh_hac_vuong__charge from '../data/fx/mon_warn_line__elite_anh_hac_vuong__charge.json';
+import fx_mon_warn_line__elite_hu_anh_nhan__line from '../data/fx/mon_warn_line__elite_hu_anh_nhan__line.json';
+import fx_mon_warn_line__elite_lo_thach_tuong__line from '../data/fx/mon_warn_line__elite_lo_thach_tuong__line.json';
+import fx_mon_warn_line__elite_may_lang_vuong__charge from '../data/fx/mon_warn_line__elite_may_lang_vuong__charge.json';
+import fx_mon_warn_line__elite_sa_tuong__line from '../data/fx/mon_warn_line__elite_sa_tuong__line.json';
 
 /** Dòng thời gian hiệu ứng theo chiêu (VFX-V0): `data/fx/<id chiêu>.json`. Chiêu không có thì dùng đường hiệu ứng cũ. */
 export const FX_TIMELINES = [
@@ -475,6 +543,7 @@ export const FX_TIMELINES = [
   fx_skl_van_kiem_quy_tong,
   fx_skl_thiem_loi_bo,
   fx_skl_pha_phong_tien,
+  fx_skl_cu_bo_xung,
   fx_skl_loi_chich,
   fx_skl_loi_the,
   fx_skl_loi_lien,
@@ -641,6 +710,73 @@ export const MON_FX_TIMELINES = [
   fx_mon_boom_circle__boss_han_giao__chant,
   fx_mon_warn_cone__boss_han_giao__sweep,
   fx_mon_boom_cone__boss_han_giao__sweep,
+  fx_mon_boom_circle__boss_dao_linh__slam,
+  fx_mon_boom_circle__boss_dinh_linh__slam,
+  fx_mon_boom_circle__boss_hu_anh_chu__slam,
+  fx_mon_boom_circle__boss_kieu_thu__slam,
+  fx_mon_boom_circle__boss_lo_linh__slam,
+  fx_mon_boom_circle__boss_phu_chu__slam,
+  fx_mon_boom_circle__boss_thach_tuong__slam,
+  fx_mon_boom_circle__boss_tu_quang_duc_chu__chant,
+  fx_mon_boom_circle__boss_tu_quang_duc_chu__slam,
+  fx_mon_boom_circle__elite_lo_thach_tuong__leap,
+  fx_mon_boom_circle__elite_may_lang_vuong__leap,
+  fx_mon_boom_circle__elite_sa_tuong__leap,
+  fx_mon_boom_cone__boss_dao_linh__sweep,
+  fx_mon_boom_cone__boss_dinh_linh__sweep,
+  fx_mon_boom_cone__boss_hu_anh_chu__sweep,
+  fx_mon_boom_cone__boss_kieu_thu__sweep,
+  fx_mon_boom_cone__boss_lo_linh__sweep,
+  fx_mon_boom_cone__boss_phu_chu__sweep,
+  fx_mon_boom_cone__boss_tu_quang_duc_chu__sweep,
+  fx_mon_boom_line__boss_dao_linh__line,
+  fx_mon_boom_line__boss_dinh_linh__line,
+  fx_mon_boom_line__boss_hu_anh_chu__line,
+  fx_mon_boom_line__boss_kieu_thu__line,
+  fx_mon_boom_line__boss_lo_linh__line,
+  fx_mon_boom_line__boss_phu_chu__line,
+  fx_mon_boom_line__boss_thach_tuong__line,
+  fx_mon_boom_line__boss_tu_quang_duc_chu__line,
+  fx_mon_boom_line__boss_ve_kieu__line,
+  fx_mon_boom_line__elite_anh_hac_vuong__charge,
+  fx_mon_boom_line__elite_hu_anh_nhan__line,
+  fx_mon_boom_line__elite_lo_thach_tuong__line,
+  fx_mon_boom_line__elite_may_lang_vuong__charge,
+  fx_mon_boom_line__elite_sa_tuong__line,
+  fx_mon_cast__boss_tu_quang_duc_chu,
+  fx_mon_warn__boss_dao_linh__slam,
+  fx_mon_warn__boss_dinh_linh__slam,
+  fx_mon_warn__boss_hu_anh_chu__slam,
+  fx_mon_warn__boss_kieu_thu__slam,
+  fx_mon_warn__boss_lo_linh__slam,
+  fx_mon_warn__boss_phu_chu__slam,
+  fx_mon_warn__boss_thach_tuong__slam,
+  fx_mon_warn__boss_tu_quang_duc_chu__chant,
+  fx_mon_warn__boss_tu_quang_duc_chu__slam,
+  fx_mon_warn__elite_lo_thach_tuong__leap,
+  fx_mon_warn__elite_may_lang_vuong__leap,
+  fx_mon_warn__elite_sa_tuong__leap,
+  fx_mon_warn_cone__boss_dao_linh__sweep,
+  fx_mon_warn_cone__boss_dinh_linh__sweep,
+  fx_mon_warn_cone__boss_hu_anh_chu__sweep,
+  fx_mon_warn_cone__boss_kieu_thu__sweep,
+  fx_mon_warn_cone__boss_lo_linh__sweep,
+  fx_mon_warn_cone__boss_phu_chu__sweep,
+  fx_mon_warn_cone__boss_tu_quang_duc_chu__sweep,
+  fx_mon_warn_line__boss_dao_linh__line,
+  fx_mon_warn_line__boss_dinh_linh__line,
+  fx_mon_warn_line__boss_hu_anh_chu__line,
+  fx_mon_warn_line__boss_kieu_thu__line,
+  fx_mon_warn_line__boss_lo_linh__line,
+  fx_mon_warn_line__boss_phu_chu__line,
+  fx_mon_warn_line__boss_thach_tuong__line,
+  fx_mon_warn_line__boss_tu_quang_duc_chu__line,
+  fx_mon_warn_line__boss_ve_kieu__line,
+  fx_mon_warn_line__elite_anh_hac_vuong__charge,
+  fx_mon_warn_line__elite_hu_anh_nhan__line,
+  fx_mon_warn_line__elite_lo_thach_tuong__line,
+  fx_mon_warn_line__elite_may_lang_vuong__charge,
+  fx_mon_warn_line__elite_sa_tuong__line,
 ] as unknown as FxTimeline[];
 export const MON_FX = new Map(MON_FX_TIMELINES.map((f) => [f.skill, f]));
 /**

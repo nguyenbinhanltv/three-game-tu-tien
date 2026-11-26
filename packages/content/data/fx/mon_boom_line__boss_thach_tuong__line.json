@@ -1,0 +1,258 @@
+{
+ "skill": "mon_boom_line__boss_thach_tuong__line",
+ "palette": "mon_a6_thach",
+ "events": [
+  {
+   "type": "decal",
+   "tex": "jade_crack",
+   "t": 0,
+   "r": 1,
+   "dur": 2.6,
+   "at": "area",
+   "grow": 0.1,
+   "tone": "core",
+   "alpha": 0.22,
+   "tier": 0,
+   "from": "start",
+   "strip": [
+    22,
+    4
+   ],
+   "lift": 0.35
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.0,
+   "dur": 0.8,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.95,
+   "seed": 8100,
+   "tier": 0,
+   "sprite": "kieu_ridge",
+   "scale": 1.974,
+   "scaleTo": 1.974,
+   "offset": [
+    -0.291,
+    0.364,
+    0.8
+   ],
+   "erodeFrom": 0.45,
+   "sweep": 0,
+   "ragged": 0.5,
+   "aim": true,
+   "move": {
+    "to": "area",
+    "offset": [
+     -0.291,
+     0.364,
+     6.88
+    ],
+    "ease": "out"
+   }
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.05,
+   "dur": 0.8,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.8,
+   "seed": 8101,
+   "tier": 0,
+   "sprite": "kieu_ridge",
+   "scale": 1.809,
+   "scaleTo": 1.809,
+   "offset": [
+    0.291,
+    0.364,
+    0.8
+   ],
+   "erodeFrom": 0.45,
+   "sweep": 0,
+   "ragged": 0.5,
+   "aim": true,
+   "move": {
+    "to": "area",
+    "offset": [
+     0.291,
+     0.364,
+     6.32
+    ],
+    "ease": "out"
+   }
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.08,
+   "dur": 0.7,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.95,
+   "seed": 8120,
+   "tier": 0,
+   "sprite": "kieu_armor",
+   "scale": 0.592,
+   "scaleTo": 0.592,
+   "offset": [
+    -0.495,
+    0.509,
+    2.0
+   ],
+   "erodeFrom": 0.4,
+   "sweep": 0,
+   "ragged": 0.5
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.13,
+   "dur": 0.7,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.95,
+   "seed": 8121,
+   "tier": 0,
+   "sprite": "kieu_armor",
+   "scale": 0.592,
+   "scaleTo": 0.592,
+   "offset": [
+    0.495,
+    0.509,
+    4.0
+   ],
+   "erodeFrom": 0.4,
+   "sweep": 0,
+   "ragged": 0.5
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.18,
+   "dur": 0.7,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.95,
+   "seed": 8122,
+   "tier": 0,
+   "sprite": "kieu_armor",
+   "scale": 0.592,
+   "scaleTo": 0.592,
+   "offset": [
+    -0.495,
+    0.509,
+    6.0
+   ],
+   "erodeFrom": 0.4,
+   "sweep": 0,
+   "ragged": 0.5
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.18,
+   "dur": 0.7,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.95,
+   "seed": 8124,
+   "tier": 0,
+   "sprite": "kieu_chunks",
+   "scale": 0.493,
+   "scaleTo": 0.493,
+   "offset": [
+    0.495,
+    0.509,
+    2.0
+   ],
+   "erodeFrom": 0.4,
+   "sweep": 0,
+   "ragged": 0.5
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.23000000000000004,
+   "dur": 0.7,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.95,
+   "seed": 8125,
+   "tier": 0,
+   "sprite": "kieu_chunks",
+   "scale": 0.493,
+   "scaleTo": 0.493,
+   "offset": [
+    -0.495,
+    0.509,
+    4.0
+   ],
+   "erodeFrom": 0.4,
+   "sweep": 0,
+   "ragged": 0.5
+  },
+  {
+   "type": "mesh",
+   "shape": "sprite",
+   "t": 0.28,
+   "dur": 0.7,
+   "at": "area",
+   "tone": "body",
+   "alpha": 0.95,
+   "seed": 8126,
+   "tier": 0,
+   "sprite": "kieu_chunks",
+   "scale": 0.493,
+   "scaleTo": 0.493,
+   "offset": [
+    0.495,
+    0.509,
+    6.0
+   ],
+   "erodeFrom": 0.4,
+   "sweep": 0,
+   "ragged": 0.5
+  },
+  {
+   "type": "particles",
+   "kind": "shard",
+   "t": 0,
+   "n": 40,
+   "speed": 8,
+   "spread": 0.5,
+   "life": 0.8,
+   "size": 0.1,
+   "at": "area",
+   "tone": "rim",
+   "tier": 0,
+   "offset": [
+    0,
+    0.14545454545454548,
+    2.8
+   ],
+   "grav": 9
+  },
+  {
+   "type": "particles",
+   "kind": "spark",
+   "t": 0,
+   "n": 26,
+   "speed": 5,
+   "spread": 0.5,
+   "life": 0.9,
+   "size": 0.08,
+   "at": "area",
+   "tone": "body",
+   "tier": 0,
+   "offset": [
+    0,
+    0.10909090909090909,
+    2.4
+   ],
+   "grav": 1.5
+  }
+ ]
+}

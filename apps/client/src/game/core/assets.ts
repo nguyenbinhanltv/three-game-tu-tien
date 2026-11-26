@@ -9,6 +9,7 @@ import basisJsUrl from 'three/addons/libs/basis/basis_transcoder.js?url';
 import basisWasmUrl from 'three/addons/libs/basis/basis_transcoder.wasm?url';
 import { logger } from '../../base/log';
 import { FLAGS } from '../../base/flags';
+import { markCpuFreed, neutralizeFreedTexture } from '../../base/texFreed';
 import { ASSET_BASE } from '../../base/assetBase';
 
 const assetLog = logger('asset');
@@ -199,6 +200,7 @@ export function freeTexturesAfterUpload(root: THREE.Object3D): number {
 }
 
 function freeCpuCopy(t: THREE.Texture): void {
+  markCpuFreed(t);
   const c = t as THREE.CompressedTexture;
   if (c.isCompressedTexture) {
     for (const m of c.mipmaps ?? []) (m as { data: unknown }).data = null;
@@ -495,7 +497,10 @@ function disposeObject(root: THREE.Object3D): void {
     for (const v of Object.values(mat)) if (v && (v as THREE.Texture).isTexture) texs.add(v as THREE.Texture);
   }
   for (const g of geos) g.dispose();
-  for (const t of texs) t.dispose();
+  for (const t of texs) {
+    neutralizeFreedTexture(t);
+    t.dispose();
+  }
   for (const mat of mats) mat.dispose();
 }
 

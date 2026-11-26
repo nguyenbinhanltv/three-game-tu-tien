@@ -1,0 +1,44 @@
+{
+  "skillId": "skl_cu_bo_xung",
+  "idea": "Cự Bộ Xung: lao tới bằng bước chân người khổng lồ: một hàng hai ba dấu chân khổng lồ in lõm xuống đất (hố đá nứt hình bàn chân), bụi đất cuộn hai bên và tảng đá văng lên, vết nứt hổ phách le lói trong mỗi dấu chân. Màu: TỐI: lõi nâu umber gần đen (#2A1D12) ở tâm, thân NÂU ĐẤT SẪM đá cổ (#5A4128, KHÔNG cát vàng, KHÔNG be/tan sáng) chiếm phần lớn, viền xương nhạt kem (#EDE3BD) mỏng, HỔ PHÁCH (#E0BC40) chỉ là mạch sáng nhỏ trong khe nứt/vân đá; nhìn tổng thể TỐI, NẶNG và THÔ như đá bazan nguyên thủy (độ chói thấp, tương phản mạnh với nền đá sáng), KHÔNG vàng kim sáng (Hộ pháp), KHÔNG xanh lục (Đan sư), KHÔNG bạc thép (Đao tu), KHÔNG đỏ/cam, KHÔNG tím, KHÔNG teal, KHÔNG xanh lam.",
+  "element": "tho",
+  "path": "co_than",
+  "shapeLang": [
+    "line",
+    "burst"
+  ],
+  "timing": {
+    "anticipationMs": 0,
+    "impactMs": 80,
+    "lingerMs": 600
+  },
+  "footprint": {
+    "lengthM": 8,
+    "widthM": 4,
+    "heightM": 2
+  },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": {
+    "drawCalls": 8,
+    "particles": 267,
+    "screenCover": 0.16,
+    "overdraw": 6
+  },
+  "textures": [
+    {
+      "id": "proc:spark_burst",
+      "kind": "flipbook"
+    },
+    {
+      "id": "proc:dust_kick",
+      "kind": "flipbook"
+    }
+  ],
+  "silhouette": "hàng dấu chân khổng lồ lõm xuống đất, bụi cuộn, đá văng",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles"
+  ]
+}

@@ -10,6 +10,7 @@ import { Breakables, BREAKABLES_BY_LEVEL } from '../world/breakables';
 import { Grass } from '../world/grass';
 import { PaintedGameField } from '../world/paintedField';
 import { FarBackdrop } from '../../render/painted/farBackdrop';
+import { PAINTED_THEMES, paintedFarOn } from '../../render/painted/theme';
 import { isoYawFor } from '../camera/iso';
 import { applyAtmosphere, createLanternHalos, setHeightFog, tuneAtmosphere } from '../../render/atmosphere';
 import { buildRiftVeil } from '../../render/riftVeil';
@@ -47,7 +48,7 @@ import { LacKiemSkyScene } from '../world/lacKiemSky';
 import { ThienKhuyetSkyScene, TK_ORIGIN } from '../world/thienKhuyetSky';
 import { VanHaiWow } from '../world/vanHaiWow';
 import { VanHaiGarden } from '../world/vanHaiGarden';
-import { applyGrading, markBloom } from '../../render/post';
+import { applyGrading, markBloom, markVfxMask } from '../../render/post';
 import { adoptGltfMaterials } from '../../render/materials/world';
 import { bhTod, GRADING, GRADING_DEFAULT, mixHex, mixPreset, moodVariant, URL_MOOD, type GradingName } from '../../render/grading';
 import { archWrap, withOccluderFade, withSightFade } from '../world/occlusion';
@@ -336,7 +337,8 @@ export function buildLevelA(eng: Game, id: string, q: (typeof QUALITY)[string]):
       d.userData.op = g.opacity ?? 0.55;
       if (flat && !g.flat) {
         // Iso: đĩa dựng đứng đổi sang nằm phẳng thì mờ và nhỏ (như vòng cổng phẳng trong hang), không thành mảng sáng chói phủ góc màn hình.
-        d.userData.op = Math.min(d.userData.op as number, ISO_GATE_OPACITY);
+        // Họa Cảnh: nền sáng pastel làm vòng mờ mất, nâng độ đậm (không bloom nên không có quầng bù)
+        d.userData.op = Math.min(d.userData.op as number, FLAGS.style === 'painted' ? ISO_GATE_OPACITY * 1.7 : ISO_GATE_OPACITY);
         d.scale.multiplyScalar(ISO_GATE_SCALE);
         d.userData.isoFlat = true; // không đánh dấu bloom: bloom làm đĩa chói thành mảng trắng
       }
@@ -375,6 +377,8 @@ export function buildLevelA(eng: Game, id: string, q: (typeof QUALITY)[string]):
     if (eng.gateDiscs.length) eng.scene.add(...eng.gateDiscs);
     for (const disc of eng.gateDiscs)
       if (disc.name !== 'moon-gate' && !disc.userData.isoFlat) markBloom(disc.material as THREE.Material, 0.8);
+      // Họa Cảnh: đĩa trận phẳng (camera chéo) không bloom nhưng phải vào mặt nạ VFX, nếu không Kuwahara làm nhòe rune (ban ngày gần như mất)
+      else if (disc.userData.isoFlat) markVfxMask(disc.material as THREE.Material);
     // Cung gương: vòng ra nằm trên sàn gương (cao hơn 0,08 m của sàn), không bị sàn cắt thành bán nguyệt.
     if (levelAssets(id).palace) for (const disc of eng.gateDiscs) disc.position.y += 0.2;
   }
@@ -622,7 +626,12 @@ export function buildLevelB(eng: Game, id: string, q: (typeof QUALITY)[string]):
     void loadTtModel(eng, q.shadows);
   }
   if (levelAssets(id).kinhNguyetArt) {
-    eng.kinhNguyetArt = new KinhNguyetArt({ reflect: q.lights && isWebGPU(eng.renderer), hideInReflection: eng.vfx.group });
+    eng.kinhNguyetArt = new KinhNguyetArt({
+      reflect: q.lights && isWebGPU(eng.renderer),
+      hideInReflection: eng.vfx.group,
+      reflectFrustumMargin: 6, // cắt mesh tĩnh mà ảnh gương (lật qua sàn) nằm ngoài khung nhìn nới 6 m (lượt chính vẽ ~13 mesh tĩnh, phản chiếu ~45)
+      reflectEvery: 2, // phản chiếu chỉ bật ở Cao/Cực cao (q.lights); cập nhật mỗi 2 khung để bớt ~nửa số draw của lượt này
+    });
     eng.scene.add(eng.kinhNguyetArt.group);
     void loadKnModel(eng, q.shadows);
   }
@@ -639,10 +648,14 @@ export function buildLevelB(eng: Game, id: string, q: (typeof QUALITY)[string]):
   eng.grass.mesh.visible = F.grass;
   eng.scene.add(eng.grass.mesh);
   // Họa Cảnh P3: vùng xa nướng một lần (núi, đồi rừng, dải mây chân núi) vẽ lên bầu trời; chỉ khi `?far=1` (chân trời Vân Lam hiện bị địa hình che: nướng mà không thấy thì phí 2,3 s CPU + bộ nhớ)
-  if (FLAGS.style === 'painted' && FLAGS.far && levelId() === 'van_lam' && isWebGPU(eng.renderer)) {
+  if (paintedFarOn(levelId()) && isWebGPU(eng.renderer)) {
     // hướng thung lũng = hướng camera chéo nhìn (núi lớn nằm phía trước); nắng chiều theo LIGHT.sunDir (xz)
     const yaw = isoYawFor(levelId());
-    const far = new FarBackdrop(eng.renderer as THREE.WebGPURenderer, { hero: [Math.sin(yaw), -Math.cos(yaw)], side: [0.7168, -0.1073] });
+    const far = new FarBackdrop(eng.renderer as THREE.WebGPURenderer, {
+      hero: [Math.sin(yaw), -Math.cos(yaw)],
+      side: [0.7168, -0.1073],
+      tone: PAINTED_THEMES[levelId()]?.far,
+    });
     far.mesh.onBeforeRender = (_r, _s, camera) => far.follow(camera);
     eng.farBackdrop = far;
     eng.scene.add(far.mesh);

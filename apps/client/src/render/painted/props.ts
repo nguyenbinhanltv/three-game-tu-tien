@@ -3,6 +3,7 @@ import { diffuseColor, dot, faceDirection, float, materialEmissive, mix, normalW
 import { FLAGS } from '../../base/flags';
 import { LIGHT } from './fieldShared';
 import type { N } from './lab/field';
+import { themeU } from './theme';
 
 /**
  * Họa Cảnh P6: cây và nhà (vật thể tĩnh của thế giới) tô theo kiểu painted-valley, thay đèn PBR: mỗi mặt chỉ có hai tông, sáng (ngả ấm) và
@@ -32,20 +33,54 @@ function flattenStone(albedo: N): N {
   return mix(flat, albedo, 0.15);
 }
 
-export function paintedProp<M extends THREE.MeshStandardNodeMaterial>(m: M): M {
-  if (FLAGS.style !== 'painted') return m;
+/** Tông nhân theo hướng mặt so với nắng cố định của Họa Cảnh: sáng ngả ấm, tối ngả lam, nối bằng một bước ngắn. */
+function sunTint(): N {
   const sun = uniform(SUN);
   // nửa-Lambert: 0..1 theo hướng mặt (mặt sau của thẻ lá hai mặt lật pháp tuyến để cùng một cách tô)
   const t = normalWorld.mul(faceDirection).dot(sun).mul(0.5).add(0.5);
   const lit = smoothstep(float(EDGE - SOFT), float(EDGE + SOFT), t);
-  const tint = mix(vec3(...SHADE_TINT), vec3(...LIT_TINT), lit);
+  return mix(vec3(...SHADE_TINT), vec3(...LIT_TINT), lit);
+}
+
+/** Dải độ chói của màu gốc ánh xạ vào cặp đá lát: dưới `PAV_LO` là khe/bó vỉa/rêu (tông tối), trên `PAV_HI` là phiến sáng; khoảng giữa giữ sắc độ từng phiến. */
+const PAV_LO = 0.1;
+const PAV_HI = 0.46;
+/** Mức ánh xạ vào cặp đá lát; phần còn lại giữ màu gốc (rêu ở mép phiến, sắc ấm riêng từng khối). */
+const PAV_MIX = 0.7;
+
+/**
+ * Họa Cảnh: đá lát dựng bằng lưới riêng (mặt đường, mặt cầu, lan can của Cửu Kiều; địa hình ở đó không có mặt nạ lát đá nên `pavTone` của shader đất không
+ * chạm tới). Bỏ đèn PBR: độ chói màu gốc (sắc độ từng phiến, khe, rêu) ánh xạ vào cặp `paving` của level (`themeU.pLit/pShade`), rồi tô hai tông theo hướng
+ * mặt như `paintedProp`: mặt lát hướng lên sáng ấm, thành cầu và vòm khuất nắng ngả lam, nên cầu có khối thay vì một mảng phẳng tối. Không thêm draw call hay
+ * texture. Chỉ chạy khi `?style=painted`; mặc định trả lại đúng vật liệu đưa vào.
+ */
+export function paintedPaving<M extends THREE.MeshStandardNodeMaterial>(m: M): M {
+  if (FLAGS.style !== 'painted') return m;
+  m.lights = false;
+  const base: N = diffuseColor.rgb;
+  const ink: N = dot(base, vec3(0.2126, 0.7152, 0.0722));
+  const tone: N = mix(vec3(themeU.pShade), vec3(themeU.pLit), smoothstep(PAV_LO, PAV_HI, ink));
+  const albedo: N = mix(base, tone, PAV_MIX);
+  // màu ra = diffuseColor + emissive (xem `paintedProp`)
+  m.emissiveNode = albedo.mul(sunTint()).sub(diffuseColor.rgb);
+  m.needsUpdate = true;
+  return m;
+}
+
+export function paintedProp<M extends THREE.MeshStandardNodeMaterial>(m: M): M {
+  if (FLAGS.style !== 'painted') return m;
+  const tint = sunTint();
   m.lights = false;
   // màu ra = diffuseColor + emissive; phần cộng thêm = màu gốc × (tông − 1) để tổng là màu gốc × tông
   // giữ phần phát sáng đã có: node tùy biến do lớp bọc trước đặt (vd. `propCrystal`: lõi + viền tinh thể), nếu không thì phát sáng chuẩn của vật liệu
   const prev = m.emissiveNode as THREE.Node | null;
   const glow: THREE.Node = prev ?? (m.emissiveMap || m.emissive.getHex() !== 0 ? materialEmissive : vec3(0));
   // đá tông môn: albedo đã làm phẳng (cộng phần chênh vào phát sáng, vì màu ra = diffuseColor + emissive)
-  const albedo: N = FLATTEN_NAME.test(m.name) ? flattenStone(diffuseColor.rgb) : diffuseColor.rgb;
+  const base: N = FLATTEN_NAME.test(m.name) ? flattenStone(diffuseColor.rgb) : diffuseColor.rgb;
+  // bảng theo level (theme.ts): đổi tông theo độ chói sang cặp đá của level (propMix = 0 ở Vân Lam, giữ nguyên)
+  const ink: N = dot(base, vec3(0.2126, 0.7152, 0.0722));
+  const themed: N = mix(vec3(themeU.rShade), vec3(themeU.rLit), smoothstep(0.04, 0.4, ink));
+  const albedo: N = mix(base, themed, themeU.propMix);
   m.emissiveNode = albedo.mul(tint).sub(diffuseColor.rgb).add(glow);
   m.needsUpdate = true;
   return m;

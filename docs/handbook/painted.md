@@ -21,7 +21,7 @@ Rút từ painted-valley (xem README và LICENCE-NOTES của nó). **Phạm vi: 
 7. **Animation cần clip chuyển tiếp.** Nhân vật đi bộ trên nền hoạt hình thiếu start, stop, pivot (xoay đột ngột), sprint và nhịp thở dốc (idle mệt) thì đọc là trượt; mỗi bộ cần các clip này (nối với `vfx-animation.md`, Thân Pháp).
 8. **Một hướng mỹ thuật thống nhất.** Mọi asset mới (kiến trúc, cây, prop, thẻ cây) đi qua bảng phong cách của chế độ này; không trộn bán tả thực với painted trong cùng một cảnh.
 9. **Đo khớp, không "nhìn cho giống".** Port từ nguồn phải dịch từng dòng, giữ hằng số, rồi so bằng số (SSIM, ΔE) ở cảnh thử cô lập (`tools/painted-compare` và cờ `?paintedlab=1`) (vào cùng PR #614) trước khi áp vào địa hình thật.
-10. **Giữ ngân sách.** Dưới 300 draw call, dưới 2 triệu tam giác, CPU dưới 8 ms; số đo trước/sau ở mỗi PR.
+10. **Giữ ngân sách.** Dưới 300 draw call, dưới 2 triệu tam giác, 512 MB texture, CPU dưới 8 ms; số đo trước/sau ở mỗi PR. **Ngoại lệ đã chốt (người dùng, 2026-11-25): với `?style=painted` KHÔNG áp luật "không vượt mặc định quá +20% draw/tam giác"**; chỉ áp ngân sách tuyệt đối ở trên (cỏ lá mảnh làm draw call +30…+76% so mặc định, giữ ở mọi preset). `pnpm perf:gate` vốn chỉ chặn theo ngân sách tuyệt đối từng vùng nên không đổi.
 
 ### Ghi công
 
@@ -36,13 +36,13 @@ Rút từ painted-valley (xem README và LICENCE-NOTES của nó). **Phạm vi: 
 | --- | --- | --- |
 | P1 | cờ `style`, `render/painted/palette.ts` (bảng lit/shade, `cel2`), giấy phép, trang này | xong |
 | P2 | mặt đất + cỏ lá mảnh + hoa (port từ painted-valley) | xong ở PR #614 (cảnh thử đo khớp: nhánh riêng, chưa vào) |
-| P3 | núi xa nướng một lần vào dải sơn, sương theo giờ | code xong sau cờ `?far=1` (tắt mặc định, PR này); Vân Lam là thung lũng kín nên KHÔNG bật; bật ở P9 cho bản đồ có chân trời mở |
-| P4 | mây trời đắp khối nướng vào cubemap | |
+| P3 | núi xa nướng một lần vào dải sơn, sương theo giờ | xong; bật theo level (`PAINTED_THEMES[id].far`, `?far=1|0` ép): Bắc Hoang bật, Vân Lam KHÔNG (thung lũng kín) |
+| P4 | mây trời đắp khối nướng vào cubemap | phần sương thấp (`render/painted/lowMist.ts`, tham số theo level) vào ở P9 Bắc Hoang; mây cubemap chưa làm |
 | P5 | hoàn thiện Kuwahara + mặt nạ (bỏ qua trời/VFX/HUD) | |
 | P6 | cây + nhà ngoài tông (cel2, chi tiết shader) | |
 | P7 | nhân vật cel thử một bộ | chờ người dùng quyết |
 | P8 | pilot Vân Lam đạt: đo khớp SSIM ≥ 0,90 và ΔE trung bình ≤ 5, người dùng xem | |
-| P9 | cuốn chiếu từng bản đồ (mỗi bản đồ một PR: nền painted + cảnh xa vẽ một lần), theo thứ tự `LEVELS`; bản đồ mới làm thẳng theo Họa Cảnh | |
+| P9 | cuốn chiếu từng bản đồ (mỗi bản đồ một PR: nền painted + cảnh xa vẽ một lần), theo thứ tự `LEVELS`; bản đồ mới làm thẳng theo Họa Cảnh | đang làm: Bắc Hoang (#661); kế: Cửu Kiều, Vấn Đỉnh, Đoạn Mạch, Thiên Khuyết, Vân Hải, phó bản |
 | P10 | BẬT MẶC ĐỊNH: bỏ cờ `?style=painted`, giữ `?style=legacy` tạm một đợt để so | |
 | P11 | XÓA NGUỒN CŨ: hậu kỳ ACES/grading/grain của cảnh, mood cũ, material/texture mặt đất ảnh chụp, cỏ cũ, nhánh `if !painted`; PR nhỏ, 0 tham chiếu, có số đo | |
 
@@ -89,3 +89,11 @@ Dịch từ painted-valley/src/valley/backdrop.js (MIT, © 2026 Patch). Mặc đ
 - **Camera vista theo cờ (`game/camera/vista.ts`):** điểm ngắm cảnh pitch 5°/nâng 9 m; ngự kiếm 9,5°/6 m (`?vistafly=<độ>` để so). Không có cờ thì giữ `VISTA` cũ; camera chiến đấu không đổi.
 - **Kết luận:** Vân Lam là thung lũng kín, vòng núi/vách đá thật của địa hình che chân trời ở mọi điểm ngắm cảnh và khi ngự kiếm, nên vùng xa chưa có chỗ hiện và KHÔNG bật ở level này. Bật ở P9 cho bản đồ có chân trời mở.
 - **Công cụ:** `far-compare.mjs`, `far-paint-compare.mjs`, `far-capture.mjs`, `pnpm shots paintedvista`. Ảnh tham chiếu của painted-valley không commit (artifact phiên).
+
+## P9 — thêm một bản đồ vào Họa Cảnh
+
+- **Bảng theo level** (`render/painted/theme.ts`, `PAINTED_THEMES[levelId]`): `ground` [sáng, tối] cho đất cỏ vẽ (độ chói của màu đất painted-valley ánh xạ vào hai màu nên nét cọ giữ nguyên), `rock` cho đá/vách/tuyết (đổi ở albedo, vẫn nhận đèn và bóng), `mist` + `mistBand` + `mistK` cho sương thấp, `far` [sáng, tối] để bật vùng xa nướng một lần (bỏ trống = tắt). Level không có trong bảng giữ cỏ xanh Vân Lam. Chọn bảng ở `Terrain.setGround` (`setPaintedTheme`); uniform nên không dựng lại shader.
+- **Đá lát theo level** (`PAINTED_THEMES[id].paving` → `themeU.pLit/pShade`; bỏ trống = cặp `paving` chung): dùng cho `pavTone` của shader đất (sân lát có mặt nạ, như Vân Lam) VÀ cho lưới đá lát dựng riêng qua `paintedPaving()` (`render/painted/props.ts`). Cửu Kiều dùng mặt nạ đất `neutral` nên `pavTone` không vẽ gì ở đó: mặt đường, mặt cầu và lan can là lưới của `game/world/ckWonders.ts`, phải bọc `paintedPaving` (bỏ đèn PBR, độ chói từng phiến ánh xạ vào cặp đá lát, mặt hướng nắng ấm, mặt khuất ngả lam). Cỏ Cửu Kiều: cặp `ground` đậm hơn và `groundSat` 0,95 (bản đầu 0,8 ra pastel nhạt; 1,05 thì xanh non chói).
+- **Vùng xa**: `paintedFarOn(levelId)`; `?far=1|0` ép bật/tắt; dải núi đổi tông theo `far`.
+- **Chụp và đo**: `pnpm shots painted --level <id> --out <thư mục tuyệt đối> [--moods day,night] [--views 720p,1080p]` (điểm suy từ dữ liệu level, ảnh `<style>-<view>-<mood>-<điểm>.png` + `perf.json`); mỗi PR bản đồ ghi draw/tam giác/heap/ms trước–sau, draw không vượt mặc định quá +20%.
+- Bắc Hoang: bảng tuyết trắng lam, bóng chàm, đá đen tím; màu còn chỉnh theo ảnh duyệt.

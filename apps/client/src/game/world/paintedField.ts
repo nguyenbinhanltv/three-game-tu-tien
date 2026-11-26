@@ -1,5 +1,6 @@
 import * as THREE from 'three/webgpu';
-import { heightAt } from '../../base/levelCtx';
+import { heightAt, levelId } from '../../base/levelCtx';
+import { ckGrassK } from './cuuKieuArt';
 import { baseOf } from '../../base/quality';
 import { createBlades } from '../../render/painted/lab/blades';
 import { createFlowers, FLOWER_RING } from '../../render/painted/lab/flowers';
@@ -53,6 +54,8 @@ export class PaintedGameField implements GrassLayer {
     const x0 = cx * CT;
     const z0 = cz * CT;
     setGrassColliders(x0, z0, CT);
+    // cỏ không mọc dày trên đường/sân đá của level (như cỏ mặc định): hiện chỉ Cửu Kiều
+    const roadK = levelId() === 'cuu_kieu' ? ckGrassK : null;
     const n = CT + 1;
     const hs = new Float64Array(n * n);
     for (let j = 0; j < n; j++) for (let i = 0; i < n; i++) hs[j * n + i] = heightAt(x0 + i + 0.5, z0 + j + 0.5);
@@ -64,6 +67,7 @@ export class PaintedGameField implements GrassLayer {
         const slopeG = (Math.abs(hs[j * n + i + 1]! - h) + Math.abs(hs[(j + 1) * n + i]! - h)) * 1.5;
         let dens = grassDensityAt(x + 0.5, z + 0.5, h, slopeG);
         if (dens > 0 && grassBlockedByCollider(x + 0.5, z + 0.5)) dens = 0;
+        if (dens > 0 && roadK) dens *= roadK(x + 0.5, z + 0.5);
         const tx = wrapIdx(x);
         const tz = wrapIdx(z);
         const k = tz * REGION + tx;

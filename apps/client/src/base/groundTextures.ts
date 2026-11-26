@@ -1,4 +1,5 @@
 import * as THREE from 'three/webgpu';
+import { markCpuFreed, neutralizeFreedTexture } from './texFreed';
 
 /** Chỉ số lớp trong texture mảng; khớp thứ tự LAYERS ở tools/asset-pipeline/src/terrain-textures.ts. */
 export const GROUND_LAYER = { grass: 0, dirt: 1, forest: 2, rock: 3, cliff: 4, sand: 5, paving: 6, gravel: 7 } as const;
@@ -33,12 +34,25 @@ interface Manifest {
   layers: { layer: string; a: string; n: string }[];
 }
 
+/**
+ * B9 (texture Vân Lam ≤ 450 MB): cạnh albedo tối đa của mảng mặt đất. Bộ 2K `terrain-lk` (8 lớp) chiếm ~180 MB albedo + 45 MB pháp tuyến. Ô lặp 6 m (đồng) / 2,4 m (lát đá):
+ * ở 1536 là 3,9 mm / 1,6 mm mỗi texel, còn mịn hơn điểm ảnh màn hình 1080p ở camera chéo (~11–14 mm) và 4K (~5–7 mm); cắt từ 2048 xuống 1536 bớt ~78 MB VRAM (albedo 179 → 101 MB), pháp tuyến giữ 1024.
+ */
+export const GROUND_ALBEDO_MAX = 1536;
+
+/**
+ * B9 (Cực cao ≤ 512 MB): cạnh tối đa của mảng pháp tuyến/độ nhám mặt đất (8 lớp RGBA8 + mip). 1024 → 768: 45 → 25 MB (−20 MB); ô lặp 6 m → 7,8 mm/texel, vẫn nhỏ hơn điểm ảnh 1080p (~11–14 mm).
+ * Bộ 1024² (pháp tuyến 512) không đổi.
+ */
+export const GROUND_NORMAL_MAX = 768;
+
 async function decode(url: string, size: number): Promise<Uint8ClampedArray> {
   const res = await fetch(url);
   if (!res.ok) throw new Error(`${url}: ${res.status}`);
   const bmp = await createImageBitmap(await res.blob(), { colorSpaceConversion: 'none', premultiplyAlpha: 'none' });
   const cv = new OffscreenCanvas(size, size);
   const g = cv.getContext('2d', { willReadFrequently: true })!;
+  g.imageSmoothingQuality = 'high'; // thu nhỏ 2048 → 1536 (B9): lọc chất lượng cao, không để răng cưa
   g.drawImage(bmp, 0, 0, size, size);
   bmp.close();
   return g.getImageData(0, 0, size, size).data;
@@ -95,6 +109,7 @@ function arrayTexture(data: Uint8Array, size: number, layers: number, srgb: bool
   // Sau khi đã tải lên GPU thì bỏ mảng nguồn khỏi heap JS (mảng màu 2K ~134 MB): three chỉ cần `image.data` lúc upload.
   t.onUpdate = () => {
     (t.image as { data: unknown }).data = null;
+    markCpuFreed(t);
     t.onUpdate = null;
   };
   t.needsUpdate = true;
@@ -121,9 +136,9 @@ export async function loadGroundTextures(
   set = 'terrain',
 ): Promise<GroundTextures> {
   const manifest = (await (await fetch(`${base}${set}/manifest.json`)).json()) as Manifest;
-  const size = manifest.size;
+  const size = Math.min(manifest.size, GROUND_ALBEDO_MAX);
   // Pháp tuyến/độ nhám tải ở nửa độ phân giải (chi tiết vi mô mềm hơn chút, đổi lấy ~32 MB VRAM: ngân sách texture 512 MB).
-  const nsize = size >> 1;
+  const nsize = Math.min(manifest.size >> 1, GROUND_NORMAL_MAX);
   const layerBytes = size * size * 4;
   const nLayerBytes = nsize * nsize * 4;
   const albedo = new Uint8Array(layerBytes * manifest.layers.length);
@@ -156,6 +171,8 @@ export async function loadGroundTextures(
       };
     },
     dispose() {
+      neutralizeFreedTexture(tex);
+      neutralizeFreedTexture(nor);
       tex.dispose();
       nor.dispose();
       cur.dispose();
