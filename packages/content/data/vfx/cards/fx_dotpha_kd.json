@@ -1,0 +1,45 @@
+{
+  "skillId": "fx_dotpha_kd",
+  "idea": "Đột phá Kết Đan \"ngưng đan\": khói mực xoáy trôn ốc thu nhỏ dần vào một điểm ngay trên đỉnh đầu nhân vật (không che thân), ngưng thành MỘT viên kim đan lớn có vỏ mực tối; vỏ nứt vân, ánh vàng chanh lộ qua khe nứt, rồi vỏ vỡ thành mảnh bay ra và hai vòng đan vân LỆCH TÂM, đứt đoạn như khói (elip nghiêng, không tròn đều, không nằm dưới chân) trôi ra quanh thân. Lõi mực lục-nâu thẫm, thân vàng chanh sáng, mép kem, điểm ngọc lục. Tuyệt đối không cam, không đỏ.",
+  "element": "kim",
+  "path": "",
+  "scene": {
+    "palette": {
+      "core": "2c3a12",
+      "body": "f0e06a",
+      "rim": "fffbd6",
+      "accent": "4fd6a0",
+      "shadow": "161d09"
+    },
+    "impactAt": 0.55
+  },
+  "shapeLang": [
+    "spiral",
+    "cloud"
+  ],
+  "timing": {
+    "anticipationMs": 550,
+    "impactMs": 90,
+    "lingerMs": 1900
+  },
+  "footprint": {
+    "lengthM": 7,
+    "widthM": 7,
+    "heightM": 5
+  },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": {
+    "drawCalls": 10,
+    "particles": 450,
+    "screenCover": 0.08,
+    "overdraw": 6
+  },
+  "textures": [],
+  "silhouette": "một viên đan tròn vỏ mực nứt vân lơ lửng trên đỉnh đầu, quanh nó hai vòng khói elip nghiêng lệch tâm đứt đoạn",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles"
+  ]
+}

@@ -1,0 +1,45 @@
+{
+  "skillId": "fx_dotpha_hn",
+  "idea": "Đột phá Hóa Thần \"thần hồn xuất\": một BÓNG THẦN HỒN cao gấp ba người (dáng người mặc trường bào, không có mặt, vẽ bằng mực loãng màu ngà) tách khỏi lưng nhân vật vươn thẳng lên, hai bên là hai vạt mây mực rách tơi xòe như tà áo choàng bị gió giật; sau một nhịp bóng thần hồn thu nhỏ nhập lại vào người, để lại sợi khói ngà bay lên. Lõi mực nâu-ô liu thẫm, thân ngà vàng nhạt, mép trắng kem, điểm lam nhạt.",
+  "element": "kim",
+  "path": "",
+  "scene": {
+    "palette": {
+      "core": "423a12",
+      "body": "e6cf86",
+      "rim": "fff8de",
+      "accent": "aee0ff",
+      "shadow": "211d09"
+    },
+    "impactAt": 0.6
+  },
+  "shapeLang": [
+    "cloud",
+    "line"
+  ],
+  "timing": {
+    "anticipationMs": 600,
+    "impactMs": 90,
+    "lingerMs": 2100
+  },
+  "footprint": {
+    "lengthM": 8,
+    "widthM": 6,
+    "heightM": 7
+  },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": {
+    "drawCalls": 10,
+    "particles": 450,
+    "screenCover": 0.1,
+    "overdraw": 6
+  },
+  "textures": [],
+  "silhouette": "một bóng người mực cao gấp ba đứng sau lưng nhân vật, hai vạt mây rách xòe hai bên như tà áo choàng",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles"
+  ]
+}
