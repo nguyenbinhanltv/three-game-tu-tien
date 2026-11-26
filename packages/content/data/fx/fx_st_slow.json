@@ -25,7 +25,7 @@
       "tone": "body",
       "alpha": 0.85,
       "tier": 0,
-      "seed": 2260,
+      "seed": 2240,
       "follow": true
     },
     {
@@ -49,7 +49,7 @@
       "tone": "rim",
       "alpha": 0.85,
       "tier": 1,
-      "seed": 2261,
+      "seed": 2241,
       "follow": true
     },
     {
