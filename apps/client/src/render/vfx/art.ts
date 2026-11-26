@@ -67,6 +67,11 @@ export const SPRITE_MAX_RESIDENT = 3;
 /** Nhóm dùng chung cho mọi người chơi (trúng đòn): không tính vào `SPRITE_MAX_RESIDENT` và không bao giờ bị giải phóng vì rỗi. */
 export const ALWAYS_GROUPS: ReadonlySet<SpriteGroup> = new Set<SpriteGroup>(['chung']);
 export const SPRITE_IDLE_MS = 90_000;
+/**
+ * Tỉ lệ thu nhỏ bản GPU của một nhóm (B9c). Nhóm `chung` luôn nằm trong GPU và là atlas lớn nhất (2048×4096 RGBA ≈ 43 MB kể cả mip); hình của nó nhỏ trên
+ * màn (vết va ~2,5 m ≈ 235 px ở 1080p) nên ô 256 px là đủ: còn ≈ 11 MB.
+ */
+export const SPRITE_GPU_SCALE: Partial<Record<SpriteGroup, number>> = { chung: 0.5 };
 
 /** Tiền tố tên sprite → nhóm atlas khi nhóm KHÔNG trùng tiền tố (sprite của quái gom chung một atlas nhỏ). */
 const PREFIX_GROUP: Record<string, SpriteGroup> = {
@@ -140,13 +145,23 @@ export function useSpriteGroup(g: SpriteGroup, now = performance.now()): void {
   const token = ++st.token;
   const img = new Image();
   img.crossOrigin = ASSET_CROSS_ORIGIN ?? null;
-  img.onload = () => {
+  const apply = (image: HTMLImageElement | ImageBitmap): void => {
     if (st.token !== token) return; // đã bị giải phóng trong lúc nạp
     // Đổi từ canvas 1×1 sang ảnh thật: `dispose` trước để WebGPU bỏ texture GPU kích thước cũ rồi dựng lại đúng cỡ (nếu không: copy vượt biên 1×1).
     st.tex.dispose();
-    st.tex.image = img;
+    st.tex.image = image;
     st.tex.needsUpdate = true;
     st.state = 2;
+  };
+  img.onload = () => {
+    const k = SPRITE_GPU_SCALE[g];
+    if (!k || typeof createImageBitmap !== 'function') return apply(img);
+    // Thu nhỏ trước khi đưa lên GPU (B9c): ảnh gốc giữ nguyên trên R2, chỉ bản GPU nhỏ lại. Lỗi thu nhỏ thì dùng ảnh gốc.
+    createImageBitmap(img, {
+      resizeWidth: Math.round(img.naturalWidth * k),
+      resizeHeight: Math.round(img.naturalHeight * k),
+      resizeQuality: 'high',
+    }).then(apply, () => apply(img));
   };
   img.src = `${ASSET_BASE}${SPRITE_GROUPS[g].file}`;
 }
