@@ -74,6 +74,7 @@ import { heroParams } from '../../render/materials/world';
 import { heroRimOn } from '../fx/fxSettings';
 import { applyDmg, ensureCloneVis, updateSoulVis } from './fxMsgs';
 import { syncHud } from './hudSync';
+import { updateDaMood } from './daMood';
 import { updateEclipse, updateFaceMood, updateRiftMood } from './levelLoad';
 import type { Game } from '../engine';
 import { logger } from '../../base/log';
@@ -275,6 +276,8 @@ export function runFrame(eng: Game): void {
   eng.env.update(dt, eng.camera, isoLook ?? rp);
   if (eng.riftMood) updateRiftMood(eng, dt, rp.z, rp.x);
   if (levelId() === 'gioi_tri') updateFaceMood(eng, dt);
+  // Dạ Cảnh: mood theo loại trận (tinh anh/boss gần thì ngả đỏ sẫm). Level đã có mood động riêng (khe Bắc Hoang, Vấn Đỉnh, Giới Trì) giữ cơ chế của nó.
+  else if (FLAGS.style === 'da' && !eng.riftMood) updateDaMood(eng, dt, rp.x, rp.z);
   eng.aurora?.update(eng.camera.position);
   updateEclipse(eng, dt);
   eng.lanterns?.update(_v.set(rp.x, rp.y, rp.z));
