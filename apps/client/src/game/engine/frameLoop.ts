@@ -74,6 +74,7 @@ import { heroParams } from '../../render/materials/world';
 import { heroRimOn } from '../fx/fxSettings';
 import { applyDmg, ensureCloneVis, updateSoulVis } from './fxMsgs';
 import { syncHud } from './hudSync';
+import { updateDaFocus } from './daFocus';
 import { updateDaMood } from './daMood';
 import { updateEclipse, updateFaceMood, updateRiftMood } from './levelLoad';
 import type { Game } from '../engine';
@@ -465,6 +466,8 @@ function updateCamera(eng: Game, dt: number): void {
           combat = true;
           break;
         }
+    // Dạ Cảnh: lớp tối quanh trận bật khi đang giao chiến.
+    if (FLAGS.style === 'da') updateDaFocus(eng.camera, dt, combat, rp.x, rp.y, rp.z);
     const spot = combat ? null : spotAt(levelId(), rp.x, rp.z);
     const vv = vistaView(eng.vista.update(dt, flying, spot, FLAGS.vista && !eng.cine.active, combat), flying ? 'fly' : 'spot');
     if (eng.vista.hint(spot) && FLAGS.vista) pushToast(t('ui.vista_hint'));
