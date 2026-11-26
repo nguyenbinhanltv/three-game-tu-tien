@@ -6,11 +6,13 @@ Mục tiêu: trận đánh đọc rõ và đã tay ở góc camera 52°. Nền l
 
 ## Dạ Họa (`?style=dahoa`): gộp Họa Cảnh + Dạ Cảnh
 
-Người dùng yêu cầu 27/11 gộp hai phong cách thành một style tên mới. Tên tạm đặt: **Dạ Họa** (đêm + tranh vẽ), chờ người dùng chốt tên.
+Người dùng yêu cầu 27/11 gộp hai phong cách thành một style tên mới và CHỐT: tên **Dạ Họa**, là **hướng hình ảnh chính** (thay Dạ Cảnh thuần). Mọi việc tiếp theo của lát cắt làm và chụp trên `?style=dahoa`; `?style=da` và `?style=painted` giữ lại để so sánh.
 
 - `base/flags.ts`: `style` nhận `painted | da | dahoa`; mã KHÔNG so `FLAGS.style` nữa mà rẽ nhánh theo hai cờ thành phần `FLAGS.painted` (nền vẽ tay: đất, cỏ, cây và đá hai tông, bút Kuwahara, chuỗi hậu kỳ painted) và `FLAGS.da` (mood đêm theo loại trận, tô chia bậc + viền mực, lớp tối quanh trận, rung trauma, đèn lửa lạnh). `dahoa` bật cả hai.
 - Chỗ hai phong cách đụng nhau và cách giải: chuỗi hậu kỳ painted nhuộm trăng và nhòe Kuwahara lên mọi thứ → nhân vật, quái và vỏ viền được đưa vào mặt nạ của Họa Cảnh (`markVfxMask`) nên giữ viền sắc và không bị làm tối.
-- Còn nợ: vũng đèn trên đất của Họa Cảnh vẫn màu ấm (chưa theo `DA_FLAME`); chưa chụp painted thuần sau các sửa dùng chung; chưa đo hiệu năng riêng cho `dahoa`.
+- Vũng đèn trên đất (`render/painted/lampPools.ts`) theo lửa lạnh khi `FLAGS.da`.
+- Số đo Dạ Họa (27/11, `pnpm shots herolight --bots 8 --view 1080p --query style=dahoa`, một mẫu): 168 draw call, 1,66 triệu tam giác, 9,4 ms khung (Dạ Cảnh thuần: 136 / 1,16 triệu / 10,3 ms). Trong ngân sách 300 draw / 2 triệu tam giác; phần tăng là nền vẽ tay của Họa Cảnh.
+- Họa Cảnh thuần (`?style=painted`) đã chụp lại sau các sửa dùng chung: chạy bình thường, 0 lỗi console.
 
 ## Đã có
 
