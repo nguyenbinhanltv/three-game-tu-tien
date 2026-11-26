@@ -1,0 +1,105 @@
+{
+  "skill": "fx_env_gather",
+  "trigger": "fx",
+  "fxKind": "~env_gather",
+  "palette": "hit_heal",
+  "events": [
+    {
+      "type": "mesh",
+      "shape": "sprite",
+      "sprite": "canh_leaf",
+      "billboard": true,
+      "at": "target",
+      "t": 0,
+      "dur": 0.6,
+      "offset": [
+        0,
+        0,
+        0
+      ],
+      "scale": 1.1,
+      "scaleTo": 1.5,
+      "sweep": 0,
+      "erodeFrom": 0.4,
+      "ragged": 0.5,
+      "tone": "body",
+      "alpha": 1,
+      "tier": 0,
+      "seed": 2300
+    },
+    {
+      "type": "mesh",
+      "shape": "sprite",
+      "sprite": "canh_leaf",
+      "billboard": true,
+      "at": "target",
+      "t": 0.03,
+      "dur": 0.1,
+      "offset": [
+        0,
+        0,
+        0
+      ],
+      "scale": 1.23,
+      "scaleTo": 1.43,
+      "sweep": 0,
+      "erodeFrom": 0.2,
+      "ragged": 0.5,
+      "tone": "accent",
+      "alpha": 0.85,
+      "tier": 1,
+      "seed": 2301
+    },
+    {
+      "type": "mesh",
+      "shape": "sprite",
+      "sprite": "canh_sprout",
+      "billboard": true,
+      "at": "target",
+      "t": 0.03,
+      "dur": 0.6,
+      "offset": [
+        0,
+        -0.4,
+        0
+      ],
+      "scale": 0.95,
+      "scaleTo": 1.15,
+      "sweep": 0,
+      "erodeFrom": 0.5,
+      "ragged": 0.5,
+      "tone": "body",
+      "alpha": 0.95,
+      "tier": 1,
+      "seed": 2302
+    },
+    {
+      "type": "particles",
+      "kind": "petal",
+      "t": 0.03,
+      "n": 1,
+      "speed": 1.6,
+      "spread": 1,
+      "life": 0.6,
+      "size": 0.08,
+      "at": "target",
+      "tone": "rim",
+      "tier": 1,
+      "grav": 2
+    },
+    {
+      "type": "particles",
+      "kind": "dust",
+      "t": 0.15,
+      "n": 1,
+      "speed": 0.6,
+      "spread": 0.5,
+      "life": 0.25,
+      "size": 0.1,
+      "at": "target",
+      "tone": "shadow",
+      "tier": 1,
+      "grav": 2
+    }
+  ]
+}
