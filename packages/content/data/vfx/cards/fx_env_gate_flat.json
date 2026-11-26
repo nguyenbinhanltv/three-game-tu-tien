@@ -1,0 +1,45 @@
+{
+  "skillId": "fx_env_gate_flat",
+  "idea": "CỔNG PHẲNG (hang, cổng ra trên nền): gợn nước mực lan trên nền kèm vài đốm linh khí bay lên; lam nước nhạt. Lặp mỗi 1,4 giây khi người chơi ở gần.",
+  "element": "thuy",
+  "path": "",
+  "scene": {
+    "palette": {
+      "core": "0a2a40",
+      "body": "5fb8e8",
+      "rim": "e6f8ff",
+      "accent": "f0e6a8",
+      "shadow": "05121c"
+    },
+    "impactAt": 0
+  },
+  "shapeLang": [
+    "ring",
+    "cloud"
+  ],
+  "timing": {
+    "anticipationMs": 0,
+    "impactMs": 60,
+    "lingerMs": 1200
+  },
+  "footprint": {
+    "lengthM": 4,
+    "widthM": 4,
+    "heightM": 4
+  },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": {
+    "drawCalls": 3,
+    "particles": 6,
+    "screenCover": 0.08,
+    "overdraw": 3
+  },
+  "textures": [],
+  "silhouette": "gợn nước mực lan trên nền, đốm linh khí bay lên",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles"
+  ]
+}

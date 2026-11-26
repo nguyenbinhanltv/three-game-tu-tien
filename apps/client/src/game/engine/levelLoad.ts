@@ -330,6 +330,7 @@ export function buildLevelA(eng: Game, id: string, q: (typeof QUALITY)[string]):
     eng.sectMesh.frustumCulled = false;
     eng.scene.add(eng.sectMesh);
   }
+  eng.envGates = [];
   if (F.portals || (LEVELS[id]?.portals?.length ?? 0) > 0) {
     eng.gateDiscs = gatesToDraw(id).map((g) => {
       const flat = gateFlat(g, true);
@@ -381,6 +382,11 @@ export function buildLevelA(eng: Game, id: string, q: (typeof QUALITY)[string]):
       else if (disc.userData.isoFlat) markVfxMask(disc.material as THREE.Material);
     // Cung gương: vòng ra nằm trên sàn gương (cao hơn 0,08 m của sàn), không bị sàn cắt thành bán nguyệt.
     if (levelAssets(id).palace) for (const disc of eng.gateDiscs) disc.position.y += 0.2;
+    // Hình môi trường của cổng (xoáy nước/khe nứt hoặc gợn nước nền): chỉ lớp vẽ thêm, đĩa cổng cũ giữ làm nền đọc được.
+    eng.envGates = gatesToDraw(id).map((g) => {
+      const mirror = g.id === 'portal' && g.to === 'kinh_nguyet';
+      return { id: `${g.id}@${g.x},${g.z}`, x: g.x, y: heightAt(g.x, g.z), z: g.z, flat: gateFlat(g, true), center: mirror ? 5.0 : 3.6 };
+    });
   }
   const mood = moodOf(eng, id);
   eng.levelMood = mood;
