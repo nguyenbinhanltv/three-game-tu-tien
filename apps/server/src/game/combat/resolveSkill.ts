@@ -14,8 +14,10 @@ import {
   dealsDamage,
   inLine,
   hitOffsets,
+  comboDefScale,
+  inArc,
 } from '@dtl/shared';
-import { MARK } from '@dtl/content';
+import { MARK, pathBasicOf } from '@dtl/content';
 import { passiveOf, resolveFor } from '../method';
 import type { PlayerEnt, StrikeCtx } from '../entities';
 import { MARK_ALLY_RANGE, TAUNT_BOSS_MUL, visualSeed } from './consts';
@@ -114,6 +116,19 @@ export function resolveSkillImpl(sys: CombatSystem, p: PlayerEnt, skill: SkillDe
         sys.markMon(p, mon, am.id, am.n, mm);
         if (v?.markSpread) {
           for (const o of sys.monstersNear(mon.s.x, mon.s.z, 8, mon).slice(0, v.markSpread)) sys.markMon(p, o, am.id, am.n, mm);
+        }
+      }
+      // Đòn thường chém quét của hướng cận chiến: quái khác trong cung trước mặt (hướng người đánh → mục tiêu LÚC TRÚNG, do server tính) nhận
+      // `arc.mul` lần đòn chính. Phòng ngự nhân cùng tỉ lệ đòn chuỗi (`comboDefScale`); không tích tài nguyên, không đẩy lùi riêng.
+      const arc = pathBasicOf(skill, c.meta.method)?.arc;
+      if (arc) {
+        const fx = mon.s.x - p.move.x;
+        const fz = mon.s.z - p.move.z;
+        const base = (rs.hits[0] ?? rs.power) * mul * arc.mul;
+        for (const o of [...sys.c.monsters]) {
+          if (o === mon || o.state === MS_DEAD) continue;
+          if (!inArc(p.move.x, p.move.z, fx, fz, o.s.x, o.s.z, arc.r, arc.deg, o.def.scale)) continue;
+          sys.c.hitMonster(p, o, base, elemMul, skill.elem, undefined, comboDefScale(skill, ctx.combo));
         }
       }
       // Đánh trước rồi mới phá chú: phần cộng sát thương khi choáng chỉ áp cho các đòn sau.

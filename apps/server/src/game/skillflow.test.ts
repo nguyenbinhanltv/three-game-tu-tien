@@ -433,6 +433,76 @@ describe('chuỗi đòn thường hành động (Dạ Cảnh)', () => {
   });
 });
 
+describe('đòn thường cận chiến chém quét của Kiếm tu (Dạ Cảnh)', () => {
+  const basic = { id: 'skl_phi_kiem' };
+  const dmgOf = (sent: Sent[], id: string) => sent.filter((x) => x.type === S.DMG && x.msg.dst === id).length;
+
+  it('Kiếm tu phải áp sát: mục tiêu cách 12 m bị từ chối; người chưa theo công pháp vẫn bắn xa được', () => {
+    const k = setup(10, 'lac_kiem_quyet');
+    const far = k.mon(X + 12, Z);
+    k.fresh();
+    k.sim.onSkill(k.p, { ...basic, t: far.id });
+    expect(k.p.flow.pending).toBeNull();
+    const near = k.mon(X + 4, Z);
+    k.sim.onSkill(k.p, { ...basic, t: near.id });
+    expect(k.p.flow.pending?.target).toBe(near.id);
+
+    const n = setup(10);
+    const far2 = n.mon(X + 12, Z);
+    n.fresh();
+    n.sim.onSkill(n.p, { ...basic, t: far2.id });
+    expect(n.p.flow.pending?.target).toBe(far2.id);
+  });
+
+  it('chém quét: quái khác trong cung trước mặt cũng trúng, quái sau lưng thì không', () => {
+    const { sim, p, mon, fresh, resolve, sent } = setup(10, 'lac_kiem_quyet');
+    const main = mon(X + 4, Z);
+    const side = mon(X + 3.5, Z + 2);
+    const back = mon(X - 4, Z);
+    fresh();
+    sim.onSkill(p, { ...basic, t: main.id });
+    resolve();
+    expect(dmgOf(sent, main.id)).toBe(1);
+    expect(dmgOf(sent, side.id)).toBe(1);
+    expect(dmgOf(sent, back.id)).toBe(0);
+  });
+
+  it('đòn quét yếu hơn đòn chính (hệ số 0,6)', () => {
+    const { sim, p, mon, fresh, resolve, sent } = setup(10, 'lac_kiem_quyet');
+    const main = mon(X + 4, Z);
+    const side = mon(X + 3.5, Z + 2);
+    const sum = (id: string) => sent.filter((x) => x.type === S.DMG && x.msg.dst === id).reduce((n, x) => n + (x.msg.n as number), 0);
+    fresh();
+    for (let i = 0; i < 300; i++) {
+      sim.onSkill(p, { ...basic, t: main.id });
+      resolve();
+      sim.now = p.gcdAt;
+    }
+    const ratio = sum(side.id) / sum(main.id);
+    expect(ratio).toBeGreaterThan(0.5);
+    expect(ratio).toBeLessThan(0.7);
+  });
+
+  it('người không phải Kiếm tu không có chém quét; chiêu khác của Kiếm tu cũng không quét', () => {
+    const n = setup(10);
+    const m1 = n.mon(X + 4, Z);
+    const s1 = n.mon(X + 3.5, Z + 2);
+    n.fresh();
+    n.sim.onSkill(n.p, { ...basic, t: m1.id });
+    n.resolve();
+    expect(dmgOf(n.sent, s1.id)).toBe(0);
+
+    const k = setup(10, 'lac_kiem_quyet');
+    const m2 = k.mon(X + 4, Z);
+    const s2 = k.mon(X + 3.5, Z + 2);
+    k.fresh();
+    k.sim.onSkill(k.p, { id: 'skl_kiem_khi_tram', t: m2.id });
+    k.resolve();
+    expect(dmgOf(k.sent, m2.id)).toBeGreaterThanOrEqual(1);
+    expect(dmgOf(k.sent, s2.id)).toBe(0);
+  });
+});
+
 describe('cường hóa 3 giây', () => {
   it('Phi Kiếm Truy Hồn mạnh gấp rưỡi trong 3 giây sau Kiếm Khí Trảm, chỉ một lần, rồi hết hạn', () => {
     const { sim, p, mon, fresh, resolve, cd } = setup(10, 'lac_kiem_quyet');
