@@ -3,20 +3,21 @@
 # Chỉ chạy khi PR đụng code server/giao thức/nội dung/bot hoặc chính công cụ; chạy tay (workflow_dispatch) để đo lại.
 name: server-gate
 
+# TẠM TẮT tự chạy (27/11/2026, theo yêu cầu người dùng). Vẫn chạy tay được ở tab Actions. Bật lại: bỏ dấu # của khối `pull_request` dưới đây.
 on:
-  pull_request:
-    branches: [main]
-    paths:
-      - 'apps/server/**'
-      - 'apps/bot-client/**'
-      - 'packages/shared/**'
-      - 'packages/content/**'
-      - 'tools/perf/src/servergate.ts'
-      - 'tools/perf/src/lib/servergate.ts'
-      - 'tools/perf/src/lib/devserver.ts'
-      - 'tools/perf/src/lib/bots.ts'
-      - 'pnpm-lock.yaml'
-      - '.github/workflows/server-gate.yml'
+#  pull_request:
+#    branches: [main]
+#    paths:
+#      - 'apps/server/**'
+#      - 'apps/bot-client/**'
+#      - 'packages/shared/**'
+#      - 'packages/content/**'
+#      - 'tools/perf/src/servergate.ts'
+#      - 'tools/perf/src/lib/servergate.ts'
+#      - 'tools/perf/src/lib/devserver.ts'
+#      - 'tools/perf/src/lib/bots.ts'
+#      - 'pnpm-lock.yaml'
+#      - '.github/workflows/server-gate.yml'
   workflow_dispatch:
     inputs:
       count:

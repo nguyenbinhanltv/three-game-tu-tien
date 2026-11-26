@@ -77,6 +77,7 @@ Script `node tools/docs/check-paths.mjs` (chạy ở CI) kiểm mọi đường 
 - Playtest **luôn tắt tiếng**: URL game/viewer có `?mute=1` (ghép tham số khác bằng `&`, ví dụ `?mute=1&auto=<tên>`), kể cả trong `ao browser`; Chromium/Playwright thêm cờ `--mute-audio`. Tab của mình đang phát tiếng thì đóng hoặc tải lại với `?mute=1` (xem skill `playtest`).
 - `pnpm lint` (R-9, ESLint + typescript-eslint, `eslint.config.mjs`): chỉ luật ranh giới/an toàn — cấm import tương đối xuyên gói (dùng `@dtl/*`), `render/` và `base/` không import `game/`/`ui/`, client không import `@dtl/content/loot`; chạy ở CI. Thêm luật theo nhóm, mỗi nhóm một PR sạch lỗi.
 - `pnpm typecheck`, `pnpm test`, `pnpm content:check`, `pnpm sim:progress`
+- **Quy trình từ 2026-11-27 (người dùng chốt):** làm thẳng trên `main`, commit nhỏ và thường xuyên; KHÔNG có cổng CI (workflow GitHub đã tắt tự chạy, không chạy bộ CI ở máy). Chỉ chạy typecheck và test của phần vừa sửa. Đưa lên GitHub: đẩy các commit của `main` lên một nhánh `ao/…` rồi merge PR bằng `gh` (không squash).
 
 
 Điều đã rút ra từ lần soát netcode (đừng làm hỏng lại):
