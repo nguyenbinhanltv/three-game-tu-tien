@@ -2,6 +2,7 @@ import * as THREE from 'three/webgpu';
 import { uniform } from 'three/tsl';
 import { PAINTED, type PaintPair } from './palette';
 import { LIGHT } from './fieldShared';
+import { bladeTone } from './bladeTone';
 import { FLAGS } from '../../base/flags';
 
 /**
@@ -37,6 +38,16 @@ export interface PaintedTheme {
   dryMix?: number;
   /** Đá lát (sân, mặt đường, mặt cầu): [sáng, tối]. Bỏ trống = cặp `paving` chung của bảng Họa Cảnh. */
   paving?: PaintPair;
+  /**
+   * 0..1: đất vẽ lấy MÀU ĐỈNH của địa hình làm nền (bảng màu từng vùng do level tự tô: đảo, lối mòn, bờ hồ, đá lộ), tô hai tông theo nét cọ: sáng = màu đỉnh
+   * nâng sáng ngả ấm, tối = pha lam ít bão hòa (pha tay, không phải sáng nhân cho tối). Phần còn lại (1 − vcMix) là cặp `ground`, để cả level vẫn một bảng.
+   * 0 = không (mặc định). Dùng cho level mà bản sắc vùng nằm ở màu đỉnh (Vân Hải: năm đảo năm bảng).
+   */
+  vcMix?: number;
+  /** Sân lát đá vẽ tay [x, z, bán kính m]: trong đĩa, chỗ màu đỉnh sáng (lối lát đá) vẽ thành phiến đá xếp so le theo cặp `paving`. Bỏ trống = không. */
+  slab?: readonly [number, number, number];
+  /** 0..1: lá cỏ Họa Cảnh đổi tông theo cặp `ground` (theo độ chói của lá, giữ nét sáng/tối từng lá). 0 = lá xanh painted-valley (mặc định). */
+  bladeMix?: number;
   /** Sương thấp: dải cao độ (m) mà sương nằm dưới, từ đỉnh dải trở xuống; và cường độ 0..1. */
   mistBand: [number, number];
   mistK: number;
@@ -75,6 +86,28 @@ export const PAINTED_THEMES: Record<string, PaintedTheme> = {
     dryMix: 0.9,
     groundSat: 0.95,
   },
+  // Vân Hải Phù Đảo (MAP-3): đảo cỏ trên biển mây lúc bình minh. Đồng cỏ vàng rêu ấm (nắng sớm nằm sẵn trong màu, vì đất vẽ không nhận đèn của mood), bóng lục
+  // lam; bản sắc năm đảo (Tùng Đài rêu thẫm, Thạch Quy đá cát, Kính Hồ phù sa lục nhạt, Lôi Vân đá cháy sấm, Kình Ngư trắng xương) đi qua `vcMix`
+  van_hai: {
+    ground: [0xa9ad50, 0x3d6351],
+    rock: [0xc2bba6, 0x5c5e7c],
+    paving: [0xdcd3ba, 0x6c6c8c],
+    mist: 0xf4e6dc,
+    // sương chỉ ở chân đảo và sàn mây (sàn 60 m, mặt đảo 122–140 m): mặt đảo trong, không phủ lên chỗ đánh
+    mistBand: [64, 104],
+    mistK: 0.5,
+    // KHÔNG `far`: vòm núi xa nướng một lần thành dải tường xám chắn ngang trời khi ngự kiếm (đã chụp); cảnh xa của Vân Hải là biển mây + đảo giả (đã vẽ một lần)
+    propMix: 0.25,
+    nightContrast: 1.7,
+    nightTint: [0.42, 0.52, 0.78],
+    nightLift: 1.7,
+    groundMix: 0.75,
+    groundSat: 1,
+    vcMix: 0.6,
+    bladeMix: 0.8,
+    // Phù Đảo Các (đảo trung tâm r 85 + mép 12)
+    slab: [1024, 1024, 97],
+  },
 };
 
 /** Vân Lam (pilot) và level chưa có bảng: sương cũ của P4. */
@@ -99,6 +132,9 @@ export const themeU = {
   groundMix: uniform(1),
   groundSat: uniform(1),
   dryMix: uniform(0),
+  vcMix: uniform(0),
+  /** xy = tâm, z = bán kính của sân lát đá vẽ tay (0 = không có). */
+  slab: uniform(new THREE.Vector3(0, 0, 0)),
 };
 
 /** Chọn bảng cho level (gọi trước khi dựng/hiển thị địa hình). */
@@ -111,12 +147,17 @@ export function setPaintedTheme(levelId: string): void {
   themeU.groundMix.value = t?.groundMix ?? 1;
   themeU.groundSat.value = t?.groundSat ?? 1;
   themeU.dryMix.value = t?.dryMix ?? 0;
+  themeU.vcMix.value = t?.vcMix ?? 0;
+  themeU.slab.value.set(...(t?.slab ?? [0, 0, 0]));
+  bladeTone.mix.value = t?.bladeMix ?? 0;
   const pv = t?.paving ?? PAINTED.paving;
   themeU.pLit.value.setHex(pv[0], THREE.SRGBColorSpace);
   themeU.pShade.value.setHex(pv[1], THREE.SRGBColorSpace);
   if (t) {
     themeU.gLit.value.setHex(t.ground[0], THREE.SRGBColorSpace);
     themeU.gShade.value.setHex(t.ground[1], THREE.SRGBColorSpace);
+    bladeTone.lit.value.copy(themeU.gLit.value);
+    bladeTone.shade.value.copy(themeU.gShade.value);
     themeU.rLit.value.setHex(t.rock[0], THREE.SRGBColorSpace);
     themeU.rShade.value.setHex(t.rock[1], THREE.SRGBColorSpace);
   }

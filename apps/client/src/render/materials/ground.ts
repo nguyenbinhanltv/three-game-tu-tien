@@ -674,10 +674,49 @@ export function applyGroundShader(mat: THREE.MeshStandardNodeMaterial, tex: Grou
     const ink: Node = dot(painted, vec3(0.299, 0.587, 0.114));
     // mảng sáng/tối vài chục mét (như mảng lớn của painted-valley) nhân vào độ chói để tuyết/đất không thành một màu phẳng
     const patch: Node = smoothstep(0.3, 0.7, F.noise(positionWorld.xz.div(17), false).a);
-    const gTone: Node = mix(vec3(themeU.gShade), vec3(themeU.gLit), smoothstep(0.09, 0.26, ink).mul(patch.mul(0.6).add(0.4)));
+    const stroke: Node = smoothstep(0.09, 0.26, ink).mul(patch.mul(0.6).add(0.4));
+    const gTone: Node = mix(vec3(themeU.gShade), vec3(themeU.gLit), stroke);
     const mixed: Node = mix(painted, gTone, themeU.on.mul(themeU.groundMix));
     const mixedL: Node = dot(mixed, vec3(0.299, 0.587, 0.114));
-    const grassy: Node = mix(vec3(mixedL), mixed, mix(float(1), themeU.groundSat, themeU.on));
+    const grassy0: Node = mix(vec3(mixedL), mixed, mix(float(1), themeU.groundSat, themeU.on));
+    // màu đỉnh làm nền (theme.vcMix; Vân Hải: mỗi đảo một bảng, lối mòn, bờ hồ, đá lộ đã tô sẵn ở màu đỉnh): cùng nét cọ `stroke`, hai tông pha tay
+    // từ màu đỉnh (đẩy bão hòa vì màu đỉnh vốn trầm, nắng và chỉnh màu của mood mới làm nó vàng): sáng nâng lên ngả ấm (nén dần ở màu vốn sáng để lối lát đá
+    // không cháy trắng), tối bớt bão hòa ngả lam. Chi tiết sáng/tối của đất vẽ (nét cọ, búi cỏ sẫm) nhân vào để mặt đất không thành hai mảng phẳng; chấm hoa
+    // (điểm rất sáng của đất vẽ) giữ nguyên. Màu đỉnh biến thiên chậm (mét), không phải nhiễu ảnh chụp
+    const vcL: Node = dot(vc, vec3(0.299, 0.587, 0.114));
+    const vcSat: Node = mix(vec3(vcL), vc, 1.45).max(0);
+    const vcGain: Node = float(2.5).div(vcL.mul(2.8).add(1));
+    const vcLit: Node = vcSat.mul(vcGain).mul(vec3(1.1, 1.03, 0.84));
+    // tông tối kéo một nửa về tông tối của bảng (lục lam): trên đảo màu nhạt, bóng thuần "màu đỉnh ngả lam" đọc thành sương xám chứ không phải bóng cỏ
+    const vcShade: Node = mix(
+      mix(vec3(vcL), vc, 0.8)
+        .mul(vcGain)
+        .mul(vec3(0.4, 0.52, 0.7)),
+      vec3(themeU.gShade),
+      0.5,
+    );
+    const detail: Node = mix(float(1), clamp(ink.div(0.17), 0.55, 1.35), 0.7);
+    // xa (ngự kiếm, điểm ngắm cảnh): mảng sáng/tối dịu lại về một tông sáng, đảo xa không loang lổ
+    const strokeV: Node = mix(stroke, float(0.72), smoothstep(60, 220, dist).mul(0.65));
+    const vcTone: Node = mix(vcShade, vcLit, strokeV).mul(detail);
+    const grassyV: Node = mix(mix(grassy0, vcTone, themeU.vcMix), painted, smoothstep(0.42, 0.6, ink).mul(themeU.vcMix));
+    // sân lát đá vẽ tay (theme.slab = [x, z, r]; Vân Hải: Phù Đảo Các): trong đĩa, chỗ màu đỉnh sáng (lối lát đá của level) thành phiến đá xếp so le ~1,7 m,
+    // mỗi phiến một sắc độ trong cặp `paving`, mạch tối mảnh (mờ hết từ 30–70 m để không lấm tấm). Thủ tục, không texture
+    const sq0: Node = p.div(1.7).add(F.noise(p.div(9), false).a.sub(0.5).mul(0.3));
+    const sq: Node = vec2(sq0.x.add(floor(sq0.y).mul(0.5)), sq0.y);
+    const sCell: Node = floor(sq);
+    const sf: Node = fract(sq);
+    const sHash: Node = fract(sin(dot(sCell, vec2(12.9898, 78.233))).mul(43758.5453));
+    const sJoint: Node = max(smoothstep(0.07, 0.03, sf.x), smoothstep(0.07, 0.03, sf.y)).mul(float(1).sub(smoothstep(30, 70, dist)));
+    const slabTone: Node = mix(
+      mix(vec3(themeU.pShade), vec3(themeU.pLit), sHash.mul(0.3).add(0.7)),
+      mix(vec3(themeU.pShade), vec3(themeU.gShade), 0.35),
+      sJoint.mul(0.85),
+    );
+    const slabW: Node = smoothstep(0.5, 0.66, vcL).mul(
+      float(1).sub(smoothstep(themeU.slab.z.sub(6), themeU.slab.z, distance(p, themeU.slab.xy))),
+    );
+    const grassy: Node = mix(grassyV, slabTone.mul(mix(float(1), detail, 0.35)), slabW);
     // mảng đất trần (theme.dryMix): vùng màu đỉnh đỏ hơn xanh; tô đất painted nâu nhạt ấm (hai tông, giữ nét cọ), viền mềm, không nhiễu
     const dryW: Node = smoothstep(DRY_LO, DRY_HI, col.r.sub(col.g)).mul(themeU.dryMix).mul(float(1).sub(pathW));
     const earthLit = paintedColor('earth', 0);

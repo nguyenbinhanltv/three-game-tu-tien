@@ -270,3 +270,39 @@ export function vanHaiArt(def: TerrainDef): VhArt {
   cache.set(def, art);
   return art;
 }
+
+/** Độ khô của cỏ lá mảnh Họa Cảnh theo đảo (0 xanh tươi → 1 úa vàng; kênh `dry` của lưới cỏ painted-valley, ngưỡng đổi màu 0,3..0,7). */
+const VH_PAINT_DRY: Record<VhKind, number> = {
+  hub: 0.3,
+  tung_dai_dao: 0.12,
+  thach_quy_dao: 0.6,
+  kinh_ho_dao: 0.08,
+  loi_van_dao: 0.8,
+  kinh_ngu_dai: 0.48,
+  tieu_dao: 0.32,
+};
+
+/**
+ * Cỏ lá mảnh Họa Cảnh trên đảo (P9): hệ số mật độ 0..1 nhân vào luật cỏ chung và độ khô 0..1, cùng luật với thẻ cỏ mặc định của Vân Hải (`vanHaiTuftAt`):
+ * không mọc trên lối mòn, lòng hồ, đá lộ, sát mép đảo; rậm thành đám theo `grassDensity`/`grassClump` của đảo, dày thêm ở bờ hồ. `slope` = độ dốc kiểu cỏ
+ * (|dh/dx| + |dh/dz|) × 1,5. Hàm thuần; ghi vào `out` (không cấp phát).
+ */
+export function vhPaintedGrass(def: TerrainDef, x: number, z: number, slope: number, out: { k: number; dry: number }): void {
+  out.k = 0;
+  out.dry = 0.25;
+  const art = vanHaiArt(def);
+  const isl = art.islandAt(x, z);
+  if (!isl) return;
+  const d = Math.hypot(x - isl.x, z - isl.z);
+  if (d > isl.r - 2) return;
+  const pw = art.pondW(x, z);
+  if (pw > 0.75) return;
+  const P = isl.pal;
+  const rock = art.rockW(isl, x, z, slope / 1.5);
+  const c = fbm(x * 0.055 + 3, z * 0.055 - 8, 2, def.seed + 777);
+  let k = P.grassDensity * 1.5 * (1 - P.grassClump + P.grassClump * Math.max(0, Math.min(1.7, c * 2.6 + 0.3))) + pw * 0.35;
+  k *= 1 - smoothstep(0.05, 0.45, art.trailW(isl, x, z));
+  k *= Math.max(0, 1 - rock * 1.4) * (d > isl.r - 14 ? 0.55 : 1);
+  out.k = Math.max(0, Math.min(1, k));
+  out.dry = Math.max(0, Math.min(1, VH_PAINT_DRY[isl.kind] + rock * 0.3));
+}
