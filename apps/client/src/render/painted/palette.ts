@@ -10,7 +10,7 @@ import type { Node } from 'three/webgpu';
  * màu sáng nhân cho tối. Một bảng dùng chung cho cỏ, đất, đồi xa, cây... để cả cảnh là một bức tranh. Các số màu dưới đây
  * là của riêng dự án (Vân Lam sáng sớm), không chép từ nguồn.
  *
- * Chưa gắn vào vật liệu nào (P1); các bước sau (P2+) đọc bảng này sau cờ `FLAGS.style === 'painted'`.
+ * Chưa gắn vào vật liệu nào (P1); các bước sau (P2+) đọc bảng này sau cờ `FLAGS.painted`.
  */
 
 /** Một cặp màu: [sáng, tối], sRGB hex (giống mọi bảng màu khác của repo; chuyển sang tuyến tính ở `paintedColor`). */

@@ -107,6 +107,7 @@ import { lowerBodyOf, upperBodyOf, MannequinPoseBank, type MqPose, PoseSource, P
 import UAL_HIT from './ualHit.json';
 import type { AnimState, AttackOpts, CharacterView, MonsterView, PerformOpts, SkillEvent } from './view';
 import { FLAGS } from '../../base/flags';
+import { markVfxMask } from '../../render/post';
 import { logger } from '../../base/log';
 import { ASSET_BASE } from '../../base/assetBase';
 
@@ -428,7 +429,12 @@ export function mannequinTemplate(handle: AssetHandle, lib: AssetHandle, robe?: 
   // đã được đặt. Gọi SAU voan/da (cộng dồn vào emissive đã có) và TRƯỚC khi gộp lưới/nhân bản vật liệu nhuộm (bản nhuộm thừa hưởng).
   for (const m of mats) rimLight(m);
   // Dạ Cảnh (phương án 1 người dùng chọn 27/11): giữ model v3, tô bóng chia bậc.
-  if (FLAGS.style === 'da') for (const m of mats) toonBands(m);
+  if (FLAGS.da)
+    for (const m of mats) {
+      toonBands(m);
+      // Dạ Họa (nền vẽ tay + Dạ Cảnh): nhân vật vào mặt nạ của Họa Cảnh để bút Kuwahara không nhòe viền và lớp nhuộm trăng không làm tối họ.
+      markVfxMask(m);
+    }
   // Mặt nạ nhuộm theo xương (đầu/tay/tóc không nhuộm): thêm trước khi gộp lưới để mọi lưới cùng bộ thuộc tính.
   if (v3DyeRefOf(handle.id)) addDyeMask(handle.scene);
   // Sau khi đã đổi vật liệu: các lưới cùng LOD dùng chung một vật liệu thì gộp làm một (1 draw call mỗi người ở LOD1/LOD2).
@@ -2219,6 +2225,8 @@ export class MannequinPlayers {
     });
     if (!src) return null;
     m = applyV3Dye(cloneWorldMaterial(src as THREE.MeshStandardNodeMaterial), ref, dye);
+    // Bản nhuộm là vật liệu mới: đăng ký lại vào mặt nạ Dạ Họa (xem `mannequinTemplate`).
+    if (FLAGS.da) markVfxMask(m);
     this.dyeMats.set(k, m);
     return m;
   }

@@ -285,7 +285,7 @@ export function setPaintedTheme(levelId: string): void {
 
 /** Vùng xa Họa Cảnh có bật ở level này không: `?far=1|0` ép, không thì theo bảng level; chỉ với `?style=painted`. */
 export function paintedFarOn(levelId: string): boolean {
-  if (FLAGS.style !== 'painted') return false;
+  if (!FLAGS.painted) return false;
   return FLAGS.far ?? PAINTED_THEMES[levelId]?.far !== undefined;
 }
 

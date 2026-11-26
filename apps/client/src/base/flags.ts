@@ -130,7 +130,14 @@ interface Flags {
    * `?style=painted` phong cách "Họa Cảnh" (nền hoạt hình vẽ tay, thử ở Vân Lam); `?style=da` hướng "Dạ Cảnh" (nền đêm ít tương phản, nhân vật và chiêu nổi lên;
    * hướng hình ảnh chính từ 27/11/2026, đang dựng sau cờ). Hai giá trị loại trừ nhau. Mặc định không đổi gì; giá trị lạ = tắt.
    */
-  style: 'painted' | 'da' | null;
+  style: 'painted' | 'da' | 'dahoa' | null;
+  /**
+   * Hai thành phần của phong cách, suy từ `style`: `painted` = nền vẽ tay của Họa Cảnh (đất, cỏ, cây, đá hai tông, bút Kuwahara);
+   * `da` = lớp Dạ Cảnh (mood đêm theo loại trận, nhân vật/quái tô chia bậc + viền mực, lớp tối quanh trận, rung trauma, đèn lửa lạnh).
+   * `?style=dahoa` ("Dạ Họa") bật CẢ HAI: nền vẽ tay ban đêm + nhân vật và trận đánh kiểu Dạ Cảnh. Mã rẽ nhánh theo hai cờ này, không so `style`.
+   */
+  painted: boolean;
+  da: boolean;
   /** `?paint=0..3` mức lớp Kuwahara của Họa Cảnh (0 tắt; không có cờ: 3 = bút rộng bán kính 2). */
   paint: number | null;
   /** `?painthalf=0` (cùng `?style=painted`): bút rộng Kuwahara tính tại chỗ ở mọi điểm ảnh như trước B6 (so ảnh/số đo); mặc định pass riêng cỡ ~màn hình. */
@@ -149,7 +156,7 @@ interface Flags {
 export const FLAG_DOCS: Readonly<Record<string, { scope: 'user' | 'diag' | 'test' | 'viewer'; doc: string }>> = {
   style: {
     scope: 'diag',
-    doc: '=painted: phong cách Họa Cảnh (nền hoạt hình vẽ tay, pilot Vân Lam), xem docs/handbook/painted.md; =da: hướng Dạ Cảnh (nền đêm, nhân vật và chiêu nổi), xem docs/handbook/da-canh.md; mặc định tắt',
+    doc: '=painted: phong cách Họa Cảnh (nền hoạt hình vẽ tay, pilot Vân Lam), xem docs/handbook/painted.md; =da: hướng Dạ Cảnh (nền đêm, nhân vật và chiêu nổi); =dahoa: Dạ Họa = gộp cả hai (nền vẽ tay ban đêm + nhân vật/trận đánh kiểu Dạ Cảnh), xem docs/handbook/da-canh.md; mặc định tắt',
   },
   far: {
     scope: 'diag',
@@ -255,13 +262,20 @@ export function urlParams(search: string = currentSearch()): URLSearchParams {
 
 const off = (v: string | null): boolean => v === '0';
 
+/** Giá trị hợp lệ của `?style=`; lạ thì null (tắt). */
+function styleOf(v: string | null): Flags['style'] {
+  return v === 'painted' || v === 'da' || v === 'dahoa' ? v : null;
+}
+
 export function readFlags(search: string): Flags {
   const q = new URLSearchParams(search);
   const mood = q.get('mood');
   const chr = q.get('chr');
   return {
     mute: q.get('mute') === '1',
-    style: q.get('style') === 'painted' ? 'painted' : q.get('style') === 'da' ? 'da' : null,
+    style: styleOf(q.get('style')),
+    painted: styleOf(q.get('style')) === 'painted' || styleOf(q.get('style')) === 'dahoa',
+    da: styleOf(q.get('style')) === 'da' || styleOf(q.get('style')) === 'dahoa',
     far: q.get('far') === '1' ? true : q.get('far') === '0' ? false : null,
     paintDbg: q.get('paintdbg') === 'dry' ? 'dry' : q.get('paintdbg') === 'vc' ? 'vc' : null,
     vistaFlyPitch: Number.isFinite(Number(q.get('vistafly') ?? NaN)) && q.has('vistafly') ? Number(q.get('vistafly')) : null,

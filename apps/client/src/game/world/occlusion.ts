@@ -71,7 +71,7 @@ const ign = fract(float(52.9829189).mul(fract(dot(screenCoordinate.xy, vec2(0.06
  * Ngưỡng của mặt nạ làm mờ. Họa Cảnh: một ngưỡng cứng (mép cắt rõ như nét cọ) thay cho nhiễu dither, vì Kuwahara làm tán lá lốm đốm/nhòe
  * khi mờ bằng nhiễu từng điểm ảnh.
  */
-const dither = FLAGS.style === 'painted' ? float(0.5) : ign;
+const dither = FLAGS.painted ? float(0.5) : ign;
 const nearer = step(length(positionWorld.sub(uCam)), uNear);
 const aboveFeet = step(uFeetY.add(0.25), positionWorld.y);
 

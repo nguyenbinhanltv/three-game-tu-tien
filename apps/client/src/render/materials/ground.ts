@@ -651,7 +651,7 @@ export function applyGroundShader(mat: THREE.MeshStandardNodeMaterial, tex: Grou
   }
   mat.vertexColors = false;
   mat.colorNode = col;
-  if (FLAGS.style === 'painted') {
+  if (FLAGS.painted) {
     // Họa Cảnh: đất cỏ và đường mòn dùng đúng màu đất của painted-valley (bản dịch TSL đã đo khớp ở render/painted/lab), phát sáng không qua
     // đèn (không ACES/mood); đá, vách, tuyết, lát đá, mộ giữ shader cũ có đèn. Độ phủ cỏ ở đây là mặt nạ của chính địa hình (đường mòn = đất trần).
     const keep = max(max(max(rockW, cliffW), snowW), bio.z);

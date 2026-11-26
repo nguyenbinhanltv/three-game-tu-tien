@@ -386,7 +386,7 @@ export class SkyIslands {
       const im = new THREE.InstancedMesh(geo, mat, list.length);
       list.forEach((mm, i) => im.setMatrixAt(i, mm));
       // Họa Cảnh: ván cầu không còn đèn nên mỗi tấm một sắc độ (xác định theo thứ tự ván), mặt cầu không thành một dải phẳng
-      if (FLAGS.style === 'painted' && name === 'bridge-planks') {
+      if (FLAGS.painted && name === 'bridge-planks') {
         list.forEach((_m, i) => im.setColorAt(i, tint.setScalar(0.8 + hash01(i, 5, 977) * 0.26)));
         if (im.instanceColor) im.instanceColor.needsUpdate = true;
       }
@@ -586,7 +586,7 @@ export class SkyIslands {
         .add(smp(vec2(wp.x, wp.y).mul(sc), ch).mul(wn.z));
     const a = tri(0.03, 'g');
     // Họa Cảnh: bỏ hạt đá mịn (~5 m, nhìn xa thành lấm tấm), chỉ giữ mảng lớn ~33 m; mặc định giữ nguyên hai tần số
-    const b = FLAGS.style === 'painted' ? float(0.5) : tri(0.21, 'a');
+    const b = FLAGS.painted ? float(0.5) : tri(0.21, 'a');
     // rêu ở mặt ngửa (loang theo nhiễu), đá sáng hơn ở mặt hướng nắng
     const up = smoothstep(0.55, 0.92, normalWorld.y.add(a.sub(0.5).mul(0.35)));
     const sun = dot(normalWorld, skyParams.sunDir).max(0);
