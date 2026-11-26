@@ -3,6 +3,7 @@ import { LEVELS } from '@dtl/content';
 import { fbm, hash01, propsOf, type TerrainDef, type Terrain } from '@dtl/shared';
 import { createWorldMaterial } from '../../render/materials/world';
 import { withSightFade } from './occlusion';
+import { paintedProp } from '../../render/painted/props';
 import { vanHaiArt, type VhIsland } from './vanHaiArt';
 
 /**
@@ -179,7 +180,7 @@ export class VanHaiGarden {
     this.count = crowns.length;
     if (!this.count) return;
     const tex = this.track(canopyTexture());
-    const crownMat = this.track(withSightFade(createWorldMaterial({ map: tex, alphaTest: 0.5, roughness: 0.92 })));
+    const crownMat = this.track(paintedProp(withSightFade(createWorldMaterial({ map: tex, alphaTest: 0.5, roughness: 0.92 }))));
     const crownGeo = this.track(canopyGeometry());
     const cm = new THREE.InstancedMesh(crownGeo, crownMat, this.count);
     crowns.forEach((m, i) => {
@@ -193,7 +194,7 @@ export class VanHaiGarden {
     cm.name = 'van-hai-crowns';
     this.group.add(cm);
     const trunkGeo = this.track(new THREE.CylinderGeometry(0.1, 0.2, 1 * 3.4, 6, 1));
-    const trunkMat = this.track(withSightFade(createWorldMaterial({ color: 0x5a4636, roughness: 0.95 })));
+    const trunkMat = this.track(paintedProp(withSightFade(createWorldMaterial({ color: 0x5a4636, roughness: 0.95 }))));
     const tm = new THREE.InstancedMesh(trunkGeo, trunkMat, this.count);
     trunks.forEach((m, i) => tm.setMatrixAt(i, m));
     tm.instanceMatrix.needsUpdate = true;
