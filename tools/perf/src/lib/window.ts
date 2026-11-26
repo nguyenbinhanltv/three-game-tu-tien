@@ -81,6 +81,8 @@ export interface AnimLabDebug {
     impulse?: boolean;
     ragdoll?: boolean;
     patch?: boolean;
+    patchLoop?: boolean;
+    pivot?: boolean;
   }): {
     exaggerate: boolean;
     bounce: boolean;
@@ -98,6 +100,15 @@ export interface AnimLabDebug {
   hitSelf(from: 'front' | 'back' | 'left' | 'right', tier: number, knock?: boolean): boolean;
   hitMon(from: 'front' | 'back' | 'left' | 'right', tier: number, knock?: boolean): { x: number; y: number } | null;
   cutin(skill: string, setKey?: string, g?: string): boolean;
+  probe(): {
+    root: [number, number, number];
+    yaw: number;
+    innerY: number;
+    pelvis: [number, number, number];
+    head: [number, number, number];
+    feet: { x: number; y: number; z: number; g: number }[];
+    ground: number;
+  } | null;
 }
 
 /** `window.__game`: phần ổn định có kiểu; phần ruột engine mà bench cố ý bọc/đọc (renderer, vfx, monFx…) để `any`. */
