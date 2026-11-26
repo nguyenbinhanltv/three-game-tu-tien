@@ -33,6 +33,7 @@ import map from './scenarios/map';
 import mons from './scenarios/mons';
 import camiso from './scenarios/camiso';
 import densefly from './scenarios/densefly';
+import flytrail from './scenarios/flytrail';
 import densep00 from './scenarios/densep00';
 import densefade from './scenarios/densefade';
 import vista from './scenarios/vista';
@@ -87,6 +88,7 @@ import collscan from './scenarios/collscan';
 const SCENARIOS: Scenario[] = [
   camiso,
   densefly,
+  flytrail,
   densep00,
   densefade,
   vista,

@@ -10,7 +10,7 @@ import { beamNodes } from '../vfx/loot';
 import { sigilNodes } from '../vfx/sigil';
 import { slashNodes } from '../vfx/slash';
 import { artNodes, burstNodes, cardNodes, crystalNodes, decalNodes, spriteNodesFor, toonNodes } from '../vfx/stylized';
-import { trailNodes } from '../vfx/trail';
+import { trailInkNodes, trailNodes } from '../vfx/trail';
 import { FLAGS } from '../../base/flags';
 
 /**
@@ -65,6 +65,7 @@ export type FxKind =
   | 'boltInk'
   | 'vortex'
   | 'trail'
+  | 'trailInk'
   | 'beam'
   | 'dome'
   | 'inkpool'
@@ -117,6 +118,7 @@ const SPEC: Record<FxKind, { blending: THREE.Blending; boost: number; bloom: num
   boltInk: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0, fog: false },
   vortex: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0, fog: true },
   trail: { blending: THREE.AdditiveBlending, boost: 1.0, bloom: 0.45, fog: false },
+  trailInk: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0, fog: false },
   beam: { blending: THREE.AdditiveBlending, boost: 1.0, bloom: 0.5, fog: false },
   dome: { blending: THREE.AdditiveBlending, boost: 1.0, bloom: 0.25, fog: false },
   inkpool: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0, fog: true },
@@ -161,6 +163,7 @@ const BUILDERS: Partial<Record<FxKind, (u: FxUniforms) => { color: unknown; opac
   boltInk: boltInkNodes,
   vortex: vortexNodes,
   trail: trailNodes,
+  trailInk: trailInkNodes,
   beam: beamNodes,
   inkpool: inkNodes,
   toon: toonNodes,
