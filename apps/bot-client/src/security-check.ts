@@ -13,6 +13,7 @@ import { runAim } from './security/aim';
 import { runRealm } from './security/realm';
 import { runGear } from './security/gear';
 import { runParty } from './security/party';
+import { runCombo } from './security/combo';
 import { runDashaoi } from './security/dashaoi';
 import { runMisc } from './security/misc';
 import { runTeleport } from './security/teleport';
@@ -57,6 +58,12 @@ async function main() {
     console.log(stats.failed ? `${stats.failed} mục HỎNG` : 'Tất cả đều ĐẠT');
     process.exit(stats.failed ? 1 : 0);
   }
+  // SECURITY_ONLY=combo: chỉ chạy bài chuỗi đòn thường hành động (Dạ Cảnh).
+  if (process.env.SECURITY_ONLY === 'combo') {
+    await runCombo();
+    console.log(stats.failed ? `${stats.failed} mục HỎNG` : 'Tất cả đều ĐẠT');
+    process.exit(stats.failed ? 1 : 0);
+  }
   // SECURITY_ONLY=kieu: chỉ chạy bài Cửu Kiều (TN-7).
   if (process.env.SECURITY_ONLY === 'kieu') {
     await runKieu();
@@ -78,6 +85,7 @@ async function main() {
   await runMovement(ctx);
   await runHitReact();
   await runAim(ctx);
+  await runCombo();
   await runRealm(ctx);
   await runGear(ctx);
   await runParty(ctx);

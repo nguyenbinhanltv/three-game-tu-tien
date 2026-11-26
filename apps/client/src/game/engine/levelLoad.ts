@@ -313,6 +313,8 @@ function moodOf(_eng: Game, id: string): GradingName {
   if (m === 'default' || !(m in GRADING)) return GRADING_DEFAULT;
   // `?mood=dawn|day|night` thắng; level có bộ mood riêng (ochre) lấy biến thể cùng thời điểm.
   if (URL_MOOD) return moodVariant(m as GradingName, URL_MOOD);
+  // Dạ Cảnh (`?style=da`): mọi level lấy biến thể ĐÊM của bộ mood riêng (level mood cố định như bí cảnh giữ nguyên).
+  if (FLAGS.style === 'da') return moodVariant(m as GradingName, 'night');
   return m as GradingName;
 }
 
