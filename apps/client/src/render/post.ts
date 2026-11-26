@@ -3,7 +3,6 @@ import {
   clamp,
   float,
   fract,
-  max,
   length,
   luminance,
   mix,
@@ -29,7 +28,7 @@ import { gaussianBlur } from 'three/addons/tsl/display/GaussianBlurNode.js';
 import type { Node } from 'three/webgpu';
 import { getCloudNoise } from './noiseTex';
 import { FLAGS } from '../base/flags';
-import { paintedOutput, vfxMaskOn } from './painted/frame';
+import { createPaintedWide, paintedOutput, type PaintedWidePass, vfxMaskOn } from './painted/frame';
 import { BLOOM, GRAIN, VIGNETTE, type GradingPreset } from './grading';
 
 /**
@@ -116,11 +115,10 @@ type WithMrt = { mrtNode: Node | null };
 
 function attachBloom(m: THREE.Material, strength: number): void {
   const s = Math.min(strength, BLOOM.maxHdr) / BLOOM_RANGE;
-  // Họa Cảnh: đích này chỉ là MẶT NẠ VFX cho Kuwahara (không có bloom): ghi độ phủ (alpha) của vật liệu, bất kể màu/hệ số bloom
-  const painted = FLAGS.style === 'painted';
-  (m as unknown as WithMrt).mrtNode = mrt({
-    bloom: painted ? vec4(output.a, output.a, output.a, output.a) : vec4(output.rgb.mul(s), output.a),
-  });
+  // Họa Cảnh: không có bloom; vật liệu đánh dấu ghi MẶT NẠ VFX cho Kuwahara vào kênh a của đích `aux` (rgb của `aux` là vũng sáng đèn do đất ghi):
+  // độ phủ (alpha) của vật liệu, bất kể màu/hệ số bloom. rgb ghi 0: với trộn thường thì alpha cộng dồn `a + đích·(1 − a)`, với cộng sáng `a + đích`.
+  (m as unknown as WithMrt).mrtNode =
+    FLAGS.style === 'painted' ? mrt({ aux: vec4(0, 0, 0, output.a) }) : mrt({ bloom: vec4(output.rgb.mul(s), output.a) });
   m.needsUpdate = true;
 }
 
@@ -240,6 +238,8 @@ export class PostPipeline {
   private aoNode: ReturnType<typeof ao> | null = null;
   /** Đích LDR cho FXAA: RTTNode không tự giải phóng render target, dispose() phải làm. */
   private fxaaInput: ReturnType<typeof rtt> | null = null;
+  /** Họa Cảnh (B6): đích của bút rộng Kuwahara + mặt nạ VFX đã nới; cỡ theo bộ đệm vẽ và pixelRatio (`render()`). */
+  private paintWide: PaintedWidePass | null = null;
 
   constructor(
     private renderer: THREE.WebGPURenderer,
@@ -257,26 +257,35 @@ export class PostPipeline {
     this.scenePass = scenePass;
     if (FLAGS.style === 'painted') {
       // Họa Cảnh: pass cuối của painted-valley (Kuwahara, vignette, đường cong họa sĩ, sRGB); không ACES, chỉnh màu, hạt phim, bloom, AO, FXAA
-      // P5: VFX/linh quang đánh dấu bằng markBloom ghi vào đích MRT `bloom` (không có bloom thật): đó là mặt nạ để Kuwahara không nhòe chúng
+      // P5: VFX/linh quang đánh dấu bằng markBloom (không có bloom thật) ghi mặt nạ để Kuwahara không nhòe chúng
       setBloomActive(true);
-      // + đích `lamp`: vũng sáng đèn do shader đất ghi (render/painted/lampPools.ts), cộng sau bước nhuộm trăng ở pass cuối
-      scenePass.setMRT(mrt({ output, bloom: vec4(0, 0, 0, output.a), lamp: vec4(0, 0, 0, 0) }));
-      scenePass.getTexture('bloom').type = THREE.UnsignedByteType;
-      scenePass.getTexture('lamp').type = THREE.UnsignedByteType;
-      const lampTex = scenePass.getTextureNode('lamp');
-      const vfxTex = scenePass.getTextureNode('bloom');
+      // MỘT đích phụ `aux` 8 bit (B6; trước là hai đích `bloom` + `lamp`): a = mặt nạ VFX, rgb = vũng sáng đèn do shader đất ghi
+      // (render/painted/lampPools.ts), cộng sau bước nhuộm trăng ở pass cuối. Vật đục không đánh dấu ghi (0,0,0,0): che cả đèn lẫn mặt nạ phía sau;
+      // vật trong suốt không đánh dấu có alpha nguồn 0 nên để nguyên đích.
+      scenePass.setMRT(mrt({ output, aux: vec4(0, 0, 0, 0) }));
+      scenePass.getTexture('aux').type = THREE.UnsignedByteType;
+      const auxTex = scenePass.getTextureNode('aux');
+      const maskAt = (uv: Node): Node => auxTex.sample(uv).a;
+      const paint = FLAGS.paint ?? 3;
+      // Bút rộng (bán kính 2) + nới mặt nạ chạy ở một pass riêng cỡ ~độ phân giải màn hình (nửa cỡ cảnh ở Cao): 16 + 5 lần lấy mẫu thay cho 25 + 15.
+      if (paint >= 1.5 && FLAGS.paintHalf) {
+        this.paintWide = createPaintedWide(scenePass, { mask: maskAt });
+        this.paintWide.resize(renderer);
+      }
+      const wide = this.paintWide;
       (window as unknown as { __vfxMask?: (on: boolean) => void }).__vfxMask = (on) => {
         vfxMaskOn.value = on ? 1 : 0;
       };
       const fromCenterP = screenUV.sub(0.5);
       this.post.outputNode = paintedOutput(scenePass, {
-        paint: FLAGS.paint ?? 3,
+        paint,
         exposure: 1,
         vignette: 0.14,
         tint: [0.92, 0.975, 0.97],
-        lampGlow: (uv) => lampTex.sample(uv).rgb,
+        lampGlow: (uv) => auxTex.sample(uv).rgb,
         // phản hồi chiến đấu giữ nguyên (hit/flash/impact/punch/pulse/mực chết); quang sai màu khi trúng đòn lấy mẫu lệch R/B của ảnh gốc
-        mask: (uv) => max(max(vfxTex.sample(uv).r, vfxTex.sample(uv).g), vfxTex.sample(uv).b),
+        mask: maskAt,
+        ...(wide ? { wide: (uv: Node) => wide.sample(uv) } : {}),
         aberration: postParams.hit.mul(0.012),
         overlay: (g) => feedbackLayers(g, fromCenterP),
       });
@@ -408,6 +417,7 @@ export class PostPipeline {
   }
 
   render(): void {
+    this.paintWide?.resize(this.renderer);
     this.post.render();
   }
 
@@ -482,6 +492,7 @@ export class PostPipeline {
       (this.fxaaInput as unknown as { _quadMesh?: { material: THREE.Material } })._quadMesh?.material.dispose();
       this.fxaaInput.dispose();
     }
+    this.paintWide?.dispose();
     this.blurNode?.dispose();
     this.aoNode?.dispose();
     this.scenePass.dispose();
