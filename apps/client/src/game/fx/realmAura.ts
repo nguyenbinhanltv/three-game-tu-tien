@@ -29,6 +29,7 @@ import type { Vfx } from './vfx';
 import {
   AURA_COMBAT_SEC,
   AURA_SPRITE_OTHERS,
+  refreshAuraSprites,
   auraCaps,
   auraStage,
   auraWeights,
@@ -343,6 +344,8 @@ export class RealmAuraFx {
       au = this.build(a.sid, key, stage, dao, nSwords, nPetals, caps.detail, caps.particles, bmode);
       this.auras.set(a.sid, au);
     }
+    // Atlas `hq` phải luôn được đánh dấu đang dùng khi hào quang sprite còn hiện (xem `refreshAuraSprites`).
+    refreshAuraSprites(stage, FLAGS.auraSprites, useSpriteGroup);
     const st = { fl: a.fl, sinceCast: this.clock - (this.lastCast.get(a.sid) ?? -99), speed: a.speed };
     const k = Math.min(1, dt * 4);
     au.vHalo += (haloVisibility(st) - au.vHalo) * k;
