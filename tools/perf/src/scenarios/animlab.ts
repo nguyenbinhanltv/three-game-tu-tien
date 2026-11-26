@@ -308,7 +308,7 @@ async function run(r: Run, poses: string[], cams: string[], sizes: string[]): Pr
       await page.evaluate(() => window.__animlab!.respawn());
       for (const ms of [120, 350, 700]) {
         await sleep(ms === 120 ? 120 : ms === 350 ? 230 : 350);
-        await shot(`8-hoisinh-${ms}ms`);
+        await shot(`8-hoisinh-${ms}ms`, true);
       }
     }
     await ctx.close();
