@@ -37,6 +37,7 @@ import {
 } from '@dtl/shared';
 import { groundAt, levelId, levelTerrain } from '../../base/levelCtx';
 import { LEVELS, MONSTER, pathOf, resolveBarSkill, SKILLS, t } from '@dtl/content';
+import { collidersReady } from '@dtl/content/colliders-lazy';
 import { get, pushLog, pushToast, set } from '../../ui/store';
 import { frameStats, RENDER_FAIL_LIMIT, RENDERER_KEY, rendererChoice } from '../core/gpuGuard';
 import { setListener } from '../audio/audio';
@@ -355,7 +356,7 @@ export function runFrame(eng: Game): void {
   }
   eng.budget.mark('ui');
   eng.budget.end();
-  if (!eng.started && me && eng.terrain.ready && eng.frames > 4) {
+  if (!eng.started && me && eng.terrain.ready && eng.frames > 4 && collidersReady(levelId())) {
     eng.started = true;
     eng.loadStats.worldReady = Math.round(performance.now() - eng.startedAt);
     eng.loadStats.frames = eng.frames;
