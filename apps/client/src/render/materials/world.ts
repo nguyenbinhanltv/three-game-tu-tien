@@ -101,7 +101,7 @@ export function cloneWorldMaterial(src: THREE.MeshStandardNodeMaterial): THREE.M
  * Viền sáng (rim) tách khối nhân vật khỏi nền: fresnel hẹp ở mép hình bóng, sắc nắng, mạnh hơn ở phía hướng mặt trời
  * và ở phần trên thân, gần tắt ở phía khuất nắng. Yếu có chủ ý (art bible 5.3: không rim trắng gắt); cường độ theo preset
  * (`rimParams`, khối `grading` của palette.json). Cộng vào `emissiveNode`, không vào bloom, không thêm draw call hay texture.
- * Chỉ gọi cho material chưa dùng emissive (thân người chơi, NPC).
+ * Vật liệu đã có `emissiveNode` (voan bóng lụa của v3) thì CỘNG thêm, không ghi đè.
  */
 export function rimLight(m: THREE.MeshStandardNodeMaterial): THREE.MeshStandardNodeMaterial {
   const fres = float(1).sub(normalView.dot(positionViewDirection).clamp(0, 1)).pow(2.6);
@@ -117,7 +117,7 @@ export function rimLight(m: THREE.MeshStandardNodeMaterial): THREE.MeshStandardN
     .mul(mix(float(0.55), float(1), up))
     .mul(HERO_RIM);
   const hero = heroParams.k.mul(heroParams.enabled);
-  m.emissiveNode = rimParams.color
+  const rim = rimParams.color
     .mul(
       fres
         .mul(mix(float(0.25), float(1), sunSide))
@@ -126,6 +126,7 @@ export function rimLight(m: THREE.MeshStandardNodeMaterial): THREE.MeshStandardN
     )
     .add(diffuseColor.rgb.mul(fill).mul(hero))
     .add(heroParams.tint.mul(heroRim).mul(hero));
+  m.emissiveNode = m.emissiveNode ? vec3(m.emissiveNode).add(rim) : rim;
   return m;
 }
 
