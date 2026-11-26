@@ -41,10 +41,10 @@ export const FEET = {
    */
   maxDown: 0.3,
   /**
-   * Tốc độ đổi tối đa (m/s) của mặt đứng dưới từng chân: lên nhanh (không cắm vào mặt bậc), xuống chậm hơn. Dốc liên tục (chân vung 14 m/s trên dốc 25°
+   * Tốc độ đổi tối đa (m/s) của mặt đứng dưới từng chân: lên rất nhanh (40: chân không lún vào mặt bậc, đo tpmove), xuống chậm hơn. Dốc liên tục (chân vung 14 m/s trên dốc 25°
    * ≈ 6,5 m/s) nằm dưới ngưỡng nên bám tuyệt đối; chỉ bước nhảy ở mép bậc (0,2–0,3 m trong một khung) bị trải ra vài khung.
    */
-  groundUp: 14,
+  groundUp: 40,
   groundDown: 9,
   /** Chênh quá mức này (m) giữa mặt đứng thật và giá trị đang làm mượt là đã dịch chuyển: lấy ngay. */
   groundSnap: 0.7,
