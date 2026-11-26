@@ -19,7 +19,7 @@ Chi tiết từng đợt: `docs/vfx-v1/` (nền tảng), `vfx-v2/` (Kiếm tu), 
 
 Hai lớp, đừng trộn.
 
-1. **Thế giới** (địa hình, cây, nhân vật, sương, grading): bán tả thực điện ảnh, sương sớm. Nguồn chuẩn `docs/art-bible.md` v3 (mục 3 vật liệu, 5 ánh sáng/chỉnh màu, 8 điều cấm). `MeshStandardNodeMaterial` nhám, không kim loại bóng như nhựa (`render/materials/world.ts`). Sương là `scene.fogNode` ở `render/atmosphere.ts`. Chỉnh màu ở `render/grading.ts`, `render/post.ts`. Không cel-shading, không viền mực inverted hull.
+1. **Thế giới** (địa hình, cây, nhân vật, sương, grading): bán tả thực điện ảnh, sương sớm. Nguồn chuẩn `docs/art-bible.md` v3 (mục 3 vật liệu, 5 ánh sáng/chỉnh màu, 8 điều cấm). `MeshStandardNodeMaterial` nhám, không kim loại bóng như nhựa (`render/materials/world.ts`). Sương là `scene.fogNode` ở `render/atmosphere.ts`. Chỉnh màu ở `render/grading.ts`, `render/post.ts`. Không cel-shading, không viền mực inverted hull. **Ngoại lệ Dạ Cảnh (`?style=da`, hướng chính từ 2026-11-27):** nhân vật và quái được tô chia bậc (`toonBands` ở `render/materials/world.ts`) và viền mực vỏ lộn ngược (`createInkHullMaterial` + `game/character/inkHull.ts`); xem `docs/handbook/da-canh.md`.
 2. **VFX chiêu** (đã duyệt ở V1): stylized vẽ tay "2D trong 3D", **tương phản cao**.
    - Ba tầng màu: lõi sẫm, thân, viền sáng. Dưới cùng là lớp bóng sẫm để hiệu ứng đọc được trên nền sáng.
    - Mép rách (`jaggedCut`), gai tinh thể, lưỡi liềm hai tông, triện văn nét ngang/dọc sinh theo hash (không thành chữ, art bible 8.11).
