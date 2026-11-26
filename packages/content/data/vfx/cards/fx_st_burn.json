@@ -1,21 +1,21 @@
 {
   "skillId": "fx_st_burn",
-  "idea": "BỎNG (hỏa thiêu theo thời gian): đống than đen nứt vân vàng trắng dưới chân, vài tàn lửa bay lên; KHÔNG cam phẳng. Lặp mỗi giây khi còn trạng thái.",
+  "idea": "BỎNG (hỏa thiêu theo thời gian): những lưỡi mực-than cháy dựng từ đống than dưới chân, viền vàng hổ phách (KHÔNG cam/đỏ: đó là màu báo địch), vài tàn lửa bay lên. Lặp mỗi giây khi còn trạng thái.",
   "element": "hoa",
   "path": "",
   "scene": {
     "palette": {
       "core": "1a1410",
-      "body": "e8d27a",
-      "rim": "fff6d0",
+      "body": "d9b83c",
+      "rim": "fff3c2",
       "accent": "ffffff",
       "shadow": "0c0a06"
     },
     "impactAt": 0
   },
   "shapeLang": [
-    "cloud",
-    "burst"
+    "burst",
+    "cloud"
   ],
   "timing": {
     "anticipationMs": 0,
@@ -36,7 +36,7 @@
     "overdraw": 2
   },
   "textures": [],
-  "silhouette": "đống than đen nứt vân vàng trắng dưới chân, tàn lửa bay lên",
+  "silhouette": "năm lưỡi mực-than cháy dựng đứng từ đống than, viền vàng hổ phách",
   "standard": 2,
   "materials": [
     "sprite",

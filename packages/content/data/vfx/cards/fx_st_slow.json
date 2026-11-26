@@ -1,6 +1,6 @@
 {
   "skillId": "fx_st_slow",
-  "idea": "LÀM CHẬM (quái bị đòn băng/Hàn Giao Lân): vòng sương băng mực bám dưới chân, vài mũi băng nhọn nhô lên quanh gót; lam thép, lõi mực chàm, mép trắng lạnh. Lặp mỗi giây khi còn trạng thái.",
+  "idea": "LÀM CHẬM (quái bị đòn băng/Hàn Giao Lân): vòng xích sắt quấn quanh cổ chân kèm vệt mực kéo lùi và vài mảnh băng; lam thép, lõi mực chàm, mép trắng lạnh. Lặp mỗi giây khi còn trạng thái.",
   "element": "thuy",
   "path": "",
   "scene": {
@@ -15,7 +15,7 @@
   },
   "shapeLang": [
     "ring",
-    "cloud"
+    "line"
   ],
   "timing": {
     "anticipationMs": 0,
@@ -36,7 +36,7 @@
     "overdraw": 2
   },
   "textures": [],
-  "silhouette": "vòng sương băng bám chân, vài mũi băng nhọn nhô lên",
+  "silhouette": "vòng xích quấn chân, vệt mực kéo lùi phía sau, vài mảnh băng",
   "standard": 2,
   "materials": [
     "sprite",

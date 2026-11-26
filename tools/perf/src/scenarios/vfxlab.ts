@@ -173,7 +173,9 @@ async function run(r: Run, skills: string[], sizes: string[], at: number[]): Pro
       await page.setViewportSize({ width: w, height: h });
       if (process.argv.includes('--notags')) {
         // Tách người chơi khỏi quái ~3 m (quái đuổi tới đứng chồng lên người chơi thì nhân vật che điểm trúng): chạy tiếp ngắn, dịch người sang +x của quái, dừng ngay.
+        // Về chỗ gốc trên nền đá trống rồi mới tách (không trôi dần sang chỗ có đèn đá/cây thông).
         await page.evaluate(() => window.__vfxlab!.pause(false));
+        await gm(page, 'tp 2048 2088', 1000);
         const mp = await page.evaluate(() => {
           const g = window.__game as unknown as { ents: { monsters: Map<string, { x: number; z: number }> } };
           const m = [...g.ents.monsters.values()][0];

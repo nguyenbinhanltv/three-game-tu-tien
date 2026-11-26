@@ -1,6 +1,6 @@
 {
   "skillId": "fx_st_stun",
-  "idea": "CHOÁNG / MẤT THẾ (quái): ba đốm mực xoáy vòng trên đầu, KHÔNG dùng sao. Lặp khi còn trạng thái.",
+  "idea": "CHOÁNG / MẤT THẾ (quái): vòng quầng nghiêng trên đầu với ba chim mực và hai ngôi sao xoay quanh. Lặp khi còn trạng thái.",
   "element": "vo",
   "path": "",
   "scene": {
@@ -35,7 +35,7 @@
     "overdraw": 2
   },
   "textures": [],
-  "silhouette": "ba đốm mực xoáy vòng quanh đầu",
+  "silhouette": "vòng quầng trên đầu, chim mực và sao xoay quanh",
   "standard": 2,
   "materials": [
     "sprite",

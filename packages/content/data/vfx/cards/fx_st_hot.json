@@ -1,6 +1,6 @@
 {
   "skillId": "fx_st_hot",
-  "idea": "HỒI DẦN (nhận hồi theo thời gian): cánh sen mực ngọc lục nhẹ nhàng bay lên quanh thân; không cột sáng. Lặp khi còn trạng thái.",
+  "idea": "HỒI DẦN (nhận hồi theo thời gian): cột lá ngọc và giọt ngọc xoáy chữ S bay lên quanh thân; không cột sáng. Lặp khi còn trạng thái.",
   "element": "moc",
   "path": "",
   "scene": {
@@ -14,8 +14,8 @@
     "impactAt": 0
   },
   "shapeLang": [
-    "cloud",
-    "spiral"
+    "spiral",
+    "cloud"
   ],
   "timing": {
     "anticipationMs": 0,
@@ -36,7 +36,7 @@
     "overdraw": 2
   },
   "textures": [],
-  "silhouette": "cánh sen ngọc lục bay lên quanh thân",
+  "silhouette": "lá và giọt ngọc xoáy chữ S bay lên quanh thân",
   "standard": 2,
   "materials": [
     "sprite",
