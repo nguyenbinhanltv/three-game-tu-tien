@@ -1,6 +1,6 @@
 // "Thân Pháp" T1: lớp cường điệu additive cho camera chéo. Hàm thuần (không đụng three) để test trong Node; mannequin.ts gọi sau mixer.
-// Không sửa clip gốc: khuếch đại độ lệch của xương so với tư thế nghỉ, nảy bước, nghiêng thân khi rẽ. Cờ bật/tắt để so A/B (`?thanphap=0|1`, mặc định tắt
-// cho tới khi người dùng duyệt pilot; `window.__animlab.fx({...})` đổi lúc chạy).
+// Không sửa clip gốc: khuếch đại độ lệch của xương so với tư thế nghỉ, nảy bước, nghiêng thân khi rẽ. Cờ bật/tắt để so A/B (`?thanphap=0` tắt, mặc định BẬT;
+// lớp chung cho mọi hệ, lớp riêng Kiếm tu qua `isKiemTu`; `window.__animlab.fx({...})` đổi lúc chạy).
 
 import { FLAGS } from '../../base/flags';
 import type { SpringParams } from './spring';
@@ -34,7 +34,7 @@ export interface AnimFxFlags {
   patchLoop: boolean;
 }
 
-/** Trạng thái cờ chạy (mặc định theo `?thanphap=1`); phòng thử đổi được. */
+/** Trạng thái cờ chạy (mặc định bật, `?thanphap=0` tắt); phòng thử đổi được. */
 export const ANIM_FX: AnimFxFlags = {
   exaggerate: FLAGS.thanPhap,
   bounce: FLAGS.thanPhap,

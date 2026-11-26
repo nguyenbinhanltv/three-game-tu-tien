@@ -85,7 +85,8 @@ describe('mannequinFeet: mặt đứng dưới chân', () => {
     expect(smoothGround(0, -0.001, dt)).toBe(-0.001);
   });
   it('hằng số tốc độ đổi mặt đứng được khóa (đổi phải có đo tpmove)', () => {
-    expect(FEET.groundUp).toBe(40);
+    expect(FEET.groundUp).toBe(13);
+    expect(FEET.lookAhead).toBe(0.1);
     expect(FEET.groundDown).toBe(9);
     expect(FEET.groundSnap).toBe(0.7);
     expect(FEET.maxDown).toBe(0.3);

@@ -44,10 +44,12 @@ export const FEET = {
    * Tốc độ đổi tối đa (m/s) của mặt đứng dưới từng chân: lên rất nhanh (40: chân không lún vào mặt bậc, đo tpmove), xuống chậm hơn. Dốc liên tục (chân vung 14 m/s trên dốc 25°
    * ≈ 6,5 m/s) nằm dưới ngưỡng nên bám tuyệt đối; chỉ bước nhảy ở mép bậc (0,2–0,3 m trong một khung) bị trải ra vài khung.
    */
-  groundUp: 40,
+  groundUp: 13,
   groundDown: 9,
   /** Chênh quá mức này (m) giữa mặt đứng thật và giá trị đang làm mượt là đã dịch chuyển: lấy ngay. */
   groundSnap: 0.7,
+  /** Nhìn trước (s): mặt đứng dưới chân lấy cao hơn giữa chỗ chân đang đứng và chỗ chân sẽ tới sau khoảng này, để mặt đứng bắt đầu nâng trước mép bậc (không lún) mà tốc độ nâng vẫn thấp. */
+  lookAhead: 0.1,
   /** Hằng số thời gian (s) ước lượng độ nhấc cố định của gốc so với mặt đứng (mây sen Nguyên Anh 0,2 m). */
   hoverTau: 0.5,
   /** Số nhân vật tối đa chạy IK chân trong một khung (bench 50 bot: 6,6 nhân vật ≈ 0,45 ms/khung, ngưỡng 0,3 ms). */
@@ -172,6 +174,9 @@ interface Leg {
   nq: THREE.Quaternion;
   /** Mặt đứng dưới chân (thế giới, đã giới hạn tốc độ đổi); NaN = chưa có. */
   g: number;
+  /** Cổ chân khung trước (x, z thế giới) để ước vận tốc ngang; NaN = chưa có. */
+  px: number;
+  pz: number;
 }
 
 const _v = new THREE.Vector3();
@@ -265,6 +270,8 @@ export class MqFeet {
         tilt: new THREE.Quaternion(),
         nq: new THREE.Quaternion(),
         g: Number.NaN,
+        px: Number.NaN,
+        pz: Number.NaN,
       });
     }
     return new MqFeet(root, pelvis, legs, FEET.hipLim * height);
@@ -299,6 +306,7 @@ export class MqFeet {
       l.tilt.identity();
       l.nq.identity();
       l.g = Number.NaN;
+      l.px = l.pz = Number.NaN;
     }
   }
 
@@ -392,7 +400,17 @@ export class MqFeet {
     // 4. Hông theo chân thấp, đích của từng chân.
     const lim = this.lim;
     this.legs.forEach((l, i) => {
-      l.g = smoothGround(l.g, ground(l.pos.x, l.pos.z), dt);
+      let target = ground(l.pos.x, l.pos.z);
+      if (Number.isFinite(l.px) && dt > 1e-4) {
+        // Vận tốc ngang (giới hạn 12 m/s: khung khựng hoặc nhảy vị trí không được bắn mẫu đi xa).
+        const k = FEET.lookAhead;
+        const vx = Math.max(-12, Math.min(12, (l.pos.x - l.px) / dt));
+        const vz = Math.max(-12, Math.min(12, (l.pos.z - l.pz) / dt));
+        target = Math.max(target, ground(l.pos.x + vx * k, l.pos.z + vz * k));
+      }
+      l.px = l.pos.x;
+      l.pz = l.pos.z;
+      l.g = smoothGround(l.g, target, dt);
       this.ds[i] = supportY(l.g, base) - base;
     });
     const h = hipDrop(this.ds[0]!, this.ds[1]!, lim) * this.w;
