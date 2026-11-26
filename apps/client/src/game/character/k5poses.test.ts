@@ -139,7 +139,8 @@ export function measure(row: Row) {
 }
 
 describe('K-5: cấu trúc khung khóa', () => {
-  for (const row of ROWS) {
+  // Voice `tt` (quyền, TP-3a) có bộ đo riêng ở k5poseFist.test.ts.
+  for (const row of ROWS.filter((r) => r.voice !== 'tt')) {
     it(`${row.id}: ${row.nine ? 9 : 7} khung, mốc theo dữ liệu chiêu`, () => {
       const m = measure(row);
       const skill = SK.get(row.skill)!;
@@ -181,7 +182,7 @@ describe('K-5: cấu trúc khung khóa', () => {
 });
 
 describe('K-5: ba giọng đo được', () => {
-  for (const row of ROWS) {
+  for (const row of ROWS.filter((r) => r.voice !== 'tt')) {
     it(`${row.id} (${row.voice}): hạ hông, xoay hông, giữ`, () => {
       const m = measure(row);
       const R = RANGE[row.voice];
@@ -197,7 +198,7 @@ describe('K-5: ba giọng đo được', () => {
       }
     });
   }
-  for (const row of ROWS.filter((r) => r.swing)) {
+  for (const row of ROWS.filter((r) => r.swing && r.voice !== 'tt')) {
     it(`${row.id} (${row.voice}): tầm tay, mũi kiếm, quá đà, chân, tay trái`, () => {
       const m = measure(row);
       const R = RANGE[row.voice];
