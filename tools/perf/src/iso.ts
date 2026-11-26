@@ -9,7 +9,7 @@
 // không bị trần 60 fps che. Camera đứng yên ở góc chéo khóa của level (không xoay, không zoom).
 //
 //   pnpm perf:iso [--presets medium,high,ultra] [--seconds 4] [--size 1280x720] [--out <thư mục>] [--baseline <iso-*.json>]
-//                 [--only van_lam,kiem_trung,kieu_3,trib:do_kiep,fight] [--quick] [--igpu] [--noshadow] [--bots 10] [--dump-inst] [--query a=b] [--renderer webgpu|webgl2] [--channel chrome|chromium]
+//                 [--only van_lam,kiem_trung,kieu_3,trib:do_kiep,fight] [--quick] [--igpu] [--noshadow] [--bots 10] [--dump-inst] [--dump-draws] [--query a=b] [--renderer webgpu|webgl2] [--channel chrome|chromium]
 // `--quick`: preset high, 2 giây/điểm, chỉ Vân Lam + một bí cảnh + một phòng cầu + cảnh đánh (cho máy người dùng tự chạy).
 // `--settle-max N`: trước mỗi điểm đo chờ cảnh NẠP XONG (tam giác, byte texture, số geometry ổn định 3 giây liền; tối đa N giây, mặc định 40);
 //   không chờ thì điểm đầu của level đo khi ô địa hình/prop/texture còn đang nạp (baseline cũ ghi Vân Lam 354k tam giác/94 MB so với 821k/460–500 MB thật).
@@ -347,6 +347,13 @@ async function measure(page: Page, id: string, target: Target, preset: string, d
     };
   });
   const src = await drawSources(page, 40);
+  if (flag('--dump-draws')) {
+    // Chẩn đoán B4: 40 nhóm draw call lớn nhất của điểm này (`nhóm cha | tên mesh | loại vật liệu`), kèm số lượt đổ bóng.
+    console.log(
+      `  --- draws ${id} (tổng ${src.total}, đổ bóng ${src.shadowTotal}):\n` +
+        src.groups.map((g) => `    ${String(g.dc).padStart(3)}× ${g.key} · ${g.tris} tam giác · bóng ${g.shadow}`).join('\n'),
+    );
+  }
   if (flag('--dump-inst')) {
     // Chẩn đoán O2: liệt kê InstancedMesh hiện có theo (cha gần nhất có tên | tên | số đỉnh | vật liệu) với số bản và có đổ bóng không.
     const dump = await page.evaluate(() => {

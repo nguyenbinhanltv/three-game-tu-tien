@@ -15,7 +15,7 @@ import { DECAL_STRIKE } from '../../render/vfx/stylized';
 import { maxRadiusFor } from '../../render/vfx/phases';
 import { BoltFx, HALO_GEO, SHADOW_GEO } from '../../render/vfx/projectile';
 import { Trails } from '../../render/vfx/trail';
-import { glowWarmMesh } from '../core/models';
+import { blockWarmMesh, glowWarmMesh } from '../core/models';
 import { assets } from '../core/assets';
 import { PREFETCH_PRIORITY } from '../core/preload';
 import { G } from '../core/geo';
@@ -67,6 +67,7 @@ let rainModel: Promise<void> | null = null;
 
 /** Lưới vẽ ấm vật liệu cộng sáng của model khối, tạo một lần (xem `warmKinds`). */
 let glowWarm: THREE.Mesh | null = null;
+let blockWarm: THREE.Mesh | null = null;
 
 export class Vfx {
   group = new THREE.Group();
@@ -133,11 +134,13 @@ export class Vfx {
     // Lưới ấm giữ sống suốt phiên (singleton) và KHÔNG dispose: dispose material làm three xóa render object và (usedTimes về 0) cả pipeline/program vừa biên dịch,
     // con Thạch Tượng đầu tiên lại phải dựng lại từ đầu. Chỉ gắn vào cảnh vài khung rồi gỡ ra.
     const glow = (glowWarm ??= glowWarmMesh());
-    this.group.add(glow);
+    // Model khối của quái (lưới xương cứng, B4): cùng cách, để con quái model khối đầu tiên không phải biên dịch pipeline giữa trận.
+    const block = (blockWarm ??= blockWarmMesh());
+    this.group.add(glow, block);
     this.add(
       0.15,
       () => {},
-      () => this.group.remove(glow),
+      () => this.group.remove(glow, block),
     );
     for (const kind of [
       'bolt',
@@ -216,6 +219,8 @@ export class Vfx {
       ['flat', RING_GEO, 0],
       ['dome', G.dome, 0],
       ['inkpool', SIGIL_GEO, -2],
+      ['sigil', SIGIL_GEO, 0],
+      ['sigilTop', SIGIL_GEO, 0],
       ['decal', QUAD_XZ, -3],
       ['decalTop', QUAD_XZ, -3],
       ['mapDecal', QUAD_XZ, -3],

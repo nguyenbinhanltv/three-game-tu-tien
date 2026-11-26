@@ -461,12 +461,144 @@ function monGeo(def: MonsterDef): MonGeo {
   return g;
 }
 
+/** Số xương của model khối bốn chân/hai chân (thân + 4 chi): cố định để mọi loại dùng chung một pipeline (three đưa số xương vào khóa cache). */
+const BLOCK_BONES = 5;
+const SERPENT_SEGS = 15;
+const IDENTITY = new THREE.Matrix4();
+
+interface RigPart {
+  geo: THREE.BufferGeometry;
+  /** Chỗ đặt khớp ở tư thế gốc (hệ thân). */
+  x: number;
+  y: number;
+  z: number;
+}
+
+interface MonRig {
+  geo: THREE.BufferGeometry;
+  parts: RigPart[];
+  /** Cầu bao (hệ lưới) đã nới cho chi vung/thân uốn. */
+  bounds: THREE.Sphere;
+}
+
+/**
+ * Gộp các khối của một model (thân, tay, chân, đốt) thành MỘT lưới có xương cứng: đỉnh của khối i dời tới khớp i và chỉ theo xương i (trọng số 1).
+ * Một lệnh vẽ thay cho 5 (giao long 15) lệnh vẽ mỗi con quái model khối (B4).
+ */
+export function mergeRigid(parts: RigPart[]): THREE.BufferGeometry {
+  let total = 0;
+  for (const p of parts) total += p.geo.getAttribute('position').count;
+  const pos = new Float32Array(total * 3);
+  const nor = new Float32Array(total * 3);
+  const colr = new Float32Array(total * 3);
+  const idx = new Uint16Array(total * 4);
+  const wgt = new Float32Array(total * 4);
+  let o = 0;
+  parts.forEach((p, bone) => {
+    const gp = p.geo.getAttribute('position');
+    const n = gp.count;
+    nor.set((p.geo.getAttribute('normal').array as Float32Array).subarray(0, n * 3), o * 3);
+    colr.set((p.geo.getAttribute('color').array as Float32Array).subarray(0, n * 3), o * 3);
+    for (let i = 0; i < n; i++, o++) {
+      pos[o * 3] = gp.getX(i) + p.x;
+      pos[o * 3 + 1] = gp.getY(i) + p.y;
+      pos[o * 3 + 2] = gp.getZ(i) + p.z;
+      idx[o * 4] = bone;
+      wgt[o * 4] = 1;
+    }
+  });
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  g.setAttribute('normal', new THREE.BufferAttribute(nor, 3));
+  g.setAttribute('color', new THREE.BufferAttribute(colr, 3));
+  g.setAttribute('skinIndex', new THREE.BufferAttribute(idx, 4));
+  g.setAttribute('skinWeight', new THREE.BufferAttribute(wgt, 4));
+  g.computeBoundingSphere();
+  return g;
+}
+
+/** Lưới gộp dùng chung theo loại quái (như `MON_GEO`). */
+const MON_RIG = new Map<string, MonRig>();
+
+function monRig(def: MonsterDef): MonRig {
+  let r = MON_RIG.get(def.id);
+  if (r) return r;
+  const g = monGeo(def);
+  const parts: RigPart[] = [];
+  if (def.model === 'serpent') {
+    for (let i = 0; i < SERPENT_SEGS; i++) parts.push({ geo: i === 0 ? g.head! : g.seg!, x: 0, y: 0, z: 0 });
+  } else {
+    parts.push({ geo: g.body, x: 0, y: 0, z: 0 });
+    if (def.model === 'ape') {
+      for (const sx of [1, -1]) {
+        parts.push({ geo: g.arm!, x: sx * 0.66, y: 1.52, z: 0.05 });
+        parts.push({ geo: g.leg!, x: sx * 0.26, y: g.legLen, z: 0 });
+      }
+    } else {
+      const lx = def.model === 'boar' ? 0.26 : 0.19;
+      for (const [sx, sz] of [
+        [1, 1],
+        [-1, -1],
+        [-1, 1],
+        [1, -1],
+      ])
+        parts.push({ geo: g.leg!, x: sx! * lx, y: g.legLen, z: sz! * 0.46 });
+    }
+  }
+  const geo = mergeRigid(parts);
+  // Giao long: thân uốn lượn do xương đặt mỗi khung (x ±0,95, y tới ~3,9, z −5,2…2,8 kể cả lúc lao tới) nên cầu bao đặt tay.
+  // Loài khác: chi vung quanh khớp (tay đập tới 2,4 rad) vẫn nằm trong cầu bao tư thế gốc nới 30%.
+  const bounds =
+    def.model === 'serpent'
+      ? new THREE.Sphere(new THREE.Vector3(0, 1.9, -1.2), 5.6)
+      : new THREE.Sphere(geo.boundingSphere!.center.clone(), geo.boundingSphere!.radius * 1.3);
+  r = { geo, parts, bounds };
+  MON_RIG.set(def.id, r);
+  return r;
+}
+
+/** Dựng lưới có xương cứng từ các khối: xương i ở khớp i, là con của lưới. */
+function rigidMesh(rig: MonRig): { mesh: THREE.SkinnedMesh; bones: THREE.Bone[] } {
+  const mesh = new THREE.SkinnedMesh(rig.geo, MODEL_MAT);
+  const bones: THREE.Bone[] = [];
+  const inverses: THREE.Matrix4[] = [];
+  for (const p of rig.parts) {
+    const b = new THREE.Bone();
+    b.position.set(p.x, p.y, p.z);
+    bones.push(b);
+    inverses.push(new THREE.Matrix4().makeTranslation(-p.x, -p.y, -p.z));
+    mesh.add(b);
+  }
+  mesh.bind(new THREE.Skeleton(bones, inverses), IDENTITY);
+  // Cầu bao đặt sẵn: three không phải duyệt đỉnh có xương để tính, và chi vung không làm lưới bị cắt khung sớm.
+  mesh.boundingSphere = rig.bounds;
+  return { mesh, bones };
+}
+
+/**
+ * Lưới "vẽ ấm" cho model khối có xương cứng (cùng vật liệu, cùng số xương, có đổ bóng): pipeline biên dịch sẵn nên con quái model khối đầu tiên không khựng.
+ * Người gọi đặt vào cảnh vài khung rồi gỡ; KHÔNG dispose (xem `glowWarmMesh`).
+ */
+export function blockWarmMesh(): THREE.SkinnedMesh {
+  const b = new GeoBuilder();
+  b.add(G.box, mat(0, 0, 0, 0, 0, 0, 1e-3, 1e-3, 1e-3), col(0xffffff));
+  const part = b.build();
+  const parts: RigPart[] = Array.from({ length: BLOCK_BONES }, () => ({ geo: part, x: 0, y: 0, z: 0 }));
+  const { mesh } = rigidMesh({ geo: mergeRigid(parts), parts, bounds: new THREE.Sphere(new THREE.Vector3(), 1) });
+  mesh.castShadow = true;
+  // Đặt ở gốc thế giới, xa khung nhìn: không tắt cắt khung thì three bỏ qua lưới và pipeline không được biên dịch.
+  mesh.frustumCulled = false;
+  return mesh;
+}
+
 export class MonsterModel implements MonsterView {
   root = new THREE.Group();
   private inner = new THREE.Group();
-  private legs: THREE.Mesh[] = [];
-  private arms: THREE.Mesh[] = [];
-  private segs: THREE.Mesh[] = [];
+  /** Lưới duy nhất của thân (xương cứng): một lệnh vẽ cho cả con. */
+  readonly mesh: THREE.SkinnedMesh;
+  private legs: THREE.Bone[] = [];
+  private arms: THREE.Bone[] = [];
+  private segs: THREE.Bone[] = [];
   private phase = Math.random() * 6;
   private time = Math.random() * 10;
   private attackT = 0;
@@ -479,50 +611,29 @@ export class MonsterModel implements MonsterView {
   constructor(public def: MonsterDef) {
     const g = monGeo(def);
     const s = def.scale;
+    const { mesh, bones } = rigidMesh(monRig(def));
+    this.mesh = mesh;
     if (def.model === 'serpent') {
-      const n = 15;
-      for (let i = 0; i < n; i++) {
-        const m = new THREE.Mesh(i === 0 ? g.head! : g.seg!, MODEL_MAT);
-        const r = i === 0 ? 0.62 : 0.56 * (1 - (i / n) * 0.72);
-        m.scale.setScalar(r);
-        this.segs.push(m);
-        this.inner.add(m);
-      }
+      const n = bones.length;
+      for (let i = 0; i < n; i++) bones[i]!.scale.setScalar(i === 0 ? 0.62 : 0.56 * (1 - (i / n) * 0.72));
+      this.segs = bones;
       this.height = 4.6 * s;
     } else {
-      const body = new THREE.Mesh(g.body, MODEL_MAT);
-      body.castShadow = true;
-      this.inner.add(body);
+      // Như trước khi gộp: thân đổ bóng (giao long thì không); nay chi cũng đổ bóng theo thân, vẫn một lượt vẽ bóng.
+      mesh.castShadow = true;
       if (def.model === 'ape') {
-        for (const sx of [1, -1]) {
-          const arm = new THREE.Mesh(g.arm!, MODEL_MAT);
-          arm.position.set(sx * 0.66, 1.52, 0.05);
-          this.arms.push(arm);
-          const leg = new THREE.Mesh(g.leg!, MODEL_MAT);
-          leg.position.set(sx * 0.26, g.legLen, 0);
-          this.legs.push(leg);
-          this.inner.add(arm, leg);
-        }
+        this.arms = [bones[1]!, bones[3]!];
+        this.legs = [bones[2]!, bones[4]!];
         this.height = 2.25 * s;
       } else {
-        const lx = def.model === 'boar' ? 0.26 : 0.19;
-        for (const [sx, sz] of [
-          [1, 1],
-          [-1, -1],
-          [-1, 1],
-          [1, -1],
-        ]) {
-          const leg = new THREE.Mesh(g.leg!, MODEL_MAT);
-          leg.position.set(sx! * lx, g.legLen, sz! * 0.46);
-          this.legs.push(leg);
-          this.inner.add(leg);
-        }
+        this.legs = bones.slice(1);
         this.height = (g.legLen + 0.85) * s;
       }
     }
+    this.inner.add(mesh);
     this.root.add(this.inner);
     this.root.scale.setScalar(s);
-    this.hit = new HitReact(this.inner.children as THREE.Mesh[]);
+    this.hit = new HitReact([mesh]);
     this.hit.feel = HIT_FEEL[bodyClassOf(def)];
     if (def.look === 'golem') {
       // Vết nứt sáng của Thạch Tượng: lưới cộng sáng riêng (ngoài `inner` để HitReact không đụng), thở chậm ~4 s, tắt khi chết.
@@ -601,9 +712,10 @@ export class MonsterModel implements MonsterView {
     this.inner.position.y = (moving ? Math.abs(sw) * 0.05 : 0) + fall * 0.25 - Math.max(0, this.deadT - 1.4) * 0.5;
   }
 
-  /** Geometry dùng chung theo loại quái (MON_GEO) nên chỉ trả material gốc nếu đang chớp. */
+  /** Geometry dùng chung theo loại quái (MON_RIG) nên chỉ trả material gốc nếu đang chớp và bỏ bộ xương riêng của con này. */
   dispose(): void {
     this.hit.reset();
+    this.mesh.skeleton.dispose();
     if (this.crack) {
       (this.crack.material as THREE.Material).dispose();
       this.crack.geometry.dispose();
