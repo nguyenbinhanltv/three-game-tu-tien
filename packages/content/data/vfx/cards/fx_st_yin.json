@@ -1,0 +1,44 @@
+{
+  "skillId": "fx_st_yin",
+  "idea": "MẶT ÂM (boss hai mặt, không đánh được): lưới lục giác tím viền sáng bao quanh thân, giữa trong suốt (kiểu fresnel); đứng yên, không nở. Lặp khi còn cờ.",
+  "element": "vo",
+  "path": "",
+  "scene": {
+    "palette": {
+      "core": "1a1030",
+      "body": "8a6fd0",
+      "rim": "ece4ff",
+      "accent": "f0e6a8",
+      "shadow": "0a0618"
+    },
+    "impactAt": 0
+  },
+  "shapeLang": [
+    "ring"
+  ],
+  "timing": {
+    "anticipationMs": 0,
+    "impactMs": 50,
+    "lingerMs": 900
+  },
+  "footprint": {
+    "lengthM": 2.2,
+    "widthM": 2.2,
+    "heightM": 2.4
+  },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": {
+    "drawCalls": 2,
+    "particles": 6,
+    "screenCover": 0.02,
+    "overdraw": 2
+  },
+  "textures": [],
+  "silhouette": "lưới lục giác tím viền sáng, giữa trong suốt, bao quanh thân",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles"
+  ]
+}
