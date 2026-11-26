@@ -3,6 +3,7 @@
 // nên có TRẦN: hết chỗ thì thể mới không được viền cho tới khi thể khác nhả ra (chết, đi xa, rời tầm nhìn).
 import * as THREE from 'three/webgpu';
 import { createInkHullMaterial } from '../../render/materials/world';
+import { markVfxMask } from '../../render/post';
 
 /** Số thể tối đa được viền cùng lúc (người chơi + quái). */
 export const INK_HULL_MAX = 10;
@@ -38,9 +39,16 @@ interface Hull {
 
 const _s = new THREE.Vector3();
 
+/** Vật liệu vỏ viền, đã vào mặt nạ của Họa Cảnh (Dạ Họa: bút Kuwahara không nhòe viền; không tác dụng ở style khác). */
+function inkMaterial(): THREE.MeshStandardNodeMaterial {
+  const m = createInkHullMaterial();
+  markVfxMask(m);
+  return m;
+}
+
 export class InkHulls {
   private hulls = new Map<THREE.Object3D, Hull>();
-  private mat = createInkHullMaterial();
+  private mat = inkMaterial();
   enabled = true;
 
   get count(): number {
