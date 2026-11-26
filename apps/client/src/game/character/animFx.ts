@@ -1,6 +1,6 @@
 // "Thân Pháp" T1: lớp cường điệu additive cho camera chéo. Hàm thuần (không đụng three) để test trong Node; mannequin.ts gọi sau mixer.
 // Không sửa clip gốc: khuếch đại độ lệch của xương so với tư thế nghỉ, nảy bước, nghiêng thân khi rẽ. Cờ bật/tắt để so A/B (`?thanphap=0` tắt, mặc định BẬT;
-// lớp chung cho mọi hệ, lớp riêng Kiếm tu qua `isKiemTu`; `window.__animlab.fx({...})` đổi lúc chạy).
+// lớp chung cho mọi hệ, lớp riêng theo hướng qua bảng `PATH_TP` (pathTp.ts); `window.__animlab.fx({...})` đổi lúc chạy).
 
 import { FLAGS } from '../../base/flags';
 import type { SpringParams } from './spring';
@@ -102,12 +102,6 @@ export function glideLean(speed: number): number {
 /** T2: hạ hông (m) khi lướt thấp. */
 export function glideDip(speed: number): number {
   return 0.04 * exagBlend(speed);
-}
-
-/** T3: pose idle Kiếm tu: cầm kiếm (đang ở thế đấu) thì xoay kiếm, tay không thì chắp tay ngắm trời; luân phiên theo `n`. */
-export const IDLE_POSES = { drawn: 'kiem_idle_xoay', free: 'kiem_idle_chap_tay' } as const;
-export function idlePoseFor(drawn: boolean): string {
-  return drawn ? IDLE_POSES.drawn : IDLE_POSES.free;
 }
 
 /** T3: đứng yên liên tục `still` giây thì tới lượt idle khi quá `after` giây (đặt lại về âm ngẫu nhiên sau mỗi lần). */

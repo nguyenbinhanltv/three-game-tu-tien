@@ -65,8 +65,8 @@ export interface CharacterView {
   setGreatBlade?(on: boolean): void;
   /** Cổ tu: sáo cổ thay kiếm + hũ cổ treo hông (model không hỗ trợ thì bỏ qua). */
   setCoGear?(on: boolean): void;
-  /** Thân Pháp: nhân vật theo hướng Kiếm tu thì bật lớp riêng (idle xoay kiếm, lướt thấp); model không hỗ trợ thì bỏ qua. */
-  setKiemTu?(on: boolean): void;
+  /** Thân Pháp (TP-3): hướng tu của nhân vật (khóa `PATH_TP`, undefined = chưa bật riêng) để chạy lớp riêng của hướng đó (idle, lướt thấp, nét kéo); model không hỗ trợ thì bỏ qua. */
+  setTpPath?(path: string | undefined): void;
   setTranKy?(on: boolean): void;
   /** Màu ánh kiếm theo bộ trang bị (hex '#rrggbb'; '' = không); kiếm có ánh nhẹ dù chưa +7. */
   setWeaponTint?(hex: string): void;
