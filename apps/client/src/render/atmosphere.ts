@@ -103,7 +103,7 @@ const SUN_DISTANCE = 260;
 /** Áp preset chỉnh màu cho đèn, trời, sương. Gọi lại khi đổi thời điểm trong ngày. */
 export function applyAtmosphere(scene: THREE.Scene, env: EnvLike, p: GradingPreset, name: string): void {
   // Họa Cảnh: không dùng sương của mood (đất và lá tự áp sương của painted-valley)
-  scene.fogNode = FLAGS.style === 'painted' ? null : atmosphereFog();
+  scene.fogNode = FLAGS.painted ? null : atmosphereFog();
   tuneAtmosphere(scene, env, p, name);
 }
 
@@ -134,7 +134,7 @@ export function tuneAtmosphere(scene: THREE.Scene, env: EnvLike, p: GradingPrese
   }
   env.hemi.color.setHex(p.skyColor);
   env.hemi.intensity = 1.25 * p.skyIntensity;
-  if (FLAGS.style === 'painted' && /night/.test(name)) {
+  if (FLAGS.painted && /night/.test(name)) {
     // Họa Cảnh đêm: đất/cỏ/cây không dùng đèn (tô phẳng + nhuộm trăng ở pass cuối) nên chỉ nhân vật/quái nhận đèn của mood: nâng đèn trời và đèn trăng
     // để họ còn đọc được (hình khối + sáng tối) thay vì thành bóng đen
     const lift = PAINTED_THEMES[levelId()]?.nightLift ?? 1;

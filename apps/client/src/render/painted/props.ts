@@ -67,7 +67,7 @@ const PAV_MIX = 0.7;
  * texture. Chỉ chạy khi `?style=painted`; mặc định trả lại đúng vật liệu đưa vào.
  */
 export function paintedPaving<M extends THREE.MeshStandardNodeMaterial>(m: M): M {
-  if (FLAGS.style !== 'painted') return m;
+  if (!FLAGS.painted) return m;
   m.lights = false;
   const base: N = diffuseColor.rgb;
   const ink: N = dot(base, vec3(0.2126, 0.7152, 0.0722));
@@ -84,12 +84,12 @@ export function paintedPaving<M extends THREE.MeshStandardNodeMaterial>(m: M): M
  * đã qua `paintedProp` (hai tông theo hướng mặt, không đèn). Màu theo instance (`instanceColor`) và màu đỉnh vẫn là màu gốc.
  */
 export function paintedStd(opts: THREE.MeshStandardMaterialParameters): THREE.Material {
-  if (FLAGS.style !== 'painted') return new THREE.MeshStandardMaterial(opts);
+  if (!FLAGS.painted) return new THREE.MeshStandardMaterial(opts);
   return paintedProp(new THREE.MeshStandardNodeMaterial(opts));
 }
 
 export function paintedProp<M extends THREE.MeshStandardNodeMaterial>(m: M): M {
-  if (FLAGS.style !== 'painted') return m;
+  if (!FLAGS.painted) return m;
   const tint = sunTint();
   m.lights = false;
   // màu ra = diffuseColor + emissive; phần cộng thêm = màu gốc × (tông − 1) để tổng là màu gốc × tông

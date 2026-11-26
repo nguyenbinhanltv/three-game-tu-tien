@@ -21,6 +21,7 @@ import { type AssetCache, type AssetHandle, assets } from '../core/assets';
 import { MonsterModel } from '../core/models';
 import { adoptGltfMaterials, toonBands } from '../../render/materials/world';
 import { FLAGS } from '../../base/flags';
+import { markVfxMask } from '../../render/post';
 import { type BossMove, SkinnedMonster } from './skinned';
 import type { SpringParams } from './spring';
 import { partExtras } from './sword';
@@ -939,7 +940,10 @@ export class MonsterSkins {
       m.emissiveNode = color(new THREE.Color(def.accent)).mul(smoothstep(0.08, 0.22, c.b.sub(c.r)).mul(c.b).mul(s.coreGlow));
     }
     // Dạ Cảnh: quái cũng tô bóng chia bậc như nhân vật (quái bán trong suốt `ghost` giữ nguyên).
-    if (FLAGS.style === 'da' && s.ghost === undefined) toonBands(m);
+    if (FLAGS.da && s.ghost === undefined) {
+      toonBands(m);
+      markVfxMask(m);
+    }
     this.mats.set(def.id, m);
     return m;
   }

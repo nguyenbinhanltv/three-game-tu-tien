@@ -260,7 +260,7 @@ function tkTuftAt(x: number, z: number, h: number, slope: number, r: number, out
   const pick = hash01(Math.floor(x * 3.7), Math.floor(z * 3.7), 829);
   const card = pick < 0.5 ? 0 : pick < 0.75 ? 1 : pick < 0.9 ? 2 : 3;
   const n = fbm(x * 0.03, z * 0.03, 2, 20261116 + 5);
-  const painted = FLAGS.style === 'painted';
+  const painted = FLAGS.painted;
   _c.copy(painted ? C_STAR_DEEP_P : C_STAR_DEEP)
     .lerp(painted ? C_STAR_P : C_STAR, Math.max(0, Math.min(1, 0.45 + n * 0.8)))
     .multiplyScalar(0.8 + r2 * 0.32);
