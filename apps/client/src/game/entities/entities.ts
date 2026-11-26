@@ -199,6 +199,8 @@ export class EntityManager {
   private time = 0;
   /** Nghe sự kiện chiêu của mọi người chơi trong tầm (K-4): `sid`, sự kiện (windup/hit/recovery/cancel/end). */
   onSkillEvent: ((sid: string, e: SkillEvent) => void) | null = null;
+  /** Người chơi `sid` vừa bắt đầu/ngừng ngự kiếm (đổi cờ `PF_FLYING`): `x`,`z` là chỗ đang vẽ. */
+  onFlyChange: ((sid: string, flying: boolean, x: number, z: number) => void) | null = null;
   /** Quái đang thấy vừa gục (một lần mỗi lần chết; engine vẽ vết mực M4-14). */
   onMonsterDeath: ((m: MonVis) => void) | null = null;
   /** Cờ quái mở rộng vừa bật/tắt (E1-E): vẽ vòng phản đòn/yếu điểm, bụi chui đất. */
@@ -452,6 +454,8 @@ export class EntityManager {
     view.players.forEach((s, sid) => {
       const isLocal = sid === this.mySid;
       let v = this.players.get(sid);
+      // Người vừa vào tầm nhìn khung này: `v.fl` còn 0 nên không được coi là "vừa đổi cờ bay".
+      const fresh = !v;
       if (!v) {
         if (!isLocal) {
           const d2 = (s.x - local.x) ** 2 + (s.z - local.z) ** 2;
@@ -507,6 +511,8 @@ export class EntityManager {
         const sp = Math.hypot(v.x - ox, v.z - oz) / Math.max(dt, 1e-3);
         v.speed += (sp - v.speed) * Math.min(1, dt * 8);
       }
+      // Cờ bay đổi (không tính lần đầu thấy người này): engine phát cảnh cất/hạ cánh (V-P10).
+      if (!fresh && ((v.fl ^ s.fl) & PF_FLYING) !== 0) this.onFlyChange?.(sid, (s.fl & PF_FLYING) !== 0, v.x, v.z);
       v.fl = s.fl;
       v.mt = s.mt ?? '';
       // Pháp bảo phụ: chỉ dựng cho người trong tầm nhìn gần (nhỏ, không đáng nạp xa).
