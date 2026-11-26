@@ -1,10 +1,10 @@
 // Hình TRẠNG THÁI kéo dài trên quái/người (Họa Pháp Lô 2, PR2): làm chậm, độc, bỏng, choáng (quái) và hồi dần (người).
-// Server chỉ gửi bit hiển thị (`MF_SLOW/MF_POISON/MF_BURN/MF_STUN` ở `MonS.mf`, `PF_HOT` ở `PlayerS.fl`), suy ra từ trạng thái server, KHÔNG ảnh hưởng luật.
+// Server chỉ gửi bit hiển thị (`MF_SLOW/MF_POISON/MF_BURN/MF_DAZED` ở `MonS.mf`, `PF_HOT` ở `PlayerS.fl`), suy ra từ trạng thái server, KHÔNG ảnh hưởng luật.
 // Cách vẽ: timeline ngắn (≈1 s, sinh bởi `tools/vfx-forge/trung-don.mjs`, khóa `fx_st_*`) bám theo thực thể (`follow`), phát lại khi còn cờ.
 // Ngân sách: mỗi thực thể ≤ 1 trạng thái (ưu tiên cao nhất), tối đa `STATUS_MAX_ENTS` thực thể gần camera nhất, bỏ phần của người khác khi đông.
 
 import { FX_TIMELINE } from '@dtl/content';
-import { MF_BURN, MF_POISON, MF_SLOW, MF_STUN, PF_HOT, PF_DEAD } from '@dtl/shared';
+import { MF_BURN, MF_DAZED, MF_POISON, MF_SLOW, PF_HOT, PF_DEAD } from '@dtl/shared';
 import type { FxCaster, FxRunner } from './fxTimeline';
 import { OTHERS_FX_LIVE_MAX } from './fxBudget';
 
@@ -28,7 +28,8 @@ export const STATUS_DEF: Record<StatusKind, { key: string; pal: string; period: 
 
 /** Trạng thái hiển thị ưu tiên cao nhất của một quái từ `mf`; undefined nếu không có. */
 export function monStatusOf(mf: number): StatusKind | undefined {
-  if (mf & MF_STUN) return 'stun';
+  // Bit riêng cho choáng THẬT: `MF_STUN` còn bật cho khựng/ngã 350 ms của đòn nặng, không được vẽ đốm choáng.
+  if (mf & MF_DAZED) return 'stun';
   if (mf & MF_BURN) return 'burn';
   if (mf & MF_POISON) return 'poison';
   if (mf & MF_SLOW) return 'slow';

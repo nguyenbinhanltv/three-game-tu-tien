@@ -72,11 +72,13 @@ export const MF_SENSED = 128;
 export const MF_FACE = 256;
 /** Boss hai mặt đang giao chiến (cả mặt Dương lẫn Âm): `ce` = lúc lật tiếp, để client đếm ngược. */
 export const MF_FACE_T = 512;
-/** Chỉ để vẽ hình (suy ra từ trạng thái server mỗi tick, không ảnh hưởng luật): đang bị làm chậm / độc / bỏng. `ce` không dùng cho các cờ này. */
+/** Chỉ để vẽ hình (suy ra từ trạng thái server mỗi tick, không ảnh hưởng luật): đang bị làm chậm / độc / bỏng / choáng thật. `ce` không dùng cho các cờ này. */
 export const MF_SLOW = 1024;
 export const MF_POISON = 2048;
 export const MF_BURN = 4096;
-export const MF_DISP_MASK = MF_SLOW | MF_POISON | MF_BURN;
+/** Choáng THẬT (ngắt chú, choáng của chiêu): khác khựng/ngã 350 ms của đòn nặng (`reactMonster`), vốn cũng bật `MF_STUN` để cắt đòn. */
+export const MF_DAZED = 8192;
+export const MF_DISP_MASK = MF_SLOW | MF_POISON | MF_BURN | MF_DAZED;
 export const MF_MX_MASK = MF_REFLECT | MF_WEAK | MF_BURROW | MF_REAL | MF_SENSED | MF_FACE | MF_FACE_T;
 
 /** Client → server. */

@@ -3,6 +3,7 @@ import {
   computeDamage,
   groundAt,
   MF_BURN,
+  MF_DAZED,
   MF_POISON,
   MF_SLOW,
   MF_STUN,
@@ -187,6 +188,28 @@ describe('bản sắc công pháp (số)', () => {
     m.poison = undefined;
     sim.tick(250);
     expect(m.s.mf & (MF_SLOW | MF_POISON | MF_BURN)).toBe(0);
+  });
+  it('MF_DAZED chỉ bật với choáng thật: khựng/ngã của đòn nặng (stunUntil = staggerUntil) không bật', () => {
+    const { sim, mon } = setup(10, 'thanh_moc_dan_kinh');
+    const m = mon('mon_soi_xam', 4);
+    const setFlags = sim as unknown as { setMonFlags(m: unknown, mf: number, ce: number): void };
+    sim.tick(250);
+    // Khựng: giống `reactMonster` (MF_STUN + stunUntil = staggerUntil).
+    m.stunUntil = m.staggerUntil = sim.now + 350;
+    setFlags.setMonFlags(m, MF_STUN, m.stunUntil);
+    sim.tick(50);
+    expect(m.s.mf & MF_STUN).toBe(MF_STUN);
+    expect(m.s.mf & MF_DAZED).toBe(0);
+    // Choáng thật dài hơn khựng: bật.
+    m.stunUntil = sim.now + 3000;
+    setFlags.setMonFlags(m, MF_STUN, m.stunUntil);
+    sim.tick(50);
+    expect(m.s.mf & MF_DAZED).toBe(MF_DAZED);
+    // Hết choáng: tắt.
+    m.stunUntil = 0;
+    m.staggerUntil = 0;
+    sim.tick(50);
+    expect(m.s.mf & MF_DAZED).toBe(0);
   });
   it('PF_HOT bật khi có hồi dần và tắt khi hết', () => {
     const { sim, p } = setup(10, 'thanh_moc_dan_kinh');

@@ -1,5 +1,6 @@
 import {
   MF_BURN,
+  MF_DAZED,
   MF_DISP_MASK,
   MF_POISON,
   MF_SLOW,
@@ -23,6 +24,8 @@ function syncDisplayFlags(sys: MonsterSystem, m: MonEnt): void {
   const now = sys.c.now;
   let want = 0;
   if (m.slow && now < m.slow.until) want |= MF_SLOW;
+  // Choáng thật = còn `stunUntil` mà không phải khựng/ngã của đòn nặng (cùng điều kiện `stunned` ở hitMonster).
+  if (now < m.stunUntil && !(now < m.staggerUntil && m.stunUntil === m.staggerUntil)) want |= MF_DAZED;
   if (m.poison && now < m.poison.until) want |= m.poison.kind === 'burn' ? MF_BURN : MF_POISON;
   if ((m.s.mf & MF_DISP_MASK) !== want) m.s.mf = (m.s.mf & ~MF_DISP_MASK) | want;
 }
