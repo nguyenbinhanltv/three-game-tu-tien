@@ -1,5 +1,5 @@
 // Tách từ sim.ts (tối ưu Đợt E): common.
-import { formationHurts, type MonsterDef, type SkillDef } from '@dtl/shared';
+import { formationHurts, skillLock, type MonsterDef, type SkillDef } from '@dtl/shared';
 import {
   counterMul,
   CRIT_CHANCE,
@@ -87,8 +87,8 @@ export type PlayMode = 'base' | 'avg' | 'skilled';
 export function playerDps(level: number, atk: number, monDef: number, id?: MethodId, monElem?: string, mode: PlayMode = 'avg'): number {
   const m = methodAt(level, id);
   const pas = m?.passive;
-  // Nhịp đánh: mọi đòn thường 1 GCD; kiếm tu hoàn 0,2 s mỗi chuỗi 3 đòn.
-  const gcd = GCD - (pas?.gcdRefund ? pas.gcdRefund / 3 : 0);
+  // Nhịp chiêu có hồi chiêu: mỗi lần dùng khóa 1 GCD. Đòn thường là CHUỖI (Dạ Cảnh): mỗi đòn khóa `lock` riêng, kiếm tu rút `gcdRefund` ở đòn cuối.
+  const gcd = GCD;
   // Bạo kích: nền 10% + nội tại; đủ kiếm ý (đánh liên tục) thì thêm `critAtMax`.
   const crit = Math.min(STAT_CAPS.critRate, CRIT_CHANCE + (pas?.critBase ?? 0) + (pas?.critAtMax ?? 0));
   const critMul = 1 + crit * (CRIT_MULT - 1);
@@ -104,6 +104,15 @@ export function playerDps(level: number, atk: number, monDef: number, id?: Metho
     s.kind === 'aoe' ||
     (s.kind === 'dash' && s.power > 0) ||
     (s.kind === 'formation' && !!s.formation && formationHurts(s.formation.mode));
+  /** Sát thương mỗi giây của đòn thường đánh liên tục: chuỗi thì Σ sát thương / Σ khóa của một vòng chuỗi; không chuỗi thì một đòn mỗi GCD. */
+  const basicPerSec = (b: SkillDef): number => {
+    const hits = b.combo?.hits;
+    if (!hits?.length) return one(b) / GCD;
+    // Mỗi đòn chuỗi = (hệ số đòn / hệ số gốc) × một đòn gốc: phòng ngự nhân cùng tỉ lệ (`comboDefScale`), nên không mất sát thương vì chia nhỏ đòn.
+    const dmg = hits.reduce((n, h) => n + (h.power / Math.max(0.01, b.power)) * one(b), 0);
+    const time = hits.reduce((n, _h, i) => n + skillLock(b, i), 0) - (pas?.gcdRefund ?? 0);
+    return dmg / Math.max(0.1, time);
+  };
   /** Xoay vòng: chiêu có hồi chiêu dùng ngay khi hồi xong, thời gian còn lại đánh đòn `basic`. */
   const rot = (skills: SkillDef[], basic: SkillDef): number => {
     let perSec = 0;
@@ -116,7 +125,7 @@ export function playerDps(level: number, atk: number, monDef: number, id?: Metho
       // Lướt không ăn GCD.
       if (s.kind !== 'dash') gcdUsed += (gcd + s.cast) / s.cd;
     }
-    return perSec + (one(basic) / gcd) * Math.max(0, 1 - gcdUsed);
+    return perSec + basicPerSec(basic) * Math.max(0, 1 - gcdUsed);
   };
   const bar = [...SKILLS, ...methodSkills(level, id)];
   const basic = at(SKILLS, 0);

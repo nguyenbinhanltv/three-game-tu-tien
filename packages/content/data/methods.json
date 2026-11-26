@@ -1,7 +1,7 @@
 {
   "methods": [
     { "id": "lac_kiem_quyet", "role": "dps", "dash": "skl_kiem_anh_bo", "sig": "skl_phi_kiem_truy_hon", "ult": "skl_van_kiem_quy_tong", "color": "9fd8ff",
-      "passive": { "kind": "kiem_y", "critBase": 0.05, "critAtMax": 0.1, "gcdRefund": 0.2 },
+      "passive": { "kind": "kiem_y", "critBase": 0.05, "critAtMax": 0.1, "gcdRefund": 0.1 },
       "resource": { "id": "kiem_y", "max": 5, "ui": "pips", "gain": { "basic": 1 }, "decay": { "after": 10 } },
       "branches": [
         { "id": "pha_mach", "tier": 16, "grants": ["skl_hoanh_kiem_pha_mach"] },

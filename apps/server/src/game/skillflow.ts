@@ -28,9 +28,15 @@ export class SkillFlow {
   /** id chiêu → lúc (ms) chiêu áp xong gần nhất: mở cửa sổ cho các chiêu có `chain.after` chứa id đó. */
   readonly opened = new Map<string, number>();
   lastDashAt = -1e9;
+  /**
+   * Bộ đệm đòn chuỗi: MỘT lệnh đòn chuỗi tới sớm (≤ `COMBO_BUFFER_MS` trước khi hết khóa), ra lại lúc `at` (ms, giờ server).
+   * `msg` là tin gốc của client: lúc ra vẫn đi qua `onSkill` nên mọi kiểm (mục tiêu, tầm, linh lực…) chạy lại đầy đủ.
+   */
+  buffered: { msg: unknown; at: number } | null = null;
 
   reset(): void {
     this.pending = null;
+    this.buffered = null;
     this.comboIdx = -1;
     this.opened.clear();
   }

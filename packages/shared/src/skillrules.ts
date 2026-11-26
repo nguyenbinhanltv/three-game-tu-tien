@@ -9,6 +9,29 @@ import type { ComboDef, DashDef, SkillDef } from './types';
 
 /** Đòn thường liên hoàn đứt nếu ngừng đánh quá chừng này (giây). */
 export const COMBO_WINDOW = 2;
+/**
+ * Bộ đệm đòn chuỗi (ms): lệnh đòn chuỗi tới sớm không quá chừng này trước khi hết khóa thì server GIỮ lại và ra đúng lúc hết khóa
+ * (thay vì bỏ im lặng), để bấm nhịp nhàng vẫn ra chuỗi liền dù có độ trễ mạng. Chỉ giữ MỘT ý định, không cộng dồn.
+ */
+export const COMBO_BUFFER_MS = 250;
+/** Khoảng tối thiểu (giây) giữa lúc đòn chuỗi trúng và lúc hết khóa: đòn kế không được bắt đầu trước khi đòn này áp xong. */
+export const COMBO_LOCK_MARGIN = 0.05;
+
+/**
+ * Hệ số phòng ngự áp cho một đòn chuỗi kiểu mới (có `lock`): bằng tỉ lệ hệ số đòn so với hệ số gốc của chiêu. Phòng ngự trừ PHẲNG mỗi đòn, nên chia một đòn
+ * thành nhiều đòn nhỏ nhanh sẽ bị trừ nhiều lần; nhân phòng ngự theo cùng tỉ lệ thì tổng sát thương của cả chuỗi đúng bằng "một đòn gốc mỗi Σpower giây".
+ * Đòn không thuộc chuỗi kiểu mới: 1.
+ */
+export function comboDefScale(s: SkillDef, comboIdx?: number): number {
+  const h = comboIdx !== undefined && comboIdx >= 0 ? s.combo?.hits[comboIdx] : undefined;
+  return h?.lock !== undefined && s.power > 0 ? h.power / s.power : 1;
+}
+
+/** Khóa (giây từ lúc bấm) trước khi ra được đòn/chiêu kế: đòn chuỗi có `lock` thì theo đó, còn lại là GCD. */
+export function skillLock(s: SkillDef, comboIdx?: number): number {
+  const l = comboIdx !== undefined && comboIdx >= 0 ? s.combo?.hits[comboIdx]?.lock : undefined;
+  return l ?? GCD;
+}
 /** Tốc độ lướt (m/s) và bước mô phỏng nhỏ để không xuyên vật cản mỏng. */
 export const DASH_SPEED = 28;
 export const DASH_STEP = 0.0125;
@@ -186,6 +209,8 @@ export function validateSkillRules(s: SkillDef, pose: PoseDef | undefined): stri
     for (const [i, h] of s.combo.hits.entries()) {
       if (!(h.power > 0)) errs.push(`${at}: combo.hits[${i}].power phải > 0`);
       if (!(h.hitAt >= 0 && h.hitAt <= GCD)) errs.push(`${at}: combo.hits[${i}].hitAt ngoài 0–GCD`);
+      if (h.lock !== undefined && !(h.lock >= h.hitAt + COMBO_LOCK_MARGIN - 1e-9 && h.lock <= GCD + 1e-9))
+        errs.push(`${at}: combo.hits[${i}].lock phải trong hitAt + ${COMBO_LOCK_MARGIN} … GCD`);
     }
   }
   if (s.dash) {

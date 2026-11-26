@@ -672,10 +672,12 @@ function tickCombat(eng: Game, now: number, me: PState | undefined): void {
       const dead = (me.fl & (PF_DEAD | PF_FLYING | PF_CASTING)) !== 0;
       const dist = Math.hypot(m.x - eng.cur.x, m.z - eng.cur.z);
       if (!dead && Date.now() >= st.gcdAt - 30 && dist < SKILLS[0]!.range + 1) {
-        predictSkill(eng, 0, eng.bar()[0] ?? SKILLS[0]!, true);
+        // Đòn thường của ô 1 ĐANG HIỆN (ở tư thế là chiêu thay thế): gửi đúng chiêu đã dự đoán hình, không phải luôn `SKILLS[0]`.
+        const basic = eng.bar()[0] ?? SKILLS[0]!;
+        predictSkill(eng, 0, basic, true);
         eng.lastAttackSend = now;
         eng.faceTargetUntil = now + 600;
-        eng.send(C.SKILL, { id: SKILLS[0]!.id, t: eng.targetId, ...eng.iso?.aimMsg() });
+        eng.send(C.SKILL, { id: basic.id, t: eng.targetId, ...eng.iso?.aimMsg() });
       }
     }
   }
