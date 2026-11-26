@@ -183,6 +183,14 @@ import fx_fx_env_herb from '../data/fx/fx_env_herb.json';
 import fx_fx_env_gate_flat from '../data/fx/fx_env_gate_flat.json';
 import fx_fx_env_gate from '../data/fx/fx_env_gate.json';
 import fx_fx_st_hot from '../data/fx/fx_st_hot.json';
+import fx_fx_st_ward_end from '../data/fx/fx_st_ward_end.json';
+import fx_fx_st_ward from '../data/fx/fx_st_ward.json';
+import fx_fx_st_real from '../data/fx/fx_st_real.json';
+import fx_fx_st_sensed from '../data/fx/fx_st_sensed.json';
+import fx_fx_st_yang from '../data/fx/fx_st_yang.json';
+import fx_fx_st_weak from '../data/fx/fx_st_weak.json';
+import fx_fx_st_reflect from '../data/fx/fx_st_reflect.json';
+import fx_fx_st_yin from '../data/fx/fx_st_yin.json';
 import fx_fx_st_stun from '../data/fx/fx_st_stun.json';
 import fx_fx_st_burn from '../data/fx/fx_st_burn.json';
 import fx_fx_st_poison from '../data/fx/fx_st_poison.json';
@@ -478,6 +486,14 @@ export const FX_TIMELINES = [
   fx_fx_env_gate_flat,
   fx_fx_env_gate,
   fx_fx_st_hot,
+  fx_fx_st_ward_end,
+  fx_fx_st_ward,
+  fx_fx_st_real,
+  fx_fx_st_sensed,
+  fx_fx_st_yang,
+  fx_fx_st_weak,
+  fx_fx_st_reflect,
+  fx_fx_st_yin,
   fx_fx_st_stun,
   fx_fx_st_burn,
   fx_fx_st_poison,

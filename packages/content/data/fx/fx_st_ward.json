@@ -1,0 +1,75 @@
+{
+  "skill": "fx_st_ward",
+  "trigger": "fx",
+  "fxKind": "~st_ward",
+  "palette": "hit_guard",
+  "events": [
+    {
+      "type": "mesh",
+      "shape": "sprite",
+      "sprite": "chung_ward",
+      "billboard": true,
+      "at": "self",
+      "t": 0,
+      "dur": 1.1,
+      "offset": [
+        0,
+        1.1,
+        0
+      ],
+      "scale": 1.25,
+      "scaleTo": 1.3,
+      "sweep": 0,
+      "erodeFrom": 0.8,
+      "ragged": 0.5,
+      "tone": "body",
+      "alpha": 0.8,
+      "tier": 0,
+      "seed": 2560,
+      "follow": true
+    },
+    {
+      "type": "mesh",
+      "shape": "sprite",
+      "sprite": "chung_ward",
+      "billboard": true,
+      "at": "self",
+      "t": 0.03,
+      "dur": 0.1,
+      "offset": [
+        0,
+        1.1,
+        0
+      ],
+      "scale": 1.4,
+      "scaleTo": 1.63,
+      "sweep": 0,
+      "erodeFrom": 0.2,
+      "ragged": 0.5,
+      "tone": "rim",
+      "alpha": 0.85,
+      "tier": 1,
+      "seed": 2561,
+      "follow": true
+    },
+    {
+      "type": "particles",
+      "kind": "dust",
+      "t": 0.3,
+      "n": 1,
+      "speed": 0.5,
+      "spread": 0.8,
+      "life": 0.6,
+      "size": 0.12,
+      "at": "self",
+      "tone": "rim",
+      "tier": 1,
+      "offset": [
+        0,
+        1,
+        0
+      ],
+      "grav": -0.3
+    }
+  ]
+}

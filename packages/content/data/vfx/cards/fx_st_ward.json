@@ -1,0 +1,44 @@
+{
+  "skillId": "fx_st_ward",
+  "idea": "HỘ THỂ / KHIÊN (người chơi): khiên mai rùa lục giác lam thép trùm quanh thân, khe mực, viền trắng lạnh; đứng yên (khác phản đòn xoay). Lặp khi còn cờ.",
+  "element": "kim",
+  "path": "",
+  "scene": {
+    "palette": {
+      "core": "10202e",
+      "body": "6fa8d0",
+      "rim": "eaf6ff",
+      "accent": "f0e6a8",
+      "shadow": "070d14"
+    },
+    "impactAt": 0
+  },
+  "shapeLang": [
+    "ring"
+  ],
+  "timing": {
+    "anticipationMs": 0,
+    "impactMs": 50,
+    "lingerMs": 900
+  },
+  "footprint": {
+    "lengthM": 2.2,
+    "widthM": 2.2,
+    "heightM": 2.4
+  },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": {
+    "drawCalls": 2,
+    "particles": 6,
+    "screenCover": 0.02,
+    "overdraw": 2
+  },
+  "textures": [],
+  "silhouette": "khiên mai rùa lục giác lam thép trùm quanh thân",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles"
+  ]
+}

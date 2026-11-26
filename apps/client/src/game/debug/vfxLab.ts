@@ -9,6 +9,7 @@ import { movesOf } from '../fx/monMove';
 import { LABELS } from '../entities/labelBatch';
 import { monScale } from '../fx/monFx';
 import { monHitPalette } from '../fx/hitFx';
+import type { StatusKind } from '../fx/statusFx';
 import { FxMesh } from '../../render/materials/vfx';
 import { PARTICLES } from '../../render/vfx/particles';
 import { evictSpriteGroups, residentSpriteGroups } from '../../render/vfx/art';
@@ -144,12 +145,19 @@ const LAB_ENV: Record<string, { dx: number; chest: number }> = {
 };
 
 /** Timeline trạng thái kéo dài (`fx_st_*`) → loại trạng thái (đặt ở quái, riêng hồi dần ở mình). */
-const LAB_ST: Record<string, 'slow' | 'poison' | 'burn' | 'stun' | 'hot'> = {
+const LAB_ST: Record<string, StatusKind> = {
   fx_st_slow: 'slow',
   fx_st_poison: 'poison',
   fx_st_burn: 'burn',
   fx_st_stun: 'stun',
   fx_st_hot: 'hot',
+  fx_st_yin: 'yin',
+  fx_st_reflect: 'reflect',
+  fx_st_weak: 'weak',
+  fx_st_yang: 'yang',
+  fx_st_sensed: 'sensed',
+  fx_st_real: 'real',
+  fx_st_ward: 'ward',
 };
 
 /** `MonsterBurrow` rút gọn: các trường phòng thử cần. */
@@ -273,18 +281,18 @@ export function installVfxLab(g: Game, onHazard?: (g: Game, m: HazardMsg) => voi
             players: Map<string, { x: number; y: number; z: number }>;
           };
         };
-        const ent = stKind === 'hot' ? h.ents.players.get(gg.sid) : hit ? h.ents.monsters.get(hit[0]) : undefined;
+        const ent = stKind === 'hot' || stKind === 'ward' ? h.ents.players.get(gg.sid) : hit ? h.ents.monsters.get(hit[0]) : undefined;
         if (!h.statusFx || !ent) return false;
         const scale = 'model' in ent ? monScale((ent as { model: { height: number } }).model.height) : 1;
         return h.statusFx.play(
           {
-            id: stKind === 'hot' ? gg.sid : hit![0],
+            id: stKind === 'hot' || stKind === 'ward' ? gg.sid : hit![0],
             x: ent.x,
             y: ent.y,
             z: ent.z,
             scale,
             kind: stKind,
-            mine: stKind === 'hot',
+            mine: stKind === 'hot' || stKind === 'ward',
             actor: ent,
           },
           true,

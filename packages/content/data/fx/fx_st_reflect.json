@@ -1,0 +1,75 @@
+{
+  "skill": "fx_st_reflect",
+  "trigger": "fx",
+  "fxKind": "~st_reflect",
+  "palette": "hit_guard",
+  "events": [
+    {
+      "type": "mesh",
+      "shape": "sprite",
+      "sprite": "chung_ward",
+      "billboard": true,
+      "at": "self",
+      "t": 0,
+      "dur": 1,
+      "offset": [
+        0,
+        1.2,
+        0
+      ],
+      "scale": 1.4,
+      "scaleTo": 1.5,
+      "sweep": 0,
+      "erodeFrom": 0.75,
+      "ragged": 0.5,
+      "tone": "body",
+      "alpha": 1,
+      "tier": 0,
+      "seed": 2460,
+      "follow": true,
+      "spin": 90
+    },
+    {
+      "type": "mesh",
+      "shape": "sprite",
+      "sprite": "chung_ward",
+      "billboard": true,
+      "at": "self",
+      "t": 0.03,
+      "dur": 0.1,
+      "offset": [
+        0,
+        1.2,
+        0
+      ],
+      "scale": 1.57,
+      "scaleTo": 1.82,
+      "sweep": 0,
+      "erodeFrom": 0.2,
+      "ragged": 0.5,
+      "tone": "accent",
+      "alpha": 0.85,
+      "tier": 1,
+      "seed": 2461,
+      "follow": true
+    },
+    {
+      "type": "particles",
+      "kind": "spark",
+      "t": 0.2,
+      "n": 1,
+      "speed": 1.8,
+      "spread": 0.9,
+      "life": 0.4,
+      "size": 0.06,
+      "at": "self",
+      "tone": "rim",
+      "tier": 1,
+      "offset": [
+        0,
+        1.2,
+        0
+      ]
+    }
+  ]
+}
