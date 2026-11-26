@@ -21,7 +21,18 @@ import {
   LocoImpulse,
   SPRING_TP,
 } from './animFx';
-import { DEATH_DIR_TTL, DEATH_TURN_S, dashClipOf, holdHipsInPlace, deathYawOffset, flinchAmpOf, hitClipOf, hitSideOf } from './hitDir';
+import {
+  DEATH_DIR_TTL,
+  DEATH_TURN_S,
+  dashClipOf,
+  knockCancelled,
+  knockRate,
+  holdHipsInPlace,
+  deathYawOffset,
+  flinchAmpOf,
+  hitClipOf,
+  hitSideOf,
+} from './hitDir';
 import { boneKey } from './ikpose';
 import { applyProportions, proportionBones, type BoneScale } from './hero';
 import * as THREE from 'three/webgpu';
@@ -711,6 +722,9 @@ export class MannequinCharacter implements CharacterView {
   private drawn = false;
   /** Đòn nối tiếp sau đòn hiện tại (ngã → đứng dậy). */
   private chain: string | null = null;
+  /** Tốc độ phát clip nối (đứng dậy) và cờ đang ngã (để hủy khi server báo di chuyển/ra chiêu). */
+  private chainRate = 1;
+  private knocking = false;
   private frozenMix = new Map<THREE.AnimationAction, number>();
   private swingBase = 0;
   private locoCycles = 1;
@@ -940,7 +954,8 @@ export class MannequinCharacter implements CharacterView {
       this.shot = null;
       const next = this.chain;
       this.chain = null;
-      if (next && !this.dead) this.oneShot(next);
+      if (next && !this.dead) this.oneShot(next, this.chainRate);
+      else this.knocking = false;
     });
     this.play('Idle_Loop');
     this.mixer.update(0);
@@ -1301,6 +1316,7 @@ export class MannequinCharacter implements CharacterView {
 
   attack(o: AttackOpts = {}): void {
     if (this.dead) return;
+    this.cancelKnock();
     this.attacks++;
     this.combatT = COMBAT_HOLD;
     const moving = !!this.lastAnim && this.lastAnim.speed > 0.3 && !this.perfBlocked();
@@ -1397,6 +1413,7 @@ export class MannequinCharacter implements CharacterView {
     const pose = this.tpl.bank?.get(id);
     if (!pose) return false;
     if (this.dead || this.perfBlocked()) return true;
+    this.cancelKnock();
     if (o.delay && o.delay > 0) {
       this.pendingPerform = { id, left: o.delay, o };
       return true;
@@ -1571,12 +1588,27 @@ export class MannequinCharacter implements CharacterView {
   knockdown(): void {
     if (this.dead) return;
     this.chain = this.tpl.clips.has('LayToIdle') ? 'LayToIdle' : null;
-    this.oneShot('Hit_Knockback');
+    // Ngã chỉ là hình: nằm + đứng dậy gói trong KNOCK_TOTAL_S (tăng tốc cả hai clip), hủy khi server báo di chuyển/ra chiêu (`cancelKnock`).
+    const rate = knockRate(
+      this.tpl.clips.get('Hit_Knockback')?.duration ?? 0,
+      this.chain ? (this.tpl.clips.get('LayToIdle')?.duration ?? 0) : 0,
+    );
+    this.chainRate = rate;
+    this.knocking = this.oneShot('Hit_Knockback', rate);
     if (ANIM_FX.ragdoll && this.lodLevel === 0) {
       // Ngã: xung mạnh theo hướng đòn cuối, khớp mềm hẳn trong lúc nằm.
       const lh = this.lastHit;
       (this.rag ??= new RagRig(this.rig)).down(this.root.rotation.y, lh.dx, lh.dz);
     }
+  }
+
+  /** Hủy ngã đang chạy (đứng dậy nhanh: clip hiện tại mờ trong 0,15 s, nền chạy lại). */
+  private cancelKnock(): void {
+    if (!this.knocking) return;
+    this.knocking = false;
+    this.chain = null;
+    if (this.shot) this.shot.fadeOut(0.15);
+    this.shot = null;
   }
 
   hitReact(o: HitOpts): void {
@@ -1646,6 +1678,12 @@ export class MannequinCharacter implements CharacterView {
     }
     // Chết/hồi sinh: quên hướng chạy nhớ được, để bước nhảy vị trí lúc hồi sinh không thành cú đảo chiều giả.
     if (a.dead !== this.dead) this.pivot.reset();
+    // Hồi sinh: đứng dậy từ tư thế nằm (LayToIdle) thay vì bật đứng ngay.
+    if (!a.dead && this.dead && this.tpl.clips.has('LayToIdle')) {
+      // Phát nhanh theo trần như ngã (KNOCK_TOTAL_S) và coi là ngã: đi/ra chiêu ngay thì hủy, không trượt đi trong tư thế nằm (kể cả nhân vật của mình).
+      this.chain = null;
+      this.knocking = this.oneShot('LayToIdle', knockRate(0, this.tpl.clips.get('LayToIdle')?.duration ?? 0));
+    }
     this.dead = a.dead;
     if (this.dead && this.deathTurn.t < 1) {
       this.deathTurn.t = Math.min(1, this.deathTurn.t + realDt / DEATH_TURN_S);
@@ -1667,6 +1705,7 @@ export class MannequinCharacter implements CharacterView {
       this.inner.rotation.y = pv.yawOffset;
     }
     this.lastAnim = a;
+    if (this.knocking && knockCancelled(a)) this.cancelKnock();
     this.updatePerform(dt, a);
     this.updateAtk(dt);
     this.grounded = !(a.flying || a.airborne || a.sky);
