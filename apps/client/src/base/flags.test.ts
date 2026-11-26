@@ -27,6 +27,12 @@ describe('cờ ?style (Họa Cảnh)', () => {
     expect(readFlags('?style=').style).toBeNull();
   });
 
+  it('?style=da bật hướng Dạ Cảnh, loại trừ painted', () => {
+    expect(readFlags('?style=da').style).toBe('da');
+    expect(readFlags('?style=DA').style).toBeNull();
+    expect(readFlags('?style=da&style=painted').style).toBe('da');
+  });
+
   it('có mô tả trong FLAG_DOCS', () => {
     expect(FLAG_DOCS.style?.scope).toBe('diag');
   });
