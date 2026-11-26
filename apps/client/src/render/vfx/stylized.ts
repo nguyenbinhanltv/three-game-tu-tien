@@ -663,7 +663,7 @@ function spriteNodesImpl(U: FxUniforms, group: SpriteGroup): { color: N; opacity
   const nRamp = mix(mix(mix(nCore, nBody, smoothstep(0.04, 0.4, nT)), nRim, smoothstep(0.4, 0.8, nT)), nWhite, smoothstep(0.9, 1.0, nT));
   const nWarm = smoothstep(0.0, 0.08, ts.r.sub(ts.g.mul(0.9)));
   const nHybrid = mix(nRamp, min(ts.rgb.mul(1.12), vec3(1.0, 0.95, 0.6)), nWarm);
-  // Chọn kiểu tô theo `fxA.x`: 1 lôi, 2 kiếm, 3 hộ pháp, 4 thủy, 5 nguyệt, 6 xương, 7 đất/độc, 8 sét tím, 9 đao, 10 đan, 11 cổ thần, 12 theo bảng timeline (0 = âm hồn).
+  // Chọn kiểu tô theo `fxA.x`: 1 lôi, 2 kiếm, 3 hộ pháp, 4 thủy, 5 nguyệt, 6 xương, 7 đất/độc, 8 sét tím, 9 đao, 10 đan, 11 cổ thần, 12 theo bảng timeline, 13 như 12 nhưng đáy mực sáng và mực đặc trong suốt hơn (hào quang Hóa Thần) (0 = âm hồn).
   const is = (n: number) => step(n - 0.5, U.a.x).mul(float(1).sub(step(n + 0.5, U.a.x)));
   const spStyled0 = mix(mix(mix(spLift, lRamp, is(1)), kRamp, is(2)), hRamp, is(3));
   const spStyled1 = mix(mix(mix(spStyled0, wRamp, is(4)), mRamp, is(5)), boneRamp, is(6));
@@ -679,7 +679,15 @@ function spriteNodesImpl(U: FxUniforms, group: SpriteGroup): { color: N; opacity
     pWhite,
     smoothstep(0.93, 1.0, pT),
   );
-  const spStyled3 = mix(mix(spStyled2, nHybrid, is(10)), pRamp, is(12));
+  // Kiểu 13 (hào quang Hóa Thần, V-P10 đợt 4): như 12 nhưng đáy mực KHÔNG đen (màu thân ×0,55 = lam xám nhạt), thân sáng, viền ngà rộng hơn, và phần mực đặc
+  // trong suốt hơn (≈40%): đọc là sương/đạo văn sáng trên nền đá sáng chứ không phải bóng đổ. Nét trắng của tranh vẫn lên viền.
+  const pRamp2 = mix(
+    mix(mix(U.color.mul(0.55), U.color, smoothstep(0.05, 0.4, pT)), spRimIn, smoothstep(0.5, 0.85, pT)),
+    pWhite,
+    smoothstep(0.9, 1.0, pT),
+  );
+  const p2Alpha = mix(float(1), mix(float(0.55), float(1), smoothstep(0.08, 0.45, pT)), is(13));
+  const spStyled3 = mix(mix(mix(spStyled2, nHybrid, is(10)), pRamp, is(12)), pRamp2, is(13));
   // Tan như khói mỏng dần: nhiễu thấp tần + mép mỏng (tranh sáng/trong) tan trước, ngưỡng rộng nên không ra đường cắt răng cưa.
   const spE = vnoise(q.mul(vec2(5, 7)).add(U.a.z.mul(7)))
     .mul(0.55)
@@ -697,6 +705,9 @@ function spriteNodesImpl(U: FxUniforms, group: SpriteGroup): { color: N; opacity
     ),
     U.maxHdr,
   ); // kiểu vẽ tay nguyên màu (5): không thêm viền tím khi tan
-  const spOpacity = U.opacity.mul(smoothstep(0.0, 0.85, ts.a)).mul(spAlive);
+  const spOpacity = U.opacity
+    .mul(smoothstep(0.0, 0.85, ts.a))
+    .mul(spAlive)
+    .mul(p2Alpha);
   return { color: spCol, opacity: spOpacity };
 }

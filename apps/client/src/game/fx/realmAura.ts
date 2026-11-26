@@ -647,7 +647,8 @@ export class RealmAuraFx {
       const own = sid === this.env.mySid() ? 1 : AURA_SPRITE_OTHERS;
       const sp = (name: FxSprite, color: number = pal.body): FxMesh => {
         const m = mk(shapeGeometry('sprite'), color, 'sprite_hq', pal.rim);
-        m.fxA.set(SPRITE_STYLE.hq_ ?? 12, 0, seed * 30, spriteCell(name).idx);
+        // Hóa Thần trở lên: kiểu 13 (đáy mực sáng, mực đặc trong suốt) để vạt đọc là hào quang chứ không phải bóng đổ trên nền sáng.
+        m.fxA.set(stage >= 3 ? 13 : (SPRITE_STYLE.hq_ ?? 12), 0, seed * 30, spriteCell(name).idx);
         return m;
       };
       /** Tâm tấm cho tranh nằm bẹt trên đất: thấp hơn tâm đứng một chút (cắt một ít đáy trống thay vì nhấc lên ngang ngực). */
@@ -715,6 +716,7 @@ export class RealmAuraFx {
         // Vạt đạo văn rách sau lưng (xa camera, đỉnh vạt thấp hơn đầu) + vài nét đạo văn đứt đoạn.
         const mantles = [sp('hq_mantle'), sp('hq_mantle')];
         const glyph = sp('hq_glyph', pal.accent);
+        const wisp = sp('hq_wisp', pal.rim);
         ups.push((c) => {
           const sway = Math.sin(c.t * 0.6);
           for (let i = 0; i < mantles.length; i++) {
@@ -734,12 +736,32 @@ export class RealmAuraFx {
               size,
               sway * 0.05 * (i ? -1 : 1),
             );
-            show(c, mantles[i]!, c.gate * own * (i ? 0.55 : 0.8), role);
+            show(c, mantles[i]!, c.gate * own * (i ? 0.7 : 0.95), role);
           }
           if (detail && ok('extra')) {
-            place(c, glyph, c.p.x + c.dx * 0.7 + c.dz * 0.2, c.y0 + 1.1 + Math.sin(c.t * 0.9) * 0.08, c.p.z + c.dz * 0.7 - c.dx * 0.2, 1.5);
-            show(c, glyph, c.gate * own * 0.5, 'extra');
-          } else glyph.visible = false;
+            // Nét đạo văn ngà sáng + sợi gió ngà cạnh vạt: viền sáng để đọc là hào quang trên nền đá sáng.
+            place(
+              c,
+              glyph,
+              c.p.x + c.dx * 0.7 + c.dz * 0.3,
+              c.y0 + 1.15 + Math.sin(c.t * 0.9) * 0.08,
+              c.p.z + c.dz * 0.7 - c.dx * 0.3,
+              1.9,
+            );
+            show(c, glyph, c.gate * own * 0.9, 'extra');
+            place(
+              c,
+              wisp,
+              c.p.x + c.dx * 0.4 - c.dz * 0.9,
+              c.y0 + 0.9 + Math.sin(c.t * 0.7 + 1) * 0.08,
+              c.p.z + c.dz * 0.4 + c.dx * 0.9,
+              1.8,
+            );
+            show(c, wisp, c.gate * own * 0.8, 'extra');
+          } else {
+            glyph.visible = false;
+            wisp.visible = false;
+          }
         });
       }
     }

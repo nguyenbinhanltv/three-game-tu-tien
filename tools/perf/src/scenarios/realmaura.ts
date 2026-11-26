@@ -293,17 +293,19 @@ async function party5(r: Parameters<Scenario['run']>[0], realms: string[], quali
       viewport: [1920, 1080],
       dpr: 1,
       quality,
-      query: { fxq, ...(flag('--body') ? { auraground: 0 } : {}) },
+      query: { fxq, ...(opt('--mood', '') ? { mood: opt('--mood', '') } : {}), ...(flag('--body') ? { auraground: 0 } : {}) },
       hide: 'hud',
       warnings: /models/,
     });
     await page.evaluate(`window.__game.setAuraMode(${JSON.stringify(mode)})`);
     await setup(page, keys[0]!, re.lv);
     const extra: { close(): Promise<void> }[] = [];
-    for (let i = 0; i < 4; i++) {
+    // `--others N` (mặc định 4): số người khác cùng cảnh, xếp hai hàng sau/trước người chơi để kiểm cảnh đông.
+    const nOthers = num('--others', 4);
+    for (let i = 0; i < nOthers; i++) {
       const o = await r.open({ name: `Ap5o${i}`, viewport: [640, 360], dpr: 1, quality: 'low', hide: 'hud', warnings: /models/ });
       await setup(o.page, keys[(i + 1) % keys.length]!, re.lv);
-      await gm(o.page, `tp ${2044 + i * 2.6} ${2094 + (i % 2) * 2.4}`, 800);
+      await gm(o.page, `tp ${2044 + (i % 4) * 2.6} ${2094 + (i % 2) * 2.4 + Math.floor(i / 4) * 4.8}`, 800);
       extra.push(o.ctx);
     }
     await gm(page, 'tp 2048 2090', 1500);
