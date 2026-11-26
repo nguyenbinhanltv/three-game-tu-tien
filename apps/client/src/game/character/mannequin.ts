@@ -1679,7 +1679,11 @@ export class MannequinCharacter implements CharacterView {
     // Chết/hồi sinh: quên hướng chạy nhớ được, để bước nhảy vị trí lúc hồi sinh không thành cú đảo chiều giả.
     if (a.dead !== this.dead) this.pivot.reset();
     // Hồi sinh: đứng dậy từ tư thế nằm (LayToIdle) thay vì bật đứng ngay.
-    if (!a.dead && this.dead && this.tpl.clips.has('LayToIdle')) this.oneShot('LayToIdle');
+    if (!a.dead && this.dead && this.tpl.clips.has('LayToIdle')) {
+      // Phát nhanh theo trần như ngã (KNOCK_TOTAL_S) và coi là ngã: đi/ra chiêu ngay thì hủy, không trượt đi trong tư thế nằm (kể cả nhân vật của mình).
+      this.chain = null;
+      this.knocking = this.oneShot('LayToIdle', knockRate(0, this.tpl.clips.get('LayToIdle')?.duration ?? 0));
+    }
     this.dead = a.dead;
     if (this.dead && this.deathTurn.t < 1) {
       this.deathTurn.t = Math.min(1, this.deathTurn.t + realDt / DEATH_TURN_S);

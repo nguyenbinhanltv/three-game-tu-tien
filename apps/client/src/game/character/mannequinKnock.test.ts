@@ -77,4 +77,19 @@ describe('knockdown chỉ là hình (TP-2)', () => {
     b.attack({ skill: 'skl_test', combo: 1 });
     expect(knocking(b)).toBe(false);
   });
+  it('hồi sinh: đứng dậy (LayToIdle) trong trần KNOCK_TOTAL_S, và đi ngay thì hủy', () => {
+    const a = fake();
+    run(a, 0.2);
+    run(a, 0.2, { dead: true });
+    run(a, 1 / 60);
+    expect(knocking(a)).toBe(true);
+    run(a, KNOCK_TOTAL_S + 0.15);
+    expect(knocking(a)).toBe(false);
+    const b = fake();
+    run(b, 0.2, { dead: true });
+    run(b, 1 / 60);
+    expect(knocking(b)).toBe(true);
+    run(b, 1 / 60, { speed: 3 });
+    expect(knocking(b)).toBe(false);
+  });
 });
