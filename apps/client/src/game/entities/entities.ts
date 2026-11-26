@@ -9,6 +9,7 @@ import {
   PF_SOUL,
   MF_CHANT,
   MF_STUN,
+  MF_BROKEN,
   MF_WEAK,
   MS_ATTACK,
   MS_CHASE,
@@ -42,6 +43,8 @@ import { NPC_SKINS, NpcSkins } from '../character/npcSkins';
 import { type PlayerLook, PlayerSkins } from '../character/playerSkins';
 import { HeadBars } from './headBars';
 import { forgetHero, HeroGhosts, HeroRing, heroTintOf, setHero } from '../character/hero';
+import { InkHulls, inkStateOf } from '../character/inkHull';
+import { FLAGS } from '../../base/flags';
 import type { StopPair } from '../combat/hitjuice';
 import { ArtifactVis } from '../fx/artifactVis';
 import { PState, MState, PlayerVis, MonVis, lookOf } from './entityVis';
@@ -182,6 +185,8 @@ export class EntityManager {
   /** Hero light (C1): sid đồng đội cần viền (mình luôn có); null = tắt toàn bộ. */
   heroSids: ReadonlySet<string> | null = null;
   private heroGhosts = new HeroGhosts();
+  /** Viền mực Dạ Cảnh (`?style=da`): null khi tắt. Có trần số thể (`INK_HULL_MAX`). */
+  private inkHulls = FLAGS.style === 'da' ? new InkHulls() : null;
   private heroRing = new HeroRing();
   monsters = new Map<string, MonVis>();
   nodes = new Map<string, THREE.Group>();
@@ -352,8 +357,11 @@ export class EntityManager {
   private updateHero(v: PlayerVis, s: PState, isLocal: boolean): void {
     const on = this.heroSids !== null && (isLocal || this.heroSids.has(v.sid));
     const root = v.model.root;
+    // Viền mực Dạ Cảnh: mình luôn có; người khác có khi còn chỗ (lưới chưa nạp xong thì thử lại ở khung sau).
+    if (this.inkHulls && !this.inkHulls.has(root)) this.inkHulls.attach(root);
     if (v.heroRoot !== root) {
       if (v.heroRoot) this.heroGhosts.release(v.heroRoot);
+      if (v.heroRoot) this.inkHulls?.release(v.heroRoot);
       forgetHero(root);
       v.heroRoot = root;
       v.heroTint = -1;
@@ -377,6 +385,7 @@ export class EntityManager {
   /** Đồng bộ bản sao viền tối với mesh gốc (LOD). Gọi mỗi khung sau cập nhật người chơi. */
   syncHero(): void {
     this.heroGhosts.sync();
+    this.inkHulls?.sync();
     const ring = this.heroRing;
     if (!ring.mesh.parent) this.group.add(ring.mesh);
     ring.begin();
@@ -599,6 +608,7 @@ export class EntityManager {
         this.group.remove(v.model.root);
         v.dispose();
         this.heroGhosts.release(v.model.root);
+        this.inkHulls?.release(v.model.root);
         this.players.delete(sid);
       }
     }
@@ -680,6 +690,13 @@ export class EntityManager {
         hidden = bd >= 0.98;
       }
       v.model.root.visible = !(dead && (v as MonVis & { deadFor?: number }).deadFor! > 3) && !hidden;
+      // Viền mực Dạ Cảnh: quái còn sống trong 32 m quanh mình được viền (khi còn chỗ), màu theo trạng thái server báo; chết/ẩn/đi xa thì nhả chỗ.
+      if (this.inkHulls) {
+        const ir = v.model.root;
+        const near = !dead && !hidden && (v.x - local.x) ** 2 + (v.z - local.z) ** 2 < 32 * 32;
+        if (!near) this.inkHulls.release(ir);
+        else if (this.inkHulls.attach(ir)) this.inkHulls.style(ir, inkStateOf((mf & MF_WEAK) !== 0, (mf & MF_BROKEN) !== 0, s.ph ?? 0));
+      }
       const vv = v as MonVis & { deadFor?: number };
       // deadFor === 0: khung trước còn sống (mô hình mới dựng của quái đã chết sẵn thì là undefined).
       if (dead && vv.deadFor === 0) this.onMonsterDeath?.(v);
@@ -1183,6 +1200,7 @@ export class EntityManager {
 
   dispose(): void {
     this.heroGhosts.dispose();
+    this.inkHulls?.dispose();
     this.heroRing.dispose();
     for (const v of this.players.values()) v.dispose();
     for (const v of this.monsters.values()) v.dispose();

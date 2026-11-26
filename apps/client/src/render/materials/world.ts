@@ -6,9 +6,11 @@ import {
   float,
   luminance,
   mix,
+  normalLocal,
   normalView,
   normalWorld,
   output,
+  positionLocal,
   positionView,
   positionViewDirection,
   smoothstep,
@@ -194,6 +196,29 @@ export const heroParams = {
  * Vật liệu "ma" cho viền khi bị che (Chân Cảnh C1): vẽ lại thân nhân vật CHỈ ở điểm sau một vật khác (`depthFunc` GREATER, không ghi
  * sâu), mực tối mờ, đậm ở mép (fresnel) để thành đường viền mảnh. Nơi dùng gắn vào bản sao SkinnedMesh dùng chung xương.
  */
+/** Tham số viền mực theo từng vật (`userData.ink = { w, color }`, đặt bởi `InkHulls`): bề dày theo đơn vị CỤC BỘ của lưới và màu viền. */
+const _inkCol = new THREE.Color();
+export const inkParams = {
+  w: uniform(0).onObjectUpdate(({ object }) => (object?.userData.ink as { w?: number } | undefined)?.w ?? 0),
+  color: uniform(new THREE.Color(0x05040a)).onObjectUpdate(({ object }) =>
+    _inkCol.setHex((object?.userData.ink as { color?: number } | undefined)?.color ?? 0x05040a),
+  ),
+};
+
+/**
+ * Viền mực kiểu "vỏ lộn ngược" (Dạ Cảnh): vẽ lại lưới thân với mặt SAU, phồng theo pháp tuyến `inkParams.w`, tô một màu phẳng. Ba lưu ý:
+ * dùng `MeshStandardNodeMaterial` tắt đèn (xem ghi chú ở `createHeroGhostMaterial` về lỗi của vật liệu Basic trên pass MRT); `positionNode` chạy SAU
+ * skinning của three nên vỏ bám đúng tư thế; không sương, không bóng. Mỗi thể được viền thêm 1 draw call: `InkHulls` giữ trần số thể.
+ */
+export function createInkHullMaterial(): THREE.MeshStandardNodeMaterial {
+  const m = new THREE.MeshStandardNodeMaterial({ side: THREE.BackSide, fog: false });
+  m.lights = false;
+  m.positionNode = positionLocal.add(normalLocal.mul(inkParams.w));
+  m.colorNode = inkParams.color;
+  m.emissiveNode = vec3(0, 0, 0);
+  return m;
+}
+
 export function createHeroGhostMaterial(): THREE.MeshStandardNodeMaterial {
   // Lưu ý: KHÔNG dùng `MeshBasicNodeMaterial` ở đây. Trên cảnh có pass MRT + vật vẽ trong lượt trong suốt (phòng thử VFX, chr=v3) vật liệu Basic
   // tự dựng làm three báo `TypeError: Cannot read properties of undefined (reading 'r')` ở `NodeUniformsGroup.updateColor` mỗi khung (lỗi hồi quy
