@@ -1,0 +1,45 @@
+{
+  "skillId": "fx_env_revive",
+  "idea": "HỒI SINH (chỉ hiệu ứng, không có bia): đôi cánh hạc mực dang ra sau lưng người vừa đứng dậy, lông vũ rơi nhẹ và gợn nước mực dưới chân; vàng ngà, mép lam băng. KHÔNG cột sáng.",
+  "element": "moc",
+  "path": "",
+  "scene": {
+    "palette": {
+      "core": "2a2410",
+      "body": "f0e6a8",
+      "rim": "fffbe8",
+      "accent": "bfe8ff",
+      "shadow": "14110a"
+    },
+    "impactAt": 0.12
+  },
+  "shapeLang": [
+    "burst",
+    "ring"
+  ],
+  "timing": {
+    "anticipationMs": 0,
+    "impactMs": 60,
+    "lingerMs": 1200
+  },
+  "footprint": {
+    "lengthM": 4,
+    "widthM": 4,
+    "heightM": 4
+  },
+  "colorRole": "own",
+  "telegraph": false,
+  "budget": {
+    "drawCalls": 3,
+    "particles": 6,
+    "screenCover": 0.08,
+    "overdraw": 3
+  },
+  "textures": [],
+  "silhouette": "đôi cánh hạc mực dang sau lưng, lông vũ rơi, gợn nước dưới chân",
+  "standard": 2,
+  "materials": [
+    "sprite",
+    "particles"
+  ]
+}

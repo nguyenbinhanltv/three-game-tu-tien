@@ -25,7 +25,7 @@
       "tone": "body",
       "alpha": 1,
       "tier": 0,
-      "seed": 2320,
+      "seed": 2420,
       "follow": true
     },
     {
@@ -49,7 +49,7 @@
       "tone": "accent",
       "alpha": 0.85,
       "tier": 1,
-      "seed": 2321,
+      "seed": 2421,
       "follow": true
     },
     {

@@ -115,6 +115,7 @@ import { groundAt } from '../base/levelCtx';
 import { PF_TRIBULATION } from '@dtl/shared';
 import { MonFx } from './fx/monFx';
 import { HitFx } from './fx/hitFx';
+import { EnvFx, type EnvGate } from './fx/envFx';
 import { StatusFx, monStatusOf, playerStatusOf, type StatusEnt } from './fx/statusFx';
 import { monScale } from './fx/monFx';
 import { variantFor } from './fx/fxTimeline';
@@ -342,6 +343,14 @@ export class Game {
   monFx: MonFx | null = null;
   /** Hình trúng đòn chung (HPL2): vết va theo hướng tu, chí mạng, chặn, quái đánh người, ngắt chú, nhịp hồi. */
   hitFx: HitFx | null = null;
+  envFx: EnvFx | null = null;
+  /** Cổng của level đang chơi (`levelLoad` đặt) để `EnvFx` vẽ xoáy nước/khe nứt. */
+  envGates: EnvGate[] = [];
+
+  /** Điểm hái đang có cây (cờ `on` do server đồng bộ). */
+  private *envHerbs(): Generator<{ id: string; x: number; y: number; z: number }> {
+    for (const [id, n] of this.view.nodes) if (n.on) yield { id, x: n.x, y: n.y, z: n.z };
+  }
   statusFx: StatusFx | null = null;
 
   /** Thực thể đang có hình trạng thái (quái chậm/độc/bỏng/choáng, người hồi dần): chỉ đọc cờ hiển thị đồng bộ từ server. */
@@ -820,6 +829,12 @@ export class Game {
     this.pathAura = new PathAuraFx(this.vfx, auraEnv);
     this.monFx = new MonFx(this.skillFx.runner, { camera: () => this.camera, live: () => this.vfx.pool.live });
     this.hitFx = new HitFx(this.skillFx.runner, { camera: () => this.camera, live: () => this.vfx.pool.live });
+    this.envFx = new EnvFx(this.skillFx.runner, {
+      camera: () => this.camera,
+      live: () => this.vfx.pool.live,
+      gates: () => this.envGates,
+      herbs: () => this.envHerbs(),
+    });
     this.statusFx = new StatusFx(this.skillFx.runner, {
       camera: () => this.camera,
       live: () => this.vfx.pool.live,
@@ -1530,6 +1545,7 @@ export class Game {
     this.pathAura = null;
     this.monFx = null;
     this.hitFx = null;
+    this.envFx = null;
     this.statusFx = null;
     this.suyFx?.dispose();
     this.suyFx = null;

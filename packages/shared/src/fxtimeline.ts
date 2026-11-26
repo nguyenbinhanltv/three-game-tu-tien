@@ -437,6 +437,15 @@ export const FX_SPRITES = [
   'ngu_streak',
   'ngu_wisp',
   // V-P10: nhóm atlas `kiep` (độ kiếp: mở kiếp, kiếp vân, chỗ sét đánh). Tranh đơn sắc, kiểu tô 12.
+  // HPL2 PR3: nhóm atlas `canh` (môi trường: cổng, linh thảo, hồi sinh). Tranh đơn sắc, kiểu tô 12.
+  'canh_vortex',
+  'canh_rift',
+  'canh_mote',
+  'canh_leaf',
+  'canh_wings',
+  'canh_feather',
+  'canh_sprout',
+  'canh_ripple',
   'kiep_rift',
   'kiep_cloud',
   'kiep_cloud2',
