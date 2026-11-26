@@ -165,7 +165,8 @@ export function createDevServer(o: {
         ...o.env,
       },
       stdio: ['ignore', log, log],
-      shell: process.platform === 'win32',
+      // `script` là cả dòng lệnh nên phải qua shell ở MỌI nền tảng (Linux không shell thì ENOENT); nhóm tiến trình riêng (`detached`) để `killTree` tắt cả cây.
+      shell: true,
       detached: process.platform !== 'win32',
     });
     await waitHttp(`http://localhost:${port}/health`, 90_000);
