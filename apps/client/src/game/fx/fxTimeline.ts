@@ -85,6 +85,7 @@ export const SPRITE_STYLE: Record<string, number> = {
   // V-P10 đột phá: tranh đơn sắc, tô theo bảng màu của timeline (màu sự kiện = thân, `rim` của bảng = viền).
   dp_: 12,
   ngu_: 12,
+  kiep_: 12,
 };
 
 export interface FxTarget {
@@ -525,6 +526,7 @@ export class FxRunner {
           0,
           ev.thick ?? 1,
           FLAGS.isoFxCompress ? BOLT_HEIGHT * ISO_BOLT_HEIGHT : BOLT_HEIGHT,
+          !!ev.ink,
         );
         break;
       }
@@ -602,7 +604,8 @@ export class FxRunner {
             | 'sprite_dong'
             | 'sprite_kieu'
             | 'sprite_dp'
-            | 'sprite_ngu')
+            | 'sprite_ngu'
+            | 'sprite_kiep')
       : kind0;
     const isSprite = cell !== null;
     if (cell) useSpriteGroup(cell.group);

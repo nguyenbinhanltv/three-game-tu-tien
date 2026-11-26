@@ -3,7 +3,7 @@ import { groundAt } from '../../../base/levelCtx';
 import { SIGIL_CIRCLE } from '../../../render/vfx/sigil';
 import { hazardFlash, hazardStack, hazardStyleDanger, ISO_HAZARD_OPACITY } from '../../../render/vfx/phases';
 import { G } from '../../core/geo';
-import { HAZARD_COLORS, HOT_BOLT, HOT_BOLT_CORE, POOL_COLOR, TRAIL_COLOR, _a } from './common';
+import { HOT_BOLT_CORE, POOL_COLOR, TRAIL_COLOR, _a } from './common';
 import type { Vfx } from '../vfx';
 
 /**
@@ -89,7 +89,8 @@ export function hazard(
 ): void {
   const y = groundAt(x, z);
   const style = hazardStyleDanger(kind, danger);
-  const color = kind === 'lightning' ? (hot ? HOT_BOLT : (HAZARD_COLORS[kind] ?? style.color)) : style.color;
+  // Vòng báo luôn theo màu cảnh báo kẻ địch (đỏ/cam theo mức nguy hiểm), kể cả thiên lôi; màu hệ chỉ ở thân tia/vùng nổ.
+  const color = style.color;
   // Mặt đất không phẳng: nâng theo điểm cao nhất quanh vòng (giới hạn để không lơ lửng quá).
   let top = y;
   for (let i = 0; i < 6; i++) {
@@ -101,7 +102,7 @@ export function hazard(
   const stack = hazardStack(v.hazards, mine);
   v.hazards.push(mine);
   const m = noRing ? null : v.sigil(SIGIL_CIRCLE, x, z, 0, r, 0, color, Math.min(top, y + 1.2) + 0.22);
-  m?.fxColor.multiplyScalar((kind !== 'lightning' ? style.gain : 1) * stack.dim);
+  m?.fxColor.multiplyScalar(style.gain * stack.dim);
   v.add(
     delay,
     (k) => {
@@ -118,7 +119,7 @@ export function hazard(
       if (!stack.fx) return;
       if (quiet?.()) return;
       if (kind === 'lightning') {
-        v.lightning(x, y, z, hot ? HOT_BOLT_CORE : 0xe2d4ff, 1.2, seed, flash * stack.dim);
+        v.lightning(x, y, z, hot ? HOT_BOLT_CORE : 0xe2d4ff, 1.2, seed, flash * stack.dim, 1, undefined, true);
       } else if (kind !== 'frost') {
         _a.set(x, y + 0.5, z);
         v.burst(_a, color, r * 1.1, 0.45);

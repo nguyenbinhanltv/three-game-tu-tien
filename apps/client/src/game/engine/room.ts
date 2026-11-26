@@ -35,7 +35,8 @@ import {
   type CloneStateMsg,
 } from '@dtl/shared';
 import { groundAt } from '../../base/levelCtx';
-import { MONSTER, pathOf, t } from '@dtl/content';
+import { OTHERS_FX_DIST, OTHERS_FX_LIVE_MAX } from '../fx/fxBudget';
+import { FX_TIMELINE, MONSTER, pathOf, t } from '@dtl/content';
 import { minimapHooks } from '../../ui/minimap/model';
 import { visibleView } from '../net/aoiView';
 import { pushLog, set, useUI } from '../../ui/store';
@@ -127,6 +128,36 @@ export function onHazard(eng: Game, m: HazardMsg): void {
   later(eng, m.delay, () => {
     sfx(m.kind === 'lightning' ? 'thunder' : 'impact', vol, m);
     shakeForHazard(eng, m);
+    // Thiên lôi của độ kiếp (vòng tròn, không phải quái thả): cụm nổ vẽ tay tại điểm rơi (V-P10). Chỉ là hình.
+    if (m.kind === 'lightning' && !m.sh && !bsrc && !eng.disposed) kiepStrike(eng, m);
+  });
+}
+
+/** Mốc (ms) của các cụm nổ sét gần đây: lôi võng thả 7 vòng cùng lúc, chỉ vẽ cụm vẽ tay cho tối đa `KIEP_STRIKE_MAX` vòng mỗi nửa giây. */
+const kiepStrikes: number[] = [];
+const KIEP_STRIKE_MAX = 3;
+
+/** Phát timeline `fx_kiep_strike` tại chỗ sét rơi (tia sét + chớp vẫn do `Vfx.hazard` vẽ). Xa quá hoặc đang quá nhiều lưới thì bỏ. */
+function kiepStrike(eng: Game, m: HazardMsg): void {
+  const tl = FX_TIMELINE.get('fx_kiep_strike');
+  const runner = eng.skillFx?.runner;
+  if (!tl || !runner || !eng.vfx) return;
+  const dist = Math.hypot(m.x - eng.renderPos.x, m.z - eng.renderPos.z);
+  // Kiếp của mình luôn vẽ (đòn nhắm mình); của người khác chỉ khi gần và pool chưa đông.
+  if (m.src !== eng.sid && (dist > OTHERS_FX_DIST || eng.vfx.pool.live >= OTHERS_FX_LIVE_MAX)) return;
+  const now = performance.now();
+  while (kiepStrikes.length && now - kiepStrikes[0]! > 500) kiepStrikes.shift();
+  if (kiepStrikes.length >= KIEP_STRIKE_MAX) return;
+  kiepStrikes.push(now);
+  // Neo `self` = actor.y + 1,15 và offset nhân `mul`; timeline đặt chân ở offset −1,15, nên chân thực tế = actor.y + 1,15 − 1,15·mul.
+  // Bù 1,15·(mul − 1) để chân cụm nổ luôn chạm mặt đất ở mọi cỡ.
+  const mul = m.big ? 1.8 : 1;
+  runner.startAt(tl, {
+    actor: { x: m.x, y: groundAt(m.x, m.z) + 1.15 * (mul - 1), z: m.z, yaw: 0, model: {} },
+    palette: m.hot ? 'kiep_hoa' : 'loi',
+    tgt: null,
+    mul,
+    mine: m.src === eng.sid,
   });
 }
 
