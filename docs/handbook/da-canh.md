@@ -13,6 +13,7 @@ Mục tiêu: trận đánh đọc rõ và đã tay ở góc camera 52°. Nền l
 - Viền mực: `InkHulls` (`game/character/inkHull.ts`) thêm một lưới vỏ dùng chung hình học và bộ xương của lưới thân lớn nhất, vật liệu `createInkHullMaterial` (mặt sau, phồng `INK_WIDTH` m theo pháp tuyến). Trần `INK_HULL_MAX` thể (mỗi thể +1 draw call và một lần skinning). Người chơi trong tầm và quái sống trong 32 m được viền; màu theo `inkStateOf` (lộ yếu điểm vàng, vỡ thế lam nhạt, boss sang pha sau đỏ thẫm). Chưa đo draw call/CPU ở cảnh đông.
 - Đòn thường là chuỗi hành động (bật cho mọi người, không sau cờ): mỗi đòn khóa theo `ComboHit.lock`, server giữ một lệnh bấm sớm `COMBO_BUFFER_MS`, phòng ngự nhân theo `comboDefScale` (`packages/shared/src/skillrules.ts`, `apps/server/src/game/combat/index.ts`).
 
+- Đòn thường riêng theo lối tu (`PathDef.basic` ở `packages/shared/src/path.ts`, dữ liệu `packages/content/data/paths.json`): áp cho chuỗi đòn thường của người tu lối đó. Hiện chỉ **Kiếm tu**: tầm 5 m (phải áp sát) và chém quét: quái khác trong cung 110° bán kính 5,5 m trước mặt nhận 0,6 lần đòn chính (`inArc`, server tính hướng người đánh → mục tiêu lúc trúng; `resolveSkill.ts`). Tầm lấy qua `skillRangeFor` (`@dtl/content`) ở cả server (`skillRange`) lẫn client (dự đoán hình, tự đánh). Người chưa theo công pháp và 8 lối tu khác vẫn là phi kiếm tầm xa đơn mục tiêu. CHƯA chơi thử trong trình duyệt bằng nhân vật Kiếm tu (client chưa có tự áp sát khi ngoài tầm); sim cân bằng chưa tính phần quét nhiều mục tiêu.
 - Bài security riêng: `SECURITY_ONLY=combo pnpm --filter @dtl/bot-client security [http://localhost:<PORT>]` (`apps/bot-client/src/security/combo.ts`): bấm dồn không vượt nhịp khóa, bộ đệm không cộng dồn, né xóa đòn đệm, lệnh rác không sập. Cũng chạy trong bộ đầy đủ.
 
 ## Lạc Kiếm Tông (bản đồ đầu tiên được thiết kế lại để so sánh)
@@ -24,7 +25,7 @@ Người dùng chốt 27/11: thiết kế lại MỘT bản đồ theo chất ga
 3. [x] Lớp tối quanh trận: hậu kỳ trong `feedbackLayers` (`render/post.ts`, `postParams.focusDark/focus/focusAspect`, hằng `FOCUS_*`), điều khiển bởi `game/engine/daFocus.ts` theo cờ giao chiến của camera (vào 3/s, ra 1,2/s); điểm ảnh sáng (chiêu, vạch báo, đèn) được giữ. Không thêm draw call.
 4. [ ] Rim + fill cho đạo cụ và kiến trúc xa để khối không chìm vào nền.
 5. [ ] Bố cục: phía gần camera chỉ để vật thấp; thêm điểm nhấn phát sáng (đốm linh khí, rêu sáng) theo bảng màu hẹp của khu.
-6. [ ] Quái ở Vân Lam: tô chia bậc + mắt hoặc điểm phát sáng làm dấu nhận diện.
+6. [~] Quái: tô chia bậc đã bật cho mọi quái khi `?style=da` (`MonsterSkins.material`, trừ quái bán trong suốt); mắt hoặc điểm phát sáng làm dấu nhận diện chưa làm.
 
 Số đo viền mực (27/11, `pnpm shots herolight --bots 8 --view 1080p`, một mẫu mỗi cấu hình): không viền 129 draw / 1,01 triệu tam giác / 10,2 ms khung; viền dùng lưới LOD0 137 / 1,24 triệu / 10,7 ms; viền dùng lưới LOD1 (`INK_LOD`, hiện tại) 136 / 1,16 triệu / 10,3 ms.
 

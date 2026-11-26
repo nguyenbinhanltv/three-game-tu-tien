@@ -1,6 +1,7 @@
 [
   {
     "id": "kiem_tu",
+    "basic": { "range": 5, "arc": { "r": 5.5, "deg": 110, "mul": 0.6 } },
     "role": "dps",
     "methods": [
       "lac_kiem_quyet"

@@ -74,7 +74,7 @@ import {
   strikeTier,
   type HitTier,
 } from '@dtl/shared';
-import { JOINTS, MARK, SKILL, t } from '@dtl/content';
+import { JOINTS, MARK, SKILL, skillRangeFor, t } from '@dtl/content';
 import { parties } from '../party';
 import { branchModsOf, gateOf, type Hot, methodOf, passiveOf, resolveFor, resourceOf, type Trail } from '../method';
 import { chainOf, takeChain } from '../skillflow';
@@ -501,6 +501,9 @@ export class CombatSystem {
     const b = passiveOf(p.char.meta)?.rangeBonus ?? 0;
     // Bộ Lạc Kiếm bậc 2 (4 món, E2-F): Hoành Kiếm Phá Mạch xa thêm `hoanhKiemReach` mét.
     const set = skill.id === 'skl_hoanh_kiem_pha_mach' ? p.char.stats.setFx.hoanhKiemReach : 0;
+    // Đòn thường của hướng cận chiến (Kiếm tu…): tầm theo hướng tu, không cộng `rangeBonus`.
+    const melee = skillRangeFor(skill, p.char.meta.method);
+    if (melee !== skill.range) return melee;
     return skill.range > 0 && needsTarget(skill) ? skill.range + b + set : skill.range;
   }
 

@@ -13,6 +13,7 @@ import {
   type CloneMethodDef,
   type JointDef,
   type MarkDef,
+  type PathBasic,
   type PathDef,
   type StarTable,
   type ResolvedSkill,
@@ -295,6 +296,14 @@ export const PATH: ReadonlyMap<string, PathDef> = new Map(PATHS.map((p) => [p.id
 /** Hướng tu của một khóa (id công pháp, id hướng, hoặc bí danh cũ); không ra thì undefined. */
 export function pathOf(key: string | undefined): PathDef | undefined {
   return pathOfKey(PATHS, key);
+}
+/** Đòn thường riêng của hướng tu đang dùng `method`, CHỈ cho chuỗi đòn thường (chiêu có `combo`); không có thì undefined. */
+export function pathBasicOf(skill: { combo?: unknown }, method: string | undefined): PathBasic | undefined {
+  return skill.combo ? pathOf(method)?.basic : undefined;
+}
+/** Tầm (m) của `skill` với người tu `method`: chuỗi đòn thường của hướng cận chiến dùng tầm của hướng, còn lại là tầm của chiêu. */
+export function skillRangeFor(skill: { range: number; combo?: unknown }, method: string | undefined): number {
+  return pathBasicOf(skill, method)?.range ?? skill.range;
 }
 /** Nhiệm vụ nhánh Hướng tu: nhận được khi nhiệm vụ không gắn hướng, hoặc `pathId` (hướng tu đang dùng) trùng. */
 export function questPathOk(q: { path?: string }, pathId: string | undefined): boolean {
