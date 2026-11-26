@@ -2,6 +2,7 @@ import * as THREE from 'three/webgpu';
 import { abs, clamp, exp, float, max, min, mix, pow, smoothstep, step, time, uv, vec2, vec3 } from 'three/tsl';
 import { PF_DEAD, PF_FLYING, PF_MEDITATING } from '@dtl/shared';
 import { groundAt } from '../../base/levelCtx';
+import { FLAGS } from '../../base/flags';
 import { vnoise, type FxUniforms } from './common';
 import type { Particles } from './particles';
 import type { FxKind, FxMesh } from '../materials/vfx';
@@ -30,7 +31,8 @@ const NEAR = 70;
 const C_SWORD = 0xcff3ff; // spirit_sword
 const C_SWORD_DEEP = 0x8fdcff;
 const C_MIST = 0xdce6df; // air_mist
-const C_DUST = 0xb9b29a; // giữa stone_light và leaf_dry
+const C_DUST = 0xb9b29a;
+const C_INK = 0x0a3550; // lõi mực vệt phi kiếm (xanh thẫm) // giữa stone_light và leaf_dry
 
 /**
  * Vệt kiếm bám mũi kiếm theo kỹ thuật dải vũ khí của EdgeFlux (MIT, assets/LICENSES.md), viết lại bằng TSL:
@@ -95,6 +97,32 @@ export function trailNodes(U: FxUniforms) {
   };
 }
 
+/**
+ * Lớp mực dưới vệt phi kiếm (V-P10 đợt 3b, chuẩn Họa Pháp Lô 2 luật 4): cùng lưới với `trailNodes` nhưng hòa trộn thường. Lõi mực xanh thẫm (cả bề rộng dải) để vệt lam
+ * ngọc cộng sáng ở trên đọc được trên trời/đá sáng ban ngày (lớp cộng sáng gần như mất), mép sáng lam trắng mảnh, đuôi rách thành mảnh nhờ nhiễu (cụm mây nhỏ tan dần).
+ * `uv.x`: 0 ở đầu (phi kiếm) → 1 ở đuôi; `fxA.z` = seed.
+ */
+export function trailInkNodes(U: FxUniforms) {
+  const st = uv();
+  const u = clamp(st.x, 0, 1);
+  const x = abs(st.y.sub(0.5)).mul(2);
+  const one = float(1);
+  const rag = vnoise(vec2(u.mul(16).sub(time.mul(2.5)).add(U.a.z), st.y.mul(2.5).add(U.a.z))).mul(0.4);
+  const tail = pow(one.sub(u), 1.25);
+  // Bề rộng lõi mực nở dần về đuôi và răng cưa theo nhiễu; đuôi bị gặm thành mảnh.
+  const band = one.sub(smoothstep(float(0.55).add(rag.mul(u)), float(0.95).add(rag.mul(u).mul(0.5)), x));
+  const alive = smoothstep(rag.mul(0.8), rag.mul(0.8).add(0.16), tail);
+  const edge = exp(x.sub(0.78).mul(x.sub(0.78)).mul(-90)).mul(one.sub(u));
+  return {
+    color: mix(U.color, vec3(0.72, 0.95, 1), min(edge.mul(0.75), 1)),
+    opacity: U.opacity
+      .mul(band)
+      .mul(tail)
+      .mul(alive)
+      .mul(smoothstep(0, 0.05, u)),
+  };
+}
+
 /** Dải vệt: lưới cấp sẵn, dựng lại mỗi khung quay về camera. */
 class Ribbon {
   readonly geo = new THREE.BufferGeometry();
@@ -104,6 +132,8 @@ class Ribbon {
   n = 0;
   acc = 0;
   mesh: FxMesh | null = null;
+  /** Lớp mực hòa trộn thường dưới `mesh` (cùng lưới). */
+  ink: FxMesh | null = null;
   owner = '';
   fade = 0;
 
@@ -426,11 +456,14 @@ export class Trails {
       if (r.fade <= 0) {
         this.src.drop(r.mesh);
         r.mesh = null;
+        if (r.ink) this.src.drop(r.ink);
+        r.ink = null;
         r.owner = '';
         continue;
       }
-      r.build(_cam, 0.32);
+      r.build(_cam, 0.5);
       r.mesh.fxOpacity = 0.85 * r.fade;
+      if (r.ink) r.ink.fxOpacity = 0.95 * r.fade;
     }
     this.updateBlades(dt);
     for (const [id, st] of this.state) if (st.seen !== this.frame) this.state.delete(id);
@@ -446,6 +479,12 @@ export class Trails {
       r.reset(x, y, z);
       r.mesh = this.src.fx(r.geo, C_SWORD, 0, 'trail');
       r.mesh.fxA.z = Math.random() * 40;
+      if (FLAGS.trailInk) {
+        r.ink = this.src.fx(r.geo, C_INK, 0, 'trailInk');
+        r.ink.fxA.z = r.mesh.fxA.z;
+        // Mực vẽ TRƯỚC lớp sáng (lõi trắng cộng sáng nằm trên mực).
+        r.ink.renderOrder = r.mesh.renderOrder - 1;
+      }
     }
     r.push(x, y, z, dt);
   }
@@ -459,6 +498,8 @@ export class Trails {
     for (const r of this.ribbons) {
       if (r.mesh) this.src.drop(r.mesh);
       r.mesh = null;
+      if (r.ink) this.src.drop(r.ink);
+      r.ink = null;
       r.owner = '';
     }
     for (const b of this.blades) {

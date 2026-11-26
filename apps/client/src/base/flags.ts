@@ -36,6 +36,8 @@ interface Flags {
   aura: boolean;
   /** `?auraground=0` hào quang cảnh giới kiểu cũ quanh người (không có ấn dưới chân); so ảnh trước/sau (Chân Cảnh C5). */
   auraGround: boolean;
+  /** `?trailink=0` vệt phi kiếm không có lớp mực (bản cũ chỉ cộng sáng); so ảnh trước/sau (V-P10). */
+  trailInk: boolean;
   /** `?pathaura=0` về hào quang cảnh giới mặc định cho Đao tu/Cổ tu/Cấm chế sư (so ảnh trước/sau lớp hào quang riêng của hướng). */
   pathAura: boolean;
   /** `?mood=dawn|day|dusk|night` đổi thời điểm trong ngày (không lưu). */
@@ -177,6 +179,7 @@ export const FLAG_DOCS: Readonly<Record<string, { scope: 'user' | 'diag' | 'test
     doc: '=0: tắt lớp Thân Pháp (mặc định bật: cường điệu góc chéo, nảy bước, pivot, clip Patch cho mọi hệ; idle/chiêu/cut-in mới chỉ Kiếm tu)',
   },
   vfxwarm: { scope: 'diag', doc: '=0: tắt biên dịch trước VFX' },
+  trailink: { scope: 'diag', doc: '=0: vệt phi kiếm không có lớp mực (bản cũ chỉ cộng sáng), so ảnh V-P10' },
   auraground: { scope: 'diag', doc: '=0: hào quang cảnh giới kiểu cũ quanh người, không có ấn dưới chân (so ảnh C5)' },
   aura: { scope: 'diag', doc: '=0: tắt hào quang cảnh giới trên nhân vật' },
   pathaura: { scope: 'diag', doc: '=0: Đao tu/Cổ tu/Cấm chế sư dùng hào quang cảnh giới mặc định thay lớp hào quang riêng của hướng' },
@@ -272,6 +275,7 @@ export function readFlags(search: string): Flags {
     vfxWarm: !off(q.get('vfxwarm')),
     aura: !off(q.get('aura')),
     auraGround: !off(q.get('auraground')),
+    trailInk: !off(q.get('trailink')),
     pathAura: !off(q.get('pathaura')),
     mood: mood === 'dawn' || mood === 'day' || mood === 'dusk' || mood === 'night' ? mood : null,
     fxq: q.get('fxq'),
