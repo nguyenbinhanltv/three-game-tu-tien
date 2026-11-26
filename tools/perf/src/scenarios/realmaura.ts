@@ -177,13 +177,24 @@ export default {
             await shotBoth(page, r.out, `${d.label}-${re.label}-${vn}`, vw, vh);
           }
           if (flag('--run')) {
-            // Đang chạy: chỉ còn lớp chính mờ bớt.
-            await cam(page, { yaw: Math.PI + 0.5, pitch: 0.16, dist: 4.4 });
-            await page.keyboard.down('KeyW');
-            await sleep(900);
-            await snap(page, r.out, `${d.label}-${re.label}-chay-1080p.jpg`, { wait: 0 });
-            await page.keyboard.up('KeyW');
-            await gm(page, 'tp 2048 2088', 1400);
+            // Đang chạy: chỉ còn lớp chính mờ bớt. `--iso` giữ camera chéo khóa góc (chụp cả 1080p và 720p, mỗi cỡ một lượt chạy).
+            for (const [w, h, tag] of [
+              [vw, vh, '1080p'],
+              [1280, 720, '720p'],
+            ] as const) {
+              if (!ISO) await cam(page, { yaw: Math.PI + 0.5, pitch: 0.16, dist: 4.4 });
+              if (tag === '720p') {
+                await page.setViewportSize({ width: w, height: h });
+                await sleep(700);
+              }
+              await page.keyboard.down('KeyW');
+              await sleep(900);
+              await snap(page, r.out, `${d.label}-${re.label}-chay-${tag}.jpg`, { wait: 0 });
+              await page.keyboard.up('KeyW');
+              await gm(page, 'tp 2048 2088', 1400);
+            }
+            await page.setViewportSize({ width: vw, height: vh });
+            await sleep(500);
           }
           // Đang ngự kiếm: hào quang quanh người phải tắt (soát ở Nguyên Anh+).
           if (re.lv >= 24 && rk === 'na') {

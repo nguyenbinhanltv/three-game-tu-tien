@@ -387,6 +387,15 @@ export const FX_SPRITES = [
   'dp_mantle',
   'dp_wisp',
   'dp_crack',
+  // V-P10: nhóm atlas `hq` (hào quang cảnh giới đứng yên). Tranh đơn sắc, kiểu tô 12.
+  'hq_dan',
+  'hq_smoke',
+  'hq_cloud',
+  'hq_cloud2',
+  'hq_orb',
+  'hq_mantle',
+  'hq_glyph',
+  'hq_wisp',
   // V-P10: nhóm atlas `kiep` (độ kiếp: mở kiếp, kiếp vân, chỗ sét đánh). Tranh đơn sắc, kiểu tô 12.
   'kiep_rift',
   'kiep_cloud',

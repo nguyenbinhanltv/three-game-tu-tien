@@ -84,6 +84,7 @@ export const SPRITE_STYLE: Record<string, number> = {
   may_: 8,
   // V-P10 đột phá: tranh đơn sắc, tô theo bảng màu của timeline (màu sự kiện = thân, `rim` của bảng = viền).
   dp_: 12,
+  hq_: 12,
   kiep_: 12,
 };
 
@@ -603,6 +604,7 @@ export class FxRunner {
             | 'sprite_dong'
             | 'sprite_kieu'
             | 'sprite_dp'
+            | 'sprite_hq'
             | 'sprite_kiep')
       : kind0;
     const isSprite = cell !== null;
