@@ -1,3 +1,4 @@
+import { FLAGS } from '../../base/flags';
 import * as THREE from 'three/webgpu';
 import { float, length, smoothstep, uniformArray, vec3 } from 'three/tsl';
 import type { N } from './lab/field';
@@ -30,5 +31,6 @@ export function lampPoolAt(xz: N): N {
     const fall: N = float(1).sub(smoothstep(0.8, 5.6, length(xz.sub(p.xy))));
     sum = sum.add(fall.mul(fall).mul(p.z));
   }
-  return vec3(1.3, 0.72, 0.24).mul(sum.min(1)).mul(0.5);
+  // Dạ Họa (`FLAGS.da`): vũng đèn theo "lửa lạnh" lam bạc và yếu hơn, khớp màu đèn đá của Dạ Cảnh; Họa Cảnh thuần giữ vàng ấm.
+  return (FLAGS.da ? vec3(0.42, 0.74, 1.25).mul(0.32) : vec3(1.3, 0.72, 0.24).mul(0.5)).mul(sum.min(1));
 }
