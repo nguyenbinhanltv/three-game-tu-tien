@@ -277,10 +277,13 @@ const VH_PAINT_DRY: Record<VhKind, number> = {
   tung_dai_dao: 0.12,
   thach_quy_dao: 0.6,
   kinh_ho_dao: 0.08,
-  loi_van_dao: 0.8,
+  loi_van_dao: 0.6,
   kinh_ngu_dai: 0.48,
   tieu_dao: 0.32,
 };
+
+/** Nhân mật độ cỏ lá mảnh Họa Cảnh theo đảo (mặc định 1): Lôi Vân thưa quá thì mặt đất trơ ra như mây/trời, cần lá mảnh dày hơn để đọc là đất. */
+const VH_PAINT_BOOST: Partial<Record<VhKind, number>> = { loi_van_dao: 2.4 };
 
 /**
  * Cỏ lá mảnh Họa Cảnh trên đảo (P9): hệ số mật độ 0..1 nhân vào luật cỏ chung và độ khô 0..1, cùng luật với thẻ cỏ mặc định của Vân Hải (`vanHaiTuftAt`):
@@ -300,7 +303,7 @@ export function vhPaintedGrass(def: TerrainDef, x: number, z: number, slope: num
   const P = isl.pal;
   const rock = art.rockW(isl, x, z, slope / 1.5);
   const c = fbm(x * 0.055 + 3, z * 0.055 - 8, 2, def.seed + 777);
-  let k = P.grassDensity * 1.5 * (1 - P.grassClump + P.grassClump * Math.max(0, Math.min(1.7, c * 2.6 + 0.3))) + pw * 0.35;
+  let k = P.grassDensity * 1.5 * (VH_PAINT_BOOST[isl.kind] ?? 1) * (1 - P.grassClump + P.grassClump * Math.max(0, Math.min(1.7, c * 2.6 + 0.3))) + pw * 0.35;
   k *= 1 - smoothstep(0.05, 0.45, art.trailW(isl, x, z));
   k *= Math.max(0, 1 - rock * 1.4) * (d > isl.r - 14 ? 0.55 : 1);
   out.k = Math.max(0, Math.min(1, k));

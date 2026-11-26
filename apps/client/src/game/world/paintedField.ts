@@ -85,7 +85,7 @@ export class PaintedGameField implements GrassLayer {
         d.map[k * 4] = Math.round(255 * dry); // dry (0,25 mặc định)
         d.map[k * 4 + 1] = Math.round(255 * Math.min(1, dens / 0.55)); // growth
         d.map[k * 4 + 2] = 0; // wet
-        d.map[k * 4 + 3] = dens > 0 ? 140 : 0; // flowers 0,55
+        d.map[k * 4 + 3] = dens > 0 ? Math.round(140 * (1 - 0.7 * Math.max(0, dry - 0.3))) : 0; // flowers 0,55; ít hoa hơn ở chỗ cỏ khô (Lôi Vân)
         // độ dốc của "thế đất" lấy trên vài mét (như nguồn: không phải từng gồ ghề)
         const sx = (heightAt(x + 8.5, z + 0.5) - heightAt(x - 7.5, z + 0.5)) / 16;
         const sz = (heightAt(x + 0.5, z + 8.5) - heightAt(x + 0.5, z - 7.5)) / 16;

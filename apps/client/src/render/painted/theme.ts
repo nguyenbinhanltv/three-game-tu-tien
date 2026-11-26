@@ -104,7 +104,7 @@ export const PAINTED_THEMES: Record<string, PaintedTheme> = {
     // KHÔNG `far`: vòm núi xa nướng một lần thành dải tường xám chắn ngang trời khi ngự kiếm (đã chụp); cảnh xa của Vân Hải là biển mây + đảo giả (đã vẽ một lần)
     propMix: 0.25,
     nightContrast: 1.7,
-    nightTint: [0.42, 0.52, 0.78],
+    nightTint: [0.47, 0.58, 0.68],
     nightLift: 1.7,
     nightSplit: 0.85,
     groundMix: 0.75,
