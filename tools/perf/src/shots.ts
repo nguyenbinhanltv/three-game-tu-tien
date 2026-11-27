@@ -13,6 +13,7 @@ import daotuhit from './scenarios/daotuhit';
 import clothcheck from './scenarios/clothcheck';
 import herocheck from './scenarios/herocheck';
 import herolight from './scenarios/herolight';
+import dienvo from './scenarios/dienvo';
 import bossfaces from './scenarios/bossfaces';
 import dungeon from './scenarios/dungeon';
 import lackiem from './scenarios/lackiem';
@@ -167,6 +168,7 @@ const SCENARIOS: Scenario[] = [
   clothcheck,
   herocheck,
   herolight,
+  dienvo,
   xichkhe,
   dungeonart,
   realmaura,
