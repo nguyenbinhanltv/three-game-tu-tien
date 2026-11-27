@@ -27,7 +27,7 @@ export const SPRITE_GROUPS = {
   kiem: { file: 'hoa-truc/vfx_sprites_kiem.22301e4193.webp', cols: 4, rows: 4 },
   hp: { file: 'hoa-truc/vfx_sprites_hp.dc9596e2f9.webp', cols: 4, rows: 4 },
   dao: { file: 'hoa-truc/vfx_sprites_dao.5a78c4fab5.webp', cols: 4, rows: 4 },
-  cth: { file: 'hoa-truc/vfx_sprites_cth.20e47ff06f.webp', cols: 4, rows: 4 },
+  cth: { file: 'hoa-truc/vfx_sprites_cth.e58e4bded1.webp', cols: 4, rows: 6 },
   // Vân Hải (A2): nước `thuy_*` + trăng `nguyet_*`; tinh anh chương 2–3 (A3): xương `cot_*`, đá `tho_*`, đất-độc `doc_*`, sét tím `tim_*`. Gom theo kiểu quái, không theo hướng tu.
   hai: { file: 'hoa-truc/vfx_sprites_hai.c8709e04fc.webp', cols: 4, rows: 4 },
   tinh: { file: 'hoa-truc/vfx_sprites_tinh.2c4a99f7e9.webp', cols: 4, rows: 6 },

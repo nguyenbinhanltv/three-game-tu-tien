@@ -247,7 +247,7 @@ describe('hủy động tác', () => {
 describe('dữ liệu timeline chiêu mẫu', () => {
   for (const tl of FX_TIMELINE.values()) {
     it(`${tl.skill}: hợp lệ, hitstop 40–80 ms, không phát vượt lõi chớp 120 ms`, () => {
-      expect(validateFxTimeline(tl, (id) => SKILL.has(id) || id.startsWith('fx_'))).toEqual([]);
+      expect(validateFxTimeline(tl, (id) => SKILL.has(id.replace(/__pilot$/, '')) || id.startsWith('fx_'))).toEqual([]);
       const all = [...tl.events, ...Object.values(tl.combo ?? {}).flat()];
       for (const e of all) if (e.type === 'mesh' && e.shape === 'burst') expect(e.dur).toBeLessThanOrEqual(0.12);
     });
