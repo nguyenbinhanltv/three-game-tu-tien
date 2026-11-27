@@ -404,6 +404,8 @@ export default {
     const gate = !!opt('--gate', '');
     if (fxIds.length) {
       await gm(pg, 'scene soi_thuong', 3500);
+      // Cổng duyệt: mục tiêu đứng NGANG so với camera (camera phòng nhìn dọc trục z) và đứng yên, để mặt nạ thân to và giống nhau giữa các lượt.
+      if (gate) await gm(pg, 'face 90', 1200);
       await pg.evaluate(() => {
         const g = window.__game!;
         const me = g.info();

@@ -858,6 +858,22 @@ export class GmSystem {
         lab[k] = a[1] === 'off' ? false : a[1] === 'on' ? true : !lab[k];
         return say(`${a[0]} ${lab[k] ? 'on' : 'off'}`);
       }
+      case 'face': {
+        // /gm face [độ]: mọi quái còn sống trong PHÒNG TẬP quay về hướng này (0 = +z, 90 = +x) và bị đóng băng để giữ hướng. Dùng cho cổng duyệt VFX:
+        // mục tiêu đứng ngang so với camera thì mặt nạ thân to và ổn định.
+        if (!this.c.level().dungeon?.practice) return say(t('gm.msg.scene_no'));
+        const deg = Number(a[1] ?? 90);
+        if (!Number.isFinite(deg)) return say('face [độ]');
+        const yaw = ((((deg % 360) + 360) % 360) * Math.PI) / 180;
+        let n = 0;
+        for (const m of this.c.monsters()) {
+          if (m.s.hp <= 0) continue;
+          m.s.yaw = yaw;
+          n++;
+        }
+        this.c.lab().gmFreeze = true;
+        return say(`face ${deg}: ${n} quái, freeze on`);
+      }
       case 'free':
         // /gm free [on|off]: chiêu không hồi, linh lực luôn đầy.
         p.gmFree = a[1] === 'off' ? false : a[1] === 'on' ? true : !p.gmFree;
