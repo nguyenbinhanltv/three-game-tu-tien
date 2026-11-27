@@ -924,6 +924,12 @@ export class Game {
    * Xưởng VFX (Diễn Võ Trường V2b): phát timeline `key` (`FX_TIMELINE`) lên mục tiêu đang chọn; không có mục tiêu thì tại điểm cách mình 4 m phía trước.
    * Chỉ là lớp hình ở máy mình (không gửi gì lên server, không gây sát thương). Trả false nếu không có timeline hay chưa vào game.
    */
+  /** Phòng thử: đổi nền thử của sàn Diễn Võ Trường (`dark` | `light` | `grass` | `snow`). Chỉ có tác dụng trong phòng. */
+  labFloor(id: string): boolean {
+    const room = this.vdWonders as { setFloor?(id: string): boolean } | null;
+    return room?.setFloor?.(id) ?? false;
+  }
+
   labFx(key: string): boolean {
     const hf = this.hitFx;
     const me = this.ents?.players.get(this.sid);
