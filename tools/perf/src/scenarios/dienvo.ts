@@ -197,7 +197,7 @@ export default {
       extra: query,
       seenIntro: true,
       // `--panel 1`: kiểm tab Diễn Võ bằng cách BẤM NÚT THẬT, nên phải để giao diện hiện.
-      hide: opt('--panel', '') ? undefined : 'hud',
+      hide: opt('--panel', '') || opt('--ui', '') ? undefined : 'hud',
     });
     await skipCutscene(pg, 20);
     // Xưởng VFX: `--layersoff 0,3` tắt các lớp có chỉ số đó trong `events` của mọi timeline phát ra (soi lớp nào vẽ gì).
@@ -254,6 +254,63 @@ export default {
     if (floorId) console.log(`[shots:dienvo] nền thử ${floorId}: ${(await pg.evaluate((f) => window.__game!.labFloor(f), floorId)) ? 'đã đổi' : 'KHÔNG đổi được'}`);
     const ping = num('--ping', 0);
     if (ping > 0) await pg.evaluate((n) => void (window.__game!.fakePing = n), ping);
+    // `--ui 1`: chụp HUD thật (có mục tiêu đang khóa) ở năm cỡ màn hình và báo khối nào TRÀN khỏi khung nhìn hoặc CHỒNG lên khối khác.
+    // Khối = con trực tiếp của `.hud` và của `.right-col` đang hiện; bỏ các lớp phủ cả màn hình (thẻ chương, letterbox...).
+    if (opt('--ui', '')) {
+      await gm(pg, 'scene soi_thuong', 3500);
+      await gm(pg, 'face 90', 800);
+      await pg.evaluate(`(() => { var g = window.__game, id = g.ents.monsters.keys().next().value; if (id) g.setTarget(id, 'mon'); })()`);
+      const sizes: [number, number][] = [
+        [1280, 720],
+        [1366, 768],
+        [1600, 900],
+        [1920, 1080],
+        [2560, 1440],
+      ];
+      const report: unknown[] = [];
+      let bad = 0;
+      for (const [w, h] of sizes) {
+        await pg.setViewportSize({ width: w, height: h });
+        await sleep(1500);
+        const m = (await pg.evaluate(`(() => {
+          var vw = innerWidth, vh = innerHeight, els = [];
+          var add = (e) => {
+            var cs = getComputedStyle(e), r = e.getBoundingClientRect();
+            if (cs.display === 'none' || cs.visibility === 'hidden' || Number(cs.opacity) < 0.05 || r.width < 4 || r.height < 4) return;
+            if (r.width >= vw * 0.9 && r.height >= vh * 0.9) return;
+            var name = (typeof e.className === 'string' ? e.className : '').trim().split(/\\s+/).slice(0, 2).join('.') || e.tagName.toLowerCase();
+            els.push({ name: name, x: Math.round(r.left), y: Math.round(r.top), w: Math.round(r.width), h: Math.round(r.height) });
+          };
+          for (const e of document.querySelectorAll('.hud > *')) { if (e.classList.contains('right-col')) for (const c of e.children) add(c); else add(e); }
+          var over = [], clash = [];
+          for (const a of els) {
+            var out = Math.max(0, -a.x, -a.y, a.x + a.w - vw, a.y + a.h - vh);
+            if (out > 1) over.push(a.name + ' tràn ' + Math.round(out) + ' px');
+          }
+          for (var i = 0; i < els.length; i++) for (var j = i + 1; j < els.length; j++) {
+            var a = els[i], b = els[j];
+            var ow = Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x), oh = Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y);
+            if (ow > 2 && oh > 2) clash.push(a.name + ' × ' + b.name + ' (' + ow + '×' + oh + ' px)');
+          }
+          // Nhãn một dòng bị xuống dòng (tên bản đồ dưới bản đồ nhỏ, tên + cấp trên khung mục tiêu, tên mình).
+          for (const sel of [".mm2-band:not([data-long='2']) span", '.target-frame .frame-head > *', '.u2h-tl [class*="name"]']) for (const e of document.querySelectorAll(sel)) {
+            var lh = parseFloat(getComputedStyle(e).lineHeight) || parseFloat(getComputedStyle(e).fontSize) * 1.3, hh = e.getBoundingClientRect().height;
+            if (hh > lh * 1.7) over.push('"' + (e.textContent || '').trim().slice(0, 30) + '" xuống dòng (' + sel + ')');
+          }
+          return { n: els.length, over: over, clash: clash, scale: getComputedStyle(document.documentElement).getPropertyValue('--ui-scale').trim(), els: els };
+        })()`)) as { n: number; over: string[]; clash: string[]; scale: string; els: unknown[] };
+        const file = `ui/${w}x${h}.png`;
+        await snap(pg, r.out, file, { wait: 0 });
+        bad += m.over.length + m.clash.length;
+        console.log(`  ${m.over.length + m.clash.length ? 'HỎNG' : 'ĐẠT '} ${w}×${h}: ${m.n} khối, hệ số phóng ${m.scale || '1'}; tràn ${m.over.length}, chồng ${m.clash.length}`);
+        for (const s of [...m.over, ...m.clash]) console.log(`       - ${s}`);
+        report.push({ w, h, file, ...m });
+      }
+      writeJson(r.out, 'dienvo-ui.json', { query, sizes: report });
+      console.log(`[shots:dienvo] HUD ở ${sizes.length} cỡ màn: ${bad} chỗ tràn/chồng`);
+      await gm(pg, 'dvt');
+      return;
+    }
     const rows: Row[] = [];
     // `--panel 1`: mở bảng F3, bấm các nút của tab Diễn Võ bằng chuột thật (Playwright) và kiểm kết quả ở trạng thái game. Thay cho việc bấm tay.
     if (opt('--panel', '')) {
