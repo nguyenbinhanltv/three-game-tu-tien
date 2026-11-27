@@ -144,6 +144,7 @@ export interface GameDebug {
   /** Xưởng VFX: phát timeline theo id lên mục tiêu đang chọn (chỉ hình). */
   labFx(key: string): boolean;
   labFloor(id: string): boolean;
+  labHudLoad(on: boolean): boolean;
   labMoment(kind: string): boolean;
   labNumbers(kind: string, count: number, gapMs: number): number;
   labPalette: string;

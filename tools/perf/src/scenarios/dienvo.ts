@@ -269,8 +269,11 @@ export default {
       ];
       const report: unknown[] = [];
       let bad = 0;
+      // Hai lượt: HUD thường, rồi HUD ở trạng thái NẶNG (`Game.labHudLoad`: tổ đội đủ người, nhiều nhiệm vụ, thanh boss đủ thanh phụ, 4 thông báo, nhật ký dài).
+      for (const heavy of [false, true])
       for (const [w, h] of sizes) {
         await pg.setViewportSize({ width: w, height: h });
+        if (heavy) await pg.evaluate(() => void window.__game!.labHudLoad(true));
         await sleep(1500);
         const m = (await pg.evaluate(`(() => {
           var vw = innerWidth, vh = innerHeight, els = [];
@@ -281,7 +284,8 @@ export default {
             var name = (typeof e.className === 'string' ? e.className : '').trim().split(/\\s+/).slice(0, 2).join('.') || e.tagName.toLowerCase();
             els.push({ name: name, x: Math.round(r.left), y: Math.round(r.top), w: Math.round(r.width), h: Math.round(r.height) });
           };
-          for (const e of document.querySelectorAll('.hud > *')) { if (e.classList.contains('right-col')) for (const c of e.children) add(c); else add(e); }
+          // Vùng bố cục (u2h-zone) và cột phải chỉ là khung: đo các khối con của chúng để bắt chồng lấn BÊN TRONG vùng.
+          for (const e of document.querySelectorAll('.hud > *')) { if (e.classList.contains('right-col') || e.classList.contains('u2h-zone')) for (const c of e.children) add(c); else add(e); }
           var over = [], clash = [];
           for (const a of els) {
             var out = Math.max(0, -a.x, -a.y, a.x + a.w - vw, a.y + a.h - vh);
@@ -290,7 +294,8 @@ export default {
           for (var i = 0; i < els.length; i++) for (var j = i + 1; j < els.length; j++) {
             var a = els[i], b = els[j];
             var ow = Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x), oh = Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y);
-            if (ow > 2 && oh > 2) clash.push(a.name + ' × ' + b.name + ' (' + ow + '×' + oh + ' px)');
+            // Tay nắm kéo cỡ khung chat cố ý nằm ở góc thanh tiêu đề của nó: không tính.
+            if (ow > 2 && oh > 2 && !(a.name + b.name).includes('chat-grip')) clash.push(a.name + ' × ' + b.name + ' (' + ow + '×' + oh + ' px)');
           }
           // Nhãn một dòng bị xuống dòng (tên bản đồ dưới bản đồ nhỏ, tên + cấp trên khung mục tiêu, tên mình).
           for (const sel of [".mm2-band:not([data-long='2']) span", '.target-frame .frame-head > *', '.u2h-tl [class*="name"]']) for (const e of document.querySelectorAll(sel)) {
@@ -299,12 +304,12 @@ export default {
           }
           return { n: els.length, over: over, clash: clash, scale: getComputedStyle(document.documentElement).getPropertyValue('--ui-scale').trim(), els: els };
         })()`)) as { n: number; over: string[]; clash: string[]; scale: string; els: unknown[] };
-        const file = `ui/${w}x${h}.png`;
+        const file = `ui/${w}x${h}${heavy ? '-heavy' : ''}.png`;
         await snap(pg, r.out, file, { wait: 0 });
         bad += m.over.length + m.clash.length;
-        console.log(`  ${m.over.length + m.clash.length ? 'HỎNG' : 'ĐẠT '} ${w}×${h}: ${m.n} khối, hệ số phóng ${m.scale || '1'}; tràn ${m.over.length}, chồng ${m.clash.length}`);
+        console.log(`  ${m.over.length + m.clash.length ? 'HỎNG' : 'ĐẠT '} ${w}×${h}${heavy ? ' NẶNG' : ''}: ${m.n} khối, hệ số phóng ${m.scale || '1'}; tràn ${m.over.length}, chồng ${m.clash.length}`);
         for (const s of [...m.over, ...m.clash]) console.log(`       - ${s}`);
-        report.push({ w, h, file, ...m });
+        report.push({ w, h, heavy, file, ...m });
       }
       writeJson(r.out, 'dienvo-ui.json', { query, sizes: report });
       console.log(`[shots:dienvo] HUD ở ${sizes.length} cỡ màn: ${bad} chỗ tràn/chồng`);
