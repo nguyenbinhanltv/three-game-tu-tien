@@ -3,7 +3,7 @@
 // Có `--base <thư mục bộ trước>` thì so từng cảnh bằng SSIM/ΔE (tools/painted-compare/compare.mjs) và dựng trang trước/sau `index.html`.
 //   pnpm shots dienvo --out <thư mục> [--view 720p|1080p] [--query style=dahoa] [--base <thư mục>] [--ssim 0.9] [--only id1,id2]
 //                     [--quality high|medium|low] [--renderer webgl2] [--diag 1] [--layersoff 2,3] [--fx id1,id2] [--panel 1]
-//                     [--ping 150] [--swings 1 --window 4000] [--crowd 8,20,50] [--fx 'skl_kiem*' --gate 1] [--silhouette 1] [--floor light|grass|snow]
+//                     [--ping 150] [--swings 1 --window 4000] [--crowd 8,20,50] [--fx 'skl_kiem*' --gate 1 [--far 8]] [--silhouette 1] [--floor light|grass|snow]
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -543,20 +543,27 @@ export default {
       await gm(pg, 'scene soi_thuong', 3500);
       // Cổng duyệt: mục tiêu đứng NGANG so với camera (camera phòng nhìn dọc trục z) và đứng yên, để mặt nạ thân to và giống nhau giữa các lượt.
       if (gate) await gm(pg, 'face 90', 1200);
-      await pg.evaluate(() => {
+      const far = num('--far', 0);
+      const targetDist = await pg.evaluate((far) => {
         const g = window.__game!;
         const me = g.info();
         let best = '';
         let bd = 1e9;
+        let dist = 0;
         g.view.monsters.forEach((m, id) => {
           const d = Math.hypot(m.x - me.x, m.z - me.z);
-          if (m.st !== 4 && d < bd) {
-            bd = d;
+          // Mặc định: con gần nhất. `--far N`: con có khoảng cách gần N mét nhất (chấm chiêu có hình quanh người ra chiêu với mục tiêu KHÔNG đứng sát).
+          const score = far > 0 ? Math.abs(d - far) : d;
+          if (m.st !== 4 && score < bd) {
+            bd = score;
             best = id;
+            dist = d;
           }
         });
         g.targetId = best;
-      });
+        return dist;
+      }, far);
+      console.log(`[shots:dienvo] mục tiêu chấm đứng cách người chơi ${targetDist.toFixed(1)} m${far > 0 ? ` (--far ${far})` : ''}`);
       // Cổng duyệt: tắt sự kiện màn hình/camera (chỉ số -1 = `FX_SCREEN_OFF`), nếu không camera đẩy và chớp vẫn chạy giữa ảnh có VFX và ảnh ẩn VFX,
       // thân mục tiêu lệch đi và bị tính nhầm là bị che (đo 27/11: Kiếm Khí Trảm 60% → xem số sau khi tắt).
       if (gate) await pg.evaluate(() => void (window as unknown as { __fxLayerOff?: Set<number> }).__fxLayerOff?.add(-1));
