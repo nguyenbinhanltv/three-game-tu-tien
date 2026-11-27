@@ -70,6 +70,14 @@ const FADE_BASE = 0.22;
 /** Vào đòn một lần (tấn công, trúng đòn) nhanh để thấy ngay. */
 const FADE_IN_SHOT = 0.07;
 /**
+ * Quái đánh xong thì server cho đuổi tiếp ngay, trong khi clip đòn ở client còn dài: thân trôi đi trong tư thế đánh, chân không bước.
+ * Đo 28/11 (`pnpm shots xuong --only mons`): lúc clip `attack` còn trội, thân đi 3,4 đến 6,2 m/s mà chân trụ trôi theo 51 đến 96% tốc độ đó.
+ * Đi nhanh hơn `GLIDE_SPEED` (m/s) liên tục `GLIDE_HOLD` giây thì nhả clip đòn (mờ ra như lúc hết clip) để clip chạy lên thay.
+ * Không áp cho đòn lớn của boss (lao, nhảy là có chủ ý) và không áp cho người chơi.
+ */
+const GLIDE_SPEED = 1.5;
+const GLIDE_HOLD = 0.25;
+/**
  * Thời gian (giây) đòn LỚN của boss (`bossMove`: slam, sweep) mờ vào. Xưởng animation của phòng thử đổi được trong phiên để so (không lưu).
  * Đo 28/11 (`pnpm shots xuong --only bossfade`, 4 boss, 9 lần vào đòn mỗi mức): 0,07 s → khớp xoay nhanh nhất 5951°/s (đang niệm chuyển sang đập),
  * bước nhảy trọng số 0,24 mỗi lần cập nhật xương; 0,14 s → 2514°/s và 0,12; 0,20 s → 2155°/s và 0,11. Boss ở tầm camera chỉ cập nhật xương 30 Hz
@@ -204,6 +212,8 @@ interface Shot {
   /** Đang trong chuỗi ngã/đứng dậy (hủy khi server báo di chuyển/ra chiêu) và tốc độ phát clip đứng dậy. */
   knock?: boolean;
   upRate?: number;
+  /** Quái: đã đi liên tục bao lâu (giây) trong lúc clip đòn thường còn phát (xem `GLIDE_HOLD`). */
+  moving?: number;
 }
 
 /** Động tác đòn lớn của boss: clip trong GLB và thời điểm chạm (giây trong clip, ở tốc độ 1×). */
@@ -265,6 +275,8 @@ export class SkinnedCharacter implements CharacterView {
   private current: THREE.AnimationAction | null = null;
   private base: CharState | null = null;
   private shot: Shot | null = null;
+  /** Nhả clip đòn thường khi đã đi tiếp (xem `GLIDE_HOLD`); chỉ quái bật. */
+  protected glideCut = false;
   /** Đòn trúng chờ (khớp lúc đạn bay tới, cùng trễ với chớp sáng). */
   private pendingHit = -1;
   private dead = false;
@@ -681,6 +693,10 @@ export class SkinnedCharacter implements CharacterView {
           sh.lie += dt;
           // Đã ngã xong (đang nằm hết `KNOCK_LIE`) mà người chơi đi lại thì đứng dậy ngay; chưa ngã xong thì chưa dậy.
           if (sh.next && sh.left <= KNOCK_LIE && a.speed > MOVE_MIN) sh.left = Math.min(sh.left, FADE_OUT_SHOT);
+        }
+        if (this.glideCut && sh.state === 'attack' && !sh.move) {
+          sh.moving = a.speed > GLIDE_SPEED ? (sh.moving ?? 0) + dt : 0;
+          if (sh.moving >= GLIDE_HOLD) sh.left = Math.min(sh.left, FADE_OUT_SHOT);
         }
         if (sh.left <= FADE_OUT_SHOT) {
           if (sh.next && this.clips.has(sh.next)) {
@@ -1195,6 +1211,7 @@ export class SkinnedMonster extends SkinnedCharacter implements MonsterView {
     super({ ...o, scale: def.scale });
     this.moves = o.moves ?? {};
     this.holdStates = new Set<CharState>(['cast', 'stun']);
+    this.glideCut = true;
     this.hit.feel = HIT_FEEL[bodyClassOf(def)];
     // Ragdoll nhẹ (Thân Pháp T5) chỉ cho quái thường, không cho boss.
     this.ragEnabled = !def.boss;

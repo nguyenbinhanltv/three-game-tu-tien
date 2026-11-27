@@ -53,6 +53,7 @@ interface AnimSnap {
   slide: { key: string; time: number; planted: number; slide: number; travel: number; peak: number; cmPerM: number | null; cmPerS: number }[];
   blends: { from: string; to: string; ms: number; pop: number; spin: number; bone?: string }[];
   lift?: number;
+  stride?: { key: string; n: number; speed: number; slip: number; refFix: number }[];
 }
 
 /** Nạp các module của xưởng trong trang (Vite dev phục vụ theo đường dẫn; cùng bản module với game) và bật đầu dò. */
@@ -345,7 +346,7 @@ export default {
         // Chạy ra xa cho quái đuổi (clip chạy), rồi đứng yên cho nó áp sát và đánh (chuyển chạy → đánh → đứng).
         for (const key of ['KeyW', 'KeyS']) {
           await pg.keyboard.down(key);
-          await sleep(2200);
+          await sleep(num('--runms', 2200));
           await pg.keyboard.up(key);
           await sleep(2600);
         }
@@ -356,11 +357,11 @@ export default {
         const worst = sn.blends.reduce<(typeof sn.blends)[number] | null>((w, b) => (!w || b.spin > w.spin ? b : w), null);
         const hard = sn.blends.filter((b) => b.pop >= 0.5);
         console.log(`\n  ${id}: ${sn.ok ? `${sn.clips.length} clip (${sn.clips.map((c) => c.name).join(', ')}), chân: ${sn.feet.map((x) => x.bone).join(' ') || 'KHÔNG THẤY'}` : 'không có cổng soi (model khối hoặc chưa nạp)'}`);
-        for (const s of sn.slide.filter((x) => x.time >= 0.5))
-          console.log(`    trượt ${s.key.padEnd(14)} ${s.time.toFixed(1)} s · đi ${s.travel.toFixed(1)} m · ${s.cmPerM === null ? '—' : s.cmPerM.toFixed(1)} cm/m · ${s.cmPerS.toFixed(0)} cm/s lúc trụ`);
+        for (const s of sn.stride ?? [])
+          console.log(`    sải ${s.key.padEnd(10)} ${String(s.n).padStart(4)} mẫu · thân ${s.speed.toFixed(1)} m/s · chân trụ trôi ${(s.slip * 100).toFixed(0)}% tốc độ thân${Math.abs(s.slip) > 0.25 ? ' (QUÁ NGƯỠNG)' : ''} · refSpeed nên × ${s.refFix.toFixed(2)}`);
         console.log(`    chuyển clip: ${sn.blends.length} lần, ${hard.length} lần đổi cứng${hard.length ? ' (' + [...new Set(hard.map((b) => b.from + '→' + b.to))].join(', ') + ')' : ''}; xoay nhanh nhất ${worst ? `${worst.spin}°/s ở ${worst.bone} (${worst.from}→${worst.to}, ${worst.ms} ms)` : '—'}`);
         if (bones.length) console.log(`    xương (${bones.length}): ${bones.slice(0, 50).join(', ')}`);
-        out.push({ id, ok: sn.ok, clips: sn.clips, feet: sn.feet.map((x) => x.bone), slide: sn.slide, blends: sn.blends, bones });
+        out.push({ id, ok: sn.ok, clips: sn.clips, feet: sn.feet.map((x) => x.bone), slide: sn.slide, stride: sn.stride, blends: sn.blends, bones });
       }
       await pg.evaluate(`(() => { const w = window.__xuong.ws; w.stop(); w.setSubject('me'); })()`);
       await gm(pg, 'spawn clear', 1100);

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { FootSlide, type FootSample } from './footSlide';
+import { FootSlide, StrideSlip, type FootSample } from './footSlide';
 
 const DT = 1 / 60;
 
@@ -82,5 +82,41 @@ describe('FootSlide (đo trượt chân)', () => {
     for (let i = 0; i < 30; i++) fs.push(DT, 'Idle', 0, 0, at(2));
     expect(fs.rows()[0]!.peak).toBe(0);
     expect(fs.rows()[0]!.slide).toBe(0);
+  });
+});
+
+describe('StrideSlip (trượt chân theo vận tốc)', () => {
+  /** Chân trụ 40% chu kỳ với vận tốc thế giới `stance`, phần còn lại vung tới để bù (trung bình cả chu kỳ = tốc độ thân). */
+  const gait = (ss: StrideSlip, body: number, stance: number, key = 'run'): void => {
+    const swing = (body - 0.4 * stance) / 0.6;
+    for (let i = 0; i < 400; i++) ss.push(key, i % 10 < 4 ? stance : swing, body);
+  };
+
+  it('chân trụ đứng yên: tỉ số 0, không cần sửa', () => {
+    const ss = new StrideSlip();
+    gait(ss, 5, 0);
+    const [r] = ss.rows();
+    expect(r!.slip).toBeCloseTo(0, 6);
+    expect(r!.refFix).toBeCloseTo(1, 6);
+    expect(r!.speed).toBeCloseTo(5, 6);
+  });
+
+  it('clip phát chậm (chân trụ trôi tới 30% tốc độ thân) và phát nhanh (bị kéo lùi 20%) ra đúng dấu và hệ số sửa', () => {
+    const ss = new StrideSlip();
+    gait(ss, 5, 1.5, 'slow');
+    gait(ss, 5, -1, 'fast');
+    const slow = ss.rows().find((r) => r.key === 'slow')!;
+    const fast = ss.rows().find((r) => r.key === 'fast')!;
+    expect(slow.slip).toBeCloseTo(0.3, 6);
+    expect(slow.refFix).toBeCloseTo(0.7, 6);
+    expect(fast.slip).toBeCloseTo(-0.2, 6);
+    expect(fast.refFix).toBeCloseTo(1.2, 6);
+  });
+
+  it('bỏ mẫu khi thân gần như đứng yên; chưa đủ 20 mẫu thì chưa báo', () => {
+    const ss = new StrideSlip();
+    for (let i = 0; i < 100; i++) ss.push('idle', 0.3, 0.2);
+    for (let i = 0; i < 10; i++) ss.push('run', 0, 5);
+    expect(ss.rows()).toHaveLength(0);
   });
 });

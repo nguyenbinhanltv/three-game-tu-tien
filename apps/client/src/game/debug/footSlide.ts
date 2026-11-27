@@ -148,3 +148,56 @@ export class FootSlide {
       .sort((x, y) => y.time - x.time);
   }
 }
+
+/**
+ * Đo trượt chân theo VẬN TỐC, không cần biết chân nhấc cao bao nhiêu (clip chạy của quái bốn chân nhấc chân dưới 3 cm nên `FootSlide` coi chân
+ * nào cũng đang trụ). Ý: trong một chu kỳ bước, lúc bàn chân trụ là lúc nó đi CHẬM NHẤT theo hướng thân đang đi; clip khớp tốc độ thì lúc đó bàn
+ * chân đứng yên trong thế giới (tỉ số 0). Tỉ số dương = bàn chân vẫn trôi tới (clip phát chậm hơn tốc độ đi), âm = bị kéo lùi (clip phát nhanh hơn).
+ * Mỗi mẫu là vận tốc bàn chân dọc hướng đi chia cho tốc độ thân; lấy phân vị 15% của từng clip. Lớp thuần.
+ */
+export interface StrideRow {
+  key: string;
+  n: number;
+  /** Tốc độ thân trung bình lúc đo (m/s). */
+  speed: number;
+  /** Phân vị 15% của (vận tốc bàn chân dọc hướng đi ÷ tốc độ thân): 0 = chân trụ đứng yên. */
+  slip: number;
+  /** Nhân `refSpeed` (tốc độ đi mà clip được dựng cho) với hệ số này thì chân trụ hết trôi. */
+  refFix: number;
+}
+
+/** Tỉ số trôi quá ngần này (theo trị tuyệt đối) thì mắt thấy chân lướt. */
+export const STRIDE_SLIP_WARN = 0.25;
+/** Thân đi chậm hơn ngần này (m/s) thì không lấy mẫu (tỉ số chia cho số gần 0). */
+export const STRIDE_MIN_SPEED = 1;
+const STRIDE_CAP = 1200;
+
+export class StrideSlip {
+  private acc = new Map<string, { r: number[]; speed: number; n: number }>();
+
+  reset(): void {
+    this.acc.clear();
+  }
+
+  /** Một mẫu: clip nền `key`, vận tốc bàn chân dọc hướng thân đi (m/s, dương = cùng chiều thân), tốc độ thân (m/s). */
+  push(key: string, footAlong: number, body: number): void {
+    if (!(body >= STRIDE_MIN_SPEED) || !Number.isFinite(footAlong)) return;
+    let a = this.acc.get(key);
+    if (!a) this.acc.set(key, (a = { r: [], speed: 0, n: 0 }));
+    a.r.push(footAlong / body);
+    if (a.r.length > STRIDE_CAP) a.r.shift();
+    a.speed += body;
+    a.n++;
+  }
+
+  rows(): StrideRow[] {
+    return [...this.acc.entries()]
+      .filter(([, a]) => a.r.length >= 20)
+      .map(([key, a]) => {
+        const s = [...a.r].sort((x, y) => x - y);
+        const slip = s[Math.floor(s.length * 0.15)]!;
+        return { key, n: a.r.length, speed: a.speed / a.n, slip, refFix: Math.max(0.3, Math.min(3, 1 - slip)) };
+      })
+      .sort((x, y) => y.n - x.n);
+  }
+}

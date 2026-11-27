@@ -116,17 +116,20 @@ export const MONSTER_SKINS: Record<string, MonsterSkin> = {
   mon_yeu_lang: { asset: 'mon_soi_xam', clips: WOLF_CLIPS, refSpeed: 2.5, legs: 'quad', tint: '#b3a6dc', rim: 0.55 },
   // U Minh Lang: lông xanh u tối, viền lam lạnh.
   mon_u_minh_lang: { asset: 'mon_soi_xam', clips: WOLF_CLIPS, refSpeed: 2.5, legs: 'quad', tint: '#8a9fd0', roughness: -0.08, rim: 0.8 },
+  // Đo lại 28/11 bằng xưởng animation (`pnpm shots xuong --only mons`: chân trụ trôi bao nhiêu % tốc độ thân lúc chạy, 0 = đứng yên): Hỏa Vân Hồ
+  // 2,0 → 2,85 (−43% còn −9%), Huyết Nha Lang 4,3 → 1,65 (+62% còn +17%), Huyết Lang Vương 2,7 → 3,2, Kiếm Khôi 4,6 → 4,0. Sửa refSpeed thì
+  // đo lại bằng lệnh đó, đừng suy từ số Blender (`refSpeed` còn nhân với `scale` của quái).
   // refSpeed của các thú dưới theo tỉ lệ tốc độ chân trụ đo trong Blender (anim_quadruped naturalSpeed) so với sói
   // (đo 3,14 ↔ 2,5 đã chỉnh trong game); vượn so với Thanh Phong cùng loại clip Tripo (đo 3,34 ↔ 3,0).
   // Thiết Bối Trư: clip đòn húc nanh (gore), chân ngắn nên bước nhanh.
   mon_thiet_boi_tru: { asset: 'mon_thiet_boi_tru', clips: WOLF_CLIPS, refSpeed: 1.3, legs: 'quad', tint: '#ffffff' },
   // Hỏa Vân Hồ: lông son của asset, viền ánh lửa nhẹ.
-  mon_hoa_van_ho: { asset: 'mon_hoa_van_ho', clips: FOX_CLIPS, refSpeed: 2.0, legs: 'quad', tint: '#ffffff', rim: 0.3 },
+  mon_hoa_van_ho: { asset: 'mon_hoa_van_ho', clips: FOX_CLIPS, refSpeed: 2.85, legs: 'quad', tint: '#ffffff', rim: 0.3 },
   // Kiếm Linh: cùng model cáo, lông trắng sương → lam núi xa, phát sáng kiếm khí nhỏ (art: asset đợt 2).
   mon_kiem_linh: {
     asset: 'mon_hoa_van_ho',
     clips: FOX_CLIPS,
-    refSpeed: 2.0,
+    refSpeed: 2.85,
     legs: 'quad',
     tint: '#ffffff',
     roughness: -0.1,
@@ -140,7 +143,7 @@ export const MONSTER_SKINS: Record<string, MonsterSkin> = {
   elite_huyet_nha_lang: {
     asset: 'elite_huyet_nha_lang',
     clips: WOLF_CLIPS,
-    refSpeed: 4.3,
+    refSpeed: 1.65,
     legs: 'quad',
     tint: '#ffffff',
     rim: 0.3,
@@ -171,7 +174,7 @@ export const MONSTER_SKINS: Record<string, MonsterSkin> = {
   boss_huyet_lang_vuong: {
     asset: 'boss_huyet_lang_vuong',
     clips: BOSS_CLIPS,
-    refSpeed: 2.7,
+    refSpeed: 3.2,
     legs: 'quad',
     tint: '#ffffff',
     rim: 0.35,
@@ -182,7 +185,7 @@ export const MONSTER_SKINS: Record<string, MonsterSkin> = {
   boss_kiem_khoi: {
     asset: 'boss_kiem_khoi',
     clips: BOSS_CLIPS,
-    refSpeed: 4.6,
+    refSpeed: 4.0,
     legs: 'biped',
     tint: '#ffffff',
     coreGlow: 1.6,
