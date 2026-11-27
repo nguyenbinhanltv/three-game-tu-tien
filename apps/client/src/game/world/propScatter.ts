@@ -1,5 +1,4 @@
 import { LEVELS } from '@dtl/content';
-import { FLAGS } from '../../base/flags';
 import { scatterVanHai } from './vanHaiScatter';
 import { scatterThienKhuyet } from './thienKhuyetArt';
 import { scatterVanDinh } from './vanDinhArt';
@@ -331,18 +330,8 @@ export const KIEM_GAY: readonly PropInstance[] = (() => {
 let cache: PropInstance[] | null = null;
 /** Mọi instance prop (điểm nhấn + rải). Tính một lần. */
 export function allProps(level = 'van_lam'): PropInstance[] {
-  const all = allPropsRaw(level);
-  if (FLAGS.tcProps) return all;
-  let l = noTcCache.get(level);
-  if (!l) {
-    // Nhận diện instance PROP-1 theo nguồn (id + toạ độ trong THIEN_CONG_PROPS), không theo tiền tố id: món `ext` dùng asset có sẵn (prop_duong_xi, prop_lau, prop_da_nam…).
-    const src = level === 'kiem_trung' ? 'van_lam' : level === 'do_kiep_bac_hoang' ? 'bac_hoang' : level;
-    const tc = new Set((THIEN_CONG_PROPS[src] ?? []).map((p) => `${p.id}|${p.x}|${p.z}`));
-    noTcCache.set(level, (l = all.filter((p) => !tc.has(`${p.id}|${p.x}|${p.z}`))));
-  }
-  return l;
+  return allPropsRaw(level);
 }
-const noTcCache = new Map<string, PropInstance[]>();
 
 function allPropsRaw(level: string): PropInstance[] {
   if (level === 'van_lam' || level === 'kiem_trung') return (cache ??= build());
@@ -382,7 +371,6 @@ const levelCache = new Map<string, PropInstance[]>();
 /** Quên danh sách prop đã dựng của một level (chế độ chỉnh phòng tập, chỉ bản dev: bố cục vừa đổi, lần vào kế phải đọc lại). */
 export function forgetProps(level: string): void {
   levelCache.delete(level);
-  noTcCache.delete(level);
 }
 
 /**

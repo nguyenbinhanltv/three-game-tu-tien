@@ -1,6 +1,6 @@
 // Ảnh trước/sau + đo hiệu năng cho bộ prop PROP-1 "Thiên Công Khai Vật": mỗi level, mỗi nhóm một góc nhìn vào cụm dày nhất.
 //   pnpm shots propstc --out <thư mục> [--levels van_lam,doan_mach,...] [--groups tong_mon,...] [--size 1280x720]
-// "Trước" = cùng bản build với `?tc=0` (ẩn prop PROP-1), "sau" = mặc định. Ảnh `<level>-<nhóm>-<truoc|sau>.png`; `perf.json` ghi draw call/tam giác/ms khung mỗi cảnh.
+// Chỉ còn bản hiện tại (cờ so `?tc=0` đã gỡ ở V4). Ảnh `<level>-<nhóm>-sau.png`; `perf.json` ghi draw call/tam giác/ms khung mỗi cảnh.
 import fs from 'node:fs';
 import path from 'node:path';
 import { THIEN_CONG_PROPS } from '@dtl/shared';
@@ -156,13 +156,14 @@ export default {
         ...(EXTRA[level] ?? []).filter((e) => groups.includes(e.group)).map((e) => e.view),
       ];
       if (!views.length) continue;
-      for (const mode of ['truoc', 'sau'] as const) {
+      // Bản "trước" cần cờ `?tc=0` đã gỡ ở V4 (28/11): chỉ còn chụp và đo bản hiện tại.
+      for (const mode of ['sau'] as const) {
         const { ctx, page } = await r.open({
           name: `Tc${mode}`,
           renderer: opt('--renderer', 'webgpu'),
           quality: 'high',
           viewport: [w, h],
-          extra: `${mode === 'truoc' ? 'tc=0&' : ''}mood=${opt('--mood', 'day')}&aura=0`,
+          extra: `mood=${opt('--mood', 'day')}&aura=0`,
           warnings: true,
         });
         await gm(page, `level ${level === 'van_lam' ? 15 : Math.max(27, lv.minLevel ?? 0)}`); // cảnh giới thấp: không hào quang/pháp tướng che prop
