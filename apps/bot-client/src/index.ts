@@ -117,11 +117,11 @@ class Bot {
   /** Tổng byte nhận qua WebSocket từ lúc vào. */
   bytes = 0;
 
-  private async join(roomName: string): Promise<void> {
+  private async join(roomName: string, options?: Record<string, string>): Promise<void> {
     const client = new Client(URL);
     // Màu áo khác nhau theo tên (chỉ có tác dụng lúc tạo nhân vật) để cảnh test tải giống người thật.
     const dye = at(APPEARANCE.dyes, hashName(this.name) % APPEARANCE.dyes.length, 'dyes').id;
-    const room = await client.joinOrCreate(roomName, { dev: this.name, ap: { g: GENDERS[this.index % GENDERS.length] ?? 'm', dye } });
+    const room = await client.joinOrCreate(roomName, { ...options, dev: this.name, ap: { g: GENDERS[this.index % GENDERS.length] ?? 'm', dye } });
     this.room = room;
     this.sid = '';
     room.onMessage(S.INIT, (m: InitMsg) => {
@@ -145,14 +145,14 @@ class Bot {
       if (m.k === 'sys.levelup') this.level++;
       if (VERBOSE) console.log(`[${this.name}] ${m.k} ${JSON.stringify(m.p ?? {})}`);
     });
-    room.onMessage(S.TRANSFER, (m: TransferMsg) => void this.transfer(m.room));
+    room.onMessage(S.TRANSFER, (m: TransferMsg) => void this.transfer(m.room, m.options));
     room.onLeave((code) => {
       if (VERBOSE) console.log(`[${this.name}] rời ${roomName}, mã ${code}`);
     });
   }
 
   /** Server bảo đổi room (vào/ra bí cảnh): rời room cũ, vào room mới như client thật (Game.transfer). */
-  private async transfer(roomName: string): Promise<void> {
+  private async transfer(roomName: string, options?: Record<string, string>): Promise<void> {
     if (this.transferring) return;
     this.transferring = true;
     this.sid = '';
@@ -162,7 +162,7 @@ class Bot {
       /* đã rời */
     }
     try {
-      await this.join(roomName);
+      await this.join(roomName, options);
     } catch (e) {
       console.error(`bot ${this.name} không vào được ${roomName}:`, (e as Error).message);
       await this.join(ROOM_WORLD).catch(() => undefined);

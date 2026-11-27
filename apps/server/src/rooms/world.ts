@@ -44,14 +44,15 @@ export class WorldRoom extends GameRoom {
   }
 
   /** Lệnh GM `/gm dvt`: vào Diễn Võ Trường, mỗi lần một room riêng. Quyền GM đã kiểm ở nơi nhận lệnh; ở đây chỉ kiểm bận. */
-  enterPractice(p: PlayerEnt): boolean {
+  enterPractice(p: PlayerEnt, key?: string): boolean {
     if (!LEVELS[PRACTICE_LEVEL]?.dungeon?.practice) return false;
     const why = this.sim.leaveBlocker(p);
     if (why) {
       this.sim.sys(p, why, undefined, 'bad');
       return false;
     }
-    const dgKey = randomUUID();
+    // Có khóa: phòng chung theo khóa (tiền tố `dvt:` không trùng được UUID của phòng riêng); không khóa: phòng riêng một người.
+    const dgKey = key ? 'dvt:' + key : randomUUID();
     tickets.issue(p.char.id, PRACTICE_LEVEL, null, undefined, dgKey);
     this.sendTransfer(p, PRACTICE_LEVEL, { dgKey });
     return true;

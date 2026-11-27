@@ -83,7 +83,7 @@ interface GmCtx {
   isDead(p: PlayerEnt): boolean;
   transferLevel(p: PlayerEnt, level: string, spawn: { x: number; z: number } | null, o?: { force?: boolean }): boolean;
   /** Vào Diễn Võ Trường (đang ở bản đồ thế giới) hoặc rời nó (đang ở trong). false = room này không làm được. */
-  practice(p: PlayerEnt): boolean;
+  practice(p: PlayerEnt, key?: string): boolean;
   teleportTo(p: PlayerEnt, x: number, z: number, level?: string): boolean;
   teleGm(p: PlayerEnt, arg: string | undefined): string;
   players(): Iterable<PlayerEnt>;
@@ -901,7 +901,9 @@ export class GmSystem {
       }
       case 'dvt':
         // /gm dvt: vào Diễn Võ Trường (phòng tập riêng); gõ lại trong phòng để ra. Nhân vật được trả về nguyên trạng khi ra.
-        return this.c.practice(p) ? undefined : say(t('gm.msg.dvt_no'));
+        // /gm dvt <khóa>: nhiều tài khoản GM gõ CÙNG khóa thì vào chung một phòng (đo đám đông bằng bot). Khóa chỉ gồm chữ thường, số, `_`, `-`, tối đa 24 ký tự.
+        if (a[1] !== undefined && !PRACTICE_KEY_RE.test(a[1])) return say(t('gm.msg.dvt_key'));
+        return this.c.practice(p, a[1]) ? undefined : say(t('gm.msg.dvt_no'));
       case 'tick':
         return say(`tick p95 ${this.c.tickP95().toFixed(2)}ms, ${this.c.playerCount()} người, ${this.c.monsters().length} quái`);
       default:
@@ -911,6 +913,8 @@ export class GmSystem {
 }
 
 /** Số quái tối đa mỗi lần `/gm spawn`, số kết quả tối đa của `/gm find`, pháp bảo đi kèm `/gm kit` theo nhánh. */
+/** Khóa phòng tập chung của `/gm dvt <khóa>`. */
+export const PRACTICE_KEY_RE = /^[a-z0-9_-]{1,24}$/;
 const GM_SPAWN_MAX = 20;
 const GM_FIND_MAX = 30;
 const KIT_ARTIFACT: Record<GmBranch, string> = { kiem: 'itm_tu_kim_ho_lo', hophap: 'itm_tran_hon_linh', dansu: 'itm_thanh_lien_an' };
