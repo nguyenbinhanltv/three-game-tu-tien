@@ -917,6 +917,8 @@ export class Game {
   /** Bắc Hoang (MAP-5 PR2): xác cự thú, cột tà trận, băng, vết nứt dị vực; cực quang. */
   bhWonders: BhWonders | null = null;
   vdWonders: { group: THREE.Group; dispose(): void } | null = null;
+  /** Điểm đến hiện tại do tự áp sát của đòn cận chiến đặt (để chỉ hủy điểm đến của chính nó khi đã vào tầm). */
+  approaching = false;
   aurora: Aurora | null = null;
   riftMood = false;
   riftMoodT = -1;

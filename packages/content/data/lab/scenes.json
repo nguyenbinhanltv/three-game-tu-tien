@@ -101,5 +101,37 @@
     "method": "lac_kiem_quyet",
     "level": 30,
     "mons": []
+  },
+  {
+    "id": "kiem_chem_quet",
+    "at": "arena",
+    "method": "lac_kiem_quyet",
+    "level": 30,
+    "mons": [
+      {
+        "id": "mon_soi_xam",
+        "n": 5
+      }
+    ],
+    "act": {
+      "slot": 0,
+      "waitMs": 1500
+    }
+  },
+  {
+    "id": "kiem_ap_sat",
+    "at": "arena",
+    "method": "lac_kiem_quyet",
+    "level": 30,
+    "mons": [
+      {
+        "id": "boss_huyet_lang_vuong",
+        "n": 1
+      }
+    ],
+    "act": {
+      "slot": 0,
+      "waitMs": 4000
+    }
   }
 ]

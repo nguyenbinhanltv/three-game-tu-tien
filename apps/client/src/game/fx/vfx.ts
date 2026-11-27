@@ -2,7 +2,7 @@ import * as THREE from 'three/webgpu';
 import { groundAt } from '../../base/levelCtx';
 import { FxBatcher } from '../../render/materials/fxBatch';
 import { BATCHING, BATCH_KINDS, type FxKind, type FxMesh } from '../../render/materials/vfx';
-import { SIGIL_CIRCLE, SIGIL_GEO, sigilLayout, type SigilShape } from '../../render/vfx/sigil';
+import { SIGIL_CIRCLE, SIGIL_CONE, SIGIL_GEO, sigilLayout, type SigilShape } from '../../render/vfx/sigil';
 import { SLASH_GEO, SLASH_INK, slashPhase } from '../../render/vfx/slash';
 import { seedOr } from '../../render/vfx/common';
 import { BOLT_HEIGHT, boltPhase, boltShape } from '../../render/vfx/lightning';
@@ -855,6 +855,23 @@ export class Vfx {
     m.fxA.set(0, shape, 0, Math.random() * 50);
     m.fxB.set(r, w, L.sx, L.sz);
     return m;
+  }
+
+  /**
+   * Vệt chém quét trên sàn (Dạ Họa, đòn thường cận chiến): hình quạt đỉnh ở chân người đánh, mở `halfAngle` rad mỗi bên quanh `yaw`, bán kính `r`.
+   * Quét nhanh ra mép trong ~0,1 s rồi tan; nằm sát đất, mờ, để không che thân quái.
+   */
+  arcSlash(x: number, z: number, yaw: number, r: number, halfAngle: number, color: number): void {
+    const m = this.sigil(SIGIL_CONE, x, z, yaw, r, halfAngle, color, groundAt(x, z) + 0.1);
+    m.fxOpacity = 0;
+    this.add(
+      0.3,
+      (k) => {
+        m.fxA.x = Math.min(1, k * 3);
+        m.fxOpacity = (k < 0.2 ? k / 0.2 : 1 - (k - 0.2) / 0.8) * 0.7;
+      },
+      () => this.drop(m),
+    );
   }
 
   /** Pháp trận dưới chân người/quái đang niệm chú; tắt dần khi bị ngắt (`stillOn` sai). */

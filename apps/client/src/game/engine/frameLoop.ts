@@ -38,6 +38,7 @@ import {
 } from '@dtl/shared';
 import { groundAt, levelId, levelTerrain } from '../../base/levelCtx';
 import { LEVELS, MONSTER, pathOf, resolveBarSkill, SKILLS, skillRangeFor, t } from '@dtl/content';
+import { APPROACH_RETARGET, approachPoint } from '../combat/approach';
 import { collidersReady } from '@dtl/content/colliders-lazy';
 import { get, pushLog, pushToast, set } from '../../ui/store';
 import { frameStats, RENDER_FAIL_LIMIT, RENDERER_KEY, rendererChoice } from '../core/gpuGuard';
@@ -683,8 +684,24 @@ function tickCombat(eng: Game, now: number, me: PState | undefined): void {
       const st = get();
       const dead = (me.fl & (PF_DEAD | PF_FLYING | PF_CASTING)) !== 0;
       const dist = Math.hypot(m.x - eng.cur.x, m.z - eng.cur.z);
+      const basic0 = eng.bar()[0] ?? SKILLS[0]!;
+      const reach = skillRangeFor(basic0, eng.methodOfPlayer(eng.sid));
+      // Hướng cận chiến (tầm đòn thường ngắn hơn tầm chiêu): đang tự đánh mà mục tiêu ngoài tầm thì TỰ ÁP SÁT bằng điểm đến của camera chéo
+      // (như bấm chuột phải; WASD hoặc bấm chỗ khác là hủy). Chỉ là ý định di chuyển: server vẫn kiểm tầm khi nhận lệnh đánh.
+      if (!dead && eng.iso && reach < basic0.range) {
+        const stand = reach + (MONSTER.get(m.t)?.scale ?? 1) - 0.5;
+        const to = approachPoint(eng.cur.x, eng.cur.z, m.x, m.z, stand);
+        const d0 = eng.iso.dest;
+        if (to && (!d0 || Math.hypot(d0.x - to.x, d0.z - to.z) > APPROACH_RETARGET)) {
+          eng.iso.setDest(to.x, to.z, groundAt(to.x, to.z));
+          eng.approaching = true;
+        } else if (!to && eng.approaching) {
+          eng.iso.dest = null;
+          eng.approaching = false;
+        }
+      }
       // Tầm theo hướng tu: đòn thường của hướng cận chiến (Kiếm tu) chỉ tự đánh khi đã áp sát.
-      if (!dead && Date.now() >= st.gcdAt - 30 && dist < skillRangeFor(eng.bar()[0] ?? SKILLS[0]!, eng.methodOfPlayer(eng.sid)) + 1) {
+      if (!dead && Date.now() >= st.gcdAt - 30 && dist < reach + 1) {
         // Đòn thường của ô 1 ĐANG HIỆN (ở tư thế là chiêu thay thế): gửi đúng chiêu đã dự đoán hình, không phải luôn `SKILLS[0]`.
         const basic = eng.bar()[0] ?? SKILLS[0]!;
         predictSkill(eng, 0, basic, true);
