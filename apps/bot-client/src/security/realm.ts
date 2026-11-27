@@ -10,6 +10,9 @@ export async function runRealm(_ctx: Ctx): Promise<void> {
     const b = await join('binhcanh2');
     let ca = null as CharV | null;
     a.room.onMessage(S.CHAR, (c: CharV) => (ca = c));
+    // Tin hệ thống gần nhất của a: ghi vào chi tiết mục kiểm để biết server từ chối vì đâu.
+    let sysA = '';
+    a.room.onMessage(S.SYS, (m: { k?: string }) => (sysA = m?.k ?? ''));
     let cb = null as CharV | null;
     b.room.onMessage(S.CHAR, (c: CharV) => (cb = c));
     const say = async (r: Room, cmd: string) => {
@@ -68,10 +71,15 @@ export async function runRealm(_ctx: Ctx): Promise<void> {
     a.room.send(C.BOTTLENECK, { m: 'trial' });
     await W(900);
     const sh = shadows()[0];
+    // Quái lạ còn sống quanh a (bài trước gọi ra mà chưa dọn) sẽ đánh a: server coi là đang giao chiến và từ chối mở tâm ma (sys.busy).
+    const meA = (a.room.state as { players: Map<string, P> }).players.get(a.init.sid)!;
+    const near = [...mons().values()]
+      .filter((m) => m.st !== MS_DEAD && m.t !== 'mon_tam_ma' && Math.hypot(m.x - meA.x, m.z - meA.z) < 20)
+      .map((m) => m.t);
     check(
       'tâm ma: server dựng bóng riêng và báo thời gian',
       !!sh && (ca?.trial ?? 0) > 100,
-      `bóng ${sh ? 'có' : 'không'}, còn ${ca?.trial}s`,
+      `bóng ${sh ? 'có' : 'không'}, còn ${ca?.trial}s, lv ${ca?.level} bk ${ca?.bk} xp ${ca?.xp}, tin cuối ${sysA}, quái gần: ${near.join(' ') || 'không'}`,
     );
     if (sh) {
       const hp0 = sh[1].hp;
