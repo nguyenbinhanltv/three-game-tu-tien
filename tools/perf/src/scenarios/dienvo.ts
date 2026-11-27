@@ -295,6 +295,13 @@ export default {
       // Hiệu ứng: tắt lớp 0 rồi bật hết; phát một timeline.
       await btn('Hiệu ứng').click();
       await sleep(200);
+      await btn('+200 ms').click();
+      await sleep(600);
+      const sk = await pg.evaluate(() => ({ ts: window.__game!.timeScale, left: window.__game!.stepLeft, live: (window.__game as unknown as { vfx: { pool: { live: number } } }).vfx.pool.live }));
+      check('nút "+200 ms" tua tới mốc và dừng hình', sk.ts === 0 && sk.left === 0 && sk.live > 0, JSON.stringify(sk));
+      await snap(pg, r.out, `${view}/panel-tua-200ms.png`, { wait: 200 });
+      await pg.evaluate(() => void (window.__game!.timeScale = 1));
+      await sleep(1800);
       const floorOf = () => pg.evaluate(() => (window.__game as unknown as { vdWonders: { floor?: string } | null }).vdWonders?.floor);
       await btn('Nền tuyết').click();
       await sleep(300);
