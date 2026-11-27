@@ -173,19 +173,19 @@ def van_co_phe_the():
         mesh('rune_ring2', -0.45, 1.0, at='area', offset=[0, 0.1, 0], scale=0.3, scaleTo=1.03, fit='area', alpha=1, sweep=0.4, erodeFrom=0.85, shadow=False, tone='rim', tier=0, seed=2),
         slow(0.0, 0.45, 220, tier=2),
         snd(0.0, 'impact', 0.85, 0.7, 0.04),
-        mesh('burst', 0.0, 0.12, at='area', offset=[0, 1.6, 0], scale=3.2, billboard=True, sweep=0, tone='core', cross=True, tier=0),
+        mesh('burst', 0.0, 0.12, at='area', offset=[0, 3.6, 0], scale=3.2, camFade=True, billboard=True, sweep=0, tone='core', cross=True, tier=0),
         mesh('ripple', 0.0, 0.6, at='area', offset=[0, 0.12, 0], scale=0.6, scaleTo=6.0, sweep=0.4, erodeFrom=0.4, tone='rim', alpha=0.9, tier=0, seed=9),
-        mesh('shock_cone', 0.02, 0.6, at='area', offset=[0, 0.05, 0], scale=[1.0] * 3, scaleTo=[12.0] * 3, alpha=0.8, sweep=0.3, erodeFrom=0.3, tone='body', tier=1),
+        mesh('shock_cone', 0.02, 0.3, at='area', offset=[0, 0.05, 0], scale=[1.0] * 3, scaleTo=[12.0] * 3, alpha=0.4, sweep=0.3, erodeFrom=0.2, tone='body', tier=1),
         decal('scorch', 0.0, 9.0, 3.2, at='area', grow=0.1, tone='core', alpha=0.85, tier=0),
-        parts('dust', 0.0, 120, 7, 1, 1.0, 0.26, at='area', offset=[0, 0.6, 0], tone='body', grav=-0.4, tier=0),
-        smoke(0.04, 'area', y=0.6, scale=8.0, tone='core', alpha=0.7),
+        parts('dust', 0.0, 40, 7, 1, 0.5, 0.14, at='area', offset=[0, 0.6, 0], tone='body', grav=-0.4, tier=0),
+        smoke(0.04, 'area', y=0.6, scale=6.0, tone='core', alpha=0.3),
     ]
     for i in range(12):
         a = i / 12 * math.tau + 0.2
         r = 1.5 + 4.0 * ((i * 37) % 10) / 10
         x, z = round(math.cos(a) * r, 2), round(math.sin(a) * r, 2)
         ev.append(mesh('pill_orb', -0.25 + 0.01 * i, 0.25, at='area', offset=[x, 6.0, z], scale=0.7, sweep=0, erodeFrom=0.9, alpha=1, tone='body' if i % 2 else 'core', camFade=True,
-                       tier=0 if i < 5 else 1, seed=100 + i, move={'to': 'area', 'ease': 'in', 'offset': [x, 0.5, z]}))
+                       tier=0 if i < 5 else 1, seed=100 + i, move={'to': 'area', 'ease': 'in', 'offset': [x, 2.6, z]}))
     ev += feel(0.0, ms=70, sh=0.4, fl=0.0, vg=0.34, fov=3.4, pull=0.15)
     return {'skill': 'skl_van_co_phe_the', 'replaces': ['vancophethe'], 'events': ev}
 
