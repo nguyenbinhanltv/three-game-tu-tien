@@ -1,6 +1,6 @@
 import * as THREE from 'three/webgpu';
 import { describe, expect, it } from 'vitest';
-import { INK_HULL_MAX, INK_STATE, INK_WIDTH, InkHulls, inkStateOf } from './inkHull';
+import { INK_HULL_MAX, INK_STATE, INK_WIDTH, InkHulls, inkStateOf, skinnedWorldScale } from './inkHull';
 
 function body(scale = 1): THREE.Group {
   const g = new THREE.Group();
@@ -15,6 +15,8 @@ function body(scale = 1): THREE.Group {
   mesh.bind(new THREE.Skeleton([bone]));
   g.add(mesh);
   g.scale.setScalar(scale);
+  // Thể thật luôn nằm trong cảnh; thể bị gỡ khỏi cảnh thì `sync` trả chỗ viền.
+  new THREE.Group().add(g);
   g.updateMatrixWorld(true);
   return g;
 }
@@ -105,5 +107,41 @@ describe('InkHulls chọn lưới LOD thấp cho vỏ', () => {
     h.sync();
     expect(hull.visible).toBe(true);
     h.dispose();
+  });
+});
+
+describe('InkHulls với skin quái (Diễn Võ Trường tìm ra)', () => {
+  it('vỏ theo đúng kiểu gắn xương của lưới gốc (skin quái dùng kiểu detached)', () => {
+    const g = body();
+    const src = g.children[0] as THREE.SkinnedMesh;
+    src.bindMode = THREE.DetachedBindMode;
+    const h = new InkHulls();
+    expect(h.attach(g)).toBe(true);
+    const hull = src.parent!.children.find((c) => c.userData.inkHull) as THREE.SkinnedMesh;
+    expect(hull.bindMode).toBe(THREE.DetachedBindMode);
+  });
+
+  it('kiểu detached: tỉ lệ thế giới lấy cả ma trận của nút lưới (xương nằm ngoài cảnh)', () => {
+    const g = body(2);
+    const src = g.children[0] as THREE.SkinnedMesh;
+    expect(skinnedWorldScale(src)).toBeCloseTo(2, 5);
+    // Dựng lại như skin quái: xương ở không gian riêng (không nằm dưới nút lưới), lưới detached đặt nó vào thế giới.
+    const bone = new THREE.Bone();
+    bone.updateMatrixWorld(true);
+    src.bindMode = THREE.DetachedBindMode;
+    src.bind(new THREE.Skeleton([bone]), new THREE.Matrix4());
+    expect(skinnedWorldScale(src)).toBeCloseTo(2, 5);
+  });
+
+  it('thể bị gỡ khỏi cảnh thì sync trả chỗ, thể mới gắn được dù trước đó đã đầy', () => {
+    const h = new InkHulls();
+    const olds = Array.from({ length: INK_HULL_MAX }, () => body());
+    for (const o of olds) expect(h.attach(o)).toBe(true);
+    const fresh = body();
+    expect(h.attach(fresh)).toBe(false);
+    for (const o of olds.slice(0, 3)) o.removeFromParent();
+    h.sync();
+    expect(h.count).toBe(INK_HULL_MAX - 3);
+    expect(h.attach(fresh)).toBe(true);
   });
 });

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { GRADING } from '../../render/grading';
-import { daPreset } from './daMood';
+import { daMoodTint, daPreset, DA_TINT_BOSS, DA_TINT_ELITE } from './daMood';
 
 const base = GRADING.lk_night;
 const ch = (c: number) => [(c >> 16) & 255, (c >> 8) & 255, c & 255] as const;
@@ -46,5 +46,29 @@ describe('daPreset (mood Dạ Cảnh theo loại trận)', () => {
   it('boss lấn tinh anh; trọng số ngoài [0, 1] bị kẹp', () => {
     expect(daPreset(base, 1, 1)).toEqual(daPreset(base, 0, 1));
     expect(daPreset(base, 5, -3)).toEqual(daPreset(base, 1, 0));
+  });
+});
+
+describe('daMoodTint (nhuộm khung theo loại trận ở Dạ Họa)', () => {
+  it('không có tinh anh/boss thì không nhuộm', () => {
+    expect(daMoodTint(0, 0).w).toBe(0);
+  });
+
+  it('boss nhuộm hết mức, tinh anh nửa mức; boss lấn tinh anh', () => {
+    expect(daMoodTint(0, 1)).toEqual({ w: 1, color: DA_TINT_BOSS });
+    expect(daMoodTint(1, 0)).toEqual({ w: 0.5, color: DA_TINT_ELITE });
+    expect(daMoodTint(1, 1)).toEqual(daMoodTint(0, 1));
+  });
+
+  it('màu nhuộm là đỏ SẪM (không phải đỏ vạch báo): kênh đỏ trội nhưng tổng kênh thấp', () => {
+    for (const c of [DA_TINT_ELITE, DA_TINT_BOSS]) {
+      const [r, g, b] = ch(c);
+      expect(r).toBeGreaterThan(g + b);
+      expect(r + g + b).toBeLessThan(260);
+    }
+  });
+
+  it('trọng số ngoài [0, 1] bị kẹp', () => {
+    expect(daMoodTint(9, -2)).toEqual(daMoodTint(1, 0));
   });
 });
