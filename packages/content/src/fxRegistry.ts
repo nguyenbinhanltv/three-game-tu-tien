@@ -325,6 +325,7 @@ import fx_skl_hoanh_dao from '../data/fx/skl_hoanh_dao.json';
 import fx_skl_thuan_dao_tram from '../data/fx/skl_thuan_dao_tram.json';
 import fx_skl_huyet_chien_the from '../data/fx/skl_huyet_chien_the.json';
 import fx_skl_doan_thien_dao from '../data/fx/skl_doan_thien_dao.json';
+import fx_skl_doan_thien_dao__pilot from '../data/fx/skl_doan_thien_dao__pilot.json';
 import fx_skl_phan_co_thuat from '../data/fx/skl_phan_co_thuat.json';
 import fx_skl_kim_thien_co from '../data/fx/skl_kim_thien_co.json';
 import fx_skl_van_co_phe_the from '../data/fx/skl_van_co_phe_the.json';
@@ -561,6 +562,7 @@ export const FX_TIMELINES = [
   fx_skl_thuan_dao_tram,
   fx_skl_huyet_chien_the,
   fx_skl_doan_thien_dao,
+  fx_skl_doan_thien_dao__pilot,
   fx_skl_phan_co_thuat,
   fx_skl_kim_thien_co,
   fx_skl_van_co_phe_the,
