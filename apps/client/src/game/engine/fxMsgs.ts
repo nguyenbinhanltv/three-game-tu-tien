@@ -1200,7 +1200,9 @@ export function applyDmg(
   const heavyNum = cls === 'hit' && (m.tr ?? 0) >= 2;
   const keNum = m.ke === 1 && !m.heal;
   const cls2 = cls + (heavyNum ? ' hv' : '') + (keNum && (cls === 'hit' || cls === 'crit') ? ' ke' : '');
-  eng.dmg.spawn(keNum ? `${text} ${t('ui.dmg.ke')}` : text, _v, cls2, m.dst, !m.heal && !m.crit && !m.ke && m.n > 0 ? m.n : undefined);
+  const keTag = keNum ? ` ${t('ui.dmg.ke')}` : '';
+  // Số thường (kể cả khắc chế, không chí mạng, không nặng) gom theo mục tiêu trong `MERGE_WINDOW`; số của mình (`-n`) không gom.
+  eng.dmg.spawn(text + keTag, _v, cls2, m.dst, !m.heal && !m.crit && !mine && m.n > 0 ? m.n : undefined, keTag);
 }
 
 /** Model quái đánh bằng miệng: đòn trúng người là dấu cắn thay cho vệt cào. */
