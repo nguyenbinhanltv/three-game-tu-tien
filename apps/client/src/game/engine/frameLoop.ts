@@ -6,6 +6,7 @@ import { spotAt, vistaView } from '../camera/vista';
 import { downgradeOf, getGpuHint, setGpuHint, suggestQuality } from '../../base/quality';
 import * as THREE from 'three/webgpu';
 import {
+  COMBO_BUFFER_MS,
   C,
   caveBoundOf,
   TELE_CAST_MS,
@@ -38,7 +39,7 @@ import {
 } from '@dtl/shared';
 import { groundAt, levelId, levelTerrain } from '../../base/levelCtx';
 import { LEVELS, MONSTER, pathOf, resolveBarSkill, SKILLS, skillRangeFor, t } from '@dtl/content';
-import { APPROACH_RETARGET, approachPoint } from '../combat/approach';
+import { APPROACH_RETARGET, approachPoint, attackLeadMs } from '../combat/approach';
 import { collidersReady } from '@dtl/content/colliders-lazy';
 import { get, pushLog, pushToast, set } from '../../ui/store';
 import { frameStats, RENDER_FAIL_LIMIT, RENDERER_KEY, rendererChoice } from '../core/gpuGuard';
@@ -712,7 +713,12 @@ function tickCombat(eng: Game, now: number, me: PState | undefined): void {
       }
       // Tầm theo hướng tu: đòn thường của hướng cận chiến (Kiếm tu) chỉ tự đánh khi đã áp sát.
       // Cộng bán kính thân mục tiêu như server (`inRange`: tầm + 1,5 + scale), giữ lề 0,5 m: quái to không còn bị coi là ngoài tầm khi đã đứng sát.
-      if (!dead && Date.now() >= st.gcdAt - 30 && dist < reach + 1 + (MONSTER.get(m.t)?.scale ?? 1)) {
+      // Gửi sớm theo ping (server giữ lệnh tới sớm ≤ `COMBO_BUFFER_MS`): nhịp chuỗi đòn không tụt theo độ trễ đường truyền.
+      if (
+        !dead &&
+        Date.now() >= st.gcdAt - attackLeadMs(eng.ping + eng.fakePing, COMBO_BUFFER_MS) &&
+        dist < reach + 1 + (MONSTER.get(m.t)?.scale ?? 1)
+      ) {
         // Đòn thường của ô 1 ĐANG HIỆN (ở tư thế là chiêu thay thế): gửi đúng chiêu đã dự đoán hình, không phải luôn `SKILLS[0]`.
         const basic = eng.bar()[0] ?? SKILLS[0]!;
         predictSkill(eng, 0, basic, true);

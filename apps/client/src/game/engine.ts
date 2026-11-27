@@ -938,6 +938,11 @@ export class Game {
   /** Phòng thử: tỉ lệ thời gian của lớp hình (1 = thường, 0 = dừng) và số khung còn phải bước khi đang dừng. Chỉ đổi qua bảng F3 / `__game`. */
   timeScale = 1;
   stepLeft = 0;
+  /**
+   * Phòng thử: ping giả (ms khứ hồi, 0 = tắt). Trễ lệnh GỬI lên server và tin NHẬN về (chiêu, sát thương, hiệu ứng...) mỗi chiều một nửa;
+   * state đồng bộ vị trí/máu của Colyseus KHÔNG bị trễ. Chỉ có tác dụng khi được phép gỡ lỗi (`debugOk`).
+   */
+  fakePing = 0;
   aurora: Aurora | null = null;
   riftMood = false;
   riftMoodT = -1;
@@ -1066,7 +1071,13 @@ export class Game {
 
   send(type: string, msg?: unknown): void {
     if (this.leaving) return;
-    this.room.send(type, msg);
+    // Phòng thử: ping giả trễ nửa chiều đi (nửa còn lại ở chiều về, xem `bindRoom`). Tin bị giữ mà phòng đã đổi/đang rời thì bỏ.
+    const lag = this.debugOk ? this.fakePing / 2 : 0;
+    if (lag <= 0) return void this.room.send(type, msg);
+    const room = this.room;
+    window.setTimeout(() => {
+      if (!this.leaving && !this.disposed && this.room === room) room.send(type, msg);
+    }, lag);
   }
 
   /** Quét vật thể có hình trong cảnh cho công cụ `pnpm shots collscan` (COL-1): hộp bao thế giới từng mesh/instance. Chỉ đọc. */
