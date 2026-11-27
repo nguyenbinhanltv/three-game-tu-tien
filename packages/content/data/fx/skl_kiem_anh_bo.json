@@ -66,13 +66,13 @@
   {
    "type": "mesh",
    "t": 0,
-   "dur": 0.6,
+   "dur": 0.24,
    "at": "ahead",
    "sweep": 0,
-   "erodeFrom": 0.3,
+   "erodeFrom": 0.1,
    "ragged": 0.5,
    "tone": "body",
-   "alpha": 0.95,
+   "alpha": 0.45,
    "tier": 0,
    "seed": 1001,
    "shape": "sprite",
@@ -90,7 +90,7 @@
   {
    "type": "mesh",
    "t": 0.02,
-   "dur": 0.4,
+   "dur": 0.2,
    "at": "ahead",
    "sweep": 0,
    "erodeFrom": 0.3,
@@ -202,7 +202,7 @@
    "billboard": true,
    "offset": [
     0,
-    1.2,
+    2.2,
     5
    ],
    "scale": 2.31,
@@ -211,7 +211,7 @@
     "to": "ahead",
     "offset": [
      0,
-     2.3,
+     3.3000000000000003,
      5
     ],
     "ease": "out"
