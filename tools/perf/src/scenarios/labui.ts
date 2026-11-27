@@ -438,9 +438,10 @@ export default {
       });
       check('mọi nút của nhóm Động tác nằm trong khung 720p', outA === 0, `${outA} nút ngoài khung`);
       // Chọn pose của chiêu đầu tiên có pose (qua ô tìm), diễn, rồi dừng ở đỉnh đòn.
+      // Ô chọn pose = ô chọn đầu tiên của bảng có giá trị là một pose (các công cụ gắn thêm phía dưới cũng có ô chọn riêng).
       const pose = await pg.evaluate(() => {
-        const sel = [...document.querySelectorAll('.debug-panel select')].pop() as HTMLSelectElement | undefined;
-        return sel?.value ?? '';
+        for (const sel of document.querySelectorAll<HTMLSelectElement>('.debug-panel select')) if (window.__game!.labx.poseInfo(sel.value)) return sel.value;
+        return '';
       });
       const info = await pg.evaluate((p) => window.__game!.labx.poseInfo(p), pose);
       check('ô chọn có pose và đọc được thông tin', !!info && info.duration > 0, info ? `${pose}: dài ${info.duration} s, khung trúng ${info.hit ? info.hit.join('–') : 'không khai'}, chiêu ${info.skill ?? 'không'}` : 'không có');

@@ -26,10 +26,6 @@ interface Flags {
   animLab: boolean;
   /** Lớp Thân Pháp (cường điệu góc chéo, nảy bước, pivot, clip Patch...) trên nhân vật v3; mặc định BẬT, `?thanphap=0` tắt. Lớp riêng Kiếm tu (idle, pose `_tp`, cut-in, lướt thấp) chỉ chạy với công pháp Kiếm tu. */
   thanPhap: boolean;
-  /** `?ploop=0` (cùng `?thanphap=1`) giữ vòng chạy UAL thay vì clip Patch, để so trước/sau. */
-  patchLoop: boolean;
-  /** `?pstride=<k>` nhân độ dài chu kỳ chạy Patch (hiệu chỉnh trượt chân, mặc định 1). */
-  pStride: number;
   /** `?vfxwarm=0` tắt biên dịch trước VFX (chẩn đoán). */
   vfxWarm: boolean;
   /** `?aura=0` tắt hào quang cảnh giới (so số đo trước/sau, RFX-1). */
@@ -40,16 +36,12 @@ interface Flags {
   fxq: string | null;
   /** `?chr=v1` quay về nhân vật cũ (N-7: mặc định là v3 Mannequin; `v1` giữ một bản làm dự phòng, `v3` = mặc định). */
   chr: 'v1' | 'v3' | null;
-  /** `?v3model=b2` chọn bản Lạc Kiếm v3b2 (không tua) để so ảnh (mặc định v3b3 = v3b2 + tua/dải đai lò xo). */
-  v3Model: string | null;
   /** `?jog=<số>` ép tốc độ clip chạy v3 (chụp). */
   jog: number;
   /** `?proplod0=<hệ số>` nhân ngưỡng LOD0 của prop không phải cây (mặc định 0,7; 1 = như trước). */
   propLod0: number;
   /** `?shadowhz=<số>` tần suất vẽ lại bản đồ bóng mặt trời tối đa (Hz); 0 = mỗi khung; mặc định 50 (v3cpu). */
   shadowHz: number;
-  /** `?v3anim=0` về hệ animation cũ của v3 (so video trước/sau). */
-  v3Anim: boolean;
   /** `?v3feet=0` tắt IK chân bám đất + bước chân xoay tại chỗ của v3 (so video trước/sau). */
   v3Feet: boolean;
   /** `?armfit=<độ>` ghi đè góc bù dang tay của v3 (null = mặc định theo model). */
@@ -60,8 +52,6 @@ interface Flags {
   ual: boolean;
   /** `?cloth=1` bật vải mô phỏng (Thiên Y) cho model v3 có mesh vải cũ tách riêng. */
   cloth: boolean;
-  /** `?norobeanim` dùng clip UAL gốc thay clip áo bào cho model giữ gốc (so sánh). */
-  noRobeAnim: boolean;
   /** `?v3side=front|double` ép mặt vẽ của vật liệu model giữ gốc Tripo (so sánh; mặc định theo cấu hình asset). */
   v3Side: string | null;
   /** `?v3veil=0` tắt xử lý voan alpha/sáng của model giữ gốc (đo chi phí A/B). */
@@ -163,8 +153,6 @@ export const FLAG_DOCS: Readonly<Record<string, { scope: 'user' | 'diag' | 'test
   batch: { scope: 'diag', doc: '=0: tắt gộp draw call VFX' },
   vfxlab: { scope: 'test', doc: '=1 (dev): phòng thử VFX, gắn window.__vfxlab; dùng với pnpm shots vfxlab' },
   animlab: { scope: 'test', doc: '=1 (dev): phòng thử animation Thân Pháp, gắn window.__animlab; dùng với pnpm shots animlab' },
-  pstride: { scope: 'test', doc: '=<k> (khi Thân Pháp bật): nhân độ dài chu kỳ chạy Patch để quét trượt chân (mặc định 1)' },
-  ploop: { scope: 'test', doc: '=0 (khi Thân Pháp bật): giữ vòng chạy UAL thay vì clip Patch PM_Run/PM_Sprint, để so trước/sau' },
   thanphap: {
     scope: 'diag',
     doc: '=0: tắt lớp Thân Pháp (mặc định bật: cường điệu góc chéo, nảy bước, pivot, clip Patch cho mọi hệ; idle/chiêu/cut-in mới chỉ Kiếm tu)',
@@ -174,11 +162,9 @@ export const FLAG_DOCS: Readonly<Record<string, { scope: 'user' | 'diag' | 'test
   mood: { scope: 'diag', doc: 'dawn|day|dusk|night' },
   fxq: { scope: 'diag', doc: 'low|medium|high' },
   chr: { scope: 'user', doc: '=v1 quay về nhân vật cũ (dự phòng một bản sau N-7, model gốc không áo mô-đun); mặc định v3' },
-  v3model: { scope: 'test', doc: '=b2 v3b2 (không tua); mặc định v3b3' },
   jog: { scope: 'test', doc: 'tốc độ clip chạy v3' },
   proplod0: { scope: 'test', doc: 'hệ số ngưỡng LOD0 của prop (mặc định 0,7)' },
   shadowhz: { scope: 'test', doc: 'tần suất vẽ lại bản đồ bóng tối đa (Hz, 0 = mỗi khung, mặc định 50)' },
-  v3anim: { scope: 'test', doc: '=0 hệ animation v3 cũ' },
   v3feet: { scope: 'test', doc: '=0 tắt IK chân bám đất + bước chân xoay tại chỗ của v3' },
   armfit: { scope: 'test', doc: 'góc bù dang tay v3 (độ)' },
   v3pal: { scope: 'test', doc: '=0 tắt nhuộm v3' },
@@ -186,7 +172,6 @@ export const FLAG_DOCS: Readonly<Record<string, { scope: 'user' | 'diag' | 'test
   v3veil: { scope: 'test', doc: '0: tắt xử lý voan alpha/sáng của model giữ gốc (đo A/B chi phí)' },
   v3silk: { scope: 'test', doc: '0: tắt độ bóng lụa (sheen + dị hướng) của voan Đan sư (đo A/B)' },
   v3side: { scope: 'test', doc: 'front|double: ép mặt vẽ vật liệu model giữ gốc Tripo (so sánh voan một lớp)' },
-  norobeanim: { scope: 'test', doc: 'có mặt: dùng clip UAL gốc thay clip áo bào (model giữ gốc Tripo)' },
   v3off: { scope: 'test', doc: 'proc,feet,twist,cloth,park: tắt từng hệ phụ của v3 (chẩn đoán; park = đỗ rig ở LOD2)' },
   headlift: { scope: 'test', doc: 'góc ngửa đầu bù clip Idle cho model giữ gốc (rad, mặc định 0,23)' },
   cloth: { scope: 'test', doc: '=1 vải mô phỏng Thiên Y (model v3 có vải cũ tách riêng)' },
@@ -261,24 +246,19 @@ export function readFlags(search: string): Flags {
     vfxLab: q.get('vfxlab') === '1',
     animLab: q.get('animlab') === '1',
     thanPhap: q.get('thanphap') !== '0',
-    patchLoop: !off(q.get('ploop')),
-    pStride: Number(q.get('pstride')) > 0 ? Number(q.get('pstride')) : 1,
     vfxWarm: !off(q.get('vfxwarm')),
     aura: !off(q.get('aura')),
     mood: mood === 'dawn' || mood === 'day' || mood === 'dusk' || mood === 'night' ? mood : null,
     fxq: q.get('fxq'),
     chr: chr === 'v1' || chr === 'v3' ? chr : null,
-    v3Model: q.get('v3model'),
     jog: Number(q.get('jog')) || 0,
     propLod0: q.get('proplod0') === null ? 0.7 : Math.max(0.1, Number(q.get('proplod0')) || 1),
     shadowHz: q.get('shadowhz') === null ? 50 : Math.max(0, Number(q.get('shadowhz')) || 0),
-    v3Anim: !off(q.get('v3anim')),
     v3Feet: !off(q.get('v3feet')),
     armFit: q.get('armfit') === null || Number.isNaN(Number(q.get('armfit'))) ? null : Number(q.get('armfit')),
     v3Palette: !off(q.get('v3pal')),
     ual: !off(q.get('ual')),
     cloth: q.get('cloth') === '1',
-    noRobeAnim: q.has('norobeanim'),
     v3Side: q.get('v3side'),
     v3Veil: !off(q.get('v3veil')),
     v3Silk: !off(q.get('v3silk')),

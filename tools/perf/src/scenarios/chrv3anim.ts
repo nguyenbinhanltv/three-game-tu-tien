@@ -1,4 +1,4 @@
-// Animation nhân vật v3 (Lạc Kiếm v3b): quay RIÊNG từng bản (cũ = `?v3anim=0`, mới), mỗi tình huống 3,5 s có nhãn, ghi mốc đầu từng tình huống,
+// Animation nhân vật v3 (Lạc Kiếm v3b): quay RIÊNG từng bản (cũ, mới; từ V4 28/11 cờ `?v3anim=0` đã gỡ nên bản "cũ" chỉ còn ở `--group feet` = tắt IK chân), mỗi tình huống 3,5 s có nhãn, ghi mốc đầu từng tình huống,
 // rồi cắt cùng tình huống từ hai bản và xếp trái (cũ) | phải (mới), nối lần lượt (FFMPEG=đường dẫn, mặc định ffmpeg trong PATH).
 // Camera gần, toàn thân ~60% chiều cao khung; chạy/rẽ/chạy+chém có hai góc (3/4 trước và ngang). Kèm đo "đỉnh tay nằm trong khối thân"
 // (xuyên ống tay) theo từng tình huống: `pen-<giới>-<bản>.json`.
@@ -14,7 +14,6 @@ import { at as checkedAt } from '@dtl/shared';
 const DUR = 3500;
 const FFMPEG = process.env.FFMPEG ?? 'ffmpeg';
 const QUERY: Record<string, Record<string, string>> = {
-  old: { chr: 'v3', v3anim: '0' },
   new: { chr: 'v3' },
   noarm: { chr: 'v3', armfit: '0' },
 };
@@ -61,7 +60,9 @@ export default {
   usage: '[--genders m,f] [--variants old,new,noarm] [--group all|base|loco|feet|hit] [--sit <tên chứa>] [--size 960x600] [--nopen]',
   async run(r) {
     const viewport = size('960x600');
-    const variants = list('--variants', 'old,new');
+    const group0 = list('--group', 'all')[0]!;
+    // Bản "cũ" của các nhóm khác `feet` cần cờ `?v3anim=0` đã gỡ: bỏ qua, chỉ quay bản mới.
+    const variants = list('--variants', 'old,new').filter((v) => v !== 'old' || group0 === 'feet');
     const genders = list('--genders', 'm,f');
     const pen = !process.argv.includes('--nopen');
     const group = list('--group', 'all')[0]!;
@@ -69,7 +70,7 @@ export default {
       const gname = g === 'm' ? 'nam' : 'nu';
       for (const v of variants) {
         // Nhóm `feet` (A2): bản "cũ" = tắt IK chân (`?v3feet=0`), vẫn dùng hệ animation mới.
-        const oldQ: Record<string, string> = group === 'feet' ? { chr: 'v3', v3feet: '0' } : { chr: 'v3', v3anim: '0' };
+        const oldQ: Record<string, string> = { chr: 'v3', v3feet: '0' };
         const tag = `${gname}-${v}`;
         const t0 = Date.now();
         const { ctx, page } = await r.open({
