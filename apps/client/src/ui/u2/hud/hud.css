@@ -667,6 +667,9 @@
   font-size: var(--u-fs-1);
   line-height: 1;
   color: var(--u-gold-hi);
+  /* Nhãn phím nằm trên biểu tượng chiêu đủ màu: viền mực để luôn đọc được (phòng thử đo tương phản 4,4, dưới 4,5). */
+  -webkit-text-stroke: 2px var(--u-ink-0);
+  paint-order: stroke fill;
   text-shadow:
     0 0 3px var(--u-ink-0),
     0 1px 1px var(--u-ink-0);

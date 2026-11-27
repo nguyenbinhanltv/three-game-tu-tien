@@ -27,9 +27,10 @@
   border-radius: 50%;
   border: var(--u-line-1) solid var(--u-gold);
   background: radial-gradient(circle at 35% 30%, var(--u-ngoc-text), var(--u-ngoc-hi) 45%, var(--u-ngoc-lo));
-  color: var(--u-ngoc-sel-text);
+  /* Dấu + / − nằm trên hạt ngọc chuyển sắc sáng → tối: mực đậm nhất và nét dày để đọc được cả ở nửa tối (phòng thử đo 3,8–4,0 với màu chữ cũ). */
+  color: var(--u-ink-0);
   font-family: var(--u-font-head);
-  font-weight: 700;
+  font-weight: 800;
   font-size: 14px;
   line-height: 1;
   cursor: pointer;
