@@ -34,14 +34,6 @@ interface Flags {
   vfxWarm: boolean;
   /** `?aura=0` tắt hào quang cảnh giới (so số đo trước/sau, RFX-1). */
   aura: boolean;
-  /** `?auraground=0` hào quang cảnh giới kiểu cũ quanh người (không có ấn dưới chân); so ảnh trước/sau (Chân Cảnh C5). */
-  auraGround: boolean;
-  /** `?trailink=0` vệt phi kiếm không có lớp mực (bản cũ chỉ cộng sáng); so ảnh trước/sau (V-P10). */
-  trailInk: boolean;
-  /** `?aurasprites=0` hào quang cảnh giới kiểu cũ (ấn rune dưới chân, vòng ngũ hành, phù văn lưng) thay vì sprite vẽ tay Họa Pháp Lô 2 (V-P10); so ảnh trước/sau. */
-  auraSprites: boolean;
-  /** `?pathaura=0` về hào quang cảnh giới mặc định cho Đao tu/Cổ tu/Cấm chế sư (so ảnh trước/sau lớp hào quang riêng của hướng). */
-  pathAura: boolean;
   /** `?mood=dawn|day|dusk|night` đổi thời điểm trong ngày (không lưu). */
   mood: 'dawn' | 'day' | 'dusk' | 'night' | null;
   /** `?fxq=low|medium|high` ép chất lượng hiệu ứng (chuỗi thô, nơi dùng kiểm lại). */
@@ -120,8 +112,6 @@ interface Flags {
   isoYaw: number | null;
   /** `?vista=0` tắt "khoảnh khắc mở tầm nhìn" (camera hạ thấp khi ngự kiếm / đứng ở điểm ngắm cảnh). */
   vista: boolean;
-  /** `?isofx=0` tắt nén hình VFX đứng cao ở camera chéo (so ảnh trước/sau, Thiên Nhãn P4-1). */
-  isoFxCompress: boolean;
   /**
    * `?style=painted` phong cách "Họa Cảnh" (nền hoạt hình vẽ tay, thử ở Vân Lam); `?style=da` hướng "Dạ Cảnh" (nền đêm ít tương phản, nhân vật và chiêu nổi lên;
    * hướng hình ảnh chính từ 27/11/2026, đang dựng sau cờ). Hai giá trị loại trừ nhau. Mặc định không đổi gì; giá trị lạ = tắt.
@@ -164,7 +154,6 @@ export const FLAG_DOCS: Readonly<Record<string, { scope: 'user' | 'diag' | 'test
     doc: '=1: cảnh thử đối chiếu Họa Cảnh với painted-valley (render/painted/lab; tools/painted-compare); ?win=x,z ?paint=0..3; =far: bản đồ độ cao vùng xa (P3a)',
   },
   isoyaw: { scope: 'diag', doc: 'độ: ghi đè hướng nhìn cố định của camera chéo (chọn hướng đẹp nhất cho từng bản đồ)' },
-  isofx: { scope: 'diag', doc: '=0 tắt nén hình VFX đứng cao ở camera chéo (debug, so ảnh trước/sau)' },
   touch: { scope: 'user', doc: '=1 ép chế độ cảm ứng, =0 ép tắt (mặc định theo thiết bị + Cài đặt)' },
   mute: { scope: 'user', doc: 'tắt tiếng (playtest luôn bật)' },
   auto: { scope: 'test', doc: 'tự đăng nhập bằng đạo hiệu thử' },
@@ -181,14 +170,7 @@ export const FLAG_DOCS: Readonly<Record<string, { scope: 'user' | 'diag' | 'test
     doc: '=0: tắt lớp Thân Pháp (mặc định bật: cường điệu góc chéo, nảy bước, pivot, clip Patch cho mọi hệ; idle/chiêu/cut-in mới chỉ Kiếm tu)',
   },
   vfxwarm: { scope: 'diag', doc: '=0: tắt biên dịch trước VFX' },
-  trailink: { scope: 'diag', doc: '=0: vệt phi kiếm không có lớp mực (bản cũ chỉ cộng sáng), so ảnh V-P10' },
-  aurasprites: {
-    scope: 'diag',
-    doc: '=0: hào quang cảnh giới kiểu cũ (ấn rune, vòng ngũ hành, phù văn lưng) thay vì sprite vẽ tay (V-P10)',
-  },
-  auraground: { scope: 'diag', doc: '=0: hào quang cảnh giới kiểu cũ quanh người, không có ấn dưới chân (so ảnh C5)' },
   aura: { scope: 'diag', doc: '=0: tắt hào quang cảnh giới trên nhân vật' },
-  pathaura: { scope: 'diag', doc: '=0: Đao tu/Cổ tu/Cấm chế sư dùng hào quang cảnh giới mặc định thay lớp hào quang riêng của hướng' },
   mood: { scope: 'diag', doc: 'dawn|day|dusk|night' },
   fxq: { scope: 'diag', doc: 'low|medium|high' },
   chr: { scope: 'user', doc: '=v1 quay về nhân vật cũ (dự phòng một bản sau N-7, model gốc không áo mô-đun); mặc định v3' },
@@ -268,7 +250,6 @@ export function readFlags(search: string): Flags {
     paintDbg: q.get('paintdbg') === 'dry' ? 'dry' : q.get('paintdbg') === 'vc' ? 'vc' : null,
     vistaFlyPitch: Number.isFinite(Number(q.get('vistafly') ?? NaN)) && q.has('vistafly') ? Number(q.get('vistafly')) : null,
     paint: /^[0-3]$/.test(q.get('paint') ?? '') ? Number(q.get('paint')) : null,
-    isoFxCompress: q.get('isofx') !== '0',
     vista: q.get('vista') !== '0',
     isoYaw: q.get('isoyaw') === null || Number.isNaN(Number(q.get('isoyaw'))) ? null : (Number(q.get('isoyaw')) * Math.PI) / 180,
     touch: q.get('touch') === '1' ? true : q.get('touch') === '0' ? false : null,
@@ -284,10 +265,6 @@ export function readFlags(search: string): Flags {
     pStride: Number(q.get('pstride')) > 0 ? Number(q.get('pstride')) : 1,
     vfxWarm: !off(q.get('vfxwarm')),
     aura: !off(q.get('aura')),
-    auraGround: !off(q.get('auraground')),
-    trailInk: !off(q.get('trailink')),
-    auraSprites: !off(q.get('aurasprites')),
-    pathAura: !off(q.get('pathaura')),
     mood: mood === 'dawn' || mood === 'day' || mood === 'dusk' || mood === 'night' ? mood : null,
     fxq: q.get('fxq'),
     chr: chr === 'v1' || chr === 'v3' ? chr : null,

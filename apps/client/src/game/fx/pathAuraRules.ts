@@ -20,9 +20,9 @@ export function pathAuraOf(mt: string | undefined): PathAuraKind | null {
   return id ? (KIND_OF_PATH[id] ?? null) : null;
 }
 
-/** Hào quang cảnh giới mặc định có phải nhường chỗ cho lớp hướng không (`on` = cờ `?pathaura`, mặc định bật). */
-export function realmSuppressed(mt: string | undefined, on: boolean): boolean {
-  return on && pathAuraOf(mt) !== null;
+/** Hào quang cảnh giới mặc định có phải nhường chỗ cho lớp hướng không. */
+export function realmSuppressed(mt: string | undefined): boolean {
+  return pathAuraOf(mt) !== null;
 }
 
 /** Màu theo bảng màu hướng tu (`paths.json` → `palette`), số hex. */

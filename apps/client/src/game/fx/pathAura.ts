@@ -10,7 +10,6 @@ import type { FxKind, FxMesh } from '../../render/materials/vfx';
 import { shapeGeometry, QUAD_XZ } from '../../render/vfx/fxShapes';
 import { DECAL_RUNE, DECAL_SCORCH } from '../../render/vfx/stylized';
 import { G } from '../core/geo';
-import { FLAGS } from '../../base/flags';
 import { OTHERS_FX_DIST } from './fxBudget';
 import type { Vfx } from './vfx';
 import type { RealmAuraEnv, AuraActor } from './realmAura';
@@ -104,7 +103,7 @@ export class PathAuraFx {
 
   update(dt: number): void {
     this.clock += dt;
-    const on = FLAGS.pathAura && this.env.enabled();
+    const on = this.env.enabled();
     const tier = qualityTier(this.env.gfxQuality(), this.env.fxQuality());
     if (on) this.refreshAllowed(tier);
     const seen = this.seen;

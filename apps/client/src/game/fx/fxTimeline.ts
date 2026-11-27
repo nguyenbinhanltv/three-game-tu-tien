@@ -551,7 +551,7 @@ export class FxRunner {
           ev.seed ?? Math.floor(c.seed * 100 + s.idx),
           0,
           ev.thick ?? 1,
-          FLAGS.isoFxCompress ? BOLT_HEIGHT * ISO_BOLT_HEIGHT : BOLT_HEIGHT,
+          BOLT_HEIGHT * ISO_BOLT_HEIGHT,
           !!ev.ink,
         );
         break;
@@ -639,8 +639,8 @@ export class FxRunner {
     const isSprite = cell !== null;
     if (cell) useSpriteGroup(cell.group);
     const start = this.anchor(c, ev.at ?? 'self', ev.offset, yaw, tgt, new THREE.Vector3());
-    if (FLAGS.isoFxCompress && isBoltGroundHit(ev.shape, ev.at)) this.boltFoot(c, ev, start);
-    if (FLAGS.isoFxCompress && kind === 'card' && (ev.at ?? 'self') === 'self') {
+    if (isBoltGroundHit(ev.shape, ev.at)) this.boltFoot(c, ev, start);
+    if (kind === 'card' && (ev.at ?? 'self') === 'self') {
       // Thẻ pháp tướng của người ra chiêu: đứng phía xa camera (trên người trên màn hình), không lệch sang bên đè lên đường/vật khác.
       const cp = this.env.camera().position;
       const b = isoBehind(cp.x, cp.z, c.actor.x, c.actor.z);
@@ -671,7 +671,7 @@ export class FxRunner {
     const sT = fitS(sT0);
     const seed = ((ev.seed ?? c.seed + idx * 1.7) % 50) + 0.37;
     const color = toneOf(c.pal, ev.tone);
-    const alpha = (ev.alpha ?? 0.95) * c.amul * (FLAGS.isoFxCompress && kind === 'card' ? ISO_CARD_ALPHA : 1);
+    const alpha = (ev.alpha ?? 0.95) * c.amul * (kind === 'card' ? ISO_CARD_ALPHA : 1);
     const sweep = ev.sweep ?? 0.35;
     const erodeFrom = ev.erodeFrom ?? 0.5;
     const spin = (ev.spin ?? 0) * DEG;
@@ -707,17 +707,16 @@ export class FxRunner {
       alignAng = Math.atan2(dx * camU.x + dz * camU.z, dx * camR.x + dz * camR.z);
     }
     // Camera chéo: nén chiều cao thật (mét) của hình đứng cao; chiều cao gốc đo từ bounding box y của lưới.
-    const isoK = FLAGS.isoFxCompress;
-    if (isoK && !geo.boundingBox) geo.computeBoundingBox();
-    const baseH = isoK && geo.boundingBox ? geo.boundingBox.max.y - geo.boundingBox.min.y : 1;
-    const cardK = isoK && kind === 'card' ? ISO_CARD_SCALE : 1;
+    if (!geo.boundingBox) geo.computeBoundingBox();
+    const baseH = geo.boundingBox ? geo.boundingBox.max.y - geo.boundingBox.min.y : 1;
+    const cardK = kind === 'card' ? ISO_CARD_SCALE : 1;
     const lift = { x: NaN, z: NaN, r: 0, y: -Infinity };
     const place = (m: FxMesh, k: number, grow: number, off: number) => {
       const e = easeOut(k);
       const lerpS = (i: number) => s0f[i]! + (sT[i]! - s0f[i]!) * e;
       m.scale.set(
         lerpS(0) * grow * cardK,
-        (isoK ? isoFxScaleY(ev.shape, lerpS(1) * grow, baseH) : lerpS(1) * grow) * cardK,
+        isoFxScaleY(ev.shape, lerpS(1) * grow, baseH) * cardK,
         lerpS(2) * grow,
       );
       if (end) {
