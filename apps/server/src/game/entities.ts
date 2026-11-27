@@ -250,7 +250,7 @@ export interface SimHost {
    */
   transferLevel?(p: PlayerEnt, level: string, spawn: { x: number; z: number } | null, o?: TransferOpts): boolean;
   /** Phòng tập GM (Diễn Võ Trường): room thế giới đưa người vào, room phòng tập đưa người ra. false = không làm được ở room này. */
-  enterPractice?(p: PlayerEnt): boolean;
+  enterPractice?(p: PlayerEnt, key?: string): boolean;
   leavePractice?(p: PlayerEnt): boolean;
   /** Độ kiếp ở room riêng (E1-F): cấp vé cho người độ kiếp và đồng đội trong tầm, báo client đổi room. false = bị chặn. */
   enterTribulationRoom?(p: PlayerEnt, def: TribDef, force: boolean): boolean;

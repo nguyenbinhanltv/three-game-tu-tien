@@ -3,7 +3,7 @@
 // Có `--base <thư mục bộ trước>` thì so từng cảnh bằng SSIM/ΔE (tools/painted-compare/compare.mjs) và dựng trang trước/sau `index.html`.
 //   pnpm shots dienvo --out <thư mục> [--view 720p|1080p] [--query style=dahoa] [--base <thư mục>] [--ssim 0.9] [--only id1,id2]
 //                     [--quality high|medium|low] [--renderer webgl2] [--diag 1] [--layersoff 2,3] [--fx id1,id2] [--panel 1]
-//                     [--ping 150] [--swings 1 --window 4000]
+//                     [--ping 150] [--swings 1 --window 4000] [--crowd 8,20,50]
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -13,6 +13,7 @@ import { cam, gm, perfSample, skipCutscene, waitLevel } from '../lib/game';
 import type { Scenario } from '../lib/scenario';
 import sharp from 'sharp';
 import { sleep } from '../lib/devserver';
+import { Bots } from '../lib/bots';
 import { snap, writeJson } from '../lib/shot';
 
 interface Row {
@@ -136,6 +137,41 @@ export default {
         const s = (window as unknown as { __fxLayerOff?: Set<number> }).__fxLayerOff;
         ix.forEach((i) => s?.add(i));
       }, layersOff);
+    // `--crowd 8,20,50`: đo đám đông — client và N bot vào CHUNG một phòng tập bằng `/gm dvt <khóa>`; bot đi lại quanh võ đài. Mỗi mức in số người thấy,
+    // draw call, ms/khung và chụp một ảnh. Không chụp các cảnh mẫu.
+    const crowd = opt('--crowd', '')
+      .split(',')
+      .filter(Boolean)
+      .map(Number);
+    if (crowd.length) {
+      const out: unknown[] = [];
+      for (const n of crowd) {
+        const key = 'crowd' + n;
+        await gm(pg, 'dvt ' + key);
+        await waitLevel(pg, 'dien_vo');
+        const bots = new Bots(r.port);
+        try {
+          const joined = await bots.start(n, 'dv' + n + 'b', ['--gm', 'dvt ' + key, '--crowd', '1300,985,7']);
+          const others = () => pg.evaluate(() => (window.__game as unknown as { room: { state: { players: { size: number } } } }).room.state.players.size);
+          const until = Date.now() + 60_000;
+          while (Date.now() < until && (await others()) < n + 1) await sleep(500);
+          await sleep(4000);
+          const seen = await others();
+          const perf = await perfSample(pg);
+          const file = `${view}/crowd-${n}.png`;
+          await snap(pg, r.out, file, { wait: 300 });
+          console.log(`  đám đông ${n}: ${joined} bot vào game, client thấy ${seen} người trong phòng; ${JSON.stringify(perf)}`);
+          out.push({ bots: n, joined, seen, perf, file });
+        } finally {
+          await bots.stop();
+        }
+        await gm(pg, 'dvt');
+        await waitLevel(pg, 'van_lam');
+        await sleep(1500);
+      }
+      writeJson(r.out, `dienvo-crowd-${view}.json`, { view, query, crowd: out });
+      return;
+    }
     await gm(pg, 'dvt');
     await waitLevel(pg, 'dien_vo');
     // `--ping N`: bật ping giả N ms (khứ hồi) cho cả lượt chụp; `--swings 1`: cảnh đang đánh chỉ ĐẾM số đòn thường ra trong `--window` ms (mặc định 4000)
