@@ -4,7 +4,7 @@
 import { useMemo, useState, useSyncExternalStore } from 'react';
 import { t } from '@dtl/content';
 import { DIEN_VO_PROPS, HAND_PROPS, PROP_LIB } from '@dtl/shared';
-import { labAuto, roomEditor } from '../../game/editor/boot';
+import { labAuto, roomEditor, zoneOverlay } from '../../game/editor/boot';
 import { hotEntries, onHotData } from '../../game/editor/hotData';
 import type { RoomEditState } from '../../game/editor/roomEdit';
 import { Button } from '../u2/win';
@@ -24,6 +24,20 @@ const OFF: RoomEditState = {
 };
 const noop = () => () => {};
 const hhmmss = (ms: number) => new Date(ms).toTimeString().slice(0, 8);
+
+/**
+ * Nút bật/tắt lớp vẽ VÙNG TRÚNG THẬT (viền mảnh trên sàn: đòn vùng của quái/boss đúng hình server phán định, chiêu vùng và đòn quét của
+ * người chơi). Component riêng để tab Diễn Võ gắn vào nhóm Cân bằng / sân boss.
+ */
+export function ZoneOverlayToggle() {
+  const z = zoneOverlay();
+  const on = useSyncExternalStore(z?.subscribe ?? noop, z?.isOn ?? (() => false));
+  return (
+    <Button size="s" pressed={on} disabled={!z} data-act="zones" title={t('ui.gm.lab.zones.hint')} onClick={() => z?.toggle()}>
+      {t('ui.gm.lab.zones.toggle')}
+    </Button>
+  );
+}
 
 export function RoomEditPanel() {
   const ed = roomEditor();
@@ -126,6 +140,10 @@ export function RoomEditPanel() {
           <span>{t(st.msg.key, st.msg.p)}</span>
         </div>
       )}
+      <div className="debug-row wrap">
+        <ZoneOverlayToggle />
+        <span className="lab-edit-hint">{t('ui.gm.lab.zones.hint')}</span>
+      </div>
       <div className="debug-row wrap">
         <span>{t('ui.gm.lab.edit.hotTitle')}</span>
         <Button

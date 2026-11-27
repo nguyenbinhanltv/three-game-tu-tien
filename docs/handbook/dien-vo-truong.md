@@ -48,14 +48,15 @@ Hai nhóm con mới của tab Diễn Võ. Chơi thử tự động luôn tắt t
 
 **Đã sửa (28/11, chỉ thêm sự kiện tiếng, không đổi lớp hình):** 15 trong 17 chiêu câm có `soundAt` bằng id tiếng sẵn có. Bộ pháp (`cu_bo_xung`, `kiem_anh_bo`, `pha_phong_tien`, `thiem_loi_bo`, `nghich_kiem_chuyen_phong`): một tiếng vút lúc lao. `kiem_vu_tam_diep`, `thuan_di_tram`: vút ở mốc gồng + tiếng trúng đúng mốc khựng (lệch 0 ms). `kiem_dan_ban_menh`, `phan_anh_kiem_anh`, `loi_the`: tiếng niệm ở mốc gồng. Năm chiêu mà loại fx đã có tiếng chung lúc ra chiêu (`playFxSound` ở `apps/client/src/game/engine/fxMsgs.ts`: heal, shield, rain, sword) — `hoi_nguyen_thuat`, `linh_khi_ho_the`, `loi_giap`, `loi_lien`, `loi_chich` — chỉ thêm tiếng báo trước ở mốc gồng để không chồng hai tiếng ở t = 0. Bảng sau khi sửa: 84 khớp, 18 có tiếng nhưng không có mốc trúng, 2 câm. **Cố ý để nguyên:** `phi_kiem`, `tran_kiem` (đòn thường: tiếng vung đặt lịch từ sự kiện `windup`, tiếng trúng do sát thương thật phát; thêm vào timeline sẽ kêu cả khi đánh trượt và chồng tiếng), và KHÔNG thêm mốc trúng cho năm chiêu trận/bộ pháp/thế thủ: `hitstop`/`impact` là khựng hình và khung va chạm thật, đặt vào chiêu không đánh trúng ai sẽ làm sai cảm giác; với các loại này 'không có mốc trúng' là đúng.
 
-## Tab Diễn Võ: mười một nhóm con (28/11)
+## Tab Diễn Võ: mười hai nhóm con (28/11)
 
-Cảnh và nhân vật, Quái trong phòng, Hiệu ứng, Nền và màu, Phong cách, Giao diện, Nhịp và HUD, Âm thanh, Động tác, Cân bằng, Thời gian. `apps/client/src/ui/DebugPanel.tsx` là nơi DUY NHẤT gắn nhóm con; công cụ của tuyến khác viết thành component riêng rồi gắn vào đây:
+Cảnh và nhân vật, Quái trong phòng, Hiệu ứng, Nền và màu, Phong cách, Giao diện, Nhịp và HUD, Âm thanh, Động tác, Cân bằng, Chỉnh phòng, Thời gian. `apps/client/src/ui/DebugPanel.tsx` là nơi DUY NHẤT gắn nhóm con; công cụ của tuyến khác viết thành component riêng rồi gắn vào đây:
 
 - Âm thanh và Động tác có thêm `CastControls` / `ClipControls` của xưởng đo lúc chạy (`apps/client/src/ui/lab/WorkshopLab.tsx`).
+- **Chỉnh phòng**: `RoomEditPanel` của trình chỉnh phòng V3 (`apps/client/src/ui/lab-editor/RoomEditPanel.tsx`), chỉ có ở bản dev và nạp lười (`lazy` + `import.meta.env.DEV`) để mã trình chỉnh không vào bundle bản build; phím F4 vẫn mở bản nổi của cùng component. Kịch bản kiểm riêng: `pnpm shots roomedit`.
 - **Cân bằng** (`BalanceLab`): nút cho các lệnh của bàn cân bằng và sân boss (`/gm dps`, `/gm dummy`, `/gm boss`, `/gm phase`, `/gm hp`, `/gm cast`; chi tiết lệnh ở `docs/handbook/dien-vo-can-bang.md`). Mỗi nút gửi một lệnh; server bỏ lệnh chat cách nhau dưới khoảng một giây nên bấm thong thả.
 
-`pnpm shots labui --only panel` soát MỌI nhóm con (đọc danh sách từ chính bảng nên nhóm mới tự được soát): mọi nút/ô nằm trong khung 720p, mở không sinh lỗi console; rồi bấm nút thật Đặt hình nộm, Gọi vào hố boss, tua máu 25% và đối chiếu quái trong phòng (15/15). Chạy lại sau mỗi lần có công cụ mới gắn vào tab.
+`pnpm shots labui --only panel` soát MỌI nhóm con (đọc danh sách từ chính bảng nên nhóm mới tự được soát): mọi nút/ô nằm trong khung 720p, mở không sinh lỗi console; rồi bấm nút thật Đặt hình nộm, Gọi vào hố boss, tua máu 25% và đối chiếu quái trong phòng (16/16). Chạy lại sau mỗi lần có công cụ mới gắn vào tab.
 
 ## `pnpm shots labui`
 
