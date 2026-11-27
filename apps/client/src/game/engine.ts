@@ -96,7 +96,7 @@ import { PostPipeline, postParams } from '../render/post';
 import { INK_TUNE } from './character/inkHull';
 import { patchDefaultTextureDestroy } from '../render/defaultTexFix';
 import { patchNodeCacheKey } from '../render/nodeCacheFix';
-import { createWorldMaterial, toonDepth } from '../render/materials/world';
+import { createWorldMaterial, daSepRim, toonDepth } from '../render/materials/world';
 import { themeU } from '../render/painted/theme';
 import { GRADING_DEFAULT, type GradingName } from '../render/grading';
 import { MusicController } from './audio/music';
@@ -205,6 +205,7 @@ export const LAB_STYLE = [
   ['cel', 0, 1, 0.1],
   ['night', 0.4, 1.6, 0.1],
   ['fog', 0, 3, 0.25],
+  ['monrim', 0, 2, 0.1],
 ] as const;
 export type LabStyleKey = (typeof LAB_STYLE)[number][0];
 
@@ -1118,6 +1119,7 @@ export class Game {
       cel: toonDepth.value,
       night: themeU.nightGain.value,
       fog: themeU.mistGain.value,
+      monrim: daSepRim.value,
     };
   }
 
@@ -1160,6 +1162,9 @@ export class Game {
         break;
       case 'fog':
         themeU.mistGain.value = v;
+        break;
+      case 'monrim':
+        daSepRim.value = v;
         break;
     }
     return true;

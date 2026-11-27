@@ -1,4 +1,5 @@
 import * as THREE from 'three/webgpu';
+import { markVfxMask } from '../../render/post';
 import {
   cameraProjectionMatrix,
   cameraViewMatrix,
@@ -89,6 +90,9 @@ class LabelBatch {
     const sample = this.texNode.sample(cellUv);
     mat.colorNode = sample.rgb;
     mat.opacityNode = sample.a.mul(B.z);
+    // Họa Cảnh / Dạ Họa: bảng tên vào mặt nạ của bước hậu kỳ để bút Kuwahara không nhòe chữ và lớp nhuộm đêm không làm tối chữ (phòng thử: tên boss
+    // cam và dòng cấp gần như chìm vào nền đêm). Phong cách mặc định không đổi gì.
+    markVfxMask(mat);
     this.mesh = new THREE.InstancedMesh(new THREE.PlaneGeometry(1, 1), mat, CAPACITY);
     this.mesh.count = 0;
     this.mesh.frustumCulled = false;

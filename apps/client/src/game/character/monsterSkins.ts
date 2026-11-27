@@ -944,7 +944,7 @@ export class MonsterSkins {
     }
     // Dạ Cảnh: quái cũng tô bóng chia bậc như nhân vật (quái bán trong suốt `ghost` giữ nguyên).
     if (FLAGS.da && s.ghost === undefined) {
-      toonBands(m);
+      toonBands(m, true);
       markVfxMask(m);
     }
     this.mats.set(def.id, m);
