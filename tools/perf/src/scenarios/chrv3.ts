@@ -1,6 +1,6 @@
 // Nhân vật v3 (Lạc Kiếm Môn Phục trên Mannequin + clip UAL trực tiếp) so với bản hiện tại, CÙNG chuỗi hành động và camera, cùng bộ
 // `set_lac_kiem`: ảnh cận mặt → đứng nghỉ → chạy → chém 3 chiêu (ô 1-3) → trúng đòn nhẹ/nặng → ngã/đứng dậy → đả tọa → ngự kiếm →
-// chết/hồi sinh. Mỗi (giới × bản) một webm + ảnh cận mặt; `v1` = mặc định, `v2` = `?chr=v2`, `v3` = `?chr=v3`.
+// chết/hồi sinh. Mỗi (giới × bản) một webm + ảnh cận mặt; `v3` = nhân vật mặc định (bản `v1`/`v2` và cờ `?chr` đã gỡ).
 // Cắt phần tải/vào game bằng ffmpeg (đặt FFMPEG=đường_dẫn nếu không có trong PATH).
 import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
@@ -14,7 +14,6 @@ import { at as checkedAt } from '@dtl/shared';
 
 /** `v3`/`v3b` = Lạc Kiếm mặc định của ?chr=v3 (bản v3/v3b cũ `?v3model=a|b` đã gỡ ở A2). `v3raw` = v3 không bảng màu (`?v3pal=0`), để so trước/sau chỉnh màu. */
 const QUERY: Record<string, Record<string, string>> = {
-  v1: { chr: 'v1' },
   v3: { chr: 'v3', thanphap: '0' },
   v3b: { chr: 'v3', thanphap: '0' },
   v3a0: { chr: 'v3', thanphap: '0', armfit: '0' },
@@ -101,12 +100,12 @@ export function contactSlide(
 
 export default {
   name: 'chrv3',
-  desc: 'Video so nhân vật hiện tại (v1/v2) với v3 (Lạc Kiếm trên Mannequin + UAL trực tiếp) cùng chuỗi hành động, nam/nữ',
-  usage: '[--genders m,f] [--variants v1,v2,v3,v3raw,v3tpnew] [--size 960x600] [--slide | --runstop]',
+  desc: 'Video nhân vật v3 (Lạc Kiếm trên Mannequin + UAL trực tiếp) cùng chuỗi hành động, nam/nữ',
+  usage: '[--genders m,f] [--variants v3,v3raw,v3tpnew] [--size 960x600] [--slide | --runstop]',
   async run(r) {
     const viewport = size('960x600');
     for (const g of list('--genders', 'm,f')) {
-      for (const v of list('--variants', 'v1,v3')) {
+      for (const v of list('--variants', 'v3')) {
         const tag = `${g === 'm' ? 'nam' : 'nu'}-${v}`;
         const dir = path.join(r.out, `_rec-${tag}`);
         // Đo trượt chân khi chạy (N-6): trong lúc chạy thẳng, lấy chân đang thấp hơn (chân trụ) và tốc độ ngang của nó so với mặt đất (m/s,

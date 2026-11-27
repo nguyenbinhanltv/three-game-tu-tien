@@ -3,7 +3,6 @@ import { genderEnabled, SECT, SPAWN_POINT } from '@dtl/shared';
 import { type AssetCache, assets } from './assets';
 import { HUMAN_ANIM_LIB } from '../character/animLib';
 import { MONSTER_SKINS } from '../character/monsterSkins';
-import { CHR_V3 } from '../character/mannequin';
 import { playerPrefetchIds } from '../character/playerSkins';
 import { legacyModelsRequested } from '../character/view';
 
@@ -40,11 +39,11 @@ export function prefetchWorldAssets(cache: AssetCache = assets, legacy = legacyM
     const g =
       APPEARANCE.genders.find((x) => x.id === gender && genderEnabled(APPEARANCE, x.id)) ??
       APPEARANCE.genders.find((x) => x.id === APPEARANCE.defaultGender);
-    // Mặc định: model v3 khởi đầu của giới tính + thư viện clip UAL (N-7); `?chr=v1`: model cũ.
+    // Mặc định: model v3 khởi đầu của giới tính + thư viện clip UAL (N-7).
     for (const id of g ? playerPrefetchIds(g.id) : []) ids.push([id, { priority: PREFETCH_PRIORITY.player }]);
   }
   // Thư viện clip Tripo (`anim_human_base`): người chơi v3 không dùng, chỉ còn NPC ở sân tông môn cần (xếp sau nhân vật mình).
-  if (!legacy) ids.push([HUMAN_ANIM_LIB, { priority: CHR_V3 ? PREFETCH_PRIORITY.monster : PREFETCH_PRIORITY.player }]);
+  if (!legacy) ids.push([HUMAN_ANIM_LIB, { priority: PREFETCH_PRIORITY.monster }]);
   // Kiếm mặc định (~370 KB): mẫu nhân vật chờ nó mới cắt kiếm cũ khỏi lưới, nên tải cùng nhân vật thay vì nối tiếp sau.
   if (!legacy) ids.push([SWORD_MODEL_DEFAULT, { priority: PREFETCH_PRIORITY.player }]);
   ids.push(['arch_sect', { pos: { x: SECT.x, z: SECT.z } }]);

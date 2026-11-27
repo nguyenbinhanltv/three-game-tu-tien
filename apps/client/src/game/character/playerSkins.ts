@@ -40,7 +40,7 @@ import {
   swordTemplateOf,
 } from './swordModel';
 import type { CharState, ClipMap } from './states';
-import { CHR_V3, MannequinPlayers, V3_LIB, v3AssetOf } from './mannequin';
+import { MannequinPlayers, V3_LIB, v3AssetOf } from './mannequin';
 import { applySoulLook, type SoulKind } from './soulLook';
 import { v3DyeColors } from './v3Dye';
 import { type AnimState, type CharacterView, legacyModelsRequested, type MonsterView, type PerformOpts } from './view';
@@ -139,12 +139,10 @@ interface Template {
 
 /**
  * Asset cần tải trước cho nhân vật mình lúc vào game: mặc định model v3 khởi đầu của giới tính + thư viện clip UAL (bộ đang mặc chưa biết
- * trước khi server gửi nhân vật; model của bộ nạp khi dựng). `?chr=v1`: model cũ của giới tính (thư viện clip Tripo do `preload.ts` thêm).
+ * trước khi server gửi nhân vật; model của bộ nạp khi dựng).
  */
 export function playerPrefetchIds(g: string): string[] {
-  if (CHR_V3) return [v3AssetOf(g), V3_LIB];
-  const m = modelOf(g);
-  return m ? [m] : [];
+  return [v3AssetOf(g), V3_LIB];
 }
 
 /** Model asset của giới tính; giới tính lạ hoặc chưa có model thì dùng model của giới tính mặc định. */
@@ -181,13 +179,13 @@ export class PlayerSkins {
   constructor(
     private cache: AssetCache = assets,
     readonly legacy = legacyModelsRequested(),
-    /** Dựng người chơi bằng model v3 (mặc định, N-7). `false` = đường v1 cũ (`?chr=v1`, và các test của đường cũ). */
-    v3 = CHR_V3,
+    /** Dựng người chơi bằng model v3 (mặc định, N-7). `false` = đường model cũ, chỉ các test của đường đó truyền. */
+    v3 = true,
   ) {
     this.v3 = v3 ? new MannequinPlayers(cache) : null;
   }
 
-  /** Nhân vật Mannequin nguyên khối (v3, mặc định từ N-7); null khi `?chr=v1`. */
+  /** Nhân vật Mannequin nguyên khối (v3, mặc định từ N-7); null khi bên gọi tắt v3 (test đường cũ). */
   private v3: MannequinPlayers | null;
 
   /** Người chơi này đi đường cũ: v3 tắt, hoặc asset v3 của họ nạp lỗi (dự phòng trong bản còn giữ v1). */

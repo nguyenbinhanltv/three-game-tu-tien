@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import * as THREE from 'three/webgpu';
-import { baseClipOf, CHR_V3, JOG_SPEED, lod0Slots, V3_MODELS, V3_SKINS, v3AssetOf, v3SetKeyOf } from './mannequin';
+import { baseClipOf, JOG_SPEED, lod0Slots, V3_MODELS, V3_SKINS, v3AssetOf, v3SetKeyOf } from './mannequin';
 import { lodOf, mergeLodMeshes } from './mannequinLod';
 import type { AnimState } from './view';
 
@@ -107,11 +107,6 @@ describe('lod0Slots', () => {
   });
 });
 
-describe('CHR_V3 (N-7)', () => {
-  it('không có cờ URL thì nhân vật v3 bật (mặc định)', () => {
-    expect(CHR_V3).toBe(true);
-  });
-});
 
 describe('lodOf (N-7: LOD của lưới nhiều primitive)', () => {
   it('lấy mức LOD của nhóm cha khi lưới con không có userData.lod', () => {

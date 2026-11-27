@@ -1,6 +1,6 @@
 // Nhân vật v3 (N-0 → N-7): model nguyên khối có bộ xương UE5 Mannequin (`chr_v3_*`, tools/blender/chr_v3.py) phát
 // clip UAL TRỰC TIẾP (`anim_ual_native`, cùng tên xương và tư thế nghỉ), không retarget lúc chạy. Bóng dùng chính bộ xương này.
-// Từ N-7 đây là nhân vật MẶC ĐỊNH của người chơi; `?chr=v1` quay về model Tripo cũ (dự phòng một bản). NPC giữ rig cũ.
+// Từ N-7 đây là nhân vật MẶC ĐỊNH của người chơi; cờ `?chr=v1` đã gỡ ở V4 (28/11), đường model cũ chỉ còn khi asset v3 nạp lỗi. NPC giữ rig cũ.
 import { BladeSmear, smearWindow } from '../fx/bladeSmear';
 import { PATH_TP, isTpIdlePose, tpIdleFor } from './pathTp';
 import { PatchMove, PATCH_LIB, type PatchEventKind } from './patchMove';
@@ -114,8 +114,6 @@ import { ASSET_BASE } from '../../base/assetBase';
 const modelsLog = logger('models');
 const thienYLog = logger('thienY');
 
-/** Nhân vật Mannequin v3 là mặc định của người chơi (N-7); chỉ tắt khi `?chr=v1` (dự phòng một bản). */
-export const CHR_V3 = FLAGS.chr !== 'v1';
 export const V3_LIB = 'anim_ual_native';
 /** Asset Lạc Kiếm theo giới tính: Lạc Kiếm Môn Phục v3 (N-3), model Tripo toàn thân đặt lên xương Mannequin (chr_v3.py). Bản v3/v3b cũ đã gỡ (A2). */
 /** Bản v3b3: v3b2 + chuỗi lò xo dải đai/ngọc bội (`tassel`, Thân Pháp T6); MẶC ĐỊNH cho bộ Lạc Kiếm và nhánh của nó (Hàn Giao, Trấn Khích, Vô Danh Kiếm). (bản b2 và cờ `?v3model` đã gỡ ở V4; trước: không tua) để so ảnh. */
