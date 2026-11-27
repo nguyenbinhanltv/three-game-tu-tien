@@ -62,6 +62,8 @@ let rainModel: Promise<void> | null = null;
 let glowWarm: THREE.Mesh | null = null;
 let blockWarm: THREE.Mesh | null = null;
 
+const ARC_PEAK = 0.6;
+
 export class Vfx {
   group = new THREE.Group();
   readonly pool = POOL;
@@ -881,7 +883,8 @@ export class Vfx {
       0.36,
       (k) => {
         m.fxA.x = Math.min(1, k * 3);
-        m.fxOpacity = k < 0.14 ? k / 0.14 : k < 0.5 ? 1 : 1 - (k - 0.5) / 0.5;
+        // Đỉnh 0,6 và giữ ngắn (28/11): vệt quạt đặc che 41–56% thân quái đứng trong cung (cảnh kiem_chem_quet).
+        m.fxOpacity = ARC_PEAK * (k < 0.14 ? k / 0.14 : k < 0.3 ? 1 : 1 - (k - 0.3) / 0.7);
       },
       () => this.drop(m),
     );
