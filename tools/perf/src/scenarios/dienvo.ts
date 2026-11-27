@@ -2,6 +2,7 @@
 // dữ liệu ở packages/content/data/lab/scenes.json), chụp mỗi cảnh một ảnh cùng góc + số đo, rồi ra và kiểm nhân vật về nguyên trạng.
 // Có `--base <thư mục bộ trước>` thì so từng cảnh bằng SSIM/ΔE (tools/painted-compare/compare.mjs) và dựng trang trước/sau `index.html`.
 //   pnpm shots dienvo --out <thư mục> [--view 720p|1080p] [--query style=dahoa] [--base <thư mục>] [--ssim 0.9] [--only id1,id2]
+//                     [--quality high|medium|low] [--renderer webgl2] [--diag 1]
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -63,7 +64,9 @@ export default {
     const scenes = LAB_SCENES.filter((s) => !only.length || only.includes(s.id));
     const { page: pg } = await r.open({
       name: 'DienVo',
-      quality: 'high',
+      // Thử máy yếu: `--quality medium|low` và `--renderer webgl2` (đường lùi không có WebGPU).
+      quality: opt('--quality', 'high'),
+      renderer: opt('--renderer', '') || undefined,
       viewport: view === '1080p' ? [1920, 1080] : [1280, 720],
       query: { cam: 'iso', quiet: 1 },
       extra: query,
@@ -92,6 +95,7 @@ export default {
     await gm(pg, 'dvt');
     await waitLevel(pg, 'van_lam');
     const back = await pg.evaluate(() => window.__game!.info());
+    console.log(`[shots:dienvo] backend ${back.backend}, preset ${opt('--quality', 'high')}`);
 
     // So với bộ trước (nếu có): SSIM + ΔE + ảnh chênh, cảnh dưới ngưỡng được đánh dấu.
     if (base) {
@@ -122,6 +126,6 @@ export default {
       );
     }
     fs.writeFileSync(path.join(r.out, `index-${view}.html`), page(rows, view, query, limit));
-    writeJson(r.out, `dienvo-${view}.json`, { view, query, base, limit, rows, back });
+    writeJson(r.out, `dienvo-${view}.json`, { view, query, quality: opt('--quality', 'high'), renderer: opt('--renderer', ''), base, limit, rows, back });
   },
 } satisfies Scenario;

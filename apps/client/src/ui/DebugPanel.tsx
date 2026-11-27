@@ -180,6 +180,9 @@ function Tools() {
             <Button size="s" variant="primary" disabled={!scene} onClick={() => gm('scene ' + scene)}>
               {t('ui.gm.lab.scene_btn')}
             </Button>
+            <Button size="s" onClick={() => gm('scene save')}>
+              {t('ui.gm.lab.scene_save')}
+            </Button>
           </div>
           <div className="debug-row wrap">
             <Pick

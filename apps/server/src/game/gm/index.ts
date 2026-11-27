@@ -19,7 +19,9 @@ import {
   parseRealmCode,
   INV_SIZE,
   planSort,
+  MF_BROKEN,
   MF_CHANT,
+  MF_STUN,
   MF_WEAK,
   MS_DEAD,
   tribDef,
@@ -68,7 +70,7 @@ import {
   type GmBranch,
 } from './tools';
 import { grantPathOf, methodOf, picksOf, resourceOf, setSkillLevel, skillLevelOf } from '../method';
-import { dienVoSpawnAt, dienVoStandAt, type LabScene, type LevelDef, type MonsterDef } from '@dtl/shared';
+import { DIEN_VO_ZONES, dienVoSpawnAt, dienVoStandAt, type LabScene, type LevelDef, type MonsterDef } from '@dtl/shared';
 import type { MonEnt, PlayerEnt } from '../entities';
 
 /** Phần GameSim mà lệnh GM cần (giao diện hẹp, tránh import vòng lớp GameSim). */
@@ -241,6 +243,28 @@ export class GmSystem {
     if (sc.phase !== undefined) for (const m of this.spawned) lab.setPhase(m, Math.min(sc.phase, m.def.phases?.length ?? 0));
     if (sc.state) this.forceState(p, sc.state, '600');
     return `scene ${sc.id}: ${list.length} quái`;
+  }
+
+  /** Cảnh đang dựng dưới dạng `LabScene`: khu gần người gọi nhất, quái gọi bằng lệnh (gộp theo loại, giữ thứ tự gọi), trạng thái chung nếu mọi con cùng mang. */
+  sceneOf(p: PlayerEnt, id: string): LabScene {
+    let at = DIEN_VO_ZONES[0]!;
+    for (const z of DIEN_VO_ZONES) if (Math.hypot(z.x - p.move.x, z.z - p.move.z) < Math.hypot(at.x - p.move.x, at.z - p.move.z)) at = z;
+    const live = [...this.spawned].filter((m) => m.state !== MS_DEAD);
+    const mons: { id: string; n: number }[] = [];
+    for (const m of live) {
+      const g = mons.find((x) => x.id === m.def.id);
+      if (g) g.n++;
+      else mons.push({ id: m.def.id, n: 1 });
+    }
+    const all = (bit: number) => live.length > 0 && live.every((m) => (m.s.mf & bit) !== 0);
+    const sc: LabScene = { id, at: at.id, method: p.char.meta.method ?? '', level: p.char.level, mons };
+    if (all(MF_BROKEN)) sc.state = 'break';
+    else if (all(MF_WEAK)) sc.state = 'weak';
+    else if (all(MF_CHANT)) sc.state = 'chant';
+    else if (all(MF_STUN)) sc.state = 'stun';
+    const ph = live.find((m) => m.phase > 0)?.phase;
+    if (ph) sc.phase = ph;
+    return sc;
   }
 
   /** Quái gọi bằng `/gm spawn` (để `spawn clear` dọn). */
@@ -842,8 +866,10 @@ export class GmSystem {
         return say(this.forceState(p, a[1], a[2]));
       case 'scene': {
         // /gm scene <id>: nạp cảnh mẫu của phòng tập (danh sách ở packages/content/data/lab/scenes.json).
+        // /gm scene save [id]: in cảnh đang dựng thành một mục JSON để dán vào scenes.json (không ghi file: dữ liệu game chỉ đổi qua commit).
+        if (a[1] === 'save') return say(JSON.stringify(this.sceneOf(p, a[2] ?? 'canh_moi')));
         const sc = LAB_SCENES.find((s) => s.id === a[1]);
-        if (!sc) return say('scene ' + LAB_SCENES.map((s) => s.id).join(' | '));
+        if (!sc) return say('scene save [id] | scene ' + LAB_SCENES.map((s) => s.id).join(' | '));
         if (!this.c.level().dungeon?.practice) return say(t('gm.msg.scene_no'));
         return say(this.scene(p, sc));
       }
