@@ -55,6 +55,7 @@ import type { SkillEvent } from '../character/view';
 import { emitCount } from './fxSettings';
 import { densitySize } from '../../render/vfx/particles';
 import type { Vfx } from './vfx';
+import { sigilGroundY } from './groundLift';
 import { presentDt } from './vfxParts/common';
 
 /** Kiểu tô sprite theo tiền tố tên (`fxA.x`, xem `spriteNodes` ở render/vfx/stylized.ts). */
@@ -690,6 +691,7 @@ export class FxRunner {
     if (isoK && !geo.boundingBox) geo.computeBoundingBox();
     const baseH = isoK && geo.boundingBox ? geo.boundingBox.max.y - geo.boundingBox.min.y : 1;
     const cardK = isoK && kind === 'card' ? ISO_CARD_SCALE : 1;
+    const lift = { x: NaN, z: NaN, r: 0, y: -Infinity };
     const place = (m: FxMesh, k: number, grow: number, off: number) => {
       const e = easeOut(k);
       const lerpS = (i: number) => s0f[i]! + (sT[i]! - s0f[i]!) * e;
@@ -718,8 +720,22 @@ export class FxRunner {
         if (spin) m.quaternion.multiply(_q.setFromAxisAngle(AXIS_Z, spin * k * dur));
       }
       if (off) m.position.addScaledVector(_c.set(0, -1, 0), off);
-      // Tấm nằm trên đất nâng lên chút để không chìm vào nền sân lát đá (cao hơn địa hình vài cm).
-      if (kind === 'decal') m.position.y += 0.11;
+      // Tấm nằm trên đất nâng lên chút để không chìm vào nền sân lát đá (cao hơn địa hình vài cm). Tấm LỚN trên nền dốc nhẹ thì nửa phía cao vẫn chìm
+      // (Diễn Võ Trường: vòng pháp trận vàng mất nửa phải) nên nâng tiếp lên trên điểm cao nhất quanh nó; tính lại chỉ khi tấm dời quá 1 m hoặc lớn thêm 25%.
+      if (kind === 'decal') {
+        m.position.y += 0.11;
+        const r = Math.max(m.scale.x, m.scale.z) * 0.5;
+        if (r > 1.5) {
+          if (Math.abs(m.position.x - lift.x) > 1 || Math.abs(m.position.z - lift.z) > 1 || r > lift.r * 1.25) {
+            lift.x = m.position.x;
+            lift.z = m.position.z;
+            lift.r = r;
+            lift.y = sigilGroundY(lift.x, lift.z, r);
+          }
+          // Chỉ nâng tấm đang nằm sát đất (pháp trận lơ lửng trên cao giữ nguyên).
+          if (m.position.y < lift.y && lift.y - m.position.y < 1.5) m.position.y = lift.y;
+        }
+      }
     };
     this.v.track(
       dur,
