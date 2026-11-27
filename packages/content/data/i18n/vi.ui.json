@@ -1243,6 +1243,7 @@
   "ui.gm.lab.enter": "Vào / rời Diễn Võ Trường",
   "ui.gm.lab.scene": "Cảnh mẫu",
   "ui.gm.lab.scene_btn": "Nạp cảnh",
+  "ui.gm.lab.scene_save": "In cảnh đang dựng (JSON)",
   "lab.scene.soi_thuong": "Ba sói, trạng thái thường",
   "lab.scene.soi_vo_the": "Ba sói, vỡ thế",
   "lab.scene.soi_yeu_diem": "Ba sói, lộ yếu điểm",

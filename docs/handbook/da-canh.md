@@ -58,7 +58,11 @@ Mọi cải thiện Dạ Họa (VFX, animation, nhân vật, đạo cụ, ánh s
 
 - **Sáu khu** (`packages/shared/src/props.dienvo.ts`, dùng chung client và server): sàn đấu, hố boss, bục nhân vật, hành lang đạo cụ, buồng ánh sáng, tường hiệu ứng. Client vẽ MỘT tấm sàn đá đều màu có ranh và tên khu (`apps/client/src/game/world/dienVoRoom.ts`, 1 draw call); camera phòng khóa 0° để chữ đọc thẳng. `/gm spawn` trong phòng xếp quái thường vào sàn đấu và boss vào hố boss (`dienVoSpawnAt`). Đo ở Dạ Họa, 3 sói: 34 draw call, 137 nghìn tam giác (720p và 1080p).
 
-Chưa có: nội dung riêng cho bục nhân vật, buồng ánh sáng và tường hiệu ứng (mới có ranh, biển và vài đạo cụ); đồng hồ hiệu năng trên tab; nút WebGL2/preset thấp; lưu cảnh từ trong game (hiện sửa JSON bằng tay).
+- **Lưu cảnh:** `/gm scene save [id]` (nút "In cảnh đang dựng") in cảnh hiện tại thành một mục JSON `LabScene` để dán vào `scenes.json` (không ghi file: dữ liệu game chỉ đổi qua commit).
+- **Thử máy yếu:** `pnpm shots dienvo ... --quality medium|low --renderer webgl2 --base <bộ gốc>`. Kết quả 27/11 (720p, so với bộ gốc WebGPU preset Cao): WebGL2 + Vừa SSIM 0,961–0,977 (trong sàn nhiễu, tức Dạ Họa không vỡ); WebGL2 + Thấp 0,885–0,973, viền mực và nhuộm trận vẫn đủ. Bộ gốc có cả 720p và 1080p.
+- **Đồng hồ hiệu năng:** bảng F3 vốn đã có draw call, tam giác, ms/khung kèm tô màu theo ngân sách ngay trên tab Diễn Võ; bộ ảnh chuẩn ghi số đo từng cảnh.
+
+Chưa có: nội dung riêng cho bục nhân vật, buồng ánh sáng và tường hiệu ứng (mới có ranh, biển và vài đạo cụ); số MB texture trên bảng F3.
 
 **Phòng đã chỉ ra (việc phải sửa trong phòng trước khi ra bản đồ):**
 
@@ -69,6 +73,8 @@ Chưa có: nội dung riêng cho bục nhân vật, buồng ánh sáng và tư�
 - ~~Ô lát sàn không thấy~~ **ĐÃ SỬA** (tăng tương phản ô, vẫn rất nhẹ).
 - ~~Viền trạng thái nuốt thân sói nhỏ~~ **ĐÃ SỬA:** bề dày có trần 7% bán kính bao của thân (`inkWidthOf`).
 - ~~Tinh anh sát mép trên khung~~ **ĐÃ SỬA:** vòng xếp quái lệch nửa bước, không con nào đứng thẳng hướng bắc.
+- Preset Thấp trên WebGL2: có một vệt tối tròn lệch phía trên nhân vật (bóng đổ giả), và nền đất ngoài sàn lốm đốm hạt vì không có bút Kuwahara.
+- Cảnh `nhan_vat_can` không nhìn cận được: camera chéo khóa khoảng cách nên tham số `cam` của cảnh mẫu bị bỏ qua. Bục nhân vật cần một chế độ nhìn cận riêng của phòng.
 - Còn lại: hào quang cảnh giới (mây lam quanh nhân vật cấp cao) bị bút Kuwahara làm nhòe thành vệt; cảnh bầy 12 sói chỉ 9 con có viền (trần 10 thể).
 
 ## Lộ trình
