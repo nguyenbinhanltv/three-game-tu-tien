@@ -71,6 +71,7 @@ Mọi cải thiện Dạ Họa (VFX, animation, nhân vật, đạo cụ, ánh s
 - **Số đo che quái sau khi sửa (27/11, Dạ Họa 720p, lớn nhất / trung bình):** chém quét 47% / 31%, ô 2: 1% / 0%, ô 3: 23% / 23%, ô 4: 7% / 4%, ô 5: 8% / 7%. KHÔNG có số "trước khi sửa" cùng phép đo (phép đo đổi trong lúc sửa), nên mức cải thiện chỉ xác nhận bằng ảnh.
 - **Hiệu ứng trúng đòn theo cỡ thân (`hitScaleOf`, `game/fx/hitFx.ts`):** chặn dưới 0,8 → 0,35, nên quái nhỏ nhận vết va nhỏ theo thân (trước đây sói nhận vết va cỡ người). Ở Dạ Họa, đòn NHẸ (đòn chuỗi thường) thu thêm ×0,6 (`LIGHT_HIT_SCALE`), không văng mảnh vụn, và bỏ dấu chém chéo cũ trùng lớp ở điểm tới.
 - Pháp trận phẳng (`Vfx.sigil`) nằm sát đất được nâng trên điểm cao nhất quanh nó (`sigilGroundY`), không còn chìm nửa tấm trên nền dốc nhẹ.
+- **Xưởng VFX, bước đầu (V2b):** `FX_LAYER_OFF` (`game/fx/fxTimeline.ts`, cũng là `window.__fxLayerOff` ở bản dev) tắt các lớp theo chỉ số trong `events` của mọi timeline phát ra; `pnpm shots dienvo ... --layersoff 2,3` dùng nó để soi lớp nào vẽ gì. Cảnh đang đánh ghi tên chiêu của ô (`rows[].act.skill`).
 
 Chưa có: nội dung riêng cho bục nhân vật, buồng ánh sáng và tường hiệu ứng (mới có ranh, biển và vài đạo cụ); số MB texture trên bảng F3.
 
@@ -86,7 +87,7 @@ Chưa có: nội dung riêng cho bục nhân vật, buồng ánh sáng và tư�
 - Preset Thấp trên WebGL2: có một vệt tối tròn lệch phía trên nhân vật (bóng đổ giả), và nền đất ngoài sàn lốm đốm hạt vì không có bút Kuwahara.
 - Cảnh `nhan_vat_can` không nhìn cận được: camera chéo khóa khoảng cách nên tham số `cam` của cảnh mẫu bị bỏ qua. Bục nhân vật cần một chế độ nhìn cận riêng của phòng.
 - ~~Hiệu ứng che quái~~ **ĐÃ SỬA phần chung (27/11):** xem mục số đo che quái ở trên. Đòn thường còn sát ngưỡng (lớn nhất 47%): nét cọ `fx_hit_cut` vẫn xẻ qua thân theo thiết kế; nếu cần giảm nữa thì dời nét về phía camera ở Xưởng VFX (V2b).
-- **Vòng pháp trận vàng của chiêu ô 4 khuyết một múi (CHƯA RÕ NGUYÊN NHÂN):** giả thuyết "tấm phẳng chìm dưới sàn dốc" SAI: đã cho tấm decal lớn của timeline tự nâng theo điểm cao nhất quanh nó (`apps/client/src/game/fx/groundLift.ts`, giữ lại vì đúng cho nền dốc thật) mà múi khuyết vẫn y nguyên, mép thẳng, cùng vị trí ở mọi khung. Chưa xác định được chiêu nào và lớp nào vẽ vòng này (không phải `skl_*_ho_the`). Cần Xưởng VFX (V2b: bật tắt từng lớp, thanh thời gian) để khoanh; khả năng là hình quét góc của chính tấm đó hoặc một lưới khác ghi độ sâu phía trước.
+- ~~Vòng pháp trận vàng khuyết một múi~~ **ĐÃ SỬA (27/11).** Đó là decal phù văn bán kính 6,3 m của Thiên Kiếm Vũ (`skl_thien_kiem_vu`, lớp 3), đặt phẳng ở độ cao người ra chiêu nên phần phía đất cao chìm dưới sàn. Runner có HAI đường vẽ tấm nằm đất: lưới kiểu `decal` (hàm `place`) và sự kiện `decal` (hàm `decal`); lần sửa đầu chỉ chạm đường thứ nhất nên tưởng giả thuyết sai. Cả hai giờ dùng `sigilGroundY` (`apps/client/src/game/fx/groundLift.ts`). Tìm ra nhờ công tắc tắt lớp `--layersoff` và việc ghi tên chiêu của ô đang chụp.
 - Còn lại: hào quang cảnh giới (mây lam quanh nhân vật cấp cao) bị bút Kuwahara làm nhòe thành vệt; cảnh bầy 12 sói chỉ 9 con có viền (trần 10 thể).
 
 ## Lộ trình
