@@ -155,15 +155,21 @@ function useToastDodge(ref: RefObject<HTMLDivElement | null>, active: boolean): 
       const zoom = Number(getComputedStyle(el).zoom) || 1;
       const box = baseBox(el, dx * zoom, dy * zoom);
       let minY = 8;
-      for (const f of document.querySelectorAll<HTMLElement>('.hud .target-frame, .hud .boss-bar')) minY = Math.max(minY, f.getBoundingClientRect().bottom + 6);
+      // Chỉ tính khung ở GIỮA phía trên (khung mục tiêu, khối thanh boss kể cả thanh niệm chú / phá thế): thông báo không được nằm đè lên chúng.
+      for (const f of document.querySelectorAll<HTMLElement>('.hud .target-frame, .hud .boss-bar, .hud [class^="u2h-boss"]')) {
+        const fr = f.getBoundingClientRect();
+        if (fr.width > 0 && fr.right > box.x && fr.left < box.x + box.w) minY = Math.max(minY, fr.bottom + 6);
+      }
       const vw = window.innerWidth;
       // Mép phải được phép: sát cụm góc phải (nút bảng + bản đồ nhỏ) đang hiện; mép trái: sát cụm góc trái.
       const tr = document.querySelector<HTMLElement>('.hud .u2h-tr')?.getBoundingClientRect();
       const tl = document.querySelector<HTMLElement>('.hud .u2h-tl')?.getBoundingClientRect();
       const maxX = tr && tr.width > 0 ? tr.left - 8 : vw - Math.min(210, vw * 0.17);
       const minX = tl && tl.width > 0 ? tl.right + 8 : Math.min(330, vw * 0.26);
-      const o = dodgeOffset(box, avoid, { minY, minX, maxX });
-      apply(Math.round(o.dx / zoom), Math.round(o.dy / zoom));
+      // Chỗ gốc của chồng thông báo đang bị khung phía trên chiếm (thanh boss cao, khung mục tiêu nằm dưới boss): đẩy xuống dưới chúng trước, rồi mới né nhãn.
+      const push = Math.max(0, minY - box.y);
+      const o = dodgeOffset({ ...box, y: box.y + push }, avoid, { minY, minX, maxX });
+      apply(Math.round(o.dx / zoom), Math.round((o.dy + push) / zoom));
     };
     tick();
     const id = window.setInterval(tick, DODGE_POLL_MS);

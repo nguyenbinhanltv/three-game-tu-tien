@@ -39,11 +39,13 @@ import {
   tierBar,
   SKILL,
   VARIANTS,
+  MONSTERS,
+  QUESTS,
   t,
 } from '@dtl/content';
 import { barWithStance } from '../ui/stanceView';
 import { visibleView } from './net/aoiView';
-import { get, pushLog, pushToast, set, type TargetInfo } from '../ui/store';
+import { type BossInfo, get, pushLog, pushToast, set, type TargetInfo } from '../ui/store';
 import { BlankWatch, canFallback, RENDERER_KEY } from './core/gpuGuard';
 import { collectScene, type ScanItem, type ScanOpts, sceneTree } from './debug/collScan';
 import { ColliderViz } from './debug/debugColliders';
@@ -1003,6 +1005,70 @@ export class Game {
       default:
         return false;
     }
+  }
+
+  /** Phòng thử: thanh boss giả đang ép lên HUD (xem `labHudLoad`); null = HUD theo trận thật. */
+  labHudBoss: BossInfo | null = null;
+  private labHudSaved: { party: ReturnType<typeof get>['party']; quests: ReturnType<typeof get>['quests'] } | null = null;
+
+  /**
+   * Phòng thử (khu Giao diện): dồn DỮ LIỆU NẶNG NHẤT lên HUD để soi tràn/chồng — tổ đội đủ bốn người (tên dài, một người gục, một người ngoại tuyến),
+   * nhiều nhiệm vụ đang theo dõi, thanh boss có thanh niệm chú + thanh phá thế + vạch pha, bốn thông báo nổi, nhật ký nhiều dòng dài.
+   * Chỉ ghi vào store giao diện ở client: không gửi gì lên server, không đổi dữ liệu nhân vật. `on = false` trả HUD về như cũ.
+   */
+  labHudLoad(on: boolean): boolean {
+    if (!on) {
+      if (this.labHudSaved) set({ party: this.labHudSaved.party, quests: this.labHudSaved.quests });
+      this.labHudSaved = null;
+      this.labHudBoss = null;
+      return true;
+    }
+    const s = get();
+    if (!this.labHudSaved) this.labHudSaved = { party: s.party, quests: s.quests };
+    const names = ['Vạn Kiếm Quy Tông Chân Nhân', 'Thanh Mộc Đan Sư', 'Hộ Pháp Kim Cương', 'Cửu Tiêu Lôi Quân'];
+    const roles = ['dps', 'support', 'tank', 'dps'] as const;
+    set({
+      party: {
+        loot: 'ffa' as never,
+        res: true,
+        members: names.map((name, i) => ({
+          id: 9000 + i,
+          sid: i === 0 ? this.sid : i === 3 ? '' : 'lab' + i,
+          name,
+          lv: 30 - i,
+          hp: [6691, 2100, 0, 4000][i]!,
+          mhp: [6691, 5200, 9800, 6000][i]!,
+          mp: [2673, 900, 400, 0][i]!,
+          mmp: [2673, 3100, 1800, 2400][i]!,
+          role: roles[i] as never,
+          lead: i === 0,
+          room: i === 3 ? '' : 'lab',
+          dead: i === 2,
+          bf: i < 2 ? { atk: [2, Date.now() + 600_000], def: [1, Date.now() + 300_000] } : undefined,
+        })),
+      },
+      quests: {
+        done: s.quests.done,
+        active: Object.fromEntries(QUESTS.slice(0, 6).map((q) => [q.id, q.objectives.map((o, k) => Math.max(0, (o.count ?? 1) - 1 - k))])),
+      },
+    });
+    const bossDef = MONSTERS.find((m) => m.boss);
+    this.labHudBoss = bossDef
+      ? {
+          id: 'lab-boss',
+          def: bossDef.id,
+          level: 45,
+          hp: 612_345,
+          mhp: 1_250_000,
+          posture: 0.82,
+          marks: [0.75, 0.5, 0.25],
+          cast: { kind: 'chant', end: Date.now() + 60_000, total: 62_000, open: 0.4 },
+          mk: 0,
+        }
+      : null;
+    for (let i = 0; i < 4; i++) pushToast(t('sys.welcome', { name: names[i]! }) + ' ' + '·'.repeat(i + 1), i % 2 ? 'bad' : 'good');
+    for (let i = 0; i < 12; i++) pushLog(t('sys.welcome', { name: names[i % 4]! + ' ' + names[(i + 1) % 4]! }) + ' #' + (i + 1), i % 3 ? 'info' : 'good');
+    return true;
   }
 
   labFloor(id: string): boolean {
