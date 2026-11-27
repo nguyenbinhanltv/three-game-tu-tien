@@ -52,6 +52,8 @@ import { logger } from '../../base/log';
 const vfxLog = logger('vfx');
 /** Lõi mực của tia sét: tím than gần đen (bảng `loi`.shadow). */
 const BOLT_INK = 0x1a0c33;
+/** Hệ số cỡ và độ đục của quầng cầu chạm đất của tia sét ở Dạ Họa (xem `lightning`). */
+const DA_BOLT_GLOW = FLAGS.da ? 0.35 : 1;
 export { HAZARD_COLORS } from './vfxParts/common';
 
 let rainModel: Promise<void> | null = null;
@@ -563,9 +565,11 @@ export class Vfx {
           struck = 2;
           if (flash > 0) this.onFlash?.(flash * 0.6);
         }
-        const gm = this.boltGlowMul;
+        // Dạ Họa: quầng cầu ít mặt bị lớp giữ màu VFX của khung vẽ tay đẩy thành một ĐĨA ĐA GIÁC TÔ ĐẶC che kín mục tiêu suốt đời tia sét
+        // (Diễn Võ Trường, cổng duyệt: Lôi Đình Nhất Kiếm che thân 82%). Thu nhỏ và làm mờ hẳn ở phong cách này; phong cách mặc định giữ nguyên.
+        const gm = this.boltGlowMul * DA_BOLT_GLOW;
         glow.scale.set(scale * (1 + k * 2.2) * gm, scale * (0.6 + k * 1.2) * gm, scale * (1 + k * 2.2) * gm);
-        glow.fxOpacity = 0.35 * (1 - k) * (k < 0.12 ? 0.3 : 1);
+        glow.fxOpacity = 0.35 * DA_BOLT_GLOW * (1 - k) * (k < 0.12 ? 0.3 : 1);
         ring.scale.setScalar(scale * (1 + Math.max(0, k - 0.12) * 4.5));
         ring.fxOpacity = k < 0.12 ? 0 : 0.9 * (1 - k);
       },
