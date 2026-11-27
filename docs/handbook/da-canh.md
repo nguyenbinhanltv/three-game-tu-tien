@@ -62,10 +62,12 @@ Chưa có: nội dung riêng cho bục nhân vật, buồng ánh sáng và tư�
 
 **Phòng đã chỉ ra (việc phải sửa trong phòng trước khi ra bản đồ):**
 
-- Quái bị vỡ thế hay lộ yếu điểm không khác quái thường ở khoảng cách mặc định (viền trạng thái quá mảnh).
-- Cảnh boss ở Dạ Họa KHÔNG ngả đỏ: mood theo loại trận đổi sương và trời, mà nền Họa Cảnh không dùng sương.
+- ~~Quái bị vỡ thế hay lộ yếu điểm không khác quái thường~~ **ĐÃ SỬA (27/11).** Không phải do viền mảnh: viền mực CHƯA BAO GIỜ hiện trên skin quái. Ba lỗi chồng nhau ở `inkHull.ts`: (1) skin quái gắn xương kiểu `detached` còn vỏ tạo kiểu mặc định nên bị vẽ lệch khỏi khung; (2) vỏ của mô hình tạm không được nhả khi skin nạp xong; (3) vỏ của thể đã gỡ khỏi cảnh không trả chỗ nên trần 10 thể đầy dần. Sửa cả ba, bề dày trạng thái ×3,2–3,6 (≈ 0,1 m, 3 px ở 720p). Bộ ảnh chuẩn ghi cả danh sách vỏ đang hiện của từng cảnh (`rows[].ink`) để lỗi này không lọt lại.
+- ~~Cảnh boss ở Dạ Họa không ngả đỏ~~ **ĐÃ SỬA (27/11).** Thêm lớp nhuộm khung theo loại trận ở hậu kỳ (`postParams.moodW/moodTint`, `daMoodTint`): đỏ sẫm mạnh dần ra xa tâm trận, giữa khung và điểm ảnh sáng giữ màu thật; tinh anh nửa mức boss. Chỉ bật khi nền là Họa Cảnh (Dạ Cảnh thuần đã có sương đỏ).
 - Đạo cụ ở Dạ Họa gần như đen đặc (thiếu ánh viền và ánh bù), và tỉ lệ các món lệch nhau nhiều khi đặt cạnh nhau.
 - Ô lát sàn gần như không thấy.
+- Trụ đá hố boss to quá cỡ (cao hơn cả khung hình); tinh anh của cảnh `tinh_anh` đứng sát mép trên khung.
+- Viền lộ yếu điểm (vàng) dày tới mức gần che thân sói nhỏ: cân lại bề dày theo cỡ thân.
 
 ## Lộ trình
 

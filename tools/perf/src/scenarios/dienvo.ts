@@ -15,6 +15,7 @@ interface Row {
   id: string;
   file: string;
   perf: unknown;
+  ink?: unknown;
   ssim?: number;
   deltaE00?: number;
   diff?: string;
@@ -79,7 +80,13 @@ export default {
       await cam(pg, { ...dflt, ...sc.cam });
       const file = `${view}/${sc.id}.png`;
       await snap(pg, r.out, file, { wait: 1200 });
-      rows.push({ id: sc.id, file, perf: await perfSample(pg) });
+      // Chẩn đoán viền mực: số vỏ đang hiện và màu của chúng (trạng thái quái phải lên hình, không chỉ có ở state).
+      const ink = await pg.evaluate(`(() => { var out = []; window.__game.scene.traverse(function (o) { if (o.userData && o.userData.inkHull && o.visible) out.push((o.userData.ink.color || 0).toString(16) + '@' + o.userData.ink.w.toFixed(3)); }); return out; })()`);
+      if (opt('--diag', '')) {
+        const d = await pg.evaluate(`(() => { var out = []; window.__game.scene.traverse(function (o) { if (!(o.userData && o.userData.inkHull)) return; var p = o.parent, sib = []; if (p) p.children.forEach(function (c) { sib.push((c.type || '?') + ':' + (c.name || '') + ':' + (c.visible ? 'v' : 'h') + ':' + (c.userData && c.userData.inkHull ? 'HULL' : '') + ':' + (c.geometry ? c.geometry.attributes.position.count : 0) + ':ro' + c.renderOrder + ':' + (c.material ? (c.material.type + '/t' + (c.material.transparent ? 1 : 0) + '/dw' + (c.material.depthWrite ? 1 : 0)) : '')); }); var w = new (o.position.constructor)(); o.getWorldPosition(w); var ws = new (o.position.constructor)(); o.getWorldScale(ws); var nA = o.geometry.attributes.normal, pA = o.geometry.attributes.position; out.push({ nrm: nA ? [nA.array.constructor.name, nA.normalized, nA.itemSize, Array.prototype.slice.call(nA.array, 0, 9)] : null, posA: [pA.array.constructor.name, pA.normalized, Array.prototype.slice.call(pA.array, 0, 6)], bind: Array.prototype.slice.call(o.bindMatrix.elements, 0, 16).map(function (v) { return +v.toFixed(3); }), inv0: o.skeleton ? Array.prototype.slice.call(o.skeleton.boneInverses[0].elements, 0, 16).map(function (v) { return +v.toFixed(4); }) : null, b0: o.skeleton ? [o.skeleton.bones[0].name].concat(Array.prototype.slice.call(o.skeleton.bones[0].matrixWorld.elements, 0, 16).map(function (v) { return +v.toFixed(3); })) : null, side: o.material.side, mvis: o.material.visible, sib: sib, pos: [w.x.toFixed(1), w.y.toFixed(1), w.z.toFixed(1)], scale: ws.x.toFixed(3), bones: o.skeleton ? o.skeleton.bones.length : -1, parentChain: (function () { var n = [], q = o.parent; while (q && n.length < 6) { n.push((q.type || '') + ':' + (q.name || '') + ':' + (q.visible ? 'v' : 'h')); q = q.parent; } return n; })() }); }); return out; })()`);
+        console.log('[diag] ' + sc.id + ' ' + JSON.stringify(d, null, 1));
+      }
+      rows.push({ id: sc.id, file, perf: await perfSample(pg), ink });
     }
     await gm(pg, 'labreset', 1500);
     await gm(pg, 'dvt');
