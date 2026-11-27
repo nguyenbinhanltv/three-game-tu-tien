@@ -41,6 +41,8 @@ export interface AnimSnapshot {
   clock: { t: number; skill: string } | null;
   /** Từng bàn chân lúc này: cao hơn đất bao nhiêu (m), có đang trụ không, tốc độ ngang (m/s). */
   feet: FootNow[];
+  /** Gốc nhân vật cao hơn mặt đất (m). */
+  lift: number;
   slide: SlideRow[];
   blends: BlendRow[];
 }
@@ -101,6 +103,8 @@ export class AnimWorkshop {
   private feet: THREE.Object3D[] = [];
   private spins: { bone: THREE.Object3D; q: THREE.Quaternion }[] = [];
   private slide = new FootSlide();
+  /** Gốc nhân vật cao hơn mặt đất bao nhiêu (m) ở khung vừa đo: khác 0 nhiều là nhân vật đang lơ lửng hoặc hàm mặt đất không khớp level. */
+  private lift = 0;
   private blends = new BlendLog();
   private held: { action: THREE.AnimationAction; clip: THREE.AnimationClip; name: string; playing: boolean } | null = null;
   /** Action game đang dùng mà xưởng đã tạm tắt trong lúc ép clip; bật lại khi thả. */
@@ -182,15 +186,21 @@ export class AnimWorkshop {
     const dt = this.game.timeScale > 0 || this.game.stepLeft > 0 ? realDt : 0;
     const act = this.active();
     let spin = 0;
+    let spinBone = '';
     for (const b of this.spins) {
-      if (dt > 1e-4) spin = Math.max(spin, (b.q.angleTo(b.bone.quaternion) * 180) / Math.PI / dt);
+      const v = dt > 1e-4 ? (b.q.angleTo(b.bone.quaternion) * 180) / Math.PI / dt : 0;
+      if (v > spin) {
+        spin = v;
+        spinBone = b.bone.name;
+      }
       b.q.copy(b.bone.quaternion);
     }
     // Đang ép clip thì số đo không phản ánh game: bỏ qua.
     if (this.held) return;
-    this.blends.push(now, act, spin);
+    this.blends.push(now, act, spin, spinBone);
     if (!this.feet.length) return;
     const ground = walkableGround(s.model.root.position.y);
+    this.lift = s.model.root.position.y - ground(s.x, s.z);
     const space = this.port.space;
     const feet: FootSample[] = this.feet.map((b) => {
       b.getWorldPosition(_p);
@@ -288,6 +298,7 @@ export class AnimWorkshop {
       hold: h ? { name: h.name, t: h.action.time, dur: h.clip.duration, playing: h.playing } : null,
       clock: this.model?.performClock?.() ?? null,
       feet: this.feet.map((b, i) => ({ bone: b.name, ...(this.slide.now[i] ?? { h: 0, planted: false, v: 0 }) })),
+      lift: this.lift,
       slide: this.slide.rows(),
       blends: [...this.blends.rows],
     };

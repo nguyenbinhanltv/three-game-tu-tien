@@ -68,6 +68,7 @@ import { assets } from '../core/assets';
 import { pickGround } from '../camera/pickGround';
 import { isHeld } from '../../input/bindings';
 import { ULT_FOV, ultFovAt } from '../combat/hitjuice';
+import { netLagOf } from '../combat/skillPose';
 import { animLabDt } from '../debug/animLab';
 import { labDt } from '../debug/vfxLab';
 import { ANIM_LAB, SLOWMO, VFX_LAB, _camFocus, _shakeLook, _shakePos, _v, _v2, isWebGPU } from './common';
@@ -829,6 +830,8 @@ function notePing(eng: Game, sentAt: number | undefined): void {
   const rtt = performance.now() - sentAt;
   if (rtt < 0 || rtt > 5000) return;
   eng.ping = eng.ping ? eng.ping * 0.8 + rtt * 0.2 : rtt;
+  // Bù trễ mạng cho khung trúng của đòn dự đoán. Ping giả của phòng thử chỉ lọt một nửa vào số đo trên (chiều gửi), nên cộng nửa còn lại.
+  eng.skillPoses.netLag = netLagOf(eng.ping + eng.fakePing / 2);
 }
 
 /**

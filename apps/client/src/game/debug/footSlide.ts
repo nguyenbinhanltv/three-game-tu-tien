@@ -73,11 +73,12 @@ export class FootSlide {
 
   /**
    * @param lift chân cao hơn đế nhịp bước chừng này (m) thì coi là đang nhấc.
-   * @param maxVy chân lên/xuống nhanh hơn ngần này (m/s) thì coi là đang nhấc hoặc đang đặt xuống.
+   * @param maxVy chân lên/xuống nhanh hơn ngần này (m/s) thì coi là đang nhấc hoặc đang đặt xuống. Không đặt thấp hơn: ở 120 khung/giây
+   *   chỉ 3 mm nhiễu độ cao mỗi khung đã là 0,36 m/s (đo 28/11: ngưỡng 0,35 làm chân trụ chỉ được nhận 3% thời gian).
    */
   constructor(
-    private lift = 0.035,
-    private maxVy = 0.35,
+    private lift = 0.03,
+    private maxVy = 1,
   ) {}
 
   reset(): void {

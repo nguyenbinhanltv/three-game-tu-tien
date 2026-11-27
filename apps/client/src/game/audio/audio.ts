@@ -33,6 +33,7 @@
 // thái trong music.ts (MUSIC_TRACKS); thêm `title` (màn tiêu đề, App.tsx) và `sting_*` (playSting, engine.ts).
 
 import { bellPartials } from './lootBell';
+import { LIMIT_RANGE, limitTable } from './limiter';
 import type { SfxRow } from '../debug/sfxStats';
 import { gongPartials } from '../camera/chapter';
 import MIX from './audioMix.json';
@@ -184,6 +185,8 @@ try {
 
 let ctx: AudioContext | null = null;
 let master: GainNode | null = null;
+/** Bộ chặn đỉnh mềm ở đầu ra (xem `softLimiter`): `master` → `input` … `output` → loa. */
+let outNode: { input: AudioNode; output: AudioNode } | null = null;
 let duckGain: GainNode | null = null;
 /** Tầng hạ nhạc giữ lâu (hội thoại, thẻ chương...), đứng sau `duckGain`; nhân với hạ nhạc ngắn. */
 let holdGain: GainNode | null = null;
@@ -369,6 +372,20 @@ function decodeEntry(name: string): void {
 
 // ---------- đồ thị âm thanh ----------
 
+/**
+ * Chặn đỉnh ở đầu ra. Đo ở Diễn Võ Trường (28/11): chỉ MỘT người ra chiêu, bus SFX đã chạm +0,4 đến +0,5 dBFS (tiếng vung + tiếng trúng + lớp
+ * chồng rơi cùng lúc), tức loa bị xén cứng (vỡ tiếng) ngay ở âm lượng tổng 100%. WaveShaper tĩnh: không trễ, không "bơm" như máy nén,
+ * không tự nâng âm lượng; dưới −3 dBFS tín hiệu giữ nguyên từng mẫu.
+ */
+function softLimiter(c: AudioContext): { input: AudioNode; output: AudioNode } {
+  const pre = c.createGain();
+  pre.gain.value = 1 / LIMIT_RANGE;
+  const shaper = c.createWaveShaper();
+  shaper.curve = limitTable();
+  pre.connect(shaper);
+  return { input: pre, output: shaper };
+}
+
 function applyVolumes(): void {
   if (!ctx || !master) return;
   const t = ctx.currentTime;
@@ -384,7 +401,9 @@ function ensure(): AudioContext | null {
     ctx = new AC();
     master = ctx.createGain();
     master.gain.value = muted ? 0 : volumes.master;
-    master.connect(ctx.destination);
+    outNode = softLimiter(ctx);
+    master.connect(outNode.input);
+    outNode.output.connect(ctx.destination);
     for (const b of ['music', 'ambient', 'sfx', 'ui'] as Bus[]) {
       const g = ctx.createGain();
       g.gain.value = volumes[b] * busMix[b];
@@ -699,7 +718,7 @@ export function sfxNames(): string[] {
 
 // ---------- đồng hồ từng bus (xưởng âm thanh) ----------
 
-export type MeterKey = Bus | 'sum';
+export type MeterKey = Bus | 'sum' | 'out';
 export interface MeterRead {
   /** Đỉnh và trung bình bình phương của ~43 ms gần nhất, đỉnh giữ từ lần đặt lại (dBFS; -100 = im), số cửa sổ đo chạm trần 0 dBFS. */
   peak: number;
@@ -738,8 +757,8 @@ function meterTick(): void {
 }
 
 /**
- * Bật/tắt đồng hồ từng bus của phòng thử. Đo SAU mức bus, TRƯỚC âm lượng tổng (`sum` = tổng bốn bus, tức thứ ra loa khi âm lượng tổng 100%):
- * `sum` chạm 0 dBFS nghĩa là vỡ tiếng ở loa. Đang tắt tiếng (`?mute=1`) vẫn đo được: SFX chạy qua bus, âm lượng tổng vẫn bằng 0.
+ * Bật/tắt đồng hồ từng bus của phòng thử. Đo SAU mức bus, TRƯỚC âm lượng tổng (`sum` = tổng bốn bus, tức thứ đi vào bộ chặn đỉnh khi âm lượng
+ * tổng 100%): `sum` vượt −3 dBFS là bộ chặn đỉnh bắt đầu bo, vượt 0 dBFS là trước đây loa bị xén cứng. `out` = sau bộ chặn đỉnh (thứ ra loa thật). Đang tắt tiếng (`?mute=1`) vẫn đo được: SFX chạy qua bus, âm lượng tổng vẫn bằng 0.
  * Trả false khi trình duyệt không có Web Audio.
  */
 export function busMeter(on: boolean): boolean {
@@ -767,6 +786,8 @@ export function busMeter(on: boolean): boolean {
       make(b, g);
     }
     make('sum', sumTap);
+    // `out` = đúng thứ ra loa: sau âm lượng tổng và sau bộ chặn đỉnh (im khi tắt tiếng).
+    if (outNode) make('out', outNode.output);
   }
   // 25 ms một lần, cửa sổ ~43 ms: các cửa sổ gối nhau nên không sót đỉnh.
   meterTimer ??= setInterval(meterTick, 25);
