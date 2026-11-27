@@ -3,7 +3,8 @@ import './panels.css';
 import './tutien.css';
 import './u2/shell/hud.css';
 import './u2/hud/hud.css';
-import { type CSSProperties, useEffect } from 'react';
+import { type CSSProperties, type RefObject, useEffect, useRef, useState } from 'react';
+import { type Box, boxesHit, dodgeOffset } from './dodge';
 import {
   ARTIFACT_MAX_LEVEL,
   artifactLevelMods,
@@ -123,14 +124,75 @@ function BossLineView() {
   return line ? <BossLineShow line={line} /> : null;
 }
 
+/** Hộp của một phần tử theo px màn hình, trừ đi độ dời `translate` đang áp (để luôn so với vị trí GỐC). */
+function baseBox(el: HTMLElement, dx = 0, dy = 0): Box {
+  const r = el.getBoundingClientRect();
+  return { x: r.left - dx, y: r.top - dy, w: r.width, h: r.height };
+}
+
+/** Chu kỳ dò nhãn tên của mục tiêu đang khóa (ms): chỉ chạy khi có thông báo / lời boss đang hiện. */
+const DODGE_POLL_MS = 120;
+
+/**
+ * Thông báo nổi né nhãn tên + cấp của mục tiêu đang khóa: dời cả chồng bằng thuộc tính CSS `translate` (lên trên nhãn, hết chỗ thì sang bên).
+ * Vùng được phép: dưới khung mục tiêu / thanh boss, giữa cột trái và bản đồ nhỏ.
+ */
+function useToastDodge(ref: RefObject<HTMLDivElement | null>, active: boolean): void {
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    let dx = 0;
+    let dy = 0;
+    const apply = (nx: number, ny: number) => {
+      if (nx === dx && ny === dy) return;
+      dx = nx;
+      dy = ny;
+      el.style.translate = nx || ny ? `${nx}px ${ny}px` : '';
+    };
+    if (!active) return;
+    const tick = () => {
+      const avoid = Game.current?.lockedLabelRect() ?? null;
+      const zoom = Number(getComputedStyle(el).zoom) || 1;
+      const box = baseBox(el, dx * zoom, dy * zoom);
+      let minY = 8;
+      for (const f of document.querySelectorAll<HTMLElement>('.hud .target-frame, .hud .boss-bar')) minY = Math.max(minY, f.getBoundingClientRect().bottom + 6);
+      const vw = window.innerWidth;
+      const o = dodgeOffset(box, avoid, { minY, minX: Math.min(330, vw * 0.26), maxX: vw - Math.min(210, vw * 0.17) });
+      apply(Math.round(o.dx / zoom), Math.round(o.dy / zoom));
+    };
+    tick();
+    const id = window.setInterval(tick, DODGE_POLL_MS);
+    return () => {
+      window.clearInterval(id);
+      el.style.translate = '';
+    };
+  }, [ref, active]);
+}
+
 function BossLineShow({ line }: { line: BossLine }) {
   const now = useNow(250);
+  const text = useRef<HTMLDivElement>(null);
+  const [low, setLow] = useState(false);
+  // Chữ lời boss mặc định nằm dưới thanh boss; nếu chỗ đó đang có nhãn tên của mục tiêu đang khóa thì hạ xuống làm phụ đề sát dải đen dưới.
+  useEffect(() => {
+    let base: Box | null = null;
+    const tick = () => {
+      const el = text.current;
+      if (!el) return;
+      if (!el.parentElement?.classList.contains('low')) base = baseBox(el);
+      const avoid = Game.current?.lockedLabelRect() ?? null;
+      if (base) setLow(!!avoid && boxesHit(base, avoid, 6));
+    };
+    tick();
+    const id = window.setInterval(tick, DODGE_POLL_MS);
+    return () => window.clearInterval(id);
+  }, [line.id]);
   if (now >= line.until) return null;
   return (
-    <div className="boss-line" key={line.id}>
+    <div className={low ? 'boss-line low' : 'boss-line'} key={line.id}>
       <div className="lb lb-top" />
       <div className="lb lb-bot" />
-      <div className="boss-line-text">
+      <div className="boss-line-text" ref={text}>
         <span className="boss-line-name">{line.name}</span>
         <span className="boss-line-say">{t('ui.boss.say', { text: line.text })}</span>
       </div>
@@ -449,8 +511,10 @@ function TribBars() {
 
 function Toasts() {
   const toasts = useUI((s) => s.toasts);
+  const box = useRef<HTMLDivElement>(null);
+  useToastDodge(box, toasts.length > 0);
   return (
-    <div className="toasts">
+    <div className="toasts" ref={box}>
       {toasts.map((x) => (
         <div key={x.id} className={'toast ' + x.type}>
           {x.text}

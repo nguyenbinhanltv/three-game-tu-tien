@@ -60,6 +60,15 @@
   pointer-events: none;
   animation: boss-line-fade 3.2s ease-in-out forwards;
 }
+/* Chỗ mặc định đang có nhãn tên của mục tiêu đang khóa: hạ chữ xuống làm phụ đề sát dải đen dưới (thanh chiêu đã ẩn trong lúc boss nói). */
+.boss-line.low .boss-line-text {
+  top: auto;
+  bottom: calc(6vh + 28px);
+}
+/* Thẻ chương đang hiện thì lời boss nhường chỗ (animation độ mờ của nó thắng luật ẩn HUD chung nên phải ẩn riêng). */
+.hud[data-cut='chapter'] > .boss-line {
+  visibility: hidden;
+}
 .boss-line .lb {
   position: absolute;
   left: 0;
