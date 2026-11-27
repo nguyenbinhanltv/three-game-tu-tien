@@ -468,6 +468,9 @@ export class MonsterSystem {
     // Chân Cảnh S1: cấp đòn của lần đánh này (chỉ lớp hình ở client).
     if (this.dmgTier) msg.tr = tierRank(this.dmgTier) as 0 | 1 | 2 | 3;
     if (p) msg.src = p.sid;
+    // Người đánh đang bật `/gm dps`: gắn id chiêu để công cụ phòng tập (lệch tiếng/đòn, nhật ký điều khiển) quy đúng từng đòn.
+    const sk = labMeter.label(p, dot);
+    if (sk !== undefined) msg.sk = sk;
     this.c.emit(S.DMG, msg);
     // Tâm cảnh (E3-L): đánh trúng Tâm Ma Ảnh của mình thì hồi.
     if (p?.trib && dmg > 0 && mon.owner === p.sid) this.c.tribSys.noteHit(p, 'hit', dot);

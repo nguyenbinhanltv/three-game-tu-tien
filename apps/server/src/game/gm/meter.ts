@@ -105,6 +105,15 @@ export class DpsMeter<P extends object> {
     if (r) r.skill = skill;
   }
 
+  /**
+   * Nhãn chiêu cho đòn tiếp theo của người đang đo (để gắn vào tin sát thương, trường `sk`); undefined khi người đó không đo.
+   * Cùng quy tắc quy chiêu với `hit`.
+   */
+  label(p: P | null | undefined, dot: boolean): string | undefined {
+    const r = p ? this.runs.get(p) : undefined;
+    return r ? (dot ? METER_DOT : r.skill || METER_OTHER) : undefined;
+  }
+
   /** Một lần sát thương đã áp lên quái `monId` (loại `def`, máu tối đa `mhp`). `dmg` ≤ 0 thì bỏ qua (né, miễn). */
   hit(p: P | null | undefined, now: number, monId: string, def: string, mhp: number, dmg: number, crit: boolean, dot: boolean): void {
     const r = p ? this.runs.get(p) : undefined;

@@ -367,6 +367,11 @@ export interface DmgMsg {
   ke?: 1 | -1;
   /** Cấp đòn (Chân Cảnh S1): hạng trong `HIT_TIER_ORDER` (0 nhẹ, 1 vừa, 2 nặng, 3 chiêu cuối); VẮNG = server không phân cấp (nguồn khác quái/hitMonster) nên client dùng bảng cũ. Chỉ là lớp hình (hit-stop, rung, cỡ số). */
   tr?: 0 | 1 | 2 | 3;
+  /**
+   * Công cụ phòng tập: id chiêu gây ra đòn này ("(dot)" = sát thương theo thời gian, "(khác)" = chưa ra chiêu nào).
+   * CHỈ có khi người đánh đang bật đồng hồ `/gm dps` (tài khoản thử); người chơi thường không bao giờ nhận trường này.
+   */
+  sk?: string;
 }
 
 export interface ChatMsg {

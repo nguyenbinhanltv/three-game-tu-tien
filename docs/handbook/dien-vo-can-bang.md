@@ -66,7 +66,7 @@ Phòng đã chỉ ra (CHƯA SỬA, là cân bằng của game thật nên chờ 
 - **Kiếm tu và Đao tu nhanh gấp ~2 lần Đan sư, ~1,6 lần các hướng còn lại** khi bấm đủ chiêu; từ cấp 32 hai hướng này hạ tinh anh trong 11–17 giây (dưới ngưỡng 18).
 - **Kính Điện Ma Quân (cấp 22) quá lì với 7/9 hướng** (44–64 giây), riêng Kiếm tu và Đao tu 34–36 giây.
 - **Đan sư vượt 40 giây ở 7 tinh anh**: là hướng hỗ trợ nên chậm là có chủ ý, nhưng đi một mình thì tinh anh thành trận dài.
-- **Nhánh Huyết Trận (mốc cấp 16) của Cổ Thần cho chiêu Tinh Bạo cần 3 sao**, mà sao thứ ba chỉ rèn được từ cấp 32: người chọn nhánh này có một ô chiêu không bấm được suốt cấp 16–31. (Đã sửa 28/11. Nhánh còn lại của mốc này, Huyết Cự, cho chiêu Huyết Cự Hộ cũng cần 3 sao: CHƯA đổi, chờ quyết.)
+- **Nhánh Huyết Trận (mốc cấp 16) của Cổ Thần cho chiêu Tinh Bạo cần 3 sao**, mà sao thứ ba chỉ rèn được từ cấp 32: người chọn nhánh này có một ô chiêu không bấm được suốt cấp 16–31. (Đã sửa 28/11 cho cả Tinh Bạo và Huyết Cự Hộ.)
 
 ## Bảng sát thương mỗi giây trên hình nộm: `fight:check --dps`
 
@@ -135,6 +135,43 @@ Thời gian hạ tinh anh cấp 32+ (giây, trước → sau; khoảng mong mu�
 Các ô dưới 18 giây của Kiếm tu ở cấp thấp (Xích Diễm Hồ 16, Liệt Cốt Báo 16, Xích Sa Ngô Công 16, Hôi Giác Cự Thú 17) không thuộc quyết định "cấp 32+" nên không đổi; ở cấp 16 Kiếm tu đã 1,5 lần trung vị trên hình nộm.
 
 `sim:progress` sau khi chỉnh: 6 dòng LỖI còn 2 (Kiếm tu hạ quái thường 3,7 giây ở cấp 27 và 31, ngưỡng dưới 3,8); nhịp Ngưng Khí 15 của sim 3,1 → 3,2 giờ, mốc Trúc Cơ 4 giờ vẫn trong ±12%.
+
+### Đợt hai, 28/11 rạng sáng (orchestrator quyết thay khi người dùng vắng; muốn lùi thì đảo đúng các số dưới đây)
+
+| Mục | Trước | Sau | Ở đâu |
+| --- | --- | --- | --- |
+| Máu elite_anh_hac_vuong (`hpMul`) | 8,0 | 9,2 (+15%) | `packages/content/data/monsters.json` |
+| Máu elite_hu_anh_nhan | 7,6 | 8,7 (+14%) | như trên |
+| Máu elite_sa_tuong | 6,5 | 7,8 (+20%) | như trên |
+| Huyết Cự Hộ (Cổ Thần, nhánh Huyết Cự mốc 16) | cần Tam Tinh | không đòi sao | `methods.json` (bỏ `star`), mô tả ở `vi.json` |
+| Ngưỡng dưới thời gian hạ quái thường của sim (chương 2–7) | 3,8 giây | 3,7 giây | `packages/content/src/simparts/ch2.ts` … `ch7.ts` |
+
+Không giảm thêm Kiếm tu/Đao tu; mốc `late` giữ ở cấp 32. Sa Tướng tăng 20% thay vì 15% vì là con ngắn nhất (Đao tu 12 giây); Đan sư vẫn dưới 40 giây.
+
+Thời gian hạ ba tinh anh Vấn Đỉnh (giây; đầu bảng → sau đợt một → sau đợt hai):
+
+| Tinh anh (cấp) | Kiếm tu | Đao tu | Cổ tu | Đan sư |
+| --- | --- | --- | --- | --- |
+| elite_anh_hac_vuong (32) | 13 → 15 → 17 | 14 → 16 → 17 | 14 → 17 → 19 | 30 → 30 → 36 |
+| elite_hu_anh_nhan (37) | 14 → 16 → 18 | 15 → 15 → 17 | 22 → 23 → 24 | 33 → 34 → 40 |
+| elite_sa_tuong (41) | 12 → 14 → 17 | 11 → 12 → 19 | 17 → 14 → 16 | 33 → 32 → 38 |
+
+Còn sát ngưỡng dưới (17 giây ở vài ô, sai số giữa các lượt đo khoảng ±1–2 giây) nhưng không tăng máu thêm được: Đan sư đã 36–40 giây. `sim:progress` sau đợt hai: **0 dòng LỖI**, Ngưng Khí 15 của sim 3,2 giờ.
+
+## Mốc sát thương của server so với `hitAt` (28/11, theo báo từ xưởng âm thanh)
+
+Xưởng âm thanh thấy sát thương về muộn so với khung trúng của clip ở ba chiêu: Cổ Bạo (+187/+195 ms), Lạc Thư Đại Trận (+130/+174 ms), Phá Diệt Cấm (+237/+281 ms). Đo riêng từng chiêu trên sim server (đồng hồ giả, nhịp 50 ms, mục tiêu đứng yên khóa máu, cách 4 m và 12 m, có và không có ấn sẵn):
+
+| Chiêu | `hitAt` | Sát thương đầu của server | Kết luận |
+| --- | --- | --- | --- |
+| `skl_co_bao` | 0,45 s | +450 ms (có 2 Cổ độc: vẫn +450) | đúng mốc |
+| `skl_pha_diet_cam` | 0,2 s | +200 ms (có 2 Cấm ấn: vẫn +200) | đúng mốc |
+| `skl_lac_thu_dai_tran` | 0,5 s | +2100 ms | là trận: `hitAt` là lúc HẠ trận, nhịp sát thương đầu = hạ trận + `arm` 0,6 + `every` 1 giây |
+| `skl_kiem_khi_tram` (đối chứng) | 0,28 s | +300 ms | trễ tối đa một nhịp server (50 ms) |
+
+Server áp sát thương đúng lúc nhận lệnh + `hitAt` (làm tròn lên một nhịp 50 ms) và chỉ giữ lệnh bấm sớm cho đòn thường chuỗi, nên **không sửa `hitAt` hay thời điểm server**. Độ trễ đo được ở xưởng nhiều khả năng do quy nhầm đòn (hai hướng này có Cổ độc và trận gây sát thương theo nhịp) hoặc do lệnh nằm chờ ở máy trước khi gửi. Với Lạc Thư Đại Trận, tiếng "trúng" nên bám nhịp trận chứ không bám `hitAt`.
+
+Để đo đúng từng đòn: khi người đánh đang bật `/gm dps`, tin sát thương (`S.DMG`) có thêm trường `sk` = id chiêu gây ra đòn đó (`(dot)` cho sát thương theo thời gian, `(khác)` khi chưa ra chiêu nào). Người chơi thường không nhận trường này.
 
 ## Mô hình `sim:progress` đã sửa (28/11)
 

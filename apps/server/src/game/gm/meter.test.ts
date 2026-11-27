@@ -58,6 +58,20 @@ describe('đồng hồ sát thương phòng tập', () => {
     expect(r.est).toBeUndefined();
   });
 
+  it('label: nhãn chiêu cho tin sát thương, chỉ khi đang đo', () => {
+    const m = new DpsMeter<object>();
+    const p = {};
+    expect(m.label(p, false)).toBeUndefined();
+    expect(m.label(null, false)).toBeUndefined();
+    m.start(p, 0);
+    expect(m.label(p, false)).toBe(METER_OTHER);
+    m.cast(p, 'skl_a');
+    expect(m.label(p, false)).toBe('skl_a');
+    expect(m.label(p, true)).toBe(METER_DOT);
+    m.stop(p);
+    expect(m.label(p, false)).toBeUndefined();
+  });
+
   it('một đòn duy nhất: thời lượng tối thiểu 1 giây; start lại thì về 0; stop thì hết đo', () => {
     const m = new DpsMeter<object>();
     const p = {};

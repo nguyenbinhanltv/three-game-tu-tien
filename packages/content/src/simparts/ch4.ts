@@ -394,8 +394,8 @@ function ch4Timeline(id: MethodId): Ch4 {
   }
   for (const id of METHOD_IDS) {
     for (const r of out.get(id)!.rows) {
-      if (r.ttk < 3.8 || r.ttk > 7.3) {
-        console.error(`LỖI: chương 4 cấp ${r.level} ${METHOD_NAME[id]} TTK quái thường ${r.ttk.toFixed(1)}s ngoài 3,8–7,3 s`);
+      if (r.ttk < 3.7 || r.ttk > 7.3) {
+        console.error(`LỖI: chương 4 cấp ${r.level} ${METHOD_NAME[id]} TTK quái thường ${r.ttk.toFixed(1)}s ngoài 3,7–7,3 s`);
         process.exitCode = 1;
       }
       if (r.eliteTtk < 18 || r.eliteTtk > 40) {

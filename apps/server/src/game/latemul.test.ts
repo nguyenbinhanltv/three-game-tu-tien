@@ -37,6 +37,7 @@ function oneHit(method: string, at: number): number {
   });
   const char = Character.create(acc++, 'late' + acc);
   char.level = 40;
+  char.root = 'tho'; // linh căn ngẫu nhiên lúc tạo làm lệch chỉ số giữa hai nhân vật
   char.meta.method = method;
   char.recalc();
   const p: Ent = sim.addPlayer({ sessionId: 'l' + acc, send: () => undefined } as never, char, true, 's' + acc);
