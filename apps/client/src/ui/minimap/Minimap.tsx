@@ -274,7 +274,7 @@ export function Minimap() {
         title={zs.status === 'low' ? t('ui.mm.zone_low') : zs.status === 'high' ? t('ui.mm.zone_high') : undefined}
       >
         {/* key theo tên vùng: vào vùng mới thì dải lụa chạy lại hiệu ứng mở */}
-        <div key={zoneName} className="mm2-band" data-long={zoneName.length > 14 ? (zoneName.length > 22 ? 2 : 1) : undefined}>
+        <div key={zoneName} className="mm2-band" data-long={zoneName.length > 12 ? (zoneName.length > 22 ? 2 : 1) : undefined}>
           <span>{zoneName}</span>
         </div>
         <div className="mm2-coord">
