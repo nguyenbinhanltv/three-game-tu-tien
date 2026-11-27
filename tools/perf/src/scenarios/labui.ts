@@ -4,6 +4,7 @@
 // - contrast: TƯƠNG PHẢN CHỮ của HUD trên nền game thật (WCAG): chụp HUD với chữ trong suốt để lấy nền ngay dưới từng dòng chữ, tính tỉ lệ tương phản
 //   của màu chữ với từng điểm ảnh nền; báo dòng có phân vị 10% dưới 4,5 (chữ thường) hoặc 3 (chữ lớn ≥ 24 px, hoặc ≥ 18,7 px đậm).
 //   Giới hạn: WCAG không tính bóng chữ/viền chữ, nên chữ có bóng đậm đọc được hơn con số ở đây.
+//   Bỏ qua chữ đang mờ dần (độ đục dưới 0,9 ở chính nó hoặc khối cha: dòng chat sắp tan, thông báo đang hiện) vì màu đo được là màu giữa chừng.
 // - windows: dựng nhân vật đủ đồ rồi mở TỪNG cửa sổ ở năm cỡ màn hình; báo cửa sổ tràn khỏi khung nhìn và dòng chữ bị cắt (tràn ngang trong ô ẩn phần thừa).
 // - sound: xưởng âm thanh — bấm nút thật (đầu dò tiếng, ép nhạc boss), in bảng lệch tiếng so với mốc trúng của mọi chiêu `skl_*` (đo từ dữ liệu).
 // - anim: xưởng animation — diễn một pose, dừng hình ở đỉnh đòn và đối chiếu đồng hồ pose với mốc.
@@ -71,6 +72,14 @@ export default {
     const btn = (name: string | RegExp) => pg.locator('.debug-panel button', { hasText: name }).first();
 
     if (want('tools')) {
+      // Chip cạnh thanh chiêu (nhắc chọn nhánh, phân thân) phải nằm trên MỘT dòng, không bị ép thành cột chữ.
+      const chips = await pg.evaluate(() =>
+        [...document.querySelectorAll('.u2h-chips .branch-chip, .u2h-chips .clone-chip')].map((e) => {
+          const r = e.getBoundingClientRect();
+          return { cls: e.className.split(' ')[0]!, w: Math.round(r.width), h: Math.round(r.height), right: Math.round(r.right), lh: parseFloat(getComputedStyle(e).lineHeight) || parseFloat(getComputedStyle(e).fontSize) * 1.4 };
+        }),
+      );
+      check('chip cạnh thanh chiêu nằm trên một dòng và trong khung nhìn', chips.length > 0 && chips.every((c) => c.h <= c.lh * 1.9 + 8 && c.right <= 1280), chips.map((c) => `${c.cls} ${c.w}×${c.h}`).join(', ') || 'không có chip');
       await pg.keyboard.press('F3');
       await sleep(600);
       await btn(/^Giao diện$/).click();
@@ -226,7 +235,7 @@ export default {
           if (!txt || !e || seen.has(e) || e.closest('.debug-panel, .lab-trace')) continue;
           seen.add(e);
           var cs = getComputedStyle(e), vis = true;
-          for (var p = e; p && p !== document.body; p = p.parentElement) { var ps = getComputedStyle(p); if (ps.display === 'none' || ps.visibility === 'hidden' || Number(ps.opacity) < 0.5) { vis = false; break; } }
+          for (var p = e; p && p !== document.body; p = p.parentElement) { var ps = getComputedStyle(p); if (ps.display === 'none' || ps.visibility === 'hidden' || Number(ps.opacity) < 0.9) { vis = false; break; } }
           if (!vis) continue;
           var range = document.createRange(); range.selectNodeContents(n);
           var r = range.getBoundingClientRect();
