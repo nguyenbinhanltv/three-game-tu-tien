@@ -93,6 +93,8 @@ Cảnh và nhân vật, Quái trong phòng, Hiệu ứng, Nền và màu, Phong 
 | sáu cảnh sàn, đạo cụ, ánh sáng | 0,963–0,972 | 0,941–0,969 |
 | `nhan_vat_can` (máy quay cận) | 0,871 | 0,892 |
 
+**Lưu ý khi so cảnh cận (28/11):** vòng ấn lớn dưới chân ở các cảnh `can_*` là hiệu ứng của LẦN DỰNG NHÂN VẬT ĐẦU TIÊN trong phiên chụp, nên có hay không tùy thứ tự cảnh trong `--only` (chụp riêng một cảnh thì có; cảnh cận đứng sau một cảnh cận khác thì không). So cảnh cận phải dùng CÙNG danh sách `--only` với bộ gốc; chênh 0,83–0,90 giữa hai danh sách khác nhau không phải thụt lùi (đã thử A/B ba lượt khi gỡ cờ V4).
+
 Sáu cảnh nằm trong sàn nhiễu của phòng: Dạ Họa không vỡ trên đường lùi WebGL2 ở cả hai preset. Cảnh cận lệch vì hào quang cảnh giới (mây lam quanh nhân vật) chuyển động giữa hai lượt chụp, soi ảnh không thấy lớp nào mất; muốn so cảnh cận cho chặt thì phải dừng lớp hình trước khi chụp (chưa làm).
 
 ## V3: nạp lại dữ liệu tức thì và chế độ chỉnh phòng (28/11)
@@ -184,3 +186,15 @@ Bổ sung cho hai nhóm con "Âm thanh" và "Động tác" ở trên (phát từ
 - **Đỉnh bus SFX theo lối tu (một người, trước bộ chặn đỉnh):** Thể tu +1,2 dBFS, Cổ tu +1,0, Lôi tu +0,8, Kiếm tu +0,6; năm lối còn lại −0,4 đến −1,6. Tức bốn lối đang vượt 0 dBFS khi đánh một mình.
 - **Trượt chân của nhân vật v3 trong ngưỡng:** chạy nhanh 2,8 cm/m, chạy 5,3 cm/m, nhịp dừng 5,5 cm/m (ngưỡng báo 12). Chân trụ mỗi bước chỉ ~90 ms ở tốc độ chạy nhanh.
 - **Bài học đo:** `action.isRunning()` trả false cho clip đi/chạy (xem trên); ở 120 khung/giây ngưỡng vận tốc dọc 0,35 m/s nhỏ hơn nhiễu; hàm mặt đất `walkableGround` thấp hơn sàn phòng tập 20 cm nên độ cao bàn chân tính theo mặt sàn nhân vật đang đứng.
+
+### Lượt quét 28/11 rạng sáng (9 lối tu ở ping 0 và ping giả 150 ms, 12 quái/boss)
+
+`pnpm shots xuong --only cast --ping 150`, `--only mons`, `--only bossfade` (Dạ Họa 720p).
+
+- **Tiếng so với khung trúng, ping giả 150 ms, đủ 9 lối tu (sau bù trễ mạng):** 40 chiêu thường có sát thương trực tiếp lệch trung vị +12 ms; 81 đòn thường trung vị 0 ms, không đòn nào quá 60 ms.
+- **Chuyển cho bên server (mốc sát thương lệch khung trúng của clip ở CẢ hai mức ping):** `skl_co_bao` +187 / +195 ms, `skl_lac_thu_dai_tran` +130 / +174 ms, `skl_pha_diet_cam` +237 / +281 ms. Hai lối này có trận và cổ gây sát thương kéo dài nên cần đo lại từng chiêu sau `/gm labreset` trước khi sửa `hitAt`.
+- **Đã sửa, boss vào đòn lớn bị giật:** đòn `slam` / `sweep` mờ vào trong 0,07 giây, mà boss ở tầm camera chỉ cập nhật xương 30 Hz nên chỉ còn hai bước (bước nhảy trọng số 0,24); bắp tay xoay tới 5951°/s khi đang niệm chuyển sang đập (`boss_thu_mo_tuong`). Đo ba mức trên 4 boss, 9 lần vào đòn mỗi mức: 0,07 s → trung vị 1399°/s, lớn nhất 5951; **0,14 s → 1257 / 2514**; 0,20 s → 958 / 2155. Đặt `SKIN_TUNE.moveFade` = 0,14 (`apps/client/src/game/character/skinned.ts`). Quái dùng `crossFadeFrom` nên tổng trọng số luôn bằng 1 (không lẫn tư thế gốc như nhân vật v3), và thời điểm đòn chạm không đổi.
+- **Đã sửa, mức ra loa quá sát trần:** một người ra chiêu, đỉnh bus SFX của 9 lối tu nằm từ −1,6 đến +1,2 dBFS, tức gần như đòn nào cũng lọt vào vùng bộ chặn đỉnh phải bo (trên −3 dBFS). Thêm khoảng trống 3 dB trước bộ chặn đỉnh (`HEADROOM` ở `apps/client/src/game/audio/limiter.ts`, áp cho cả bốn bus nên cân bằng giữa nhạc, môi trường, SFX, giao diện giữ nguyên): đỉnh còn −4,6 đến −1,8 dBFS. Game nhỏ đi 3 dB ở cùng mức thanh trượt; chưa ai NGHE thử, muốn về như cũ thì đặt `HEADROOM` = 1.
+- **Phép đo đã chỉnh:** tốc độ xoay khớp chia theo khoảng thời gian thật giữa hai lần xương đổi (trước đây chia theo một khung vẽ, thổi phồng 2 đến 4 lần với model cập nhật xương thưa). Bàn chân của quái dựng thủ tục nhận theo chuỗi `leg_<chân>_<số>`.
+- **Chưa kết luận được, trượt chân của quái:** bộ đo nhận chân trụ theo độ nhấc (3 cm), mà clip chạy của quái bốn chân nhấc chân thấp hơn thế nên chân nào cũng bị coi là trụ và số trượt ra bằng tốc độ thân (27 đến 55 cm/m lúc chạy). Cần đổi sang nhận chân trụ theo vận tốc so với thân rồi mới biết clip nào trượt thật. Rết và giao long không có chân.
+- **Chưa sửa, nhân vật v3 dừng chạy:** vẫn như ghi ở trên (đang chờ đợt gỡ cờ ở `mannequin.ts` xong).
