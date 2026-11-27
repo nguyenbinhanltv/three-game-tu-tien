@@ -379,6 +379,12 @@ function allPropsRaw(level: string): PropInstance[] {
 }
 const levelCache = new Map<string, PropInstance[]>();
 
+/** Quên danh sách prop đã dựng của một level (chế độ chỉnh phòng tập, chỉ bản dev: bố cục vừa đổi, lần vào kế phải đọc lại). */
+export function forgetProps(level: string): void {
+  levelCache.delete(level);
+  noTcCache.delete(level);
+}
+
 /**
  * Đá và cây khô rải ở Đoạn Mạch Cổ Cốc (E2-I): lưới ô 24 m, xác định, chỉ để tô cảnh (không va chạm, như prop rải của Vân Lam).
  * Dùng lại GLB đã có (đá Vân Lam nhuộm ấm, `prop_cay_goc_kho` của PROP_LIB); tránh tâm cụm quái, tinh anh, trạm, điểm nhấn, điểm hái.

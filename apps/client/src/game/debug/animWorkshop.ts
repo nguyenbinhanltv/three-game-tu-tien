@@ -7,7 +7,7 @@ import type { Game } from '../engine';
 import type { CharacterView, LabAnimPort } from '../character/view';
 import { walkableGround } from '../character/mannequinFeet';
 import { BlendLog, type BlendRow } from './blendLog';
-import { FootSlide, type FootSample, type SlideRow } from './footSlide';
+import { FootSlide, type FootSample, type FootState, type SlideRow } from './footSlide';
 
 export type LabSubject = 'me' | 'target';
 
@@ -25,6 +25,10 @@ export interface LabActive {
   w: number;
 }
 
+export interface FootNow extends FootState {
+  bone: string;
+}
+
 export interface AnimSnapshot {
   /** Có model có xương để soi (model khối và model chưa nạp xong thì false). */
   ok: boolean;
@@ -35,7 +39,8 @@ export interface AnimSnapshot {
   hold: { name: string; t: number; dur: number; playing: boolean } | null;
   /** Đồng hồ động tác chiêu đang diễn (giây từ lúc bấm) hoặc null. */
   clock: { t: number; skill: string } | null;
-  feet: number;
+  /** Từng bàn chân lúc này: cao hơn đất bao nhiêu (m), có đang trụ không, tốc độ ngang (m/s). */
+  feet: FootNow[];
   slide: SlideRow[];
   blends: BlendRow[];
 }
@@ -43,18 +48,32 @@ export interface AnimSnapshot {
 /** Một bước của nút ◀ ▶ khi tua (giây): một khung của clip 30 khung/giây. */
 export const SCRUB_STEP = 1 / 30;
 
-type MixerInternals = { _actions?: THREE.AnimationAction[] };
+type MixerInternals = { _actions?: THREE.AnimationAction[]; _isActiveAction?(a: THREE.AnimationAction): boolean };
 
 const actionsOf = (m: THREE.AnimationMixer): THREE.AnimationAction[] => (m as unknown as MixerInternals)._actions ?? [];
+/**
+ * Action đang góp vào tư thế: đã `play()` và có trọng số. KHÔNG dùng `isRunning()`: clip đi/chạy của nhân vật v3 đặt `timeScale = 0`
+ * (pha do model đồng bộ tay) nên `isRunning()` báo false dù clip đang quyết định tư thế.
+ */
+const contributing = (m: THREE.AnimationMixer, a: THREE.AnimationAction): boolean =>
+  a.enabled && a.getEffectiveWeight() > 1e-3 && ((m as unknown as MixerInternals)._isActiveAction?.(a) ?? true);
 
-/** Xương bàn chân: ưu tiên `foot_l`/`foot_r` của bộ xương UE; không có thì mọi xương tên có "foot" (bỏ xương IK), rồi "toe"/"paw". Tối đa 4. */
+/**
+ * Xương chạm đất của từng chân: ưu tiên mũi bàn chân `ball_l`/`ball_r` của bộ xương UE (vẫn chạm đất lúc gót đã nhấc), rồi cổ chân `foot_l`/`foot_r`;
+ * không có thì mọi xương tên có "foot" (bỏ xương IK), rồi "toe"/"paw". Tối đa 4.
+ */
 export function footBones(rig: THREE.Object3D): THREE.Object3D[] {
   const all: THREE.Object3D[] = [];
   rig.traverse((o) => {
     if ((o as THREE.Bone).isBone) all.push(o);
   });
-  const named = ['foot_l', 'foot_r'].map((n) => all.find((b) => b.name === n)).filter((b): b is THREE.Object3D => !!b);
-  if (named.length === 2) return named;
+  for (const pair of [
+    ['ball_l', 'ball_r'],
+    ['foot_l', 'foot_r'],
+  ]) {
+    const named = pair.map((n) => all.find((b) => b.name === n)).filter((b): b is THREE.Object3D => !!b);
+    if (named.length === 2) return named;
+  }
   for (const re of [/foot/i, /toe|paw/i]) {
     const hit = all.filter((b) => re.test(b.name) && !/ik|twist|end/i.test(b.name));
     if (hit.length) return hit.slice(0, 4);
@@ -146,7 +165,7 @@ export class AnimWorkshop {
     const p = this.port;
     if (!p) return [];
     const list = actionsOf(p.mixer)
-      .filter((a) => a.isRunning() && a.getEffectiveWeight() > 1e-3)
+      .filter((a) => a !== this.held?.action && contributing(p.mixer, a))
       .map((a) => ({ name: a.getClip().name, t: a.time, dur: a.getClip().duration, w: a.getEffectiveWeight() }));
     const sum = list.reduce((s, a) => s + a.w, 0) || 1;
     return list.map((a) => ({ ...a, w: a.w / sum })).sort((a, b) => b.w - a.w);
@@ -268,7 +287,7 @@ export class AnimWorkshop {
       active: this.active(),
       hold: h ? { name: h.name, t: h.action.time, dur: h.clip.duration, playing: h.playing } : null,
       clock: this.model?.performClock?.() ?? null,
-      feet: this.feet.length,
+      feet: this.feet.map((b, i) => ({ bone: b.name, ...(this.slide.now[i] ?? { h: 0, planted: false, v: 0 }) })),
       slide: this.slide.rows(),
       blends: [...this.blends.rows],
     };

@@ -170,3 +170,118 @@ describe('lệnh GM phòng thử', () => {
     expect(m.state).toBe(MS_DEAD);
   });
 });
+
+describe('bàn cân bằng và sân boss (V2e)', () => {
+  it('dps: đo sát thương thật của mình theo thời gian, hạ quái thì có thời gian hạ; stop thì thôi đo', async () => {
+    const { labMeter } = await import('./gm/meter');
+    const { sim, p, mon, gm, run } = setup();
+    const m = mon();
+    sim.damageMonster(m, 10, p); // chưa bật đồng hồ: không tính
+    gm('dps');
+    expect(labMeter.active(p)).toBe(true);
+    const hp0 = m.s.hp;
+    sim.damageMonster(m, 40, p);
+    run(2000);
+    sim.damageMonster(m, m.s.hp + 500, p); // đòn kết liễu: chỉ tính phần máu còn lại
+    const r = labMeter.report(p)!;
+    expect(r.total).toBe(hp0);
+    expect(r.hits).toBe(2);
+    expect(r.secs).toBeCloseTo(2, 1);
+    expect(r.kills).toHaveLength(1);
+    expect(r.kills[0]!.def).toBe('mon_soi_xam');
+    gm('dps stop');
+    expect(labMeter.active(p)).toBe(false);
+  });
+
+  it('dummy: chỉ trong phòng tập; hình nộm đứng yên, cạn máu thì tính một lần hạ rồi hồi đầy', async () => {
+    const { labMeter } = await import('./gm/meter');
+    const out = setup();
+    const n0 = out.sim.monsters.length;
+    out.gm('dummy');
+    expect(out.sim.monsters.length).toBe(n0);
+
+    const { sim, p, gm, run } = setup(true, 'dien_vo');
+    gm('dummy elite_xich_dien_ho 10');
+    const live = sim.monsters.filter((m) => m.state !== MS_DEAD);
+    expect(live).toHaveLength(1);
+    const m = live[0]!;
+    expect(m.def.id).toBe('elite_xich_dien_ho');
+    expect(m.level).toBe(10);
+    const x0 = m.s.x;
+    sim.damageMonster(m, m.s.mhp + 300, p);
+    expect(m.s.hp).toBe(1);
+    run(1000);
+    expect(m.s.hp).toBe(m.s.mhp);
+    expect(m.s.x).toBe(x0);
+    const r = labMeter.report(p)!;
+    // Khóa máu: tính sát thương gốc của đòn (không bị cắt ở 1 máu).
+    expect(r.total).toBe(m.s.mhp + 300);
+    expect(r.kills).toEqual([expect.objectContaining({ def: 'elite_xich_dien_ho', n: 1 })]);
+    gm('labreset');
+    expect(labMeter.active(p)).toBe(false);
+    expect(sim.monsters.filter((x) => x.state !== MS_DEAD)).toHaveLength(0);
+  });
+
+  it('boss + phase + hp: gọi boss vào hố, khóa pha thì máu đổi không đổi pha, bỏ khóa thì pha theo máu (cả khi tua máu lên)', async () => {
+    const { bossPhaseAt, dienVoZone } = await import('@dtl/shared');
+    const { sim, p, gm } = setup(true, 'dien_vo');
+    gm('scene boss'); // đưa mình tới khu boss
+    const before = sim.monsters.filter((m) => m.state !== MS_DEAD).map((m) => m.id);
+    gm('boss mon_soi_xam'); // quái thường: không gọi, không dọn cảnh đang có
+    expect(sim.monsters.filter((m) => m.state !== MS_DEAD).map((m) => m.id)).toEqual(before);
+    gm('boss boss_han_giao 15');
+    const live = sim.monsters.filter((m) => m.state !== MS_DEAD);
+    expect(live).toHaveLength(1);
+    const b = live[0]!;
+    const z = dienVoZone('boss');
+    expect(Math.hypot(b.s.x - z.x, b.s.z - z.z)).toBeLessThan(0.5);
+    expect(b.level).toBe(15);
+    expect(p.god).toBe(true);
+    const phases = b.def.phases!;
+    expect(phases.length).toBeGreaterThanOrEqual(2);
+
+    gm('phase 1');
+    expect(b.phase).toBe(1);
+    sim.damageMonster(b, Math.floor(b.s.mhp * 0.95), p); // còn ~5% máu: bình thường đã sang pha cuối
+    expect(b.phase).toBe(1);
+    gm('hp 100');
+    expect(b.s.hp).toBe(b.s.mhp);
+    expect(b.phase).toBe(1);
+
+    gm('phase off');
+    gm('hp 5');
+    expect(b.s.hp).toBe(Math.ceil(b.s.mhp * 0.05));
+    expect(b.phase).toBe(bossPhaseAt(0.05, phases, 0));
+    expect(b.phase).toBe(phases.length);
+    gm('hp 100'); // tua lên: pha lùi về đầu
+    expect(b.phase).toBe(0);
+    gm('phase 9'); // quá số pha: kẹp về pha cuối
+    expect(b.phase).toBe(phases.length);
+  });
+
+  it('cast: ra ngay một chiêu; loop thì chỉ lặp chiêu đó và hoãn chiêu khác; off thì trả lại', () => {
+    const { sim, gm, run } = setup(true, 'dien_vo');
+    gm('scene boss');
+    gm('boss boss_han_giao 15');
+    const b = sim.monsters.find((m) => m.state !== MS_DEAD)!;
+    gm('phase 1'); // Hàn Giao: pha 1 mới có chém quạt
+    expect(b.rules.ai.sweep).toBeTruthy();
+    expect(b.rules.ai.slam).toBeTruthy();
+    gm('cast sweep loop');
+    expect(b.target).not.toBe('');
+    const now = Date.now();
+    expect(b.sweepAt).toBeLessThanOrEqual(now + 1200);
+    expect(b.abilityAt).toBeGreaterThan(now + 300_000);
+    // Boss tới gần rồi chém: mỗi lần chém AI hẹn lại theo hồi chiêu, vòng lặp kéo về ≤ 1,2 s.
+    run(12_000);
+    const sweepCd = b.rules.ai.sweep!.cd * 1000;
+    expect(b.sweepAt - Date.now()).toBeLessThanOrEqual(Math.min(sweepCd, 1200));
+    expect(b.abilityAt).toBeGreaterThan(Date.now() + 300_000);
+    gm('cast off');
+    expect(b.abilityAt).toBeLessThanOrEqual(Date.now() + 2000);
+    // Chiêu pha này không có: không đổi gì.
+    const at = b.sweepAt;
+    gm('cast burrow');
+    expect(b.sweepAt).toBe(at);
+  });
+});

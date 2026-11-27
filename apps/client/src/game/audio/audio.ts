@@ -147,6 +147,8 @@ const MANIFEST_DIR = ASSET_BASE + 'audio/';
  * nhạc khoảng 1/3 SFX để không lấn tiếng đòn đánh, âm môi trường thấp hơn nhạc. Bảng đo ở docs/audio/levels.md.
  */
 const BUS_MIX = MIX.bus as Record<Bus, number>;
+/** Mức đang áp: bằng `BUS_MIX`, trừ khi xưởng âm thanh của phòng thử ghi đè trong phiên (`labBusMix`); không lưu, không đổi mặc định. */
+const busMix: Record<Bus, number> = { ...BUS_MIX };
 /** Âm tổng hợp được chỉnh theo master 0,22 cũ; giữ nguyên để không có file thì nghe như trước. */
 const SYNTH_GAIN = 0.22;
 const SYNTH_BUS: Partial<Record<Sfx, Bus>> = { loot: 'ui', quest: 'ui' };
@@ -199,6 +201,13 @@ const stats = { file: 0, synth: 0, dropped: 0 };
 /** Số lần phát âm tổng hợp theo tên (kiểm "không còn âm tổng hợp cho combat"). */
 const synthBy: Record<string, number> = {};
 const logged = new Set<string>();
+
+/**
+ * Đồng hồ bus của phòng thử đang đo lúc tắt tiếng: SFX vẫn chạy qua các bus để đo, nhưng âm lượng tổng giữ bằng 0 nên không có gì ra loa.
+ * Chỉ `busMeter` bật; nhạc và âm môi trường vẫn theo `muted`.
+ */
+let meterMuted = false;
+const silent = (): boolean => muted && !meterMuted;
 
 function clamp01(v: number): number {
   return Math.max(0, Math.min(1, v));
@@ -354,7 +363,7 @@ function decodeEntry(name: string): void {
     // Lần phát đang chờ file: phát nếu chưa quá lâu.
     const p = pendingPlay.get(name);
     pendingPlay.delete(name);
-    if (p && performance.now() - p.t <= PENDING_MS && !muted && ctx?.state === 'running') emit(name as Sfx, p.volume, p.at, false);
+    if (p && performance.now() - p.t <= PENDING_MS && !silent() && ctx?.state === 'running') emit(name as Sfx, p.volume, p.at, false);
   });
 }
 
@@ -364,7 +373,7 @@ function applyVolumes(): void {
   if (!ctx || !master) return;
   const t = ctx.currentTime;
   master.gain.setTargetAtTime(muted ? 0 : volumes.master, t, 0.02);
-  for (const [b, g] of buses) g.gain.setTargetAtTime(volumes[b] * BUS_MIX[b], t, 0.02);
+  for (const [b, g] of buses) g.gain.setTargetAtTime(volumes[b] * busMix[b], t, 0.02);
 }
 
 function ensure(): AudioContext | null {
@@ -378,7 +387,7 @@ function ensure(): AudioContext | null {
     master.connect(ctx.destination);
     for (const b of ['music', 'ambient', 'sfx', 'ui'] as Bus[]) {
       const g = ctx.createGain();
-      g.gain.value = volumes[b] * BUS_MIX[b];
+      g.gain.value = volumes[b] * busMix[b];
       g.connect(master);
       buses.set(b, g);
     }
@@ -395,7 +404,7 @@ function ensure(): AudioContext | null {
     ctx = null;
     return null;
   }
-  if (!muted) void loadManifest();
+  if (!silent()) void loadManifest();
   prepare();
   applyHolds();
   return ctx;
@@ -645,16 +654,17 @@ function playFile(name: string, vs: Variant[], e: SfxEntry, v: number, out: Audi
  * `at` là vị trí nguồn trên mặt đất để lệch trái/phải theo camera.
  */
 export function sfx(name: Sfx, volume = 1, at?: { x: number; z: number }, throttle = true, opts?: SfxOpts): void {
-  if (muted || volume <= 0.02) return probeSfx(name, volume, muted ? 'mute' : 'quiet');
+  if (volume <= 0.02) return probeSfx(name, volume, 'quiet');
+  if (silent()) return probeSfx(name, volume, throttle && probeThrottled(name) ? 'throttle' : 'mute', opts?.delay);
   const c = ensure();
-  if (!c || c.state !== 'running') return probeSfx(name, volume, 'idle');
+  if (!c || c.state !== 'running') return probeSfx(name, volume, throttle && probeThrottled(name) ? 'throttle' : 'idle', opts?.delay);
   // Không phát cùng một âm dày quá (nhiều sát thương cùng lúc). Bước chân của nhiều người tự giới hạn ở footsteps.ts.
   if (throttle) {
     const now = performance.now();
     if (now - (lastPlayed.get(name) ?? 0) < 45) return probeSfx(name, volume, 'throttle');
     lastPlayed.set(name, now);
   }
-  probeSfx(name, volume, 'ok');
+  probeSfx(name, volume, 'ok', opts?.delay);
   emit(name, volume, at, true, opts);
 }
 
@@ -666,15 +676,138 @@ export function sfx(name: Sfx, volume = 1, at?: { x: number; z: number }, thrott
  */
 export const sfxProbe: { on: boolean; rows: SfxRow[] } = { on: false, rows: [] };
 
-function probeSfx(name: string, vol: number, why: SfxRow['why']): void {
+const probeLast = new Map<string, number>();
+/** Tắt tiếng hoặc chưa mở khóa thì `sfx` thoát trước bộ giãn 45 ms; đầu dò tự áp cùng luật để nhật ký giống hệt lúc bật tiếng. */
+function probeThrottled(name: string): boolean {
+  if (!sfxProbe.on) return false;
+  const now = performance.now();
+  if (now - (probeLast.get(name) ?? 0) < 45) return true;
+  probeLast.set(name, now);
+  return false;
+}
+
+function probeSfx(name: string, vol: number, why: SfxRow['why'], delay = 0): void {
   if (!sfxProbe.on) return;
-  sfxProbe.rows.push({ name, vol, at: performance.now(), why });
+  sfxProbe.rows.push({ name, vol, at: performance.now(), why, delayMs: delay > 0 ? delay * 1000 : undefined });
   if (sfxProbe.rows.length > 600) sfxProbe.rows.splice(0, sfxProbe.rows.length - 600);
 }
 
 /** Mọi tên tiếng phát được: âm tổng hợp có sẵn + tên trong manifest (đã tải). */
 export function sfxNames(): string[] {
   return [...new Set([...SYNTH_NAMES, ...Object.keys(manifest?.sfx ?? {})])].sort();
+}
+
+// ---------- đồng hồ từng bus (xưởng âm thanh) ----------
+
+export type MeterKey = Bus | 'sum';
+export interface MeterRead {
+  /** Đỉnh và trung bình bình phương của ~43 ms gần nhất, đỉnh giữ từ lần đặt lại (dBFS; -100 = im), số cửa sổ đo chạm trần 0 dBFS. */
+  peak: number;
+  rms: number;
+  hold: number;
+  clips: number;
+}
+interface Tap {
+  an: AnalyserNode;
+  buf: Float32Array<ArrayBuffer>;
+  peak: number;
+  rms: number;
+  hold: number;
+  clips: number;
+}
+const taps = new Map<MeterKey, Tap>();
+let sumTap: GainNode | null = null;
+let meterTimer: ReturnType<typeof setInterval> | null = null;
+const toDb = (x: number): number => (x > 1e-5 ? Math.round(20 * Math.log10(x) * 10) / 10 : -100);
+
+function meterTick(): void {
+  for (const tp of taps.values()) {
+    tp.an.getFloatTimeDomainData(tp.buf);
+    let sum = 0;
+    let peak = 0;
+    for (let i = 0; i < tp.buf.length; i++) {
+      const v = Math.abs(tp.buf[i]!);
+      sum += v * v;
+      if (v > peak) peak = v;
+    }
+    tp.peak = peak;
+    tp.rms = Math.sqrt(sum / tp.buf.length);
+    if (peak > tp.hold) tp.hold = peak;
+    if (peak >= 1) tp.clips++;
+  }
+}
+
+/**
+ * Bật/tắt đồng hồ từng bus của phòng thử. Đo SAU mức bus, TRƯỚC âm lượng tổng (`sum` = tổng bốn bus, tức thứ ra loa khi âm lượng tổng 100%):
+ * `sum` chạm 0 dBFS nghĩa là vỡ tiếng ở loa. Đang tắt tiếng (`?mute=1`) vẫn đo được: SFX chạy qua bus, âm lượng tổng vẫn bằng 0.
+ * Trả false khi trình duyệt không có Web Audio.
+ */
+export function busMeter(on: boolean): boolean {
+  if (!on) {
+    if (meterTimer) clearInterval(meterTimer);
+    meterTimer = null;
+    meterMuted = false;
+    return true;
+  }
+  meterMuted = muted;
+  const c = ensure();
+  if (!c) return false;
+  if (meterMuted) void loadManifest();
+  if (c.state === 'suspended') void c.resume();
+  if (!taps.size) {
+    sumTap = c.createGain();
+    const make = (key: MeterKey, from: AudioNode): void => {
+      const an = c.createAnalyser();
+      an.fftSize = 2048;
+      from.connect(an);
+      taps.set(key, { an, buf: new Float32Array(an.fftSize), peak: 0, rms: 0, hold: 0, clips: 0 });
+    };
+    for (const [b, g] of buses) {
+      g.connect(sumTap);
+      make(b, g);
+    }
+    make('sum', sumTap);
+  }
+  // 25 ms một lần, cửa sổ ~43 ms: các cửa sổ gối nhau nên không sót đỉnh.
+  meterTimer ??= setInterval(meterTick, 25);
+  return true;
+}
+
+/** Số đo hiện tại của từng bus; `reset` = đặt lại đỉnh giữ và số lần chạm trần. null khi đồng hồ chưa bật. */
+export function busMeterRead(reset = false): { state: string; muted: boolean; voices: number; bus: Record<MeterKey, MeterRead> } | null {
+  if (!meterTimer || !ctx) return null;
+  const bus = {} as Record<MeterKey, MeterRead>;
+  for (const [k, tp] of taps) {
+    bus[k] = { peak: toDb(tp.peak), rms: toDb(tp.rms), hold: toDb(tp.hold), clips: tp.clips };
+    if (reset) {
+      tp.hold = 0;
+      tp.clips = 0;
+    }
+  }
+  return { state: ctx.state, muted, voices, bus };
+}
+
+/** Mức trộn của một bus trong phiên (0..2); null = về mức của `audioMix.json`. Trả mức đang áp. Không lưu, không đổi mặc định game. */
+export function labBusMix(bus: Bus, v: number | null): number {
+  busMix[bus] = v === null ? BUS_MIX[bus] : Math.max(0, Math.min(2, v));
+  applyVolumes();
+  return busMix[bus];
+}
+
+/** Mức trộn đang áp và mức mặc định của từng bus. */
+export function busMixNow(): Record<Bus, { now: number; base: number }> {
+  const out = {} as Record<Bus, { now: number; base: number }>;
+  for (const b of Object.keys(BUS_MIX) as Bus[]) out[b] = { now: busMix[b], base: BUS_MIX[b] };
+  return out;
+}
+
+/**
+ * Trễ ra loa của thiết bị (ms: `baseLatency` + `outputLatency` của AudioContext): tiếng tới tai muộn hơn mọi mốc đo trong game chừng này
+ * (loa máy ~10 đến 40 ms, tai nghe Bluetooth có thể trên 150 ms). null khi âm thanh chưa khởi tạo.
+ */
+export function audioLatencyMs(): number | null {
+  if (!ctx) return null;
+  return Math.round(((ctx.baseLatency || 0) + ((ctx as AudioContext & { outputLatency?: number }).outputLatency || 0)) * 1000);
 }
 
 let meter: AnalyserNode | null = null;

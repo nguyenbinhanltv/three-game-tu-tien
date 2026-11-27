@@ -39,3 +39,6 @@ if (q.get('paintedlab') === '1') {
   createRoot(root).render(<App />);
   startHires();
 }
+
+// Diễn Võ Trường V3 (chỉ bản dev): nạp lại dữ liệu tức thì + chế độ chỉnh phòng (F4). Bản build bỏ hẳn nhánh này.
+if (import.meta.env.DEV) void import('./game/editor/boot').then((m) => m.bootLabEditor());

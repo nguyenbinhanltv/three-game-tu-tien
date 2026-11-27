@@ -84,6 +84,7 @@ import type { CloneSystem } from '../clone';
 import { equippedArtifact, passiveValue, pruneBuffs } from '../artifact';
 import type { MonEnt, PlayerEnt, StrikeCtx, Stomp, Summon } from '../entities';
 import { resolveSkillImpl } from './resolveSkill';
+import { labMeter } from '../gm/meter';
 import { LEASH, MARK_ALLY_RANGE, SET_HEAL_RADIUS, visualSeed } from './consts';
 
 import {
@@ -1073,6 +1074,7 @@ export class CombatSystem {
 
   /** Áp hiệu quả của chiêu (sát thương, hồi, khiên...): tại `hitAt` hoặc ngay khi không có độ trễ. */
   resolveSkill(p: PlayerEnt, skill: SkillDef, targetId: string, ctx: StrikeCtx = {}): void {
+    labMeter.cast(p, skill.id);
     resolveSkillImpl(this, p, skill, targetId, ctx);
   }
 

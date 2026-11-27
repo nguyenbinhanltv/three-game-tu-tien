@@ -1,0 +1,36 @@
+/* Bảng Chỉnh phòng (Diễn Võ Trường V3). Màu và nền lấy của `.debug-panel`; ở đây chỉ có vị trí và nhịp chữ. */
+.lab-edit-float {
+  position: fixed;
+  left: auto;
+  right: 14px;
+  top: 150px;
+  width: 420px;
+  z-index: 60;
+  pointer-events: auto;
+}
+
+.lab-edit-title {
+  font-family: var(--u-font-head);
+  font-weight: 700;
+}
+
+.lab-edit-count,
+.lab-edit-dirty,
+.lab-edit-hint,
+.lab-edit-sel {
+  opacity: 0.85;
+}
+
+.lab-edit-msg {
+  color: var(--u-gold);
+}
+
+.lab-edit-hot {
+  margin-top: 4px;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.85;
+}
+
+.lab-edit-hot [data-ok='0'] {
+  color: var(--u-gold);
+}

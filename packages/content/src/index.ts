@@ -656,6 +656,20 @@ export function t(key: string, params?: Record<string, string | number>): string
   return s;
 }
 
+/**
+ * Nạp lại tức thì (chỉ máy phát triển, gọi qua `@dtl/content/hot`): chép chuỗi mới/đổi vào bảng đang dùng. Trả số chuỗi đã đổi.
+ * Key bị xóa khỏi file vẫn còn tới lần tải lại.
+ */
+export function hotStrings(patch: Record<string, string>): number {
+  let n = 0;
+  for (const k in patch)
+    if (STRINGS[k] !== patch[k]) {
+      STRINGS[k] = patch[k]!;
+      n++;
+    }
+  return n;
+}
+
 export function hasString(key: string): boolean {
   return STRINGS[key] !== undefined;
 }

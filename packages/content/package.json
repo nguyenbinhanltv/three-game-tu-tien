@@ -10,7 +10,9 @@
     "./loot": "./src/loot.ts",
     "./places": "./src/places.ts",
     "./fixtures": "./src/fixtures.ts",
-    "./colliders-lazy": "./src/colliders.lazy.ts"
+    "./sim-model": "./src/simparts/common.ts",
+    "./colliders-lazy": "./src/colliders.lazy.ts",
+    "./hot": "./src/hot.ts"
   },
   "scripts": {
     "typecheck": "tsc -p tsconfig.json",

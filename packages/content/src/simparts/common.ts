@@ -59,8 +59,12 @@ export const PULL_FACTOR = (PULL + 1) / 2;
 export const SUSTAIN_EFF = 0.6;
 /** Mộc độc phủ trung bình bấy nhiêu quái trong cụm. */
 const POISON_MOBS = 2;
-/** Số quái KHÁC nằm trong cung chém quét của đòn thường cận chiến (ước lượng dè dặt cho cụm 3–4 con: trung bình một con đứng cạnh mục tiêu). */
-export const CLEAVE_EXTRA = 1;
+/**
+ * Số quái KHÁC nằm trong cung chém quét của đòn thường cận chiến, tính trung bình trên cả lần kéo. Kéo `PULL` con và hạ lần lượt thì
+ * lúc đánh con thứ k chỉ còn `PULL` − k con khác: bình quân (PULL − 1) / 2 = `PULL_FACTOR` − 1 (cùng cách tính với số quái đánh mình cùng lúc).
+ * Đặt 1 (bản 27/11 sáng) là tính cả đòn quét lên con cuối cùng, lúc không còn ai đứng cạnh: Kiếm tu hạ quái thường nhanh giả ~8%.
+ */
+export const CLEAVE_EXTRA = PULL_FACTOR - 1;
 
 /** Chiêu công pháp dùng được ở cấp `level` và mô hình hóa: chiêu đặc trưng + lướt có sát thương (chiêu tối thượng không tính). */
 function methodSkills(level: number, id?: MethodId): SkillDef[] {
@@ -86,7 +90,16 @@ export type PlayMode = 'base' | 'avg' | 'skilled';
  * Lớp VS-2 chỉ cộng phần cơ chế MỚI (nhát bắn thêm của Kiếm ấn, Mất thế, tư thế). Thưởng đã có từ trước VS-2 mà mô hình
  * vốn không tính (dấu Truy hồn +20%, Lôi Đình xả Kiếm ý, chuỗi cũ) vẫn để ngoài: nhịp 3–4 giờ đã được hiệu chỉnh như thế.
  */
-export function playerDps(level: number, atk: number, monDef: number, id?: MethodId, monElem?: string, mode: PlayMode = 'avg'): number {
+export function playerDps(
+  level: number,
+  atk: number,
+  monDef: number,
+  id?: MethodId,
+  monElem?: string,
+  mode: PlayMode = 'avg',
+  /** Số quái khác trong cung đòn quét. Mục tiêu đơn (tinh anh, boss) truyền 0: đòn quét không có ai để trúng thêm. */
+  cleaveExtra = CLEAVE_EXTRA,
+): number {
   const m = methodAt(level, id);
   const pas = m?.passive;
   // Nhịp chiêu có hồi chiêu: mỗi lần dùng khóa 1 GCD. Đòn thường là CHUỖI (Dạ Cảnh): mỗi đòn khóa `lock` riêng, kiếm tu rút `gcdRefund` ở đòn cuối.
@@ -112,7 +125,7 @@ export function playerDps(level: number, atk: number, monDef: number, id?: Metho
     if (!hits?.length) return one(b) / GCD;
     // Mỗi đòn chuỗi = (hệ số đòn / hệ số gốc) × một đòn gốc: phòng ngự nhân cùng tỉ lệ (`comboDefScale`), nên không mất sát thương vì chia nhỏ đòn.
     // Đòn quét của hướng cận chiến (`PathBasic.arc`): mỗi quái khác trong cung nhận `arc.mul` lần đòn chính.
-    const cleave = 1 + (pathBasicOf(b, id)?.arc?.mul ?? 0) * CLEAVE_EXTRA;
+    const cleave = 1 + (pathBasicOf(b, id)?.arc?.mul ?? 0) * cleaveExtra;
     const dmg = hits.reduce((n, h) => n + (h.power / Math.max(0.01, b.power)) * one(b), 0) * cleave;
     const time = hits.reduce((n, _h, i) => n + skillLock(b, i), 0) - (pas?.gcdRefund ?? 0);
     return dmg / Math.max(0.1, time);

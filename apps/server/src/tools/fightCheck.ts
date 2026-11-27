@@ -8,6 +8,9 @@
 //   --target <id[:cấp]>: đo MỘT quái bất kỳ (tinh anh/boss/quái phó bản) đơn lẻ ở cấp quái cho trước (mặc định = cấp thử), --pull bị bỏ qua.
 //   --god: người chơi không chết (đo TTK hạ boss thuần theo sát thương; không có --god thì "TTK" của ca chết là giờ cả nhóm bị diệt).
 //   --party <n>: n người cùng đánh một mục tiêu (phó bản 4 người); TTK là thời gian cả nhóm hạ mục tiêu, máu mất tính trung bình mỗi người.
+//   --elites: BẢNG TINH ANH (bàn cân bằng V2e): mọi tinh anh có điểm sinh, ở cấp cao nhất của bãi, đánh đơn với --god, cho cả 9 hướng tu;
+//     in thời gian hạ theo luật thật của server, đánh dấu `!` ô ngoài 18–40 s, và (chặng Ngưng Khí, nơi mô hình trang bị của sim khớp)
+//     dòng "sim" là số của `pnpm sim:progress` cho mục tiêu đơn. Kèm --strict thì thoát mã 1 khi có ô ngoài khoảng.
 //   Cấp thử từ 32 trở lên mặc bộ 7 ô bậc 5 phẩm Huyền theo ilvl = cấp; `--tier 6` mặc bộ bậc 6 (mốc mặc trọn; người chơi thật pha dần, xem `CH6_GEAR_FRAC` ở sim.ts). Ở cấp 43 với `--tier 6`: Kiếm tu 3,0 s, còn lại 3,1–5,8 s.
 process.env.DB_FILE = ':memory:';
 
@@ -25,6 +28,9 @@ import {
   levelSpawns,
   skillGate,
   stanceActive,
+  starEnough,
+  sanitizeStars,
+  COTHAN_METHOD,
   type MonsterDef,
 } from '@dtl/shared';
 
@@ -36,12 +42,12 @@ const arg = (name: string, def: string) => {
 const RUNS = Number(arg('runs', '6'));
 const LEVELS = arg('levels', '4,10,15,20,28').split(',').map(Number);
 const FORCE_MON = arg('mon', '');
-const TARGET = arg('target', '');
+let TARGET = arg('target', '');
 const PARTY = Number(arg('party', '1'));
 const PULL = Number(arg('pull', '2'));
 const NOGEAR = process.argv.includes('--nogear');
 /** `--god`: người chơi không chết (hồi đầy máu mỗi nhịp), để đo thời gian hạ mục tiêu thuần theo sát thương (boss mà bot đứng yên bị đánh chết trước khi hạ được). */
-const GOD = process.argv.includes('--god');
+let GOD = process.argv.includes('--god');
 /** `--nostance`: bot không vào tư thế (đo riêng phần đóng góp của tư thế, VS-2e). */
 const NOSTANCE = process.argv.includes('--nostance');
 
@@ -52,7 +58,7 @@ const { GameSim } = await import('../game/sim');
 const { WorldState } = await import('../state');
 const { Character } = await import('../game/character');
 const { grantPathOf } = await import('../game/method');
-const { ITEM, ITEMS, ITEM_SYS, LEVELS: LV, METHOD, MONSTER, SKILL, SKILLS, METHOD_SKILLS, METHODS } = await import('@dtl/content');
+const { ITEM, ITEMS, ITEM_SYS, LEVELS: LV, METHOD, MONSTER, SKILL, SKILLS, METHOD_SKILLS, METHODS, STARS } = await import('@dtl/content');
 const { MAX_LEVEL } = await import('@dtl/shared');
 for (const lv of LEVELS) if (!(lv >= 1 && lv <= MAX_LEVEL)) throw new Error(`--levels: cấp ${lv} ngoài 1–${MAX_LEVEL}`);
 if (FORCE_MON && (!MONSTER.get(FORCE_MON) || MONSTER.get(FORCE_MON)!.boss || MONSTER.get(FORCE_MON)!.elite))
@@ -166,6 +172,8 @@ function fightOnce(level: number, method: string | undefined): Result {
       for (const b of mdef.branches) if (level >= b.tier && !picks[b.tier]) picks[b.tier] = b.id;
       char.branches[mdef.id] = picks;
     }
+    // Sao Cổ Thần: người chơi tới cấp nào coi như đã rèn mọi sao mở ở cấp đó (thang ở stars.json).
+    if (method === COTHAN_METHOD) char.meta.stars = STARS.stars.filter((st) => st.level <= level).length;
     char.recalc();
     char.hp = char.mhp;
     char.mp = char.mmp;
@@ -183,7 +191,10 @@ function fightOnce(level: number, method: string | undefined): Result {
     (s) =>
       s.unlock <= level &&
       (!s.method || s.method === method) &&
-      skillGate(mdef, mdef ? party[0]!.char.branches[mdef.id] : undefined, s.id) === 'ok',
+      skillGate(mdef, mdef ? party[0]!.char.branches[mdef.id] : undefined, s.id) === 'ok' &&
+      // Chiêu cần sao Cổ Thần mà chưa đủ sao: server từ chối và không đặt hồi chiêu, bot sẽ bấm mãi chiêu đó thay cho đòn thường
+      // (trước bản sửa 28/11: Cổ Thần cấp 21+ chạm trần 600 s với mọi tinh anh vì Tinh Bạo cần 3 sao).
+      starEnough(sanitizeStars(party[0]!.char.meta.stars), s.star),
   );
   // VS-2e: chiêu tư thế và các chiêu thay ô chỉ dùng trong tư thế (xem vòng lặp).
   const stance = NOSTANCE ? undefined : usable.find((s) => s.kind === 'stance' && s.stance);
@@ -235,9 +246,53 @@ function fightOnce(level: number, method: string | undefined): Result {
   return { ttk: (fake - t0) / 1000 / count, lost: avgLost() / count, dead: false };
 }
 
+const STRICT = process.argv.includes('--strict');
+if (process.argv.includes('--elites')) {
+  const { playerDps, playerM } = await import('@dtl/content/sim-model');
+  const { monsterStats } = await import('@dtl/shared');
+  type SimMethod = Parameters<typeof playerDps>[3];
+  /** Khoảng thời gian hạ tinh anh của `sim:progress` (chương 2 trở đi; Vân Lam không đồ là 20–40 s). */
+  const LO = 18;
+  const HI = 40;
+  /** Mô hình trang bị của sim (`player()`: đồ thưởng nhiệm vụ) chỉ phủ chặng Ngưng Khí. */
+  const SIM_MAX_LEVEL = 16;
+  GOD = true;
+  const seen = new Set<string>();
+  const rows: { def: MonsterDef; lv: number; map: string }[] = [];
+  for (const l of Object.values(LV))
+    for (const sp of levelSpawns(l)) {
+      const def = MONSTER.get(sp.mon);
+      if (!def?.elite || seen.has(def.id)) continue;
+      seen.add(def.id);
+      rows.push({ def, lv: sp.levelMax, map: l.id });
+    }
+  rows.sort((a, b) => a.lv - b.lv);
+  console.log(`Tinh anh, đánh đơn theo luật server (bot đứng yên xoay vòng chiêu, bất tử, ${RUNS} lần mỗi ô). Khoảng mong muốn ${LO}–${HI} s; "!" = ngoài khoảng.`);
+  console.log('Cột: ' + METHODS.map((m, i) => `${i + 1}=${m.id}`).join('  '));
+  const bad: string[] = [];
+  const cell = (x: number, flag: boolean) => (x.toFixed(0) + (flag ? '!' : ' ')).padStart(5);
+  for (const r of rows) {
+    TARGET = `${r.def.id}:${r.lv}`;
+    const real = METHODS.map((m) => {
+      const rs = Array.from({ length: RUNS }, () => fightOnce(r.lv, m.id));
+      return rs.reduce((n, x) => n + x.ttk, 0) / rs.length;
+    });
+    real.forEach((x, i) => {
+      if (x < LO || x > HI) bad.push(`${r.def.id} (${r.lv}) ${METHODS[i]!.id}: ${x.toFixed(0)} s`);
+    });
+    console.log(`${(r.def.id + ' (' + r.lv + ', ' + r.map + ')').padEnd(44)} thật ${real.map((x) => cell(x, x < LO || x > HI)).join('')}`);
+    if (r.lv <= SIM_MAX_LEVEL) {
+      const ms = monsterStats(r.lv, r.def.hpMul, r.def.atkMul);
+      const sim = METHODS.map((m) => ms.hp / playerDps(r.lv, playerM(r.lv, m.id as SimMethod).atk, ms.def, m.id as SimMethod, r.def.elem, 'avg', 0));
+      console.log(`${''.padEnd(44)} sim  ${sim.map((x) => cell(x, false)).join('')}`);
+    }
+  }
+  if (bad.length) console.log(`\nNgoài khoảng ${LO}–${HI} s (${bad.length} ô):\n  ` + bad.join('\n  '));
+  process.exit(STRICT && bad.length ? 1 : 0);
+}
+
 console.log(`Đánh thử trong sim server (đứng yên, kéo ${PULL} quái, ${RUNS} lần mỗi ô; TTK và máu mất tính trên mỗi con):`);
 console.log('cấp   quái                     công pháp     TTK     mất/con   chết');
-const STRICT = process.argv.includes('--strict');
 const bad: string[] = [];
 for (const lv of LEVELS) {
   for (const m of [undefined, ...METHODS.map((x) => x.id)]) {
