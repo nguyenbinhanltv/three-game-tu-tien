@@ -335,6 +335,10 @@
 .hud .toasts {
   z-index: 55;
   pointer-events: none;
+  /* Né nhãn tên mục tiêu đang khóa (ui/dodge.ts): HUD đặt `translate`, trượt nhẹ thay vì nhảy. */
+  transition:
+    opacity 0.25s ease-out,
+    translate 0.15s ease-out;
 }
 /* Hộp thoại NPC mở: thông báo nổi hạ xuống đáy màn hình để không đè dòng phụ đề của hộp thoại ("ĐÃ HỒI ĐẦY" đè lên tên chức vụ NPC). */
 .hud:has(.npc) .toasts {
