@@ -3,6 +3,8 @@ import { groundAt } from '../../base/levelCtx';
 import { FxBatcher } from '../../render/materials/fxBatch';
 import { BATCHING, BATCH_KINDS, type FxKind, type FxMesh } from '../../render/materials/vfx';
 import { SIGIL_CIRCLE, SIGIL_CONE, SIGIL_GEO, sigilLayout, type SigilShape } from '../../render/vfx/sigil';
+import { sigilGroundY } from './groundLift';
+export { sigilGroundY };
 import { SLASH_GEO, SLASH_INK, slashPhase } from '../../render/vfx/slash';
 import { seedOr } from '../../render/vfx/common';
 import { BOLT_HEIGHT, boltPhase, boltShape } from '../../render/vfx/lightning';
@@ -1287,18 +1289,6 @@ export class Vfx {
     this.clouds.clear();
     this.group.removeFromParent();
   }
-}
-
-/** Độ cao đặt tấm pháp trận bán kính `r` quanh (x, z) để không chìm dưới đất: điểm cao nhất trong 8 hướng ở mép và giữa bán kính, cộng 0,12 m. */
-export function sigilGroundY(x: number, z: number, r: number, ground: (x: number, z: number) => number = groundAt): number {
-  let y = ground(x, z);
-  for (let i = 0; i < 8; i++) {
-    const a = (i * Math.PI) / 4;
-    const sx = Math.sin(a);
-    const cz = Math.cos(a);
-    y = Math.max(y, ground(x + sx * r, z + cz * r), ground(x + sx * r * 0.5, z + cz * r * 0.5));
-  }
-  return y + 0.12;
 }
 
 /** Số sát thương bay lên, vẽ bằng DOM. */
