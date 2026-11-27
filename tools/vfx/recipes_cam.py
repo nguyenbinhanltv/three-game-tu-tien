@@ -104,13 +104,14 @@ def pha_diet_cam():
         snd(-0.2, 'cast', 0.4, 1.3),
         link(-0.2, 0.25, tone='accent', seed=7, scale=3.0),
         link(-0.18, 0.25, tone='rim', seed=8, scale=2.0),
-        mesh('burst', 0.0, 0.12, at='target', offset=[0, 1.0, 0], scale=2.4, billboard=True, sweep=0, tone='body', cross=True, tier=0),
-        flip('spark_burst', 0.0, 0.34, 2.8, at='target', offset=[0, 1.0, 0], alpha=0.9, tone='accent', tier=0),
-        mesh('shock_cone', 0.02, 0.4, at='ground', offset=[0, 0.05, 0], scale=[1.0] * 3, scaleTo=[4.5] * 3, alpha=0.9, sweep=0.3, erodeFrom=0.3, tone='body', tier=0, seed=3),
+        # Điểm nổ đặt trên đầu mục tiêu (2,4 m) và tắt nhanh để thân nó vẫn đọc được (cổng duyệt che thân).
+        mesh('burst', 0.0, 0.12, at='target', offset=[0, 2.4, 0], scale=2.2, camFade=True, billboard=True, sweep=0, tone='body', cross=True, tier=0),
+        flip('spark_burst', 0.0, 0.22, 2.6, at='target', offset=[0, 2.5, 0], camFade=True, alpha=0.9, tone='accent', tier=0),
+        mesh('shock_cone', 0.02, 0.3, at='ground', offset=[0, 0.05, 0], scale=[1.0] * 3, scaleTo=[4.5] * 3, alpha=0.45, sweep=0.3, erodeFrom=0.2, tone='body', tier=0, seed=3),
         mesh('crack_radial', 0.02, 1.0, at='ground', offset=[0, 0.08, 0], scale=4.0, alpha=1, sweep=0.2, erodeFrom=0.7, shadow=False, tone='accent', tier=0, seed=9),
         *seal(0.0, 'ground', 3.4, 3.0),
-        parts('dust', 0.0, 40, 4, 1, 0.6, 0.18, at='target', offset=[0, 0.9, 0], tone='core', grav=-0.4, tier=0),
-        parts('spark', 0.0, 36, 7, 1, 0.45, 0.08, at='target', offset=[0, 1.0, 0], tone='rim', tier=1),
+        parts('dust', 0.0, 20, 4, 1, 0.4, 0.13, at='target', offset=[0, 2.2, 0], tone='core', grav=-0.4, tier=0),
+        parts('spark', 0.0, 36, 7, 1, 0.45, 0.08, at='target', offset=[0, 2.3, 0], tone='rim', tier=1),
         snd(0.0, 'impact', 0.6, 0.95),
     ]
     ev += feel(0.0, ms=75, sh=0.3, fl=0.1, vg=0.3, fov=2.2)
