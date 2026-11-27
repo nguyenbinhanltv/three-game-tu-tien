@@ -109,6 +109,24 @@ export interface CharacterView {
   /** Gốc và mũi lưỡi kiếm (thế giới) nếu kiếm đang cầm tay (K-6). */
   bladePoints?(base: THREE.Vector3, tip: THREE.Vector3): boolean;
   readonly grounded?: boolean;
+  /** Cổng soi mixer cho xưởng animation của phòng thử; model khối không có. */
+  labAnim?(): LabAnimPort;
+}
+
+/**
+ * Cổng soi animation cho xưởng animation của phòng thử (Diễn Võ Trường V2d, `game/debug/animWorkshop.ts`). Chỉ công cụ phòng thử dùng;
+ * game không đọc gì ở đây.
+ */
+export interface LabAnimPort {
+  mixer: THREE.AnimationMixer;
+  /** Cây xương mà mixer điều khiển. */
+  rig: THREE.Object3D;
+  /** Cây xương tách khỏi cảnh (`SkinnedCharacter`): vật có `matrixWorld` đưa hệ của cây xương ra thế giới. Bỏ trống = cây xương nằm trong cảnh. */
+  space?: THREE.Object3D;
+  /** Mọi clip model biết, theo tên. */
+  clips: ReadonlyMap<string, THREE.AnimationClip>;
+  /** `pre` (nếu đặt) chạy ngay TRƯỚC mỗi lần `mixer.update`: xưởng ép một clip đứng ở một mốc thời gian để tua. */
+  hook: { pre: (() => void) | null };
 }
 
 /** Sự kiện từ máy trạng thái chiêu (K-4), phát đúng khung hình: VFX, âm thanh, rung camera đăng ký ở đây (K-6, K-7). */

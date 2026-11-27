@@ -871,6 +871,20 @@
   flex-direction: row;
   align-items: flex-end;
 }
+/* Thanh ngang: vùng chip (nhắc chọn nhánh, phân thân) đứng cạnh hàng ô tiện ích chỉ còn ~60 px nên chữ xuống từng từ một dòng thành cột hẹp
+   (phòng thử chỉ ra). Cho vùng chip rộng 0 trong bố cục (hàng ô tiện ích về đúng giữa thanh), chip xếp cột một dòng mỗi chip và tràn sang phải,
+   nơi không có khối HUD nào. */
+.u2h-skills[data-layout='bar'] .u2h-chips {
+  flex: 0 0 0;
+  width: 0;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  align-items: flex-start;
+  overflow: visible;
+}
+.u2h-skills[data-layout='bar'] .u2h-chips > * {
+  white-space: nowrap;
+}
 .u2h-barrow {
   display: flex;
   align-items: center;

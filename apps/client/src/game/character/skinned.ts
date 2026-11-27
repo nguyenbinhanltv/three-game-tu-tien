@@ -10,7 +10,7 @@ import { RagRig } from './ragdollRig';
 import { type PoseClips, type PoseLibrary, libraryClips } from './poseLib';
 import { type SpringDef, type SpringParams, SpringBones } from './spring';
 import { baseState, type CharState, type ClipMap, clipFor, LOCO_STATES, locomotionScale, MOVE_MIN } from './states';
-import { type AnimState, type BossMoveKind, type CharacterView, type MonsterView, type PerformOpts, type SkillEvent } from './view';
+import { type AnimState, type BossMoveKind, type CharacterView, type LabAnimPort, type MonsterView, type PerformOpts, type SkillEvent } from './view';
 
 export interface SkinnedOpts {
   /** Bản sao riêng của asset (có bộ xương riêng). `SkinnedCharacter` sở hữu skeleton của nó. */
@@ -237,6 +237,13 @@ export class SkinnedCharacter implements CharacterView {
   readonly height: number;
   readonly hit: HitReact;
   readonly mixer: THREE.AnimationMixer;
+  /** Xưởng animation của phòng thử (Diễn Võ Trường V2d): cổng soi mixer, xem `LabAnimPort`. Game không dùng. */
+  private labHook: LabAnimPort['hook'] = { pre: null };
+  /** Gốc của asset trong cảnh: xương đã tách (`detachRig`) nằm ở hệ của vật này. */
+  private labSpace: THREE.Object3D | null = null;
+  labAnim(): LabAnimPort {
+    return { mixer: this.mixer, rig: this.rig, space: this.labSpace ?? undefined, clips: this.clips, hook: this.labHook };
+  }
   /** Mesh theo mức LOD (chỉ số = mức). */
   private lods: THREE.Mesh[][] = [];
   /** Tỉ lệ đọc từ trên (C2): xương cần scale mỗi khung sau mixer; rỗng = không dùng. */
@@ -355,6 +362,7 @@ export class SkinnedCharacter implements CharacterView {
     this.root.add(this.inner);
     this.root.scale.setScalar(s);
     detachRig(o.scene, this.rig);
+    this.labSpace = o.scene;
     this.rigChanged = skipUnchangedSkeletons(o.scene, this.rig);
     // Cây con GLB (sau khi tách xương chỉ còn node trung gian và mesh LOD) có biến đổi cục bộ không đổi: rung, chìm,
     // giật lùi ghi vào `inner`/`root`. Tính `matrix` một lần, khỏi compose lại mỗi khung cho ~10 node/nhân vật (M6-3).
@@ -717,6 +725,7 @@ export class SkinnedCharacter implements CharacterView {
     this.acc += dt;
     // Dung sai 1,5 ms: ở 60 khung/giây dt dao động quanh 1/60, không để LOD0 tụt xuống 30 Hz vì làm tròn.
     if (mixerDue(this.acc, this.interval)) {
+      this.labHook.pre?.();
       this.mixer.update(this.acc);
       if (this.proportions.length) applyProportions(this.proportions);
       if (this.feet) this.groundFeet(this.acc, a);

@@ -1,0 +1,288 @@
+// Xưởng animation của phòng thử (Diễn Võ Trường, V2d): tua từng clip của nhân vật / quái, đo trượt chân, ghi nhật ký chuyển clip.
+// Chỉ là lớp HÌNH ở máy mình: làm việc qua cổng `labAnim()` của model (mixer + móc trước `mixer.update`), không gửi gì lên server,
+// không đổi mặc định game. Tắt (`stop`) thì gỡ hết: bỏ móc, bật lại các action đã tạm tắt, thôi lấy mẫu.
+
+import * as THREE from 'three/webgpu';
+import type { Game } from '../engine';
+import type { CharacterView, LabAnimPort } from '../character/view';
+import { walkableGround } from '../character/mannequinFeet';
+import { BlendLog, type BlendRow } from './blendLog';
+import { FootSlide, type FootSample, type SlideRow } from './footSlide';
+
+export type LabSubject = 'me' | 'target';
+
+export interface LabClip {
+  name: string;
+  dur: number;
+}
+
+export interface LabActive {
+  name: string;
+  /** Thời gian trong clip (giây) và độ dài clip. */
+  t: number;
+  dur: number;
+  /** Trọng số đã chuẩn hóa theo tổng (0..1). */
+  w: number;
+}
+
+export interface AnimSnapshot {
+  /** Có model có xương để soi (model khối và model chưa nạp xong thì false). */
+  ok: boolean;
+  subject: LabSubject;
+  clips: LabClip[];
+  active: LabActive[];
+  /** Clip đang bị ép (tua) hoặc null. */
+  hold: { name: string; t: number; dur: number; playing: boolean } | null;
+  /** Đồng hồ động tác chiêu đang diễn (giây từ lúc bấm) hoặc null. */
+  clock: { t: number; skill: string } | null;
+  feet: number;
+  slide: SlideRow[];
+  blends: BlendRow[];
+}
+
+/** Một bước của nút ◀ ▶ khi tua (giây): một khung của clip 30 khung/giây. */
+export const SCRUB_STEP = 1 / 30;
+
+type MixerInternals = { _actions?: THREE.AnimationAction[] };
+
+const actionsOf = (m: THREE.AnimationMixer): THREE.AnimationAction[] => (m as unknown as MixerInternals)._actions ?? [];
+
+/** Xương bàn chân: ưu tiên `foot_l`/`foot_r` của bộ xương UE; không có thì mọi xương tên có "foot" (bỏ xương IK), rồi "toe"/"paw". Tối đa 4. */
+export function footBones(rig: THREE.Object3D): THREE.Object3D[] {
+  const all: THREE.Object3D[] = [];
+  rig.traverse((o) => {
+    if ((o as THREE.Bone).isBone) all.push(o);
+  });
+  const named = ['foot_l', 'foot_r'].map((n) => all.find((b) => b.name === n)).filter((b): b is THREE.Object3D => !!b);
+  if (named.length === 2) return named;
+  for (const re of [/foot/i, /toe|paw/i]) {
+    const hit = all.filter((b) => re.test(b.name) && !/ik|twist|end/i.test(b.name));
+    if (hit.length) return hit.slice(0, 4);
+  }
+  return [];
+}
+
+/** Vài xương chính để đo tốc độ xoay khớp lúc chuyển clip (hông, sống lưng, đầu, bắp tay, đùi). */
+export function spinBones(rig: THREE.Object3D): THREE.Object3D[] {
+  const out: THREE.Object3D[] = [];
+  rig.traverse((o) => {
+    if ((o as THREE.Bone).isBone && /pelvis|hips|spine|head|upperarm|upleg|thigh/i.test(o.name) && !/ik|twist|end|top/i.test(o.name) && out.length < 12) out.push(o);
+  });
+  return out;
+}
+
+const _p = new THREE.Vector3();
+
+export class AnimWorkshop {
+  subject: LabSubject = 'me';
+  private raf = 0;
+  private lastT = 0;
+  private model: CharacterView | null = null;
+  private port: LabAnimPort | null = null;
+  private feet: THREE.Object3D[] = [];
+  private spins: { bone: THREE.Object3D; q: THREE.Quaternion }[] = [];
+  private slide = new FootSlide();
+  private blends = new BlendLog();
+  private held: { action: THREE.AnimationAction; clip: THREE.AnimationClip; name: string; playing: boolean } | null = null;
+  /** Action game đang dùng mà xưởng đã tạm tắt trong lúc ép clip; bật lại khi thả. */
+  private muted = new Set<THREE.AnimationAction>();
+
+  constructor(private game: Game) {}
+
+  get running(): boolean {
+    return this.raf !== 0;
+  }
+
+  /** Bắt đầu lấy mẫu mỗi khung (trượt chân, chuyển clip). */
+  start(): void {
+    if (this.raf) return;
+    this.lastT = performance.now();
+    const tick = () => {
+      this.raf = requestAnimationFrame(tick);
+      this.sample();
+    };
+    this.raf = requestAnimationFrame(tick);
+  }
+
+  /** Dừng lấy mẫu, thả clip đang ép, xóa số đo. */
+  stop(): void {
+    if (this.raf) cancelAnimationFrame(this.raf);
+    this.raf = 0;
+    this.release();
+    this.bind(null);
+  }
+
+  setSubject(s: LabSubject): void {
+    if (s === this.subject) return;
+    this.release();
+    this.subject = s;
+    this.bind(null);
+  }
+
+  /** Xóa số đo trượt chân và nhật ký chuyển clip (giữ clip đang ép). */
+  resetStats(): void {
+    this.slide.reset();
+    this.blends.reset();
+  }
+
+  private pick(): { model: CharacterView; x: number; z: number } | null {
+    const g = this.game;
+    const e = this.subject === 'me' ? g.ents?.players.get(g.sid) : g.targetId ? (g.ents?.monsters.get(g.targetId) ?? g.ents?.players.get(g.targetId)) : undefined;
+    return e ? { model: e.model, x: e.model.root.position.x, z: e.model.root.position.z } : null;
+  }
+
+  private bind(model: CharacterView | null): void {
+    if (model === this.model) return;
+    this.release();
+    this.model = model;
+    this.port = model?.labAnim?.() ?? null;
+    this.feet = this.port ? footBones(this.port.rig) : [];
+    this.spins = this.port ? spinBones(this.port.rig).map((bone) => ({ bone, q: bone.quaternion.clone() })) : [];
+    this.slide.reset();
+    this.blends.reset();
+  }
+
+  private active(): LabActive[] {
+    const p = this.port;
+    if (!p) return [];
+    const list = actionsOf(p.mixer)
+      .filter((a) => a.isRunning() && a.getEffectiveWeight() > 1e-3)
+      .map((a) => ({ name: a.getClip().name, t: a.time, dur: a.getClip().duration, w: a.getEffectiveWeight() }));
+    const sum = list.reduce((s, a) => s + a.w, 0) || 1;
+    return list.map((a) => ({ ...a, w: a.w / sum })).sort((a, b) => b.w - a.w);
+  }
+
+  private sample(): void {
+    const now = performance.now();
+    const realDt = (now - this.lastT) / 1000;
+    this.lastT = now;
+    const s = this.pick();
+    this.bind(s?.model ?? null);
+    if (!s || !this.port) return;
+    // Đang dừng hình (nhóm Thời gian) thì không đo: chân đứng yên vì hình đứng yên, không phải vì bám đất tốt.
+    const dt = this.game.timeScale > 0 || this.game.stepLeft > 0 ? realDt : 0;
+    const act = this.active();
+    let spin = 0;
+    for (const b of this.spins) {
+      if (dt > 1e-4) spin = Math.max(spin, (b.q.angleTo(b.bone.quaternion) * 180) / Math.PI / dt);
+      b.q.copy(b.bone.quaternion);
+    }
+    // Đang ép clip thì số đo không phản ánh game: bỏ qua.
+    if (this.held) return;
+    this.blends.push(now, act, spin);
+    if (!this.feet.length) return;
+    const ground = walkableGround(s.model.root.position.y);
+    const space = this.port.space;
+    const feet: FootSample[] = this.feet.map((b) => {
+      b.getWorldPosition(_p);
+      // Cây xương tách khỏi cảnh: vị trí trên là ở hệ của asset, đưa ra thế giới qua gốc asset.
+      if (space) _p.applyMatrix4(space.matrixWorld);
+      return { x: _p.x, y: _p.y, z: _p.z, ground: ground(_p.x, _p.z) };
+    });
+    this.slide.push(dt, this.blends.current || act[0]?.name || '', s.x, s.z, feet);
+  }
+
+  /** Danh sách clip của model đang soi (theo tên). */
+  clips(): LabClip[] {
+    if (!this.port) this.bind(this.pick()?.model ?? null);
+    return [...(this.port?.clips.values() ?? [])].map((c) => ({ name: c.name, dur: c.duration })).sort((a, b) => a.name.localeCompare(b.name));
+  }
+
+  /**
+   * Ép model đứng ở giây `t` của clip `name` (tua); `playing` = phát lặp clip đó thay vì đứng yên. Mọi clip khác của game tạm tắt.
+   * `name` rỗng/null = thả, game điều khiển lại. Trả false nếu model không có clip đó.
+   */
+  hold(name: string | null, t = 0, playing = false): boolean {
+    if (!name) {
+      this.release();
+      return true;
+    }
+    if (!this.port) this.bind(this.pick()?.model ?? null);
+    const p = this.port;
+    const src = p?.clips.get(name);
+    if (!p || !src) return false;
+    if (this.held?.name !== name) {
+      this.release();
+      // Bản sao clip → action riêng của xưởng, không đụng action game đang dùng cho clip này.
+      const clip = src.clone();
+      const action = p.mixer.clipAction(clip);
+      action.setLoop(THREE.LoopRepeat, Infinity);
+      action.setEffectiveWeight(1);
+      action.play();
+      this.held = { action, clip, name, playing };
+      p.hook.pre = () => this.enforce();
+    }
+    const h = this.held!;
+    h.playing = playing;
+    h.action.paused = !playing;
+    h.action.time = Math.max(0, Math.min(src.duration, t));
+    return true;
+  }
+
+  /** Dịch mốc tua `frames` bước (`SCRUB_STEP`), dừng phát. */
+  nudge(frames: number): boolean {
+    const h = this.held;
+    return !!h && this.hold(h.name, h.action.time + frames * SCRUB_STEP, false);
+  }
+
+  /** Chạy ngay trước `mixer.update`: chỉ để action của xưởng có trọng số. */
+  private enforce(): void {
+    const h = this.held;
+    const p = this.port;
+    if (!h || !p) return;
+    for (const a of actionsOf(p.mixer)) {
+      if (a === h.action) continue;
+      if (a.enabled) {
+        a.enabled = false;
+        this.muted.add(a);
+      }
+    }
+    h.action.enabled = true;
+    h.action.paused = !h.playing;
+  }
+
+  private release(): void {
+    const h = this.held;
+    const p = this.port;
+    this.held = null;
+    if (p) p.hook.pre = null;
+    for (const a of this.muted) a.enabled = true;
+    this.muted.clear();
+    if (!h) return;
+    if (p) {
+      h.action.stop();
+      p.mixer.uncacheClip(h.clip);
+    }
+    // Lúc ép clip chân đứng theo clip chứ không theo game: bỏ mốc cũ để không tính thành trượt.
+    this.slide.reset();
+    this.blends.reset();
+  }
+
+  snapshot(): AnimSnapshot {
+    if (!this.running) this.bind(this.pick()?.model ?? null);
+    const h = this.held;
+    return {
+      ok: !!this.port,
+      subject: this.subject,
+      clips: this.clips(),
+      active: this.active(),
+      hold: h ? { name: h.name, t: h.action.time, dur: h.clip.duration, playing: h.playing } : null,
+      clock: this.model?.performClock?.() ?? null,
+      feet: this.feet.length,
+      slide: this.slide.rows(),
+      blends: [...this.blends.rows],
+    };
+  }
+}
+
+let inst: { game: Game; ws: AnimWorkshop } | null = null;
+
+/** Xưởng của game đang chạy (một bản cho mỗi lớp Game; đổi game thì bản cũ tự dừng). */
+export function animWorkshop(game: Game): AnimWorkshop {
+  if (inst && inst.game !== game) {
+    inst.ws.stop();
+    inst = null;
+  }
+  inst ??= { game, ws: new AnimWorkshop(game) };
+  return inst.ws;
+}

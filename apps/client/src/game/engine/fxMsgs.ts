@@ -57,6 +57,7 @@ import { DASH_LOOKBACK, HIT_CTX_TTL, HIT_WAIT, KNOCKDOWN_FRAC, QUIET, SKILL_INFO
 import { chapter, danCine, phaseCine, skipCine } from './cine';
 import { bossSay, pruneRareLoot } from './hudSync';
 import type { Game } from '../engine';
+import { castMark } from '../debug/sfxCast';
 import { logger } from '../../base/log';
 
 const audioLog = logger('audio');
@@ -66,6 +67,8 @@ const audioLog = logger('audio');
  * tiếng trúng, hit-stop, rung camera của đòn rơi cùng khung hoạt ảnh ra đòn.
  */
 export function onSwingEvent(eng: Game, sid: string, e: SkillEvent): void {
+  // Xưởng âm thanh của phòng thử: mốc chiêu của mình (không làm gì khi đầu dò tắt).
+  if (sid === eng.sid) castMark(e.kind, e.skill, e.combo, e.index, e.hitIn);
   if (e.kind === 'windup') {
     eng.swinging.begin(sid, e.hitIn ?? 0, performance.now());
     const whoosh = SKILL_INFO.get(e.skill);
@@ -1063,6 +1066,7 @@ function markHurt(eng: Game, m: DmgMsg): void {
 export function onDmg(eng: Game, m: DmgMsg): void {
   if (eng.disposed) return;
   markHurt(eng, m);
+  if (m.src === eng.sid && !m.heal) castMark('dmg', '');
   // Đòn của một người chơi đang vung (đã vào thế, chưa tới `hitAt`): chờ khung `hit` của hoạt ảnh để tiếng, khựng, rung
   // rơi đúng lúc ra đòn (K-7). Quá hạn mà không có `hit` thì `frame` xả.
   if (m.src && eng.swinging.active(m.src, performance.now()) && !m.heal) {
