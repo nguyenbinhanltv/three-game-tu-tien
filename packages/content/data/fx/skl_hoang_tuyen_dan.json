@@ -32,11 +32,11 @@
    "type": "particles",
    "kind": "dust",
    "t": 0,
-   "n": 60,
+   "n": 24,
    "speed": 3,
    "spread": 1,
-   "life": 1,
-   "size": 0.22,
+   "life": 0.5,
+   "size": 0.14,
    "at": "area",
    "offset": [
     0,
@@ -134,7 +134,7 @@
   {
    "type": "mesh",
    "t": 0,
-   "dur": 0.18,
+   "dur": 0.14,
    "at": "target",
    "sweep": 0,
    "erodeFrom": 0.2,
@@ -151,8 +151,8 @@
     1.5,
     0
    ],
-   "scale": 2.42,
-   "scaleTo": 3.3
+   "scale": 1.76,
+   "scaleTo": 2.42
   },
   {
    "type": "mesh",
@@ -170,18 +170,18 @@
    "sprite": "hon_face_scream",
    "billboard": true,
    "offset": [
-    0.96,
-    1.5,
-    0.3
+    1.91,
+    3.37,
+    0.59
    ],
    "scale": 1.87,
    "scaleTo": 2.2,
    "move": {
     "to": "target",
     "offset": [
-     3.25,
-     1.6,
-     1
+     3.44,
+     3.57,
+     1.06
     ],
     "ease": "out"
    }
@@ -202,18 +202,18 @@
    "sprite": "hon_face_grin",
    "billboard": true,
    "offset": [
-    0.47,
-    1.5,
-    0.88
+    0.93,
+    4.32,
+    1.77
    ],
    "scale": 1.87,
    "scaleTo": 2.2,
    "move": {
     "to": "target",
     "offset": [
-     1.59,
-     2.2,
-     3.01
+     1.68,
+     5.12,
+     3.18
     ],
     "ease": "out"
    }
@@ -234,18 +234,18 @@
    "sprite": "hon_face_horn",
    "billboard": true,
    "offset": [
-    -0.3,
-    1.5,
-    0.96
+    -0.59,
+    4.43,
+    1.91
    ],
    "scale": 1.87,
    "scaleTo": 2.2,
    "move": {
     "to": "target",
     "offset": [
-     -1,
-     1.6,
-     3.25
+     -1.06,
+     4.63,
+     3.44
     ],
     "ease": "out"
    }
@@ -266,18 +266,18 @@
    "sprite": "hon_face_sad",
    "billboard": true,
    "offset": [
-    -0.88,
-    1.5,
-    0.47
+    -1.77,
+    3.65,
+    0.93
    ],
    "scale": 1.87,
    "scaleTo": 2.2,
    "move": {
     "to": "target",
     "offset": [
-     -3.01,
-     2.2,
-     1.59
+     -3.18,
+     4.45,
+     1.68
     ],
     "ease": "out"
    }
@@ -298,18 +298,18 @@
    "sprite": "hon_wraith",
    "billboard": true,
    "offset": [
-    -0.96,
-    1.5,
-    -0.3
+    -1.91,
+    2.9,
+    -0.59
    ],
    "scale": 1.87,
    "scaleTo": 2.2,
    "move": {
     "to": "target",
     "offset": [
-     -3.25,
-     1.6,
-     -1
+     -3.44,
+     3.1,
+     -1.06
     ],
     "ease": "out"
    }
@@ -330,18 +330,18 @@
    "sprite": "hon_face_pale",
    "billboard": true,
    "offset": [
-    -0.47,
-    1.5,
-    -0.88
+    -0.93,
+    2.9,
+    -1.77
    ],
    "scale": 1.87,
    "scaleTo": 2.2,
    "move": {
     "to": "target",
     "offset": [
-     -1.59,
-     2.2,
-     -3.01
+     -1.68,
+     3.7,
+     -3.18
     ],
     "ease": "out"
    }
@@ -362,18 +362,18 @@
    "sprite": "hon_face_scream",
    "billboard": true,
    "offset": [
-    0.3,
-    1.5,
-    -0.96
+    0.59,
+    2.9,
+    -1.91
    ],
    "scale": 1.87,
    "scaleTo": 2.2,
    "move": {
     "to": "target",
     "offset": [
-     1,
-     1.6,
-     -3.25
+     1.06,
+     3.1,
+     -3.44
     ],
     "ease": "out"
    }
@@ -394,18 +394,18 @@
    "sprite": "hon_face_horn",
    "billboard": true,
    "offset": [
-    0.88,
-    1.5,
-    -0.47
+    1.77,
+    2.9,
+    -0.93
    ],
    "scale": 1.87,
    "scaleTo": 2.2,
    "move": {
     "to": "target",
     "offset": [
-     3.01,
-     2.2,
-     -1.59
+     3.18,
+     3.7,
+     -1.68
     ],
     "ease": "out"
    }
@@ -413,13 +413,13 @@
   {
    "type": "mesh",
    "t": 0.02,
-   "dur": 0.7,
+   "dur": 0.3,
    "at": "target",
    "sweep": 0,
-   "erodeFrom": 0.15,
+   "erodeFrom": 0.12,
    "ragged": 0.5,
    "tone": "body",
-   "alpha": 0.5,
+   "alpha": 0.3,
    "tier": 0,
    "seed": 1010,
    "shape": "sprite",
@@ -427,7 +427,7 @@
    "billboard": true,
    "offset": [
     0,
-    1.6,
+    3.6,
     0
    ],
    "scale": 3.52,
@@ -450,7 +450,7 @@
    "billboard": true,
    "offset": [
     0,
-    2,
+    3,
     0
    ],
    "scale": 3.52,
@@ -459,7 +459,7 @@
     "to": "target",
     "offset": [
      0,
-     3.6,
+     4.6,
      0
     ],
     "ease": "out"
