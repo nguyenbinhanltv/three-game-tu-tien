@@ -319,16 +319,72 @@ export default {
       await snap(pg, r.out, `${view}/panel-ban-so.png`, { wait: 0 });
       // Gọi khoảnh khắc giao diện: mỗi nút bấm xong chụp một ảnh; kiểm phần tử tương ứng có trên màn hình.
       await sleep(1200);
+      // Quái đứng yên tại chỗ (không lao tới khi bị khóa) để nhãn tên nằm nguyên ở nửa trên màn hình.
+      await gm(pg, 'face 90', 800);
+      // Khóa con quái có nhãn tên rơi đúng vào chỗ thông báo nổi (giữa nửa trên màn hình): ca xấu nhất cho việc né nhãn.
+      const locked = await pg.evaluate(`(() => {
+        var g = window.__game, best = '', bd = 1e9;
+        for (const id of g.ents.monsters.keys()) {
+          g.targetId = id;
+          var b = g.lockedLabelRect();
+          if (!b) continue;
+          var d = Math.abs(b.x + b.w / 2 - innerWidth / 2) + Math.abs(b.y + b.h / 2 - 150);
+          if (d < bd) { bd = d; best = id; }
+        }
+        g.targetId = '';
+        if (best) g.setTarget(best, 'mon');
+        return best;
+      })()`);
+      await sleep(300);
+      // Diện tích (px²) hộp phần tử `sel` giao với hộp nhãn tên mục tiêu đang khóa: ở vị trí GỐC (bỏ độ dời né) và ở vị trí đang hiện.
+      const labelClash = (sel: string) =>
+        pg.evaluate(`(() => {
+          var el = document.querySelector(${JSON.stringify(sel)}), L = window.__game.lockedLabelRect();
+          if (!el || !L) return null;
+          var area = (r) => { var w = Math.min(r.x + r.w, L.x + L.w) - Math.max(r.x, L.x), h = Math.min(r.y + r.h, L.y + L.h) - Math.max(r.y, L.y); return w > 0 && h > 0 ? Math.round(w * h) : 0; };
+          var r = el.getBoundingClientRect(), t = (getComputedStyle(el).translate || '').split(' ').map(parseFloat), z = Number(getComputedStyle(el).zoom) || 1;
+          var dx = (t[0] || 0) * z, dy = (t[1] || 0) * z;
+          return { base: area({ x: r.left - dx, y: r.top - dy, w: r.width, h: r.height }), now: area({ x: r.left, y: r.top, w: r.width, h: r.height }), dx: dx, dy: dy };
+        })()`) as Promise<{ base: number; now: number; dx: number; dy: number } | null>;
       await btn('Thông báo nổi').click();
       await sleep(900);
       const toasts = await pg.evaluate(() => document.querySelectorAll('[class*="toast"]').length);
       check('nút "Thông báo nổi" hiện thông báo', toasts >= 1, `${toasts} phần tử toast`);
+      const tc = await labelClash('.hud .toasts');
+      check(
+        'thông báo nổi né nhãn tên mục tiêu đang khóa',
+        !!tc && tc.now === 0,
+        tc ? `mục tiêu ${locked}: ở chỗ cũ đè ${tc.base} px², sau khi né ${tc.now} px² (dời ${Math.round(tc.dx)}, ${Math.round(tc.dy)} px)` : `không đo được (mục tiêu ${locked || 'không có'})`,
+      );
       await snap(pg, r.out, `${view}/moment-toast.png`, { wait: 0 });
+      await sleep(2800);
+      // Ca xấu nhất dựng tay: nhãn nằm giữa chồng thông báo, sát khung mục tiêu (không còn chỗ phía trên) → phải dời sang bên.
+      await pg.evaluate(`(() => { var g = window.__game; g.lockedLabelRect = () => ({ x: innerWidth / 2 - 75, y: 112, w: 150, h: 56 }); })()`);
+      await btn('Thông báo nổi').click();
+      await sleep(900);
+      const ts = await labelClash('.hud .toasts');
+      check('thông báo nổi dời sang bên khi nhãn nằm giữa chồng thông báo', !!ts && ts.base > 0 && ts.now === 0 && ts.dx !== 0, ts ? `ở chỗ cũ đè ${ts.base} px², sau khi né ${ts.now} px² (dời ${Math.round(ts.dx)}, ${Math.round(ts.dy)} px)` : 'không đo được');
+      await snap(pg, r.out, `${view}/moment-toast-side.png`, { wait: 0 });
+      await pg.evaluate(`(() => { delete window.__game.lockedLabelRect; })()`);
+      await sleep(2800);
       await btn('Lời boss').click();
-      await sleep(500);
+      await sleep(600);
+      const bc = await pg.evaluate(`(() => {
+        var el = document.querySelector('.boss-line-text'), L = window.__game.lockedLabelRect();
+        if (!el || !L) return null;
+        var r = el.getBoundingClientRect();
+        var w = Math.min(r.right, L.x + L.w) - Math.max(r.left, L.x), h = Math.min(r.bottom, L.y + L.h) - Math.max(r.top, L.y);
+        return { now: w > 0 && h > 0 ? Math.round(w * h) : 0, low: !!el.closest('.boss-line.low'), top: Math.round(r.top) };
+      })()`) as { now: number; low: boolean; top: number } | null;
+      check('lời boss không đè nhãn tên mục tiêu đang khóa', !!bc && bc.now === 0, bc ? `đè ${bc.now} px², ${bc.low ? 'đã hạ xuống làm phụ đề' : 'ở chỗ mặc định'} (mép trên ${bc.top} px)` : 'không đo được');
       await snap(pg, r.out, `${view}/moment-bossline.png`, { wait: 0 });
       await btn('Thẻ đột phá').click();
       await sleep(900);
+      const lineUnderCard = await pg.evaluate(() => {
+        const el = document.querySelector('.boss-line');
+        return el ? getComputedStyle(el).visibility : 'none';
+      });
+      check('thẻ đột phá hiện thì lời boss nhường chỗ', lineUnderCard !== 'visible', `lời boss: ${lineUnderCard}`);
       await snap(pg, r.out, `${view}/moment-ascend.png`, { wait: 0 });
       await btn('Đồ rơi bay về túi').click();
       await sleep(450);

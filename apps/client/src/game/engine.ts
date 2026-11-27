@@ -181,6 +181,8 @@ const engineLog = logger('engine');
 const gpuLog = logger('gpu');
 export { reqId } from './engine/common';
 
+const _labelRectV = new THREE.Vector3();
+
 export class Game {
   static current: Game | null = null;
   static client: Client | null = null;
@@ -1022,6 +1024,24 @@ export class Game {
 
   /** Phòng thử: ép MỌI hiệu ứng phát qua `labFx`/`labSeek` dùng bảng màu này (khóa của `FX_PALETTE`); rỗng = theo timeline/công pháp. */
   labPalette = '';
+
+  /**
+   * Hộp màn hình (px) của nhãn tên + cấp của mục tiêu đang khóa, để HUD (thông báo nổi, lời boss) né không đè lên.
+   * null khi không khóa ai, nhãn đang ẩn hoặc nằm ngoài khung hình. Nhãn có cỡ theo mét nên hộp tính từ khoảng cách tới camera.
+   */
+  lockedLabelRect(): { x: number; y: number; w: number; h: number } | null {
+    const id = this.targetId;
+    const l = id ? (this.ents?.monsters.get(id)?.label ?? this.ents?.players.get(id)?.label) : null;
+    if (!l || !l.visible || !l.parent || !this.camera) return null;
+    const v = l.getWorldPosition(_labelRectV);
+    const d = v.distanceTo(this.camera.position);
+    v.project(this.camera);
+    if (v.z > 1 || Math.abs(v.x) > 1 || Math.abs(v.y) > 1) return null;
+    const ppm = window.innerHeight / (2 * Math.tan((this.camera.fov * Math.PI) / 360) * Math.max(1, d));
+    const w = 2.4 * ppm;
+    const h = 0.9 * ppm;
+    return { x: (v.x * 0.5 + 0.5) * window.innerWidth - w / 2, y: (0.5 - v.y * 0.5) * window.innerHeight - h / 2, w, h };
+  }
 
   labFx(key: string): boolean {
     const hf = this.hitFx;
