@@ -88,6 +88,7 @@ const FX_LAYER_BTNS = 48;
  * Chỉ là lớp hình ở máy mình: không gửi lệnh nào lên server.
  */
 const LAB_FLOORS = ['dark', 'light', 'grass', 'snow'] as const;
+const LAB_SEEKS = [33, 100, 200, 400, 800, 1500];
 function FxLab() {
   const [floor, setFloor] = useState<string>('dark');
   const [find, setFind] = useState('');
@@ -128,6 +129,14 @@ function FxLab() {
         <Button size="s" pressed={loop} disabled={!cur} onClick={() => setLoop(!loop)}>
           {t('ui.gm.lab.fx_loop')}
         </Button>
+      </div>
+      <div className="debug-row wrap">
+        <span>{t('ui.gm.lab.seek')}</span>
+        {LAB_SEEKS.map((n) => (
+          <Button key={n} size="s" disabled={!cur} onClick={() => Game.current?.labSeek(cur, n)}>
+            {t('ui.gm.lab.seek_v', { n })}
+          </Button>
+        ))}
       </div>
       <div className="debug-row wrap">
         <span>{t('ui.gm.lab.floor')}</span>
