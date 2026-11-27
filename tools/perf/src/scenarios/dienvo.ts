@@ -3,7 +3,7 @@
 // Có `--base <thư mục bộ trước>` thì so từng cảnh bằng SSIM/ΔE (tools/painted-compare/compare.mjs) và dựng trang trước/sau `index.html`.
 //   pnpm shots dienvo --out <thư mục> [--view 720p|1080p] [--query style=dahoa] [--base <thư mục>] [--ssim 0.9] [--only id1,id2]
 //                     [--quality high|medium|low] [--renderer webgl2] [--diag 1] [--layersoff 2,3] [--fx id1,id2] [--panel 1]
-//                     [--ping 150] [--swings 1 --window 4000] [--crowd 8,20,50] [--fx 'skl_kiem*' --gate 1 [--far 8] [--keepbare 1] [--repeat 3]] [--silhouette 1] [--floor light|grass|snow] [--styles 1]
+//                     [--ping 150] [--swings 1 --window 4000] [--crowd 8,20,50] [--fx 'skl_kiem*' --gate 1 [--far 8] [--keepbare 1] [--repeat 3] [--ms 33,100,...]] [--silhouette 1] [--floor light|grass|snow] [--styles 1]
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -704,6 +704,9 @@ export default {
       const frames2 = () => pg.evaluate(() => new Promise<void>((res) => requestAnimationFrame(() => requestAnimationFrame(() => res()))));
       // `--repeat N`: chấm mỗi chiêu N lượt rồi lấy TRUNG VỊ (cổng đo che dao động giữa các lượt vì vị trí/nhịp quái trong phòng khác nhau).
       const repeat = Math.max(1, num('--repeat', 1));
+      // `--ms 0,50,100,...`: danh sách mốc (ms, tăng dần) của cổng thay cho năm mốc mặc định; dùng để chụp chuỗi khung dựng clip trước/sau.
+      const gateMsArg = opt('--ms', '').split(',').filter(Boolean).map(Number);
+      const gateMs = gateMsArg.length ? gateMsArg : [33, 100, 200, 300, 450];
       for (const id of fxIds.flatMap((i) => Array.from({ length: repeat }, () => i))) {
         // Cổng duyệt: DỪNG lớp hình trước khi phát rồi bước đúng số khung 1/60 s tới từng mốc (không chờ theo ms thật), để hai lượt chạy dừng ở cùng
         // một khung của timeline (trước đây chờ theo ms: số che lệch 10–20 điểm giữa hai lượt).
@@ -719,7 +722,7 @@ export default {
         const g: Gate = { pop: 0, cover: null, glare: 0, spread: 0, live: 0, dur: fxDuration(id), fail: [] };
         let last = 0;
         // Cổng duyệt chấm NĂM mốc (33 / 100 / 200 / 300 / 450 ms); chụp thường giữ ba mốc cũ.
-        for (const ms of gate ? [33, 100, 200, 300, 450] : [30, 150, 400]) {
+        for (const ms of gate ? gateMs : [30, 150, 400]) {
           if (gate) {
             const n = Math.round(((ms - last) * 60) / 1000);
             await pg.evaluate((k) => void (window.__game!.stepLeft = k), n);
