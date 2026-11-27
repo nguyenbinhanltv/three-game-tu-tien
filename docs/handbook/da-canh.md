@@ -66,6 +66,9 @@ Mọi cải thiện Dạ Họa (VFX, animation, nhân vật, đạo cụ, ánh s
 - **Kiếm tu cận chiến (làm trong phòng, 27/11):** đang tự đánh mà mục tiêu ngoài tầm thì client TỰ ÁP SÁT bằng điểm đến của camera chéo (`game/combat/approach.ts`; WASD hoặc bấm chỗ khác là hủy; server vẫn kiểm tầm). Mỗi đòn thường vẽ vệt quạt trên sàn đúng hình vùng quét của server (`Vfx.arcSlash` từ `PathBasic.arc`). Điều kiện tầm tự đánh ở client giờ cộng bán kính thân quái như server (trước đó tới sát boss vẫn không đánh). Đo trong phòng: đòn quét trúng con chính và hai con bên; từ 23 m áp sát về 6,2 m rồi đánh trúng boss.
 - **Kiếm tu, cân bằng và bảo mật (27/11):** sim tính đòn quét (`CLEAVE_EXTRA` = 1 quái khác trong cung, `simparts/common.ts`). Với hệ số quét 0,6 Kiếm tu tới Ngưng Khí 15 viên mãn trong 2,92 giờ (dưới mục tiêu 3–4 giờ, nhanh nhất 9 lối) nên hệ số hạ còn **0,4** → 3,02 giờ (các lối khác 3,01–3,52). Bài security `combo` thêm hai mục tầm cận chiến (xa 16 m bị từ chối `sys.out_of_range`, áp sát 3 m ra đòn): 8/8 đạt. Vệt quạt sáng hơn, giữ lâu hơn và đặt theo điểm cao nhất của vùng quét (trước đó nửa quạt chìm dưới sàn).
 - **Số sát thương (27/11):** cửa sổ gom 0,25 s; số khắc chế gom với nhau và giữ chữ báo (trước đây không gom); số mới lên mục tiêu còn số đang bay thì xếp lên hàng trên (`STACK_PX`), nên chuỗi đòn và đòn quét không chồng chữ (`DamageNumbers` ở `game/fx/vfx.ts`). Vẫn vẽ bằng DOM; chuyển sang canvas để dành cho đợt giao diện V2c.
+- **V2, thời gian (27/11):** tab Diễn Võ có nút 100/50/25/10%, Dừng, Bước 1 khung, Bước 5 khung. Chỉ làm chậm LỚP HÌNH ở máy mình (`eng.timeScale`, `eng.stepLeft`, `labTimeScale` ở `frameLoop.ts`); server vẫn chạy giờ thật, không gửi gì lên server.
+- **Đo hiệu ứng che quái:** ở cảnh đang đánh, kịch bản chụp dừng lớp hình, chụp hai lần cùng khung (có hiệu ứng và ẩn nhóm VFX) rồi tính tỉ lệ điểm ảnh đổi trong ô quanh thân mục tiêu (`rows[].cover`, ngưỡng cảnh báo `COVER_WARN` 45%, hiện trên trang HTML). Thêm bốn cảnh `kiem_chieu_1..4` (chiêu ô 2–5 của Kiếm tu). Số đo 27/11 ở Dạ Họa 720p: chém quét 61%, ô 2: 1%, ô 3: 31%, ô 4: 66%, ô 5: 11%.
+- Pháp trận phẳng (`Vfx.sigil`) nằm sát đất được nâng trên điểm cao nhất quanh nó (`sigilGroundY`), không còn chìm nửa tấm trên nền dốc nhẹ.
 
 Chưa có: nội dung riêng cho bục nhân vật, buồng ánh sáng và tường hiệu ứng (mới có ranh, biển và vài đạo cụ); số MB texture trên bảng F3.
 
@@ -80,6 +83,8 @@ Chưa có: nội dung riêng cho bục nhân vật, buồng ánh sáng và tư�
 - ~~Tinh anh sát mép trên khung~~ **ĐÃ SỬA:** vòng xếp quái lệch nửa bước, không con nào đứng thẳng hướng bắc.
 - Preset Thấp trên WebGL2: có một vệt tối tròn lệch phía trên nhân vật (bóng đổ giả), và nền đất ngoài sàn lốm đốm hạt vì không có bút Kuwahara.
 - Cảnh `nhan_vat_can` không nhìn cận được: camera chéo khóa khoảng cách nên tham số `cam` của cảnh mẫu bị bỏ qua. Bục nhân vật cần một chế độ nhìn cận riêng của phòng.
+- **Hiệu ứng che quái (chưa sửa):** đòn thường để lại một cụm khói trắng trùm gần hết thân sói (61%); chiêu ô 4 có chớp trúng màu lam phủ kín thân sói (66%). Cả hai vượt ngưỡng 45%. Sửa ở Xưởng VFX (V2b): thu nhỏ/dời chớp trúng về phía camera, khói trúng đặt dưới chân.
+- **Tấm hiệu ứng nằm đất bị cắt đôi (chưa sửa):** vòng pháp trận vàng lớn của chiêu ô 4 mất nửa phải vì sàn phòng bám địa hình hơi dốc còn tấm hiệu ứng thì phẳng. `Vfx.sigil` đã sửa, loại tấm của timeline thì chưa; cần xem trên bản đồ thật (nền dốc) có bị như vậy không.
 - Còn lại: hào quang cảnh giới (mây lam quanh nhân vật cấp cao) bị bút Kuwahara làm nhòe thành vệt; cảnh bầy 12 sói chỉ 9 con có viền (trần 10 thể).
 
 ## Lộ trình

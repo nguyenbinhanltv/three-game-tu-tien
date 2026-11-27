@@ -162,12 +162,22 @@ function predictSkill(eng: Game, i: number, skill: SkillDef, needTarget: boolean
   }
 }
 
+/** Tỉ lệ thời gian thật dùng cho vòng khung: kẹp [0, 1]; 0 (dừng) đổi thành một số rất nhỏ để các phép chia theo dt không ra vô cực. */
+export const LAB_PAUSE_SCALE = 0.0005;
+export function labTimeScale(s: number): number {
+  if (!(s > 0)) return LAB_PAUSE_SCALE;
+  return Math.min(1, Math.max(LAB_PAUSE_SCALE, s));
+}
+
 export function runFrame(eng: Game): void {
   if (eng.disposed || eng.compiling > 0) return;
   eng.renderer.info.reset();
   const now = performance.now();
   eng.budget.begin();
-  const rawDt = Math.min(0.1, (now - eng.lastT) / 1000) * SLOWMO;
+  // Phòng thử (Diễn Võ Trường V2): `timeScale` làm chậm/dừng lớp HÌNH ở client (server vẫn chạy giờ thật); `stepLeft` cho chạy thêm từng khung 1/60 s khi đang dừng.
+  const stepping = eng.stepLeft > 0;
+  if (stepping) eng.stepLeft--;
+  const rawDt = (stepping ? 1 / 60 : Math.min(0.1, (now - eng.lastT) / 1000) * labTimeScale(eng.timeScale)) * SLOWMO;
   const dt = VFX_LAB ? labDt(rawDt) : ANIM_LAB ? animLabDt(rawDt) : rawDt;
   eng.lastT = now;
   eng.frames++;
