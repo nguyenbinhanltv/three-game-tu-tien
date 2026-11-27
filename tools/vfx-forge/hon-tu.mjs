@@ -156,9 +156,9 @@ const SPEC = {
   skl_hon_trao: () => [
     ...gather('hon_hand_claw', { size: 3.2, off: [-0.8, 2.6, 0] }),
     pullIn('target', [0, 1.4, 0], -0.2),
-    ...strike('hon_claws3', { size: 4.4, off: [0, 1.4, 0], flash: true, dur: 0.5, erodeFrom: 0.15 }),
-    sprite('hon_hand_claw', { t: -0.04, dur: 0.4, off: [-0.8, 2.6, 0], size: 3.2, alpha: 0.5, erodeFrom: 0.2 }),
-    after('target', [0.3, 1.4, 0], 2.1, 0.19, 1.6),
+    ...strike('hon_claws3', { size: 4.4, off: [0, 2.6, 0], flash: true, dur: 0.24, erodeFrom: 0.12 }),
+    sprite('hon_hand_claw', { t: -0.04, dur: 0.4, off: [-0.8, 3.0, 0], size: 3.2, alpha: 0.5, erodeFrom: 0.2 }),
+    after('target', [0.3, 2.6, 0], 2.1, 0.19, 1.6),
     sparks('target', [0, 1.3, 0], 10, 0),
   ],
   // Âm Phong: lốc phễu xoáy cao quanh mục tiêu, sợi hồn và mặt hồn bị cuốn lên.
@@ -196,8 +196,8 @@ const SPEC = {
   skl_suu_hon_thuat: () => [
     ...gather('hon_thread_s1', { size: 4.2, off: [0, 1.2, 0] }),
     pullIn('target', [0, 1.3, 0], -0.2),
-    ...strike('hon_thread_s1', { size: 4.2, off: [0, 1.4, -1.6], flash: true, dur: 0.7, erodeFrom: 0.18 }),
-    sprite('hon_thread_s2', { t: 0.04, dur: 0.6, off: [0, 1.6, -1.8], size: 3.4, alpha: 0.6, erodeFrom: 0.2 }),
+    ...strike('hon_thread_s1', { size: 4.2, off: [0, 2.6, -1.6], flash: true, dur: 0.26, erodeFrom: 0.12 }),
+    sprite('hon_thread_s2', { t: 0.04, dur: 0.26, off: [0, 2.4, -1.8], size: 3.4, alpha: 0.45, erodeFrom: 0.15 }),
     sprite('hon_orb', {
       t: 0,
       dur: 0.55,
@@ -290,22 +290,22 @@ const SPEC = {
     return [
       sprite('hon_orb', { t: -0.27, dur: 0.3, off: [0, 1.5, 0], size: 1.2, sizeTo: 2.2, alpha: 0.95, erodeFrom: 0.9 }),
       pullIn('target', [0, 1.5, 0], -0.27),
-      sprite('hon_orb', { t: 0, dur: 0.18, off: [0, 1.5, 0], size: 2.2, sizeTo: 3, alpha: 0.7, tone: 'rim', erodeFrom: 0.2 }),
+      sprite('hon_orb', { t: 0, dur: 0.14, off: [0, 1.5, 0], size: 1.6, sizeTo: 2.2, alpha: 0.7, tone: 'rim', erodeFrom: 0.2 }),
       ...NAMES.map((nm, i) => {
         const a = (i / NAMES.length) * Math.PI * 2 + 0.3;
         return sprite(nm, {
           t: 0.01 * i,
           dur: 0.7,
-          off: [r2(Math.cos(a) * 1), 1.5, r2(Math.sin(a) * 1)],
+          off: [r2(Math.cos(a) * 2.0), r2(2.9 + Math.max(0, Math.sin(a)) * 1.6), r2(Math.sin(a) * 2.0)],
           size: 1.7,
           sizeTo: 2,
           alpha: 0.92,
           erodeFrom: 0.15,
-          move: { to: 'target', offset: [r2(Math.cos(a) * 3.4), 1.6 + (i % 2) * 0.6, r2(Math.sin(a) * 3.4)], ease: 'out' },
+          move: { to: 'target', offset: [r2(Math.cos(a) * 3.6), r2(3.1 + (i % 2) * 0.6 + Math.max(0, Math.sin(a)) * 1.6), r2(Math.sin(a) * 3.6)], ease: 'out' },
         });
       }),
-      sprite('hon_swarm9', { t: 0.02, dur: 0.7, off: [0, 1.6, 0], size: 3.2, alpha: 0.5, erodeFrom: 0.15 }),
-      after('target', [0, 2.0, 0], 3.2, 0.18, 1.6),
+      sprite('hon_swarm9', { t: 0.02, dur: 0.3, off: [0, 3.6, 0], size: 3.2, alpha: 0.3, erodeFrom: 0.12 }),
+      after('target', [0, 3.0, 0], 3.2, 0.18, 1.6),
       sparks('target', [0, 1.5, 0], 12, 0),
     ];
   },
