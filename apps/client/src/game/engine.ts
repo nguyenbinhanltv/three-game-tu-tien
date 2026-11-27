@@ -1049,7 +1049,16 @@ export class Game {
     if (!hf || !me) return false;
     const mon = this.targetId ? this.ents.monsters.get(this.targetId) : undefined;
     const pt = mon
-      ? { id: mon.id, x: mon.x, y: mon.y, z: mon.z, chest: mon.model.height * 0.55, scale: hitScaleOf(mon.model.height) }
+      ? {
+          id: mon.id,
+          x: mon.x,
+          y: mon.y,
+          z: mon.z,
+          chest: mon.model.height * 0.55,
+          // Chỉ vết va (`fx_hit_*`) mới co giãn theo thân nạn nhân như trong trận; timeline CHIÊU trong trận luôn phát ở cỡ gốc (mul 1), nên phòng thử
+          // cũng phải thế — trước đây chiêu bị thu nhỏ theo thân sói và cổng duyệt chấm hiệu ứng nhỏ hơn thật.
+          scale: key.startsWith('fx_hit') ? hitScaleOf(mon.model.height) : 1,
+        }
       : { id: 'lab', x: me.x + Math.sin(me.yaw) * 4, y: me.y, z: me.z + Math.cos(me.yaw) * 4, chest: 1.15 };
     // Timeline tự khai bảng màu (chiêu Lôi, Hỏa...) thì dùng bảng đó; chỉ timeline không khai mới lấy bảng của công pháp mình đang tu.
     return hf.labPlay(key, pt, me, this.labPalette || (FX_TIMELINE.get(key)?.palette ?? this.methodOfPlayer(this.sid) ?? 'hit_chung'));
