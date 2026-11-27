@@ -921,6 +921,10 @@
 .hud.u2hud .target-frame.below-boss {
   top: calc(var(--h-safe) + 104px);
 }
+/* Boss có CẢ thanh phá thế lẫn thanh niệm chú: khối thanh phụ cao thêm một hàng, khung mục tiêu lùi xuống để không bị đè (đo bằng `shots dienvo --ui 1`). */
+.hud.u2hud:has(.u2h-boss-aux .gauge.posture):has(.u2h-boss-aux .gauge.tcast) .target-frame.below-boss {
+  top: calc(var(--h-safe) + 124px);
+}
 
 @keyframes u2h-breathe {
   0%,

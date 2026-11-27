@@ -145,7 +145,8 @@ export function syncHud(eng: Game, me: PState | undefined): void {
       if (n && Math.hypot(n.x - rp.x, n.z - rp.z) > 30) eng.targetId = '';
     }
   }
-  const boss = bossFor(eng, target, rp.x, rp.z);
+  // Phòng thử có thể ép một thanh boss giả lên HUD (`Game.labHudLoad`) để soi bố cục khi nhiều dữ liệu nhất.
+  const boss = eng.labHudBoss ?? bossFor(eng, target, rp.x, rp.z);
   // Boss đã có thanh máu lớn trên HUD thì ẩn bảng tên 3D của nó (không để tên lộ ra sau thanh máu).
   eng.ents.hudBossId = boss?.id ?? '';
   checkBossIntro(eng, me);
