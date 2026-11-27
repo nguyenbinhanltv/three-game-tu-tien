@@ -425,7 +425,7 @@ export default {
       await btn('Thông báo nổi').click();
       await sleep(900);
       const ts = await labelClash('.hud .toasts');
-      check('thông báo nổi dời sang bên khi nhãn nằm giữa chồng thông báo', !!ts && ts.base > 0 && ts.now === 0 && ts.dx !== 0, ts ? `ở chỗ cũ đè ${ts.base} px², sau khi né ${ts.now} px² (dời ${Math.round(ts.dx)}, ${Math.round(ts.dy)} px)` : 'không đo được');
+      check('thông báo nổi né hẳn khi nhãn nằm giữa chồng thông báo', !!ts && ts.base > 0 && ts.now === 0 && (ts.dx !== 0 || ts.dy !== 0), ts ? `ở chỗ cũ đè ${ts.base} px², sau khi né ${ts.now} px² (dời ${Math.round(ts.dx)}, ${Math.round(ts.dy)} px)` : 'không đo được');
       await snap(pg, r.out, `${view}/moment-toast-side.png`, { wait: 0 });
       await pg.evaluate(`(() => { delete window.__game.lockedLabelRect; })()`);
       await sleep(2800);
@@ -497,8 +497,38 @@ export default {
       const live1 = await pg.evaluate(() => (window.__game as unknown as { vfx: { pool: { live: number } } }).vfx.pool.live);
       check('nút "Phát" tạo lưới hiệu ứng', live1 > live0, `lưới sống ${live0} → ${live1}`);
       await snap(pg, r.out, `${view}/panel-2-hieu-ung.png`, { wait: 200 });
+      // Khu Phong cách: bấm nút + / − thật, kiểm tham số hậu kỳ và bề dày viền mực đổi theo; "Về mặc định" trả lại; hai ô nhớ A/B.
+      await btn('Phong cách').click();
+      await sleep(200);
+      const styleOf = () => pg.evaluate(() => window.__game!.labStyleGet());
+      const st0 = await styleOf();
+      await snap(pg, r.out, `${view}/style-0-goc.png`, { wait: 200 });
+      const plus = (k: string) => pg.locator(`.debug-panel .lab-style[data-k="${k}"] button`).nth(1);
+      const minus = (k: string) => pg.locator(`.debug-panel .lab-style[data-k="${k}"] button`).nth(0);
+      for (let i = 0; i < 6; i++) await plus('saturation').click();
+      for (let i = 0; i < 4; i++) await plus('ink').click();
+      for (let i = 0; i < 3; i++) await minus('exposure').click();
+      await sleep(400);
+      const st1 = await styleOf();
+      check(
+        'khu Phong cách: nút + / − đổi tham số thật',
+        st1.saturation! > st0.saturation! + 0.25 && st1.ink! > st0.ink! + 0.9 && st1.exposure! < st0.exposure! - 0.1,
+        `bão hòa ${st0.saturation} → ${st1.saturation}, viền mực ×${st0.ink} → ×${st1.ink}, phơi sáng ${st0.exposure} → ${st1.exposure}`,
+      );
+      await snap(pg, r.out, `${view}/style-1-chinh.png`, { wait: 200 });
+      await btn('Lưu A').click();
+      await btn('Về mặc định').click();
+      await sleep(300);
+      const st2 = await styleOf();
+      check('khu Phong cách: "Về mặc định" trả lại giá trị gốc', Math.abs(st2.saturation! - st0.saturation!) < 1e-6 && Math.abs(st2.ink! - st0.ink!) < 1e-6 && Math.abs(st2.exposure! - st0.exposure!) < 1e-6, JSON.stringify(st2));
+      await btn('Gọi A').click();
+      await sleep(300);
+      const st3 = await styleOf();
+      check('khu Phong cách: ô nhớ A gọi lại đúng bộ đã lưu', Math.abs(st3.saturation! - st1.saturation!) < 1e-6 && Math.abs(st3.ink! - st1.ink!) < 1e-6, `bão hòa ${st3.saturation}, viền mực ×${st3.ink}`);
+      await btn('Về mặc định').click();
+      await sleep(200);
       // Mọi nút của tab phải nằm TRONG khung nhìn (bảng không cuộn được bằng chuột): kiểm từng nhóm con.
-      for (const tab of ['Cảnh và nhân vật', 'Quái trong phòng', 'Hiệu ứng', 'Thời gian']) {
+      for (const tab of ['Cảnh và nhân vật', 'Quái trong phòng', 'Hiệu ứng', 'Phong cách', 'Thời gian']) {
         await btn(tab).click();
         await sleep(200);
         const out = await pg.evaluate(() => {
