@@ -154,4 +154,26 @@ describe('inkWidthOf (bề dày viền theo cỡ thân)', () => {
     expect(inkWidthOf(mul, 0.1)).toBe(INK_WIDTH);
     expect(inkWidthOf(1, 0.9)).toBe(INK_WIDTH);
   });
+
+  it('want + sync: chia suất theo điểm ưu tiên, thể không xin nữa bị nhả, thể gần hơn giành suất của thể xa', () => {
+    const h = new InkHulls();
+    const scene = new THREE.Scene();
+    const all = Array.from({ length: INK_HULL_MAX + 4 }, () => body());
+    all.forEach((b) => scene.add(b));
+    all.forEach((b, i) => h.want(b, i === 0 ? -2 : i * 10));
+    h.sync();
+    expect(h.count).toBe(INK_HULL_MAX);
+    expect(h.has(all[0]!)).toBe(true);
+    expect(h.has(all[INK_HULL_MAX + 3]!)).toBe(false);
+    // Khung sau: thể xa nhất lại gần hẳn, thể đầu không xin nữa.
+    all.forEach((b, i) => i !== 0 && h.want(b, i === INK_HULL_MAX + 3 ? 1 : i * 10));
+    h.sync();
+    expect(h.has(all[0]!)).toBe(false);
+    expect(h.has(all[INK_HULL_MAX + 3]!)).toBe(true);
+    expect(h.count).toBe(INK_HULL_MAX);
+    // Không ai xin: giữ nguyên (đường cũ gọi attach/release trực tiếp không bị ảnh hưởng).
+    h.sync();
+    expect(h.count).toBe(INK_HULL_MAX);
+    h.dispose();
+  });
 });

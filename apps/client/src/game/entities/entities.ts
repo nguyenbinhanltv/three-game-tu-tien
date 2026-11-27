@@ -354,11 +354,11 @@ export class EntityManager {
   }
 
   /** Hero light (C1): mình và đồng đội có viền theo hướng tu + bản sao viền tối khi bị che; còn lại tắt. */
-  private updateHero(v: PlayerVis, s: PState, isLocal: boolean): void {
+  private updateHero(v: PlayerVis, s: PState, isLocal: boolean, d2Local: number): void {
     const on = this.heroSids !== null && (isLocal || this.heroSids.has(v.sid));
     const root = v.model.root;
-    // Viền mực Dạ Cảnh: mình luôn có; người khác có khi còn chỗ (lưới chưa nạp xong thì thử lại ở khung sau).
-    if (this.inkHulls && !this.inkHulls.has(root)) this.inkHulls.attach(root);
+    // Viền mực Dạ Cảnh: mình luôn có; người khác trong 32 m xin suất theo khoảng cách (chia suất ở `InkHulls.sync`, chung với quái).
+    if (this.inkHulls && (isLocal || d2Local < 32 * 32)) this.inkHulls.want(root, isLocal ? -2 : d2Local);
     if (v.heroRoot !== root) {
       if (v.heroRoot) this.heroGhosts.release(v.heroRoot);
       if (v.heroRoot) this.inkHulls?.release(v.heroRoot);
@@ -478,7 +478,7 @@ export class EntityManager {
         this.group.add(v.model.root);
       }
       v.s = s;
-      this.updateHero(v, s, isLocal);
+      this.updateHero(v, s, isLocal, isLocal ? 0 : (s.x - local.x) ** 2 + (s.z - local.z) ** 2);
       const look = lookOf(s, isLocal);
       if (isLocal) this.localLook = look;
       const lookChanged =
@@ -693,9 +693,9 @@ export class EntityManager {
       // Viền mực Dạ Cảnh: quái còn sống trong 32 m quanh mình được viền (khi còn chỗ), màu theo trạng thái server báo; chết/ẩn/đi xa thì nhả chỗ.
       if (this.inkHulls) {
         const ir = v.model.root;
-        const near = !dead && !hidden && (v.x - local.x) ** 2 + (v.z - local.z) ** 2 < 32 * 32;
-        if (!near) this.inkHulls.release(ir);
-        else if (this.inkHulls.attach(ir)) this.inkHulls.style(ir, inkStateOf((mf & MF_WEAK) !== 0, (mf & MF_BROKEN) !== 0, s.ph ?? 0));
+        const d2 = (v.x - local.x) ** 2 + (v.z - local.z) ** 2;
+        // Mục tiêu đang khóa đứng ngay sau mình trong thứ tự ưu tiên; quái hơi được ưu tiên hơn người chơi khác cùng khoảng cách (cần đọc trạng thái).
+        if (!dead && !hidden && d2 < 32 * 32) this.inkHulls.want(ir, id === targetId ? -1 : d2 * 0.6, inkStateOf((mf & MF_WEAK) !== 0, (mf & MF_BROKEN) !== 0, s.ph ?? 0));
       }
       const vv = v as MonVis & { deadFor?: number };
       // deadFor === 0: khung trước còn sống (mô hình mới dựng của quái đã chết sẵn thì là undefined).
