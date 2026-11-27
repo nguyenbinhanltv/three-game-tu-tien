@@ -1,11 +1,15 @@
 // Diễn Võ Trường, xưởng âm thanh + xưởng animation (V2d): ĐO trong phòng tập, không chỉ bấm nút.
-//   pnpm shots xuong --out <thư mục> [--query style=dahoa] [--only cast,anim,loud] [--paths kiem_tu,the_tu] [--ping 0] [--bots 8]
+//   pnpm shots xuong --out <thư mục> [--query style=dahoa] [--only cast,anim,stopfade,ui,loud] [--paths kiem_tu,the_tu] [--ping 0] [--bots 8]
 // - cast: với từng lối tu, dựng nhân vật thử rồi ra TỪNG ô chiêu lên một con sói bị khóa máu; engine đánh mốc vào thế / khung trúng của hoạt ảnh /
 //   sát thương server về, đầu dò tiếng ghi mọi lời gọi phát tiếng (kể cả khi tắt tiếng). Báo lệch tiếng trúng so với khung trúng theo từng chiêu.
 // - anim: chạy tới / lùi / ngang / dừng / né bằng phím thật, đo trượt chân theo clip nền và nhật ký chuyển clip; rồi ép một clip đứng yên (tua)
 //   cho mình và cho quái, chụp ảnh, thả ra và kiểm game điều khiển lại.
 // - loud: N bot cùng đánh một bầy sói trong phòng chung, mình đánh cùng; đồng hồ từng bus báo đỉnh (dBFS, đo trước âm lượng tổng nên đo được cả
 //   khi tắt tiếng) và số lần chạm trần 0 dBFS, kèm mật độ lời gọi phát tiếng.
+// - stopfade: thử A/B thời gian mờ vào của clip DỪNG (`PATCH_TUNE.stopFade` ở mannequin.ts): mỗi mức chạy rồi dừng 4 lần, in tốc độ xoay khớp
+//   lớn nhất lúc clip dừng lên và độ trượt chân của nhịp dừng.
+// - ui: gắn hai nhóm nút của xưởng (`ui/lab/WorkshopLab.tsx`) vào trang rồi BẤM NÚT THẬT: bật đo lệch, ra chiêu, đọc bảng ở lớp phủ; bật đo chân,
+//   chạy, ép clip, kéo thanh thời gian, thả; chụp ảnh từng bước.
 // Chạy tắt tiếng như mọi kịch bản; số đo lấy từ đồng hồ `performance.now()` của trang nên phải để tốc độ lớp hình 100%.
 import { PATHS } from '@dtl/content';
 import { num, opt } from '../lib/env';
@@ -44,7 +48,8 @@ interface AnimSnap {
   hold: { name: string; t: number; dur: number; playing: boolean } | null;
   feet: { bone: string; h: number; planted: boolean; v: number }[];
   slide: { key: string; time: number; planted: number; slide: number; travel: number; peak: number; cmPerM: number | null; cmPerS: number }[];
-  blends: { from: string; to: string; ms: number; pop: number; spin: number }[];
+  blends: { from: string; to: string; ms: number; pop: number; spin: number; bone?: string }[];
+  lift?: number;
 }
 
 /** Nạp các module của xưởng trong trang (Vite dev phục vụ theo đường dẫn; cùng bản module với game) và bật đầu dò. */
@@ -104,7 +109,7 @@ const f = (v: number | null, unit = ''): string => (v === null ? '—' : `${v > 
 export default {
   name: 'xuong',
   desc: 'Diễn Võ Trường, xưởng âm thanh + animation: đo lệch tiếng so với khung trúng theo từng chiêu, trượt chân, chuyển clip, tua clip',
-  usage: '[--query style=dahoa] [--only cast,anim,loud] [--paths kiem_tu,the_tu] [--ping 0] [--wait 2200] [--bots 8]',
+  usage: '[--query style=dahoa] [--only cast,anim,stopfade,ui,loud] [--paths kiem_tu,the_tu] [--ping 0] [--wait 2200] [--bots 8]',
   env: { RATE_LIMIT_EXEMPT: 'loopback' },
   async run(r) {
     const query = opt('--query', '');
@@ -134,15 +139,17 @@ export default {
     if (!inst.probe) console.log('  (bản này chưa có đầu dò lời gọi phát tiếng `sfxProbe`: chỉ đo được mốc chiêu, không có cột tiếng)');
     if (ping > 0) await pg.evaluate((p) => void (window.__game!.fakePing = p), ping);
     const report: Record<string, unknown> = { ping, query };
+    // Ghi sau TỪNG phần: phần sau có lỗi thì số đo của phần trước vẫn còn.
+    const save = () => writeJson(r.out, 'xuong.json', report);
 
     if (want('cast')) {
       const paths = PATHS.filter((p) => !pathIds.length || pathIds.includes(p.id));
-      const all: { path: string; method: string; rows: CastRow[]; sum: CastSummary[]; meter: Meter | null }[] = [];
+      const all: { path: string; method: string; rows: CastRow[]; sum: CastSummary[]; meter: Meter | null; net: { ping: number; netLag: number } }[] = [];
       for (const p of paths) {
         const method = p.methods[0]!;
         await gm(pg, 'scene soi_thuong', 3500);
         await gm(pg, `build ${method} 30`, 1600);
-        await gm(pg, 'lockhp', 900);
+        await gm(pg, 'lockhp on', 900);
         await gm(pg, 'charge', 900);
         let aim = await aimNearest(pg);
         if (!aim) {
@@ -172,8 +179,13 @@ export default {
         }
         const sum = (await pg.evaluate((list) => (window as unknown as { __xuong: { cast: { castSummary(r: unknown): unknown } } }).__xuong.cast.castSummary(list), rows)) as CastSummary[];
         const meter = await readMeter(pg, true);
-        all.push({ path: p.id, method, rows, sum, meter });
-        console.log(`\n  ${p.id} (${method}): ${rows.length} lần ra chiêu trên ${bar.length} ô${meter ? ` · đỉnh bus SFX ${meter.bus.sfx?.hold} dBFS, tổng ${meter.bus.sum?.hold} dBFS (${meter.state})` : ''}`);
+        // Ping engine tự ước (gồm cả chờ tick và nhịp gửi patch) và độ bù trễ đang áp cho khung trúng.
+        const net = await pg.evaluate(() => {
+          const g = window.__game as unknown as { ping: number; skillPoses?: { netLag?: number } };
+          return { ping: Math.round(g.ping), netLag: Math.round((g.skillPoses?.netLag ?? 0) * 1000) };
+        });
+        all.push({ path: p.id, method, rows, sum, meter, net });
+        console.log(`\n  ${p.id} (${method}): ${rows.length} lần ra chiêu trên ${bar.length} ô${meter ? ` · đỉnh bus SFX ${meter.bus.sfx?.hold} dBFS, tổng ${meter.bus.sum?.hold} dBFS (${meter.state})` : ''} · ping engine ước ${net.ping} ms, bù khung trúng ${net.netLag} ms`);
         console.log('    chiêu                          lần  khung trúng−dữ liệu  sát thương về  tiếng vung  tiếng trúng (xấu nhất)  hỏng');
         for (const s of sum)
           console.log(
@@ -181,6 +193,7 @@ export default {
           );
       }
       report.cast = all;
+      save();
       const flat = all.flatMap((a) => a.sum.map((s) => ({ path: a.path, ...s })));
       const bad = flat.filter((s) => s.bad > 0);
       console.log(`\n  Tổng: ${flat.length} chiêu/đòn đã đo, ${bad.length} có lần lệch quá dung sai hoặc câm: ${bad.map((s) => `${s.path}:${s.key}`).join(', ') || 'không'}`);
@@ -188,7 +201,7 @@ export default {
 
     if (want('anim')) {
       await gm(pg, 'scene soi_thuong', 3500);
-      await gm(pg, 'lockhp', 900);
+      await gm(pg, 'lockhp on', 900);
       await pg.evaluate(`window.__xuong.ws.start()`);
       // Vết theo thời gian (mỗi ~120 ms): clip đang góp trọng số và trạng thái từng bàn chân, để đọc lại khi số đo trông lạ.
       const trace: { key: string; active: string; feet: string }[] = [];
@@ -207,7 +220,31 @@ export default {
       };
       // Đứng → chạy tới → dừng → lùi → ngang hai bên → chạy rồi né.
       await sleep(800);
-      await hold('KeyW', 1800);
+      // Vết TỪNG KHUNG của hai bàn chân trong 2 giây chạy thẳng (sau 0,7 giây lấy đà): [ms, cao cm, trụ 0/1, tốc độ ngang m/s] × chân.
+      await pg.keyboard.down('KeyW');
+      await sleep(700);
+      const feetTrace = (await pg.evaluate(`(async () => {
+        const ws = window.__xuong.ws, out = [], t0 = performance.now();
+        await new Promise((res) => {
+          const f = () => {
+            const s = ws.snapshot();
+            out.push([Math.round(performance.now() - t0), ...s.feet.flatMap((x) => [Math.round(x.h * 1000) / 10, x.planted ? 1 : 0, Math.round(x.v * 100) / 100])]);
+            if (performance.now() - t0 < 2000) requestAnimationFrame(f);
+            else res();
+          };
+          requestAnimationFrame(f);
+        });
+        return out;
+      })()`)) as number[][];
+      await pg.keyboard.up('KeyW');
+      {
+        const n = feetTrace.length || 1;
+        const plant = [2, 5].map((i) => feetTrace.filter((row) => row[i] === 1).length / n);
+        const hs = feetTrace.flatMap((row) => [row[1] ?? 0, row[4] ?? 0]);
+        const vPlanted = feetTrace.flatMap((row) => [row[2] === 1 ? row[3]! : -1, row[5] === 1 ? row[6]! : -1]).filter((v) => v >= 0);
+        const avg = (xs: number[]) => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : 0);
+        console.log(`\n  Vết chân khi chạy thẳng: ${feetTrace.length} khung; chân trụ ${(plant[0]! * 100).toFixed(0)}% / ${(plant[1]! * 100).toFixed(0)}% thời gian; cao ${Math.min(...hs).toFixed(1)} đến ${Math.max(...hs).toFixed(1)} cm; tốc độ ngang lúc trụ TB ${avg(vPlanted).toFixed(2)} m/s`);
+      }
       await sleep(700);
       await hold('KeyS', 1800);
       await sleep(700);
@@ -222,14 +259,14 @@ export default {
       await pg.keyboard.up('KeyW');
       await sleep(900);
       const moved = await animSnap(pg);
-      console.log(`\n  Trượt chân (mình, xương ${moved.feet.map((x) => x.bone).join(' + ')}, ${moved.clips.length} clip):`);
+      console.log(`\n  Trượt chân (mình, xương ${moved.feet.map((x) => x.bone).join(' + ')}, ${moved.clips.length} clip, gốc nhân vật cao hơn mặt đất ${((moved.lift ?? 0) * 100).toFixed(0)} cm):`);
       console.log('    clip nền                 giây   đi (m)  trượt (cm)  cm/m   cm/s lúc trụ  đỉnh cm/s');
       for (const s of moved.slide)
         console.log(
           `    ${s.key.padEnd(24)} ${s.time.toFixed(1).padStart(4)}  ${s.travel.toFixed(1).padStart(6)}  ${(s.slide * 100).toFixed(1).padStart(9)}  ${(s.cmPerM === null ? '—' : s.cmPerM.toFixed(1)).padStart(5)}  ${s.cmPerS.toFixed(1).padStart(12)}  ${(s.peak * 100).toFixed(0).padStart(8)}`,
         );
       console.log('  Chuyển clip:');
-      for (const b of moved.blends) console.log(`    ${b.from} → ${b.to}: ${b.ms} ms, bước nhảy trọng số ${b.pop}, khớp xoay nhanh nhất ${b.spin}°/s`);
+      for (const b of moved.blends) console.log(`    ${b.from} → ${b.to}: ${b.ms} ms, bước nhảy trọng số ${b.pop}, khớp xoay nhanh nhất ${b.spin}°/s${b.bone ? ' (' + b.bone + ')' : ''}`);
 
       // Tua: ép clip đứng yên ở giữa, chụp; dịch 5 khung; thả.
       const pick = moved.clips.find((c) => /jog|run|walk/i.test(c.name)) ?? moved.clips[0];
@@ -266,6 +303,8 @@ export default {
       await pg.evaluate(`window.__xuong.ws.setSubject('target')`);
       await sleep(500);
       const mon = await animSnap(pg);
+      const monBones = (await pg.evaluate(`(() => { const g = window.__game, m = g.ents.monsters.get(g.targetId), p = m && m.model.labAnim && m.model.labAnim(); const out = []; if (p) p.rig.traverse((o) => { if (o.isBone) out.push(o.name); }); return out; })()`)) as string[];
+      console.log(`  xương của quái đang nhắm (${monBones.length}): ${monBones.slice(0, 60).join(', ')}`);
       check('quái đang nhắm: có cổng soi mixer và danh sách clip', mon.ok && mon.clips.length > 0, `${mon.clips.length} clip: ${mon.clips.map((c) => c.name).slice(0, 8).join(', ')}`);
       const mclip = mon.clips.find((c) => /attack|bite|atk/i.test(c.name)) ?? mon.clips[0];
       if (mon.ok && mclip) {
@@ -277,7 +316,122 @@ export default {
         await pg.evaluate(`window.__xuong.ws.hold(null)`);
       }
       await pg.evaluate(`window.__xuong.ws.stop()`);
-      report.anim = { slide: moved.slide, blends: moved.blends, clips: moved.clips, monClips: mon.clips, checks, trace };
+      await pg.evaluate(`window.__xuong.ws.setSubject('me')`);
+      report.anim = { slide: moved.slide, blends: moved.blends, clips: moved.clips, monClips: mon.clips, monBones, checks, trace, feetTrace };
+      save();
+    }
+
+    if (want('stopfade')) {
+      await gm(pg, 'scene soi_thuong', 3500);
+      await pg.evaluate(`(async () => { window.__xuong.mq = await import('/src/game/character/mannequin.ts'); window.__xuong.ws.setSubject('me'); window.__xuong.ws.start(); })()`);
+      const base = (await pg.evaluate(`window.__xuong.mq.PATCH_TUNE.stopFade`)) as number;
+      const med = (xs: number[]) => {
+        const a = [...xs].sort((x, y) => x - y);
+        return a.length ? a[a.length >> 1]! : 0;
+      };
+      const out: { fade: number; bone: string; stops: number; spin: number; spinMax: number; ms: number; cmPerM: number | null }[] = [];
+      console.log(`\n  Thử thời gian mờ vào của clip dừng (đang dùng ${base} s):`);
+      for (const fade of [0.06, 0.1, 0.14, 0.18]) {
+        await pg.evaluate(`(() => { window.__xuong.mq.PATCH_TUNE.stopFade = ${fade}; window.__xuong.ws.resetStats(); })()`);
+        for (let i = 0; i < 4; i++) {
+          await pg.keyboard.down(i % 2 ? 'KeyS' : 'KeyW');
+          await sleep(1300);
+          await pg.keyboard.up(i % 2 ? 'KeyS' : 'KeyW');
+          await sleep(1400);
+        }
+        const sn = await animSnap(pg);
+        const stops = sn.blends.filter((b) => /_To_Idle$/.test(b.to));
+        const sl = sn.slide.filter((x) => /_To_Idle$/.test(x.key));
+        const travel = sl.reduce((a, x) => a + x.travel, 0);
+        const worst = stops.reduce<(typeof stops)[number] | null>((w, b) => (!w || b.spin > w.spin ? b : w), null);
+        const row = {
+          fade,
+          bone: worst?.bone ?? '',
+          stops: stops.length,
+          spin: med(stops.map((b) => b.spin)),
+          spinMax: Math.max(0, ...stops.map((b) => b.spin)),
+          ms: med(stops.map((b) => b.ms)),
+          cmPerM: travel > 0.3 ? Math.round((sl.reduce((a, x) => a + x.slide, 0) / travel) * 1000) / 10 : null,
+        };
+        out.push(row);
+        console.log(`    mờ vào ${fade.toFixed(2)} s: ${row.stops} lần dừng · khớp xoay nhanh nhất trung vị ${row.spin}°/s (lớn nhất ${row.spinMax}${row.bone ? ' ở ' + row.bone : ''}) · clip dừng lên trong ${row.ms} ms · trượt chân nhịp dừng ${row.cmPerM ?? '—'} cm/m`);
+      }
+      await pg.evaluate(`(() => { window.__xuong.mq.PATCH_TUNE.stopFade = ${base}; window.__xuong.ws.stop(); })()`);
+      report.stopfade = out;
+      save();
+    }
+
+    if (want('ui')) {
+      await gm(pg, 'scene soi_thuong', 3500);
+      const aim = await aimNearest(pg);
+      if (aim) await tp(pg, aim.x, aim.z - 4);
+      await sleep(500);
+      await aimNearest(pg);
+      await pg.evaluate(`(async () => {
+        const m = await import('/src/ui/lab/WorkshopLab.tsx');
+        m.labCastOn(false);
+        const el = document.createElement('div');
+        el.className = 'debug-panel';
+        el.setAttribute('data-testid', 'xuong-controls');
+        document.body.appendChild(el);
+        window.__xuong.unmount = m.mountWorkshopControls(el);
+      })()`);
+      await sleep(600);
+      const checks: { name: string; ok: boolean; note?: string }[] = [];
+      const check = (name: string, ok: boolean, note?: string) => {
+        checks.push({ name, ok, note });
+        console.log(`  ${ok ? 'ĐẠT ' : 'HỎNG'} ${name}${note ? ' — ' + note : ''}`);
+      };
+      const btn = (name: string | RegExp) => pg.locator('[data-testid="xuong-controls"] button', { hasText: name }).first();
+      await btn('Lệch theo chiêu').click();
+      await sleep(400);
+      check('nút "Lệch theo chiêu" hiện lớp phủ số đo', (await pg.locator('[data-testid="lab-ws"]').count()) === 1);
+      await pg.evaluate(() => window.__game!.useSkill(1));
+      await sleep(2200);
+      await pg.evaluate(() => window.__game!.useSkill(2));
+      await sleep(2200);
+      const castRowsUi = await pg.locator('[data-testid="lab-cast"] tbody tr').allInnerTexts();
+      check('ra hai chiêu thì bảng có dòng theo từng chiêu, có số tiếng trúng', castRowsUi.length >= 1 && castRowsUi.some((x) => /[+-]?\d/.test(x)), castRowsUi.map((x) => x.replace(/\s+/g, ' ')).join(' ‖ '));
+      await snap(pg, r.out, 'ui-1-lech-theo-chieu.png', { wait: 200 });
+      await btn(/^Mình$/).click();
+      await btn('Đo chân và chuyển clip').click();
+      await sleep(400);
+      await pg.keyboard.down('KeyW');
+      await sleep(1600);
+      await pg.keyboard.up('KeyW');
+      await sleep(900);
+      const slideUi = await pg.locator('[data-testid="lab-slide"] tbody tr').allInnerTexts();
+      const blendUi = await pg.locator('[data-testid="lab-blend"] tbody tr').count();
+      check('bật "Đo chân và chuyển clip" rồi chạy: có bảng trượt chân và nhật ký chuyển clip', slideUi.length >= 1 && blendUi >= 1, `${slideUi.length} dòng trượt chân, ${blendUi} lần chuyển clip`);
+      await snap(pg, r.out, 'ui-2-truot-chan.png', { wait: 200 });
+      await btn('Ép clip').click();
+      await sleep(500);
+      const seek = pg.locator('[data-testid="lab-clip-seek"]');
+      const max = Number(await seek.getAttribute('max'));
+      // Thanh kéo `range` do React quản: đặt giá trị bằng setter gốc rồi phát sự kiện `input` (Playwright `fill` không nhận loại ô này).
+      await seek.evaluate((el, v) => {
+        const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!;
+        set.call(el, String(v));
+        el.dispatchEvent(new Event('input', { bubbles: true }));
+      }, max / 2);
+      await sleep(500);
+      const now1 = await pg.locator('[data-testid="lab-clip-now"]').innerText();
+      await btn('▶').click();
+      await sleep(350);
+      const now2 = await pg.locator('[data-testid="lab-clip-now"]').innerText();
+      check('"Ép clip" + kéo thanh thời gian + nút ▶: dòng trạng thái ghi clip đang ép và mốc đổi theo', /đang ép/.test(now1) && now1 !== now2, `${now1} → ${now2}`);
+      await snap(pg, r.out, 'ui-3-ep-clip.png', { wait: 200 });
+      await btn('Thả').click();
+      await sleep(500);
+      const now3 = await pg.locator('[data-testid="lab-clip-now"]').innerText();
+      check('"Thả" trả quyền cho game', /đang phát/.test(now3), now3);
+      await btn('Đo chân và chuyển clip').click();
+      await btn('Lệch theo chiêu').click();
+      await sleep(400);
+      check('tắt cả hai nút thì lớp phủ biến mất', (await pg.locator('[data-testid="lab-ws"]').count()) === 0);
+      await pg.evaluate(`(() => { window.__xuong.unmount(); document.querySelector('[data-testid="xuong-controls"]').remove(); window.__xuong.cast.castMarks.on = true; })()`);
+      report.ui = checks;
+      save();
     }
 
     if (want('loud')) {
@@ -286,11 +440,11 @@ export default {
       await gm(pg, 'dvt ' + key);
       await waitLevel(pg, 'dien_vo');
       await gm(pg, 'spawn mon_soi_xam 8', 1800);
-      await gm(pg, 'lockhp', 900);
-      await gm(pg, 'god', 900);
+      await gm(pg, 'lockhp on', 900);
+      await gm(pg, 'god on', 900);
       const bots = new Bots(r.port);
       try {
-        const joined = await bots.start(n, 'ld' + n + 'b', ['--gm', 'dvt ' + key, '--fight', '1300,985,12', '--tp']);
+        const joined = await bots.start(n, 'ld' + n + 'b', ['--gm', 'dvt ' + key, '--fight', '1300,985,14']);
         const others = () => pg.evaluate(() => (window.__game as unknown as { room: { state: { players: { size: number } } } }).room.state.players.size);
         const until = Date.now() + 60_000;
         while (Date.now() < until && (await others()) < n + 1) await sleep(500);
@@ -315,18 +469,68 @@ export default {
           return { calls: rows.length, heard: heard.length, throttled: rows.filter((r) => r.why === 'throttle').length, quiet: rows.filter((r) => r.why === 'quiet').length, burst, burstVol: Math.round(vol * 100) / 100, perSec: span > 0 ? Math.round((heard.length / span) * 10) / 10 : 0, capped: rows.length >= 600 };
         })()`)) as Record<string, number | boolean>;
         const seen = await others();
+        // Bộ chặn đỉnh: dựng lại đúng chuỗi của game (hạ 1/4 → WaveShaper với bảng `limitTable`) trong OfflineAudioContext, cho sóng sin biên độ
+        // 0,5 (phải giữ nguyên) và 1,5 (trước đây bị xén cứng) đi qua rồi đo đỉnh. Loa đang tắt tiếng nên không đo được ở đầu ra thật.
+        const lim = (await pg.evaluate(`(async () => {
+          const L = await import('/src/game/audio/limiter.ts');
+          const run = async (amp) => {
+            const c = new OfflineAudioContext(1, 4800, 48000);
+            const o = c.createOscillator(); o.frequency.value = 440;
+            const g = c.createGain(); g.gain.value = amp;
+            const pre = c.createGain(); pre.gain.value = 1 / L.LIMIT_RANGE;
+            const sh = c.createWaveShaper(); sh.curve = L.limitTable();
+            o.connect(g).connect(pre).connect(sh).connect(c.destination); o.start();
+            const d = (await c.startRendering()).getChannelData(0);
+            let peak = 0; for (let i = 480; i < d.length; i++) peak = Math.max(peak, Math.abs(d[i]));
+            return Math.round(peak * 1000) / 1000;
+          };
+          return { half: await run(0.5), over: await run(1.5), far: await run(6) };
+        })()`)) as { half: number; over: number; far: number };
+        console.log(`    bộ chặn đỉnh (WebAudio thật, ngoại tuyến): sin 0,5 → đỉnh ${lim.half}; sin 1,5 → đỉnh ${lim.over}; sin 6 → đỉnh ${lim.far}`);
         console.log(`\n  Độ to khi ${joined} bot + mình cùng đánh (client thấy ${seen} người):`);
         if (meter)
           for (const [k, v] of Object.entries(meter.bus)) console.log(`    bus ${k.padEnd(8)} đỉnh giữ ${String(v.hold).padStart(6)} dBFS · chạm trần ${v.clips} lần`);
         else console.log('    (bản này chưa có đồng hồ từng bus)');
         console.log(`    lời gọi phát tiếng: ${JSON.stringify(dens)}${meter ? ` · AudioContext ${meter.state}, ${meter.voices} giọng đang phát` : ''}`);
-        report.loud = { bots: joined, seen, meter, dens };
+        // Đám đông TỔNG HỢP: bot có thể không lọt vào tầm nhìn của client, nên bắn thẳng tiếng đòn của 8 người đứng cách 3 đến 9 m qua đúng hàm `sfx`
+        // của game (cùng âm lượng theo vai người khác: tiếng vung 0,45 × 0,6, tiếng trúng × 0,5, có giãn 45 ms), trong lúc mình vẫn tự đánh thật.
+        await readMeter(pg, true);
+        await clearLogs(pg);
+        const synth = (await pg.evaluate(`(async () => {
+          const a = window.__xuong.audio, g = window.__game, me = g.info();
+          const foes = Array.from({ length: 8 }, (_, i) => ({ x: me.x + Math.cos(i * 0.785) * (3 + (i % 4) * 2), z: me.z + Math.sin(i * 0.785) * (3 + (i % 4) * 2), next: performance.now() + i * 53, n: 0 }));
+          const vol = (f) => Math.max(0.15, 1 - Math.hypot(f.x - me.x, f.z - me.z) / 40);
+          const t0 = performance.now();
+          let shots = 0;
+          await new Promise((res) => {
+            const tick = () => {
+              const now = performance.now();
+              for (const f of foes) {
+                if (now < f.next) continue;
+                f.next = now + 420 + (f.n % 3 === 2 ? 180 : 0);
+                f.n++;
+                shots++;
+                a.sfx('sword', vol(f) * 0.45 * 0.6, f, false, { rate: 1 });
+                setTimeout(() => a.sfx(f.n % 5 === 0 ? 'crit' : 'hit', vol(f) * 0.5, f, true, { rate: 1 }), 200);
+              }
+              if (now - t0 < 10000) requestAnimationFrame(tick);
+              else res();
+            };
+            requestAnimationFrame(tick);
+          });
+          return { shots };
+        })()`)) as { shots: number };
+        await sleep(600);
+        const meter8 = await readMeter(pg, false);
+        const dens8 = (await pg.evaluate(`(() => { const rows = window.__xuong.probe.rows; return { calls: rows.length, heard: rows.filter((r) => r.why === 'ok' || r.why === 'mute' || r.why === 'idle').length, throttled: rows.filter((r) => r.why === 'throttle').length }; })()`)) as Record<string, number>;
+        console.log(`    8 người TỔNG HỢP (${synth.shots} đòn trong 10 giây) + mình đánh thật: ${meter8 ? `bus SFX đỉnh ${meter8.bus.sfx?.hold} dBFS, tổng ${meter8.bus.sum?.hold} dBFS, chạm trần ${meter8.bus.sum?.clips} lần` : 'không có đồng hồ'} · lời gọi ${JSON.stringify(dens8)}`);
+        report.loud = { bots: joined, seen, meter, dens, limiter: lim, synth: { shots: synth.shots, meter: meter8, dens: dens8 } };
       } finally {
         await bots.stop();
       }
     }
 
-    writeJson(r.out, 'xuong.json', report);
+    save();
     await gm(pg, 'labreset', 1500);
     await gm(pg, 'dvt');
   },

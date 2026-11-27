@@ -297,7 +297,8 @@ function AnimTables() {
                   {b.from} → {b.to}
                 </td>
                 <td className={b.pop >= BLEND_POP_WARN ? 'num bad' : 'num'}>{t('ui.gm.lab.clip.blend_ms', { n: b.ms })}</td>
-                <td className={b.spin >= BLEND_SPIN_WARN ? 'num bad' : 'num'}>{t('ui.gm.lab.clip.blend_spin', { n: b.spin })}</td>
+                <td className={b.spin >= BLEND_SPIN_WARN ? 'num bad' : 'num'}>{t('ui.gm.lab.clip.blend_spin', { n: b.spin })}
+                  {b.bone ? ' ' + b.bone : ''}</td>
               </tr>
             ))}
           </tbody>
@@ -305,6 +306,21 @@ function AnimTables() {
       )}
     </>
   );
+}
+
+/**
+ * Gắn hai nhóm nút vào một phần tử bất kỳ (console / kịch bản kiểm dùng khi chưa mở bảng F3). Trả hàm gỡ.
+ * Trong game hai nhóm nút nằm ở tab Diễn Võ của bảng F3.
+ */
+export function mountWorkshopControls(el: HTMLElement): () => void {
+  const root = createRoot(el);
+  root.render(
+    <>
+      <CastControls />
+      <ClipControls />
+    </>,
+  );
+  return () => root.unmount();
 }
 
 function WorkshopOverlay() {

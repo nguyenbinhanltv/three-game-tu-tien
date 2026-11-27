@@ -165,6 +165,12 @@ export interface PerformOpts {
   from?: number;
   /** Chờ bao lâu (giây) rồi mới phát. */
   delay?: number;
+  /**
+   * Bù trễ mạng (giây): dời khung trúng ĐẦU TIÊN muộn thêm chừng này bằng cách diễn chậm nhịp vào thế, động tác vẫn bắt đầu ngay khi bấm.
+   * Dùng cho đòn dự đoán của chính mình: sát thương server về muộn hơn khung trúng dự đoán đúng một vòng mạng, không bù thì tiếng trúng,
+   * khựng hình và số sát thương rơi sau nhát chém. Model không hỗ trợ thì bỏ qua.
+   */
+  lag?: number;
   /** Động tác nền không phải đòn đánh (idle đặc trưng): không tính vào `attacks`, không vào thế đấu/rút kiếm (`combatT`). */
   ambient?: boolean;
 }

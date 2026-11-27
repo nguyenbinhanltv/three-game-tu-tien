@@ -32,6 +32,9 @@ describe('castRows (lệch tiếng so với khung trúng của từng lần ra c
   it('phân biệt đánh hụt, có sát thương mà câm (tiếng bị giãn), và chiêu bị hủy trước khung trúng', () => {
     const miss = castRows([mark('windup', 0), mark('hit', 200)], [snd('sword', 0)]);
     expect(miss[0]!.verdict).toBe('miss');
+    // Chiêu khiên: timeline phát `block` sau khung trúng nhưng không có sát thương, không phải tiếng trúng muộn.
+    const shield = castRows([mark('windup', 0), mark('hit', 200)], [snd('block', 290)]);
+    expect(shield[0]).toMatchObject({ verdict: 'miss', hitSndMs: null });
     const mute = castRows([mark('windup', 0), mark('hit', 200), mark('dmg', 210, '')], [snd('hit', 210, 'throttle')]);
     expect(mute[0]!.verdict).toBe('mute');
     const cut = castRows([mark('windup', 0), mark('cancel', 90)], []);

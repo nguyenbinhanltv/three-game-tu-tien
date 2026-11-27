@@ -17,6 +17,8 @@ const ATTACK_FX = new Set(['sword', 'slash', 'thunder', 'rain', 'kanh', 'vankiem
 export const FX_LEAD = 0.06;
 /** Dung sai (ms) cho khe tối thiểu giữa hai lần dự đoán (engine cho ra chiêu từ 60 ms trước hết GCD). */
 const PREDICT_GAP_SLACK = 100;
+/** Đòn chuỗi bấm trong vòng ngần này (ms) sau khi hết khóa đòn trước thì coi là nối chuỗi (không bù trễ mạng). */
+const CHAIN_GAP_MS = 300;
 /** Dự đoán còn hiệu lực bao lâu chờ FX của server (ms). Quá thì coi như server từ chối. */
 const PREDICT_TTL = 800;
 /** Trễ hiệu ứng tối đa để chờ động tác dự đoán tới lúc ra đòn (giây). */
@@ -64,6 +66,21 @@ export function releaseAt(skill: SkillDef | undefined, poseId?: string): number 
  *   `hit[0] − FX_LEAD`, bỏ bớt nhịp chuẩn bị.
  * - Chiêu niệm chú: động tác chém xếp lịch từ FX `cast` để ra đòn đúng lúc niệm xong; chú hỏng thì hủy.
  */
+/**
+ * Ping engine ước (`Game.ping`, ms) gồm cả chờ tick và nhịp gửi patch của server, nên cao hơn độ muộn thật của tin sát thương chừng này.
+ * Đo ở Diễn Võ Trường (28/11, `pnpm shots xuong`): máy cạnh server ping ước 45 đến 70 ms mà sát thương chỉ muộn 5 đến 35 ms so với khung trúng;
+ * ping giả 150 ms thì ping ước ~210 ms, sát thương muộn 140 đến 220 ms.
+ */
+export const NET_LAG_FREE_MS = 30;
+/** Trần độ bù (giây): quá mức này nhịp vào thế trông ì; phần trễ còn lại đành để tiếng trúng đi sau nhát chém. */
+export const NET_LAG_MAX = 0.15;
+
+/** Độ bù khung trúng (giây) cho đòn dự đoán theo ping engine ước (ms). */
+export function netLagOf(pingMs: number): number {
+  if (!Number.isFinite(pingMs)) return 0;
+  return Math.max(0, Math.min(NET_LAG_MAX, (pingMs - NET_LAG_FREE_MS) / 1000));
+}
+
 export class SkillPoses {
   private predicted: { fx: string; at: number; release: number } | null = null;
   /** Đòn thường liên hoàn của mình: chỉ số đòn gần nhất và lúc đó (ms), để đoán đòn kế khi chưa có FX. */
@@ -74,6 +91,11 @@ export class SkillPoses {
   private lastLockMs = GCD * 1000;
   /** Hiệu ứng đòn của mình đang được giữ tới lúc này (performance.now, ms). */
   private holdUntil = 0;
+  /**
+   * Bù trễ mạng cho đòn dự đoán (giây, engine cập nhật theo ping đo được, xem `netLagOf`): khung trúng dời muộn chừng này để trùng lúc
+   * sát thương server về. 0 = không bù.
+   */
+  netLag = 0;
 
   /** Người chơi vừa gửi chiêu và mọi điều kiện kiểm được ở client đều qua: vào thế ngay. */
   predict(model: CharacterView | undefined, skill: SkillDef, now: number, gap?: number, method?: string): void {
@@ -86,11 +108,15 @@ export class SkillPoses {
     // Chỉ ghi dự đoán khi động tác thật sự bắt đầu: bị bỏ qua (trên không, bay, chết) thì FX về phải phát ngay,
     // không giữ hiệu ứng chờ một nhát vung không có.
     const pose = poseOf(skill, idx, method);
-    if (!model.perform(pose, performOpts(skill, idx, gap)) || !model.performing?.(pose)) return;
+    // Đòn nối chuỗi không bù: lệnh của nó đã được gửi SỚM theo ping (`attackLeadMs`) hoặc nằm trong bộ đệm của server, sát thương về trước
+    // khung trúng sẵn rồi (đo: sớm ~60 ms ở cả ping 0 lẫn 150). Chỉ đòn mở đầu chuỗi và chiêu thường mới muộn đúng một vòng mạng.
+    const chained = idx !== undefined && now - this.lastPredictAt < this.lastLockMs + CHAIN_GAP_MS;
+    const lag = chained ? 0 : this.netLag;
+    if (!model.perform(pose, { ...performOpts(skill, idx, gap), lag }) || !model.performing?.(pose)) return;
     this.lastPredictAt = now;
     this.lastLockMs = skillLock(skill, idx) * 1000;
     if (idx !== undefined) this.combo = { idx, at: now };
-    this.predicted = { fx: skill.fx, at: now, release: now + releaseAt(skill, pose) * 1000 };
+    this.predicted = { fx: skill.fx, at: now, release: now + (releaseAt(skill, pose) + lag) * 1000 };
   }
 
   /**

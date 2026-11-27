@@ -35,7 +35,7 @@ describe('BlendLog (nhật ký chuyển clip)', () => {
     const log = new BlendLog();
     log.push(0, [{ name: 'Idle', w: 1 }]);
     log.push(FRAME, [{ name: 'Hit_Chest', w: 1 }]);
-    expect(log.rows).toEqual([{ from: 'Idle', to: 'Hit_Chest', at: FRAME, ms: 0, pop: 1, spin: 0 }]);
+    expect(log.rows).toEqual([{ from: 'Idle', to: 'Hit_Chest', at: FRAME, ms: 0, pop: 1, spin: 0, bone: '' }]);
   });
 
   it('trọng số chưa chuẩn hóa (three chia theo tổng) vẫn cho cùng kết quả; action trùng tên được cộng', () => {
@@ -69,6 +69,34 @@ describe('BlendLog (nhật ký chuyển clip)', () => {
     ]);
     log.push(3 * FRAME, [{ name: 'Dodge', w: 1 }]);
     expect(log.rows.map((r) => `${r.from}>${r.to}`)).toEqual(['Idle>Dodge']);
+  });
+
+  it('clip đi/chạy trộn theo tốc độ đổi trọng số qua lại không tính là chuyển; clip dừng lên thay mới tính, đo từ lúc nó bắt đầu lên', () => {
+    const log = new BlendLog();
+    let t = 0;
+    log.push(t, [{ name: 'Run', w: 0.6 }, { name: 'Sprint', w: 0.4 }]);
+    for (let i = 0; i < 30; i++) {
+      t += FRAME;
+      const k = 0.5 + 0.1 * Math.sin(i / 3);
+      log.push(t, [{ name: 'Run', w: k }, { name: 'Sprint', w: 1 - k }]);
+    }
+    expect(log.rows).toHaveLength(0);
+    // Clip dừng lên trong 4 khung, clip chạy bị hạ về 0 cùng lúc.
+    const t0 = t;
+    for (let i = 1; i <= 4; i++) {
+      t += FRAME;
+      const k = i / 4;
+      log.push(t, [{ name: 'Run', w: 0.55 * (1 - k) }, { name: 'Sprint', w: 0.45 * (1 - k) }, { name: 'Stop', w: k }], i === 2 ? 700 : 300, i === 2 ? 'thigh_l' : 'head');
+    }
+    expect(log.rows).toHaveLength(1);
+    const r = log.rows[0]!;
+    expect(r.to).toBe('Stop');
+    expect(r.at).toBeCloseTo(t0 + FRAME, 6);
+    expect(r.ms).toBeGreaterThan(15);
+    expect(r.ms).toBeLessThan(55);
+    expect(r.pop).toBeLessThan(0.5);
+    expect(r.spin).toBe(700);
+    expect(r.bone).toBe('thigh_l');
   });
 
   it('chuỗi đứng → chạy → dừng ghi đủ hai lần chuyển; khung không có clip nào thì bỏ qua', () => {

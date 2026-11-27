@@ -56,7 +56,7 @@ export interface CastSound {
 
 /**
  * `ok` tiếng trúng trong dung sai; `late`/`early` lệch quá dung sai; `mute` có sát thương mà không có tiếng trúng (bị giãn hoặc thiếu);
- * `miss` không trúng ai (không sát thương, không tiếng trúng); `cut` chiêu bị hủy trước khung trúng.
+ * `miss` không gây sát thương (đánh hụt, hoặc chiêu tự thân như khiên/hồi); `cut` chiêu bị hủy trước khung trúng.
  */
 export type CastVerdict = 'ok' | 'late' | 'early' | 'mute' | 'miss' | 'cut';
 
@@ -93,11 +93,13 @@ export function castRows(marks: readonly CastMark[], sfx: readonly CastSfx[]): C
     const mine = heard.filter((s) => s.at >= w.at - 5 && s.at < end);
     const sounds = mine.map((s) => ({ name: s.name, offMs: Math.round(audible(s) - ref) }));
     const swing = mine.find((s) => SWING_SFX.has(s.name) && audible(s) <= ref + CAST_TOL_MS);
-    const hitSnd = hit ? mine.find((s) => HIT_SFX.has(s.name) && audible(s) >= hit.at - 30) : undefined;
+    // Chỉ tính tiếng trúng khi CÓ sát thương: chiêu khiên/hồi cũng phát `block`, `heal`… theo timeline nhưng đó không phải tiếng trúng đòn.
+    const hitSnd = hit && dmg ? mine.find((s) => HIT_SFX.has(s.name) && audible(s) >= Math.min(hit.at, dmg.at) - 30) : undefined;
     const hitSndMs = hitSnd && hit ? Math.round(audible(hitSnd) - hit.at) : null;
     let verdict: CastVerdict;
     if (!hit) verdict = 'cut';
-    else if (hitSndMs === null) verdict = dmg ? 'mute' : 'miss';
+    else if (!dmg) verdict = 'miss';
+    else if (hitSndMs === null) verdict = 'mute';
     else if (Math.abs(hitSndMs) <= CAST_TOL_MS) verdict = 'ok';
     else verdict = hitSndMs < 0 ? 'early' : 'late';
     return {

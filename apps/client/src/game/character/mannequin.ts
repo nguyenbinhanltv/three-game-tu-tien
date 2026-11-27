@@ -596,6 +596,22 @@ function shadowMaterial(): THREE.MeshStandardNodeMaterial {
   return shadowMat;
 }
 
+/**
+ * Thời gian (giây) clip DỪNG của nhịp di chuyển mờ vào. Xưởng animation của phòng thử đổi được trong phiên để so (không lưu);
+ * giá trị mặc định chọn theo số đo tốc độ xoay khớp lúc dừng chạy (`pnpm shots xuong --only anim`).
+ */
+export const PATCH_TUNE = { stopFade: 0.06 };
+
+/**
+ * Tỉ lệ tốc độ của nhịp vào thế để khung trúng đầu tiên (`hitAt`, giây theo đồng hồ chiêu) tới muộn thêm `lag` giây thật, tính từ mốc `from`.
+ * 1 = không đổi (không có mốc trúng, không bù, hoặc nhịp vào thế còn dưới 50 ms: kéo chậm một đoạn ngắn như vậy trông như khựng).
+ */
+export function windupWarp(hitAt: number | undefined, from: number, lag: number | undefined): number {
+  const left = (hitAt ?? 0) - from;
+  if (!lag || lag <= 0 || left < 0.05) return 1;
+  return left / (left + lag);
+}
+
 export class MannequinCharacter implements CharacterView {
   /** Bật tỉ lệ đọc từ trên (C2): phóng vai, tay, đầu, bàn tay cầm kiếm bằng scale xương, không sửa model. Chỉ gọi cho người chơi. */
   enableProportions(): void {
@@ -649,6 +665,8 @@ export class MannequinCharacter implements CharacterView {
     fired: number;
     env: number;
     recovered?: boolean;
+    /** Tỉ lệ tốc độ của nhịp vào thế (bù trễ mạng, xem `windupWarp`); 1 = tốc độ thật. */
+    warp: number;
     /** Đã hủy (phá niệm/lướt/di chuyển): không phát thêm `hit`, tắt dần nhanh. */
     cancelled?: boolean;
   } | null = null;
@@ -1313,7 +1331,7 @@ export class MannequinCharacter implements CharacterView {
     }
   }
 
-  private oneShot(name: string, rate = 1, upper = false): boolean {
+  private oneShot(name: string, rate = 1, upper = false, fadeIn = 0.06): boolean {
     let a = this.action(name);
     if (!a) return false;
     this.shotUpper = false;
@@ -1325,7 +1343,7 @@ export class MannequinCharacter implements CharacterView {
     a.setLoop(THREE.LoopOnce, 1);
     a.clampWhenFinished = false;
     a.timeScale = rate;
-    a.reset().fadeIn(0.06).play();
+    a.reset().fadeIn(fadeIn).play();
     this.shot = a;
     return true;
   }
@@ -1470,6 +1488,7 @@ export class MannequinCharacter implements CharacterView {
       combo: o.combo ?? -1,
       fired: 0,
       env: 0,
+      warp: windupWarp(tm?.hitAt[0], o.from ?? 0, o.lag),
     };
     const p = this.perf;
     if (tm) {
@@ -1501,7 +1520,8 @@ export class MannequinCharacter implements CharacterView {
   private emit(kind: SkillEvent['kind'], index: number): void {
     const p = this.perf;
     if (!p) return;
-    const hitIn = kind === 'windup' && p.timing ? Math.max(0, p.timing.hitAt[0]! - p.t) : undefined;
+    // Nhịp vào thế đang diễn chậm (`warp` < 1) thì thời gian THẬT tới khung trúng dài hơn theo tỉ lệ đó.
+    const hitIn = kind === 'windup' && p.timing ? Math.max(0, p.timing.hitAt[0]! - p.t) / p.warp : undefined;
     this.onSkillEvent?.({ kind, skill: p.skill, index, combo: p.combo, t: p.t, kb: !!p.timing?.kb, ...(hitIn !== undefined && { hitIn }) });
   }
 
@@ -1521,8 +1541,11 @@ export class MannequinCharacter implements CharacterView {
       this.abortPerform();
       return;
     }
-    p.t += dt;
     const tm = p.timing;
+    // Bù trễ mạng: tới khung trúng đầu tiên thì đồng hồ chiêu và hai clip cùng chạy chậm theo `warp`, sau đó về tốc độ thật.
+    const rate = p.warp < 1 && tm && p.fired === 0 ? p.warp : 1;
+    if (p.upper.timeScale !== rate) p.upper.timeScale = p.lower.timeScale = rate;
+    p.t += dt * rate;
     if (tm && !p.cancelled) {
       while (p.fired < tm.hitAt.length && p.t >= tm.hitAt[p.fired]!) this.emit('hit', p.fired++);
       if (p.fired >= tm.hitAt.length && p.t >= tm.hitAt[tm.hitAt.length - 1]! + 1e-3 && p.env > 0 && !p.recovered) {
@@ -1848,7 +1871,7 @@ export class MannequinCharacter implements CharacterView {
     }
     const other = !!this.shot && this.shot !== this.patchShot;
     const ev = this.patchMove.update(dt, a.speed, !free || other);
-    if (!ev || !this.oneShot(ev.clip, ev.rate)) return;
+    if (!ev || !this.oneShot(ev.clip, ev.rate, false, ev.kind === 'stop' ? PATCH_TUNE.stopFade : 0.06)) return;
     this.patchShot = this.shot;
     this.patchKind = ev.kind;
   }
