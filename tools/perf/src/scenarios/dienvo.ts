@@ -3,7 +3,7 @@
 // Có `--base <thư mục bộ trước>` thì so từng cảnh bằng SSIM/ΔE (tools/painted-compare/compare.mjs) và dựng trang trước/sau `index.html`.
 //   pnpm shots dienvo --out <thư mục> [--view 720p|1080p] [--query style=dahoa] [--base <thư mục>] [--ssim 0.9] [--only id1,id2]
 //                     [--quality high|medium|low] [--renderer webgl2] [--diag 1] [--layersoff 2,3] [--fx id1,id2] [--panel 1]
-//                     [--ping 150] [--swings 1 --window 4000] [--crowd 8,20,50] [--fx 'skl_kiem*' --gate 1] [--silhouette 1]
+//                     [--ping 150] [--swings 1 --window 4000] [--crowd 8,20,50] [--fx 'skl_kiem*' --gate 1] [--silhouette 1] [--floor light|grass|snow]
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -242,6 +242,9 @@ export default {
     await waitLevel(pg, 'dien_vo');
     // `--ping N`: bật ping giả N ms (khứ hồi) cho cả lượt chụp; `--swings 1`: cảnh đang đánh chỉ ĐẾM số đòn thường ra trong `--window` ms (mặc định 4000)
     // thay cho đo che quái, để so nhịp chuỗi đòn giữa các mức ping.
+    // `--floor light|grass|snow`: nền thử của sàn phòng cho cả lượt chụp (mặc định nền tối).
+    const floorId = opt('--floor', '');
+    if (floorId) console.log(`[shots:dienvo] nền thử ${floorId}: ${(await pg.evaluate((f) => window.__game!.labFloor(f), floorId)) ? 'đã đổi' : 'KHÔNG đổi được'}`);
     const ping = num('--ping', 0);
     if (ping > 0) await pg.evaluate((n) => void (window.__game!.fakePing = n), ping);
     const rows: Row[] = [];
@@ -285,6 +288,14 @@ export default {
       // Hiệu ứng: tắt lớp 0 rồi bật hết; phát một timeline.
       await btn('Hiệu ứng').click();
       await sleep(200);
+      const floorOf = () => pg.evaluate(() => (window.__game as unknown as { vdWonders: { floor?: string } | null }).vdWonders?.floor);
+      await btn('Nền tuyết').click();
+      await sleep(300);
+      check('nút "Nền tuyết" đổi nền thử', (await floorOf()) === 'snow');
+      await snap(pg, r.out, `${view}/panel-nen-tuyet.png`, { wait: 300 });
+      await btn('Nền tối').click();
+      await sleep(300);
+      check('nút "Nền tối" trả nền mặc định', (await floorOf()) === 'dark');
       await pg.locator('.debug-panel button', { hasText: /^0$/ }).first().click();
       await sleep(200);
       const off1 = await pg.evaluate(() => [...((window as unknown as { __fxLayerOff: Set<number> }).__fxLayerOff ?? [])]);

@@ -87,7 +87,9 @@ const FX_LAYER_BTNS = 48;
  * Xưởng VFX trên tab Diễn Võ: chọn một timeline, phát lên mục tiêu đang chọn (hoặc trước mặt), phát lặp, và bật tắt TỪNG LỚP để biết lớp nào vẽ gì.
  * Chỉ là lớp hình ở máy mình: không gửi lệnh nào lên server.
  */
+const LAB_FLOORS = ['dark', 'light', 'grass', 'snow'] as const;
 function FxLab() {
+  const [floor, setFloor] = useState<string>('dark');
   const [find, setFind] = useState('');
   const [fx, setFx] = useState(FX_IDS[0] ?? '');
   const [loop, setLoop] = useState(false);
@@ -126,6 +128,21 @@ function FxLab() {
         <Button size="s" pressed={loop} disabled={!cur} onClick={() => setLoop(!loop)}>
           {t('ui.gm.lab.fx_loop')}
         </Button>
+      </div>
+      <div className="debug-row wrap">
+        <span>{t('ui.gm.lab.floor')}</span>
+        {LAB_FLOORS.map((f) => (
+          <Button
+            key={f}
+            size="s"
+            pressed={floor === f}
+            onClick={() => {
+              if (Game.current?.labFloor(f)) setFloor(f);
+            }}
+          >
+            {t('ui.gm.lab.floor.' + f)}
+          </Button>
+        ))}
       </div>
       {shown.length > 0 && (
         <div className="debug-row wrap">
