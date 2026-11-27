@@ -368,15 +368,18 @@ const SPEC = {
   ],
   // Hồi Thiên Đan Lộ (chiêu cuối): lò đan khổng lồ hiện trên cao rót dòng đan dịch xanh ngọc-vàng nhạt xuống đạo hữu ngã, dưới đó nở bông sen lớn nhiều lớp; khói thuốc cuộn quanh lò.
   skl_hoi_thien_dan_lo: () => [
-    gather('dan_smoke_bud', { size: 4.6, off: [0, 5.2, 0], rest: { at: 'self' } }),
-    pullIn('self', [0, 4.6, 0], -0.34),
+    gather('dan_smoke_bud', { size: 3, off: [0, 4.4, -1.7], rest: { at: 'self' } }),
+    pullIn('self', [0, 3.6, -0.8], -0.34),
     scorch('self', [0, 0.02, 0], 3.4, -0.2),
-    strike('dan_cauldron_big', { size: 6.6, at: 'self', off: [0, 5.4, 0], dur: 1.6, erodeFrom: 0.5 }),
-    sprite('dan_smoke_bud', { t: 0.0, dur: 1.3, at: 'self', off: [0, 6.2, 0], size: 5, alpha: 0.55, erodeFrom: 0.4 }),
-    sprite('dan_pour', { t: 0.04, dur: 1.1, at: 'self', off: [0, 2.7, 0.2], size: 5.6, alpha: 0.9, erodeFrom: 0.45 }),
-    strike('dan_lotus_big', { size: 7.4, t: 0.1, at: 'self', off: [0, 0.8, 0], dur: 1.6, erodeFrom: 0.55, alpha: 0.9 }),
-    flash('self', [0, 1.3, 0], 4.4, 0.03, { dur: 0.22 }),
-    after('self', [0, 1.8, 0], 3.6, 0.22, 1.8),
+    // Hào quang quanh mình (27/11): lò đan treo cao sau lưng, dòng đan dịch và sen thu nhỏ; bật ĐẦY 0,16 s rồi bóng mờ.
+    strike('dan_cauldron_big', { size: 3.4, at: 'self', off: [0, 4.2, -1.7], dur: 0.16, erodeFrom: 0.6 }),
+    { ...sprite('dan_cauldron_big', { t: 0.13, dur: 1.47, at: 'self', off: [0, 4.2, -1.7], size: 3.4, erodeFrom: 0.5 }), alpha: 0.45 },
+    sprite('dan_smoke_bud', { t: 0.0, dur: 1.3, at: 'self', off: [0, 5.2, -1.7], size: 3, alpha: 0.35, erodeFrom: 0.4 }),
+    sprite('dan_pour', { t: 0.04, dur: 1.1, at: 'self', off: [0, 2.4, -1.7], size: 3, alpha: 0.85, erodeFrom: 0.45 }),
+    strike('dan_lotus_big', { size: 2.8, t: 0.1, at: 'self', off: [0, 0.8, -1.7], dur: 0.16, erodeFrom: 0.6, alpha: 0.8 }),
+    { ...sprite('dan_lotus_big', { t: 0.26, dur: 1.34, at: 'self', off: [0, 0.8, -1.7], size: 2.8, erodeFrom: 0.55 }), alpha: 0.45 },
+    flash('self', [0, 1.3, -0.5], 2.2, 0.03, { dur: 0.22 }),
+    { ...after('self', [0, 1.8, -1.7], 2, 0.22, 0.8), alpha: 0.3 },
     sparks('self', [0, 1.5, 0], 16, 0.04),
   ],
   // Thiên Đan Pháp Giới (chiêu cuối): vườn đan dược 14 m: viên đan khổng lồ bóng ngọc lơ lửng xoay quanh, linh thảo mọc quanh mép vùng, sương vàng nhạt; ngọn lửa thuốc vàng chanh trên đỉnh.

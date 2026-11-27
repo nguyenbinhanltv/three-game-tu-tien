@@ -232,14 +232,16 @@ const SPEC = {
   ],
   // Huyết Chiến Thế: hai đại đao bắt chéo chữ X lơ lửng sau lưng, cờ chiến rách tơi tung bay (than xám, KHÔNG đỏ).
   skl_huyet_chien_the: () => [
-    ...[gather('dao_crossed', { size: 2.6, off: [0, 2, -0.8], rest: { at: 'self' } })],
-    pullIn('self', [0, 1.4, 0], -0.24),
-    shade('self', [0, 0.25, -0.4], 3.6, 0),
-    strike('dao_crossed', { size: 4.6, at: 'self', off: [0, 2.3, -0.9], dur: 1.7, erodeFrom: 0.55 }),
-    sprite('dao_dust', { t: 0.05, dur: 1, at: 'self', off: [0, 0.8, 0], size: 3.4, alpha: 0.55, erodeFrom: 0.3 }),
-    flash('self', [0, 1.4, 0], 1.6, 0.03, { dur: 0.12 }),
-    scorch('self', [0, -1.05, 0], 2.8, -0.1, 2.4),
-    after('self', [0, 1.3, 0], 2.6, 0.25, 1.2),
+    ...[gather('dao_crossed', { size: 2.0, off: [0, 1.6, -2.4], rest: { at: 'self' } })],
+    pullIn('self', [0, 1.4, -1.2], -0.24),
+    shade('self', [0, 0.25, -1.2], 2.2, 0),
+    // Hào quang quanh mình (27/11): hai đao chéo bật ĐẦY 0,16 s rồi ở lại dạng bóng mờ sau lưng.
+    strike('dao_crossed', { size: 2.6, at: 'self', off: [0, 1.6, -2.4], dur: 0.16, erodeFrom: 0.6 }),
+    { ...sprite('dao_crossed', { t: 0.13, dur: 1.57, at: 'self', off: [0, 1.6, -2.4], size: 2.6, erodeFrom: 0.55 }), alpha: 0.3 },
+    sprite('dao_dust', { t: 0.05, dur: 1, at: 'self', off: [0, 0.8, -2.4], size: 2, alpha: 0.35, erodeFrom: 0.3 }),
+    flash('self', [0, 1.4, -0.5], 1.6, 0.03, { dur: 0.12 }),
+    scorch('self', [0, -1.05, -0.7], 2.4, -0.1, 2.4),
+    { ...after('self', [0, 1.3, -2.4], 1.8, 0.25, 0.8), alpha: 0.3 },
   ],
   // Đoạn Thiên Đao: vệt đao thép khổng lồ rạch ngang bầu trời mở khe tối trong mây, cột ánh đao rơi thẳng xuống, sóng gió thép tỏa ra mặt đất.
   skl_doan_thien_dao: () => [
