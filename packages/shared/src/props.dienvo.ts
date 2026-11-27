@@ -1,6 +1,7 @@
 // Diễn Võ Trường (phòng tập GM, level `dien_vo`): sáu khu và đạo cụ. Dùng chung client (vẽ sàn, biển tên) và server (xếp quái gọi ra, va chạm).
 // Sàn vuông 48 × 48 m quanh tâm (1300, 985); +z là phía cửa ra.
 import type { HandProp } from './props.types';
+import layoutJson from './props.dienvo.layout.json';
 
 export const DIEN_VO_CENTER = { x: 1300, z: 985 };
 /** Nửa cạnh sàn đá (m). */
@@ -43,6 +44,9 @@ export function dienVoZone(id: DienVoZoneId): DienVoZone {
  */
 export function dienVoSpawnAt(i: number, n: number, boss: boolean): { x: number; z: number } {
   const z = dienVoZone(boss ? 'boss' : 'arena');
+  // Điểm gọi quái đặt tay (chế độ chỉnh phòng, `props.dienvo.layout.json`): con thứ i đứng đúng điểm thứ i; hết điểm thì xếp vòng như cũ.
+  const slot = DIEN_VO_LAYOUT.spawns[boss ? 'boss' : 'arena'][i];
+  if (slot) return { x: slot.x, z: slot.z };
   if (n <= 1) return { x: z.x, z: z.z };
   const ring = Math.min((z.r ?? 6) - 1.5, boss ? 3 : 2.5 + n * 0.25);
   // Lệch nửa bước: không con nào đứng thẳng hướng bắc (mép trên khung hình ở camera 0°), con đầu danh sách (tinh anh) nằm chếch trong khung.
@@ -80,53 +84,77 @@ export interface LabScene {
   act?: { slot: number; waitMs: number };
 }
 
-const lamp = (x: number, z: number): HandProp => ({ id: 'prop_den_da', x, z, yaw: 0, s: 1, r: 0.5 });
-// Trụ đá khắc vân cao 9 m ở tỉ lệ 1: trong phòng chỉ cần ~3,6 m để đánh dấu hố boss mà không che khung hình.
-const pillar = (x: number, z: number, s = 0.4): HandProp => ({ id: 'prop_tru_da_khac_van', x, z, yaw: 0, s, r: 0.5 });
-const sign = (x: number, z: number, yaw: number): HandProp => ({ id: 'prop_bia_da', x, z, yaw, s: 0.9, r: 0.6 });
+/** Khu có điểm gọi quái đặt tay. */
+export type DienVoSpawnZone = 'arena' | 'boss';
 
-/** Hàng đạo cụ mẫu của hành lang (mỗi món cách nhau 2 m, quay mặt về phía nam): đá, cây, kiến trúc nhỏ, đồ tông môn. */
-// Tỉ lệ `s` đưa mỗi món về cỡ 2–2,5 m (chiều cao chuẩn ở assets/source/prop/<id>/meta.json: đá dựng 5 m, tượng võ sĩ 7 m…) để so chất liệu cạnh nhau.
-const CORRIDOR: readonly (readonly [string, number])[] = [
-  ['prop_da_dung', 0.45],
-  ['prop_da_nam', 0.5],
-  ['prop_tuong_da_vo_si', 0.34],
-  ['prop_tc_lu_huong', 0.7],
-  ['prop_tc_gia_kiem', 0.7],
-  ['prop_tc_chuong_dong', 0.55],
-  ['prop_tc_tinh_the_tim', 0.7],
-];
+/**
+ * Bố cục chỉnh tay của phòng (`props.dienvo.layout.json`): đạo cụ (đèn đá `prop_den_da` cũng là nguồn sáng) và điểm gọi quái.
+ * Sửa bằng chế độ chỉnh phòng (kéo thả trong phòng, chỉ ở máy phát triển) hoặc sửa tay file JSON; file là nguồn duy nhất, đổi qua commit.
+ */
+export interface DienVoLayout {
+  props: HandProp[];
+  /** Điểm gọi quái theo thứ tự: quái thứ i của `/gm spawn` hay cảnh mẫu đứng ở điểm thứ i; rỗng = xếp vòng quanh tâm khu. */
+  spawns: Record<DienVoSpawnZone, { x: number; z: number }[]>;
+}
 
-export const DIEN_VO_PROPS: readonly HandProp[] = [
-  // Bốn góc sàn và hai bên cửa ra: đèn đá.
-  lamp(1277, 962),
-  lamp(1323, 962),
-  lamp(1277, 1008),
-  lamp(1323, 1008),
-  lamp(1295, 1008),
-  lamp(1305, 1008),
-  // Sàn đấu: bốn đèn ở vành ngoài (ngoài vòng đánh).
-  lamp(1290.5, 975.5),
-  lamp(1309.5, 975.5),
-  lamp(1290.5, 994.5),
-  lamp(1309.5, 994.5),
-  // Hố boss: bốn trụ đá khắc vân.
-  pillar(1293, 963),
-  pillar(1307, 963),
-  pillar(1293, 973),
-  pillar(1307, 973),
-  // Biển tên khu (bia đá), đặt ở mép mỗi khu, mặt quay về giữa phòng.
-  sign(1300, 995, 0),
-  sign(1300, 975.5, 0),
-  sign(1288.5, 1001, 1.57),
-  sign(1293.5, 968.5, 0),
-  sign(1312, 968, -1.57),
-  sign(1314, 992, -1.57),
-  // Hành lang đạo cụ.
-  ...CORRIDOR.map(([id, s], i): HandProp => ({ id, x: 1279 + i * 2, z: 963, yaw: 0, s, r: 0.7 })),
-  // Buồng ánh sáng: góc cảnh mẫu (đá, cây khô, đèn lồng giấy) để chỉnh mood, sương, đèn.
-  { id: 'prop_cay_goc_kho', x: 1320, z: 965, yaw: 0.6, s: 0.5, r: 0.6 },
-  { id: 'prop_da_phien', x: 1316.5, z: 966, yaw: 0.2, s: 0.7 },
-  { id: 'prop_tc_long_den_giay', x: 1318, z: 971, yaw: 0, s: 1, r: 0.4 },
-  { id: 'prop_tc_da_reu', x: 1321, z: 970.5, yaw: 2.1, s: 0.7, r: 0.6 },
-];
+const MAX_PROPS = 200;
+const MAX_SPAWNS = 40;
+const r3 = (v: number) => Math.round(v * 1000) / 1000;
+const num = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v);
+const inFloor = (x: number, z: number) => Math.abs(x - DIEN_VO_CENTER.x) <= DIEN_VO_HALF && Math.abs(z - DIEN_VO_CENTER.z) <= DIEN_VO_HALF;
+
+/**
+ * Kiểm và chuẩn hóa một bố cục đọc từ file hay nhận từ trình chỉnh: sai thì trả `err` (không ném), đúng thì trả bản sao đã làm tròn 3 số lẻ.
+ * Luật: đạo cụ nằm trong sàn, id dạng `prop_*`, tỉ lệ 0,05–5, bán kính va chạm 0–5; điểm gọi quái nằm trong khu của nó, cách mép ≥ 1 m.
+ */
+export function checkDienVoLayout(raw: unknown): { ok: DienVoLayout } | { err: string } {
+  const o = raw as { props?: unknown; spawns?: Record<string, unknown> } | null;
+  if (!o || typeof o !== 'object' || !Array.isArray(o.props)) return { err: 'thiếu props' };
+  if (o.props.length > MAX_PROPS) return { err: `quá ${MAX_PROPS} đạo cụ` };
+  const props: HandProp[] = [];
+  for (const [i, v] of (o.props as Partial<HandProp>[]).entries()) {
+    if (!v || typeof v.id !== 'string' || !/^prop_[a-z0-9_]{1,60}$/.test(v.id)) return { err: `props[${i}]: id sai` };
+    if (!num(v.x) || !num(v.z) || !inFloor(v.x, v.z)) return { err: `props[${i}] (${v.id}): ngoài sàn` };
+    if (!num(v.yaw) || !num(v.s) || v.s < 0.05 || v.s > 5) return { err: `props[${i}] (${v.id}): yaw/s sai` };
+    if (v.r !== undefined && (!num(v.r) || v.r < 0 || v.r > 5)) return { err: `props[${i}] (${v.id}): r sai` };
+    const p: HandProp = { id: v.id, x: r3(v.x), z: r3(v.z), yaw: r3(v.yaw), s: r3(v.s) };
+    if (v.r) p.r = r3(v.r);
+    props.push(p);
+  }
+  const spawns: DienVoLayout['spawns'] = { arena: [], boss: [] };
+  for (const id of ['arena', 'boss'] as const) {
+    const list = o.spawns?.[id] ?? [];
+    if (!Array.isArray(list) || list.length > MAX_SPAWNS) return { err: `spawns.${id} sai` };
+    const zone = dienVoZone(id);
+    for (const [i, v] of (list as { x?: unknown; z?: unknown }[]).entries()) {
+      if (!v || !num(v.x) || !num(v.z)) return { err: `spawns.${id}[${i}] sai` };
+      if (Math.hypot(v.x - zone.x, v.z - zone.z) > (zone.r ?? 0) - 1 + 1e-6) return { err: `spawns.${id}[${i}]: ngoài khu` };
+      spawns[id].push({ x: r3(v.x), z: r3(v.z) });
+    }
+  }
+  return { ok: { props, spawns } };
+}
+
+function loadLayout(): DienVoLayout {
+  const c = checkDienVoLayout(layoutJson);
+  if ('err' in c) throw new Error(`props.dienvo.layout.json: ${c.err}`);
+  return c.ok;
+}
+
+/** Bố cục đang dùng. Đối tượng và các mảng bên trong giữ nguyên danh tính suốt đời tiến trình (`setDienVoLayout` thay nội dung tại chỗ). */
+export const DIEN_VO_LAYOUT: DienVoLayout = loadLayout();
+
+/** Đạo cụ của phòng (cùng mảng với `DIEN_VO_LAYOUT.props`). */
+export const DIEN_VO_PROPS: readonly HandProp[] = DIEN_VO_LAYOUT.props;
+
+/**
+ * Thay bố cục TẠI CHỖ (nạp lại tức thì ở máy phát triển: trình chỉnh phòng ở client, bộ theo dõi file ở server dev). Bố cục sai thì giữ
+ * nguyên bản cũ và trả lỗi. Không có đường nào từ tin nhắn của client tới hàm này.
+ */
+export function setDienVoLayout(raw: unknown): string | null {
+  const c = checkDienVoLayout(raw);
+  if ('err' in c) return c.err;
+  DIEN_VO_LAYOUT.props.splice(0, Infinity, ...c.ok.props);
+  for (const id of ['arena', 'boss'] as const) DIEN_VO_LAYOUT.spawns[id].splice(0, Infinity, ...c.ok.spawns[id]);
+  return null;
+}

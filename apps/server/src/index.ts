@@ -5,6 +5,7 @@ import { matchMaker, Server } from 'colyseus';
 import { Encoder } from '@colyseus/schema';
 import { WebSocketClient, WebSocketTransport } from '@colyseus/ws-transport';
 import { config } from './config';
+import { startDevReload } from './devReload';
 import { sqlite } from './db';
 import { installHttpRateLimit } from './ratelimit';
 import { dungeonRoomName, ROOM_TRIBULATION, TRIB_LEVEL, tribRoomNameOf, worldRoomName } from '@dtl/shared';
@@ -122,6 +123,8 @@ for (const lv of Object.values(LEVELS)) {
 }
 
 await gameServer.listen(config.port);
+// Diễn Võ Trường V3: nạp lại dữ liệu tức thì, chỉ khi đăng nhập thử đang bật (máy phát triển); production trả null.
+startDevReload();
 void maybeCpuProfile();
 log.info(`[server] Đạp Thiên Lộ chạy ở cổng ${config.port}`);
 log.info(

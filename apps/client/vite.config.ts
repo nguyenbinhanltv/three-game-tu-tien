@@ -3,6 +3,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import react from '@vitejs/plugin-react';
 import { defineConfig, loadEnv, type Plugin } from 'vite';
+import { dtlHotData } from './dtlHotData';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const serverDir = path.resolve(here, '..', 'server');
@@ -103,7 +104,7 @@ export default defineConfig(({ command, mode }) => {
   // VITE_ASSET_BASE (CDN/R2): process.env hoặc apps/client/.env*; trống = asset cùng origin (.asset-cache/ rồi public/).
   const assetBase = (process.env.VITE_ASSET_BASE ?? loadEnv(mode, here, 'VITE_').VITE_ASSET_BASE ?? '').trim().replace(/\/+$/, '');
   return {
-    plugins: [react(), titleFromI18n(assetBase ? `${assetBase}/` : '/'), assetCache(), lazyColliders()],
+    plugins: [react(), titleFromI18n(assetBase ? `${assetBase}/` : '/'), assetCache(), lazyColliders(), dtlHotData(path.resolve(here, '../..'))],
     worker: { plugins: () => [lazyColliders()] },
     define: command === 'serve' ? { 'import.meta.env.VITE_DEV_SERVER_PORT': JSON.stringify(String(Number(env.PORT || 2567))) } : {},
     // strictPort: cổng bận thì báo lỗi thay vì âm thầm nhảy sang cổng khác (có thể là của worktree khác).

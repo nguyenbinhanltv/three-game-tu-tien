@@ -1,5 +1,16 @@
 import { describe, expect, it } from 'vitest';
-import { DIEN_VO_CENTER, DIEN_VO_HALF, DIEN_VO_PROPS, DIEN_VO_ZONES, dienVoSpawnAt, dienVoZone } from './props.dienvo';
+import {
+  checkDienVoLayout,
+  DIEN_VO_CENTER,
+  DIEN_VO_HALF,
+  DIEN_VO_LAYOUT,
+  DIEN_VO_PROPS,
+  DIEN_VO_ZONES,
+  dienVoSpawnAt,
+  dienVoZone,
+  setDienVoLayout,
+} from './props.dienvo';
+import layoutJson from './props.dienvo.layout.json';
 
 const inFloor = (x: number, z: number, pad = 0) =>
   Math.abs(x - DIEN_VO_CENTER.x) <= DIEN_VO_HALF - pad && Math.abs(z - DIEN_VO_CENTER.z) <= DIEN_VO_HALF - pad;
@@ -36,5 +47,59 @@ describe('Diễn Võ Trường: bố cục sáu khu', () => {
         }
       }
     }
+  });
+});
+
+describe('Diễn Võ Trường: bố cục chỉnh tay (props.dienvo.layout.json)', () => {
+  const snap = () => JSON.parse(JSON.stringify(DIEN_VO_LAYOUT)) as typeof DIEN_VO_LAYOUT;
+
+  it('file bố cục hợp lệ và đã ở dạng chuẩn (lưu lại không đổi gì)', () => {
+    const c = checkDienVoLayout(layoutJson);
+    expect('ok' in c && c.ok).toEqual(layoutJson);
+    expect(DIEN_VO_PROPS.length).toBeGreaterThan(20);
+  });
+
+  it('điểm gọi quái đặt tay được dùng theo thứ tự, hết điểm thì xếp vòng như cũ', () => {
+    const before = snap();
+    const ring = dienVoSpawnAt(1, 3, false);
+    try {
+      expect(setDienVoLayout({ ...before, spawns: { arena: [{ x: 1298, z: 983 }], boss: [{ x: 1301, z: 969 }] } })).toBeNull();
+      expect(dienVoSpawnAt(0, 3, false)).toEqual({ x: 1298, z: 983 });
+      expect(dienVoSpawnAt(1, 3, false)).toEqual(ring);
+      expect(dienVoSpawnAt(0, 1, true)).toEqual({ x: 1301, z: 969 });
+    } finally {
+      setDienVoLayout(before);
+    }
+    expect(snap()).toEqual(before);
+    expect(dienVoSpawnAt(0, 1, false)).toEqual({ x: 1300, z: 985 });
+  });
+
+  it('đổi bố cục giữ nguyên danh tính mảng (propsOf và server thấy ngay)', () => {
+    const before = snap();
+    const arr = DIEN_VO_PROPS;
+    try {
+      expect(setDienVoLayout({ props: [{ id: 'prop_den_da', x: 1300.12345, z: 990, yaw: 0, s: 1 }], spawns: { arena: [], boss: [] } })).toBeNull();
+      expect(DIEN_VO_PROPS).toBe(arr);
+      expect(arr).toEqual([{ id: 'prop_den_da', x: 1300.123, z: 990, yaw: 0, s: 1 }]);
+    } finally {
+      setDienVoLayout(before);
+    }
+  });
+
+  it('bố cục sai bị từ chối và bản đang dùng không đổi', () => {
+    const before = snap();
+    const p = { id: 'prop_den_da', x: 1300, z: 990, yaw: 0, s: 1 };
+    const bad: unknown[] = [
+      null,
+      {},
+      { props: [{ ...p, x: 1200 }] },
+      { props: [{ ...p, id: '../../etc' }] },
+      { props: [{ ...p, s: 99 }] },
+      { props: [{ ...p, yaw: Number.NaN }] },
+      { props: [], spawns: { arena: [{ x: 1300, z: 960 }] } },
+      { props: Array.from({ length: 201 }, () => p) },
+    ];
+    for (const b of bad) expect(setDienVoLayout(b), JSON.stringify(b)?.slice(0, 80)).not.toBeNull();
+    expect(snap()).toEqual(before);
   });
 });
