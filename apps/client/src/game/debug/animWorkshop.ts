@@ -80,6 +80,16 @@ export function footBones(rig: THREE.Object3D): THREE.Object3D[] {
     const hit = all.filter((b) => re.test(b.name) && !/ik|twist|end/i.test(b.name));
     if (hit.length) return hit.slice(0, 4);
   }
+  // Quái của bộ dựng thủ tục: chuỗi `leg_<chân>_<số>` (vd. `leg_fl_0..2`), khúc số lớn nhất của mỗi chân là bàn chân.
+  const tips = new Map<string, { n: number; bone: THREE.Object3D }>();
+  for (const b of all) {
+    const m = /^(leg_[a-z]+)_(\d+)$/i.exec(b.name);
+    if (!m) continue;
+    const n = Number(m[2]);
+    const cur = tips.get(m[1]!);
+    if (!cur || n > cur.n) tips.set(m[1]!, { n, bone: b });
+  }
+  if (tips.size) return [...tips.values()].map((x) => x.bone).slice(0, 4);
   return [];
 }
 
@@ -101,7 +111,7 @@ export class AnimWorkshop {
   private model: CharacterView | null = null;
   private port: LabAnimPort | null = null;
   private feet: THREE.Object3D[] = [];
-  private spins: { bone: THREE.Object3D; q: THREE.Quaternion }[] = [];
+  private spins: { bone: THREE.Object3D; q: THREE.Quaternion; at: number }[] = [];
   private slide = new FootSlide();
   /** Gốc nhân vật cao hơn mặt đất bao nhiêu (m) ở khung vừa đo: khác 0 nhiều là nhân vật đang lơ lửng hoặc hàm mặt đất không khớp level. */
   private lift = 0;
@@ -160,7 +170,7 @@ export class AnimWorkshop {
     this.model = model;
     this.port = model?.labAnim?.() ?? null;
     this.feet = this.port ? footBones(this.port.rig) : [];
-    this.spins = this.port ? spinBones(this.port.rig).map((bone) => ({ bone, q: bone.quaternion.clone() })) : [];
+    this.spins = this.port ? spinBones(this.port.rig).map((bone) => ({ bone, q: bone.quaternion.clone(), at: performance.now() })) : [];
     this.slide.reset();
     this.blends.reset();
   }
@@ -188,12 +198,19 @@ export class AnimWorkshop {
     let spin = 0;
     let spinBone = '';
     for (const b of this.spins) {
-      const v = dt > 1e-4 ? (b.q.angleTo(b.bone.quaternion) * 180) / Math.PI / dt : 0;
+      const ang = b.q.angleTo(b.bone.quaternion);
+      // Xương không đổi khung này (model ở xa chỉ chạy mixer 30 Hz hoặc thưa hơn): chờ lần đổi kế, chia theo khoảng thời gian THẬT giữa hai lần đổi.
+      // Chia theo một khung vẽ thì model cập nhật thưa bị thổi phồng gấp 2 đến 4 lần (đo 28/11 trên boss ở xa).
+      if (ang < 1e-5) continue;
+      const span = (now - b.at) / 1000;
+      b.at = now;
+      b.q.copy(b.bone.quaternion);
+      if (dt <= 1e-4 || span <= 1e-4 || span > 0.25) continue;
+      const v = (ang * 180) / Math.PI / span;
       if (v > spin) {
         spin = v;
         spinBone = b.bone.name;
       }
-      b.q.copy(b.bone.quaternion);
     }
     // Đang ép clip thì số đo không phản ánh game: bỏ qua.
     if (this.held) return;
