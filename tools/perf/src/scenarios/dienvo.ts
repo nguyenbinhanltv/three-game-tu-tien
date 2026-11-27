@@ -2,7 +2,7 @@
 // dữ liệu ở packages/content/data/lab/scenes.json), chụp mỗi cảnh một ảnh cùng góc + số đo, rồi ra và kiểm nhân vật về nguyên trạng.
 // Có `--base <thư mục bộ trước>` thì so từng cảnh bằng SSIM/ΔE (tools/painted-compare/compare.mjs) và dựng trang trước/sau `index.html`.
 //   pnpm shots dienvo --out <thư mục> [--view 720p|1080p] [--query style=dahoa] [--base <thư mục>] [--ssim 0.9] [--only id1,id2]
-//                     [--quality high|medium|low] [--renderer webgl2] [--diag 1] [--layersoff 2,3] [--fx id1,id2]
+//                     [--quality high|medium|low] [--renderer webgl2] [--diag 1] [--layersoff 2,3] [--fx id1,id2] [--panel 1]
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -121,7 +121,8 @@ export default {
       query: { cam: 'iso', quiet: 1 },
       extra: query,
       seenIntro: true,
-      hide: 'hud',
+      // `--panel 1`: kiểm tab Diễn Võ bằng cách BẤM NÚT THẬT, nên phải để giao diện hiện.
+      hide: opt('--panel', '') ? undefined : 'hud',
     });
     await skipCutscene(pg, 20);
     // Xưởng VFX: `--layersoff 0,3` tắt các lớp có chỉ số đó trong `events` của mọi timeline phát ra (soi lớp nào vẽ gì).
@@ -137,6 +138,81 @@ export default {
     await gm(pg, 'dvt');
     await waitLevel(pg, 'dien_vo');
     const rows: Row[] = [];
+    // `--panel 1`: mở bảng F3, bấm các nút của tab Diễn Võ bằng chuột thật (Playwright) và kiểm kết quả ở trạng thái game. Thay cho việc bấm tay.
+    if (opt('--panel', '')) {
+      const checks: { name: string; ok: boolean; note?: string }[] = [];
+      const check = (name: string, ok: boolean, note?: string) => {
+        checks.push({ name, ok, note });
+        console.log(`  ${ok ? 'ĐẠT ' : 'HỎNG'} ${name}${note ? ' — ' + note : ''}`);
+      };
+      const btn = (name: string) => pg.locator('.debug-panel button', { hasText: name }).first();
+      const mons = () => pg.evaluate(() => [...window.__game!.view.monsters.values()].filter((m) => m.st !== 4).length);
+      await pg.keyboard.press('F3');
+      await sleep(600);
+      check('bảng F3 mở', (await pg.locator('.debug-panel').count()) > 0);
+      await snap(pg, r.out, `${view}/panel-1-mo.png`, { wait: 300 });
+      // Nạp cảnh mẫu đầu danh sách (ba sói).
+      await btn('Nạp cảnh').click();
+      await sleep(4500);
+      const n1 = await mons();
+      check('nút "Nạp cảnh" dựng quái', n1 === 3, `${n1} quái sống`);
+      // Thời gian: Dừng rồi Bước 1 khung, rồi 100%.
+      await btn('Thời gian').click();
+      await sleep(200);
+      await btn('Dừng').click();
+      await sleep(300);
+      check('nút "Dừng" đặt tốc độ hình về 0', (await pg.evaluate(() => window.__game!.timeScale)) === 0);
+      const f0 = await pg.evaluate(() => window.__game!.stepLeft);
+      await btn('Bước 5 khung').click();
+      const f1 = await pg.evaluate(() => window.__game!.stepLeft);
+      check('nút "Bước 5 khung" xếp khung chờ bước', f1 > f0 || f1 === 0, `stepLeft ${f0} → ${f1}`);
+      await btn('100%').click();
+      await sleep(300);
+      check('nút "100%" trả tốc độ hình về 1', (await pg.evaluate(() => window.__game!.timeScale)) === 1);
+      // Hiệu ứng: tắt lớp 0 rồi bật hết; phát một timeline.
+      await btn('Hiệu ứng').click();
+      await sleep(200);
+      await pg.locator('.debug-panel button', { hasText: /^0$/ }).first().click();
+      await sleep(200);
+      const off1 = await pg.evaluate(() => [...((window as unknown as { __fxLayerOff: Set<number> }).__fxLayerOff ?? [])]);
+      check('nút lớp "0" tắt lớp 0', off1.length === 1 && off1[0] === 0, JSON.stringify(off1));
+      await btn('Bật hết').click();
+      await sleep(200);
+      const off2 = await pg.evaluate(() => (window as unknown as { __fxLayerOff: Set<number> }).__fxLayerOff.size);
+      check('nút "Bật hết" bật lại mọi lớp', off2 === 0);
+      const live0 = await pg.evaluate(() => (window.__game as unknown as { vfx: { pool: { live: number } } }).vfx.pool.live);
+      await btn('Phát').click();
+      await sleep(250);
+      const live1 = await pg.evaluate(() => (window.__game as unknown as { vfx: { pool: { live: number } } }).vfx.pool.live);
+      check('nút "Phát" tạo lưới hiệu ứng', live1 > live0, `lưới sống ${live0} → ${live1}`);
+      await snap(pg, r.out, `${view}/panel-2-hieu-ung.png`, { wait: 200 });
+      // Mọi nút của tab phải nằm TRONG khung nhìn (bảng không cuộn được bằng chuột): kiểm từng nhóm con.
+      for (const tab of ['Cảnh và nhân vật', 'Quái trong phòng', 'Hiệu ứng', 'Thời gian']) {
+        await btn(tab).click();
+        await sleep(200);
+        const out = await pg.evaluate(() => {
+          const H = window.innerHeight;
+          return [...document.querySelectorAll('.debug-tools button')].filter((b) => {
+            const q = b.getBoundingClientRect();
+            return q.top < 0 || q.bottom > H;
+          }).length;
+        });
+        check(`nhóm "${tab}": mọi nút nằm trong khung 720p`, out === 0, `${out} nút ngoài khung`);
+        await snap(pg, r.out, `${view}/panel-nhom-${tab.replace(/\s+/g, '-')}.png`, { wait: 100 });
+      }
+      // Trả phòng về như mới.
+      await btn('Trả phòng về như mới').click();
+      await sleep(2000);
+      const n2 = await mons();
+      check('nút "Trả phòng về như mới" dọn quái', n2 === 0, `${n2} quái sống`);
+      await btn('Vào / rời Diễn Võ Trường').click();
+      await waitLevel(pg, 'van_lam');
+      check('nút "Vào / rời Diễn Võ Trường" đưa về bản đồ', true);
+      writeJson(r.out, `dienvo-panel-${view}.json`, { view, checks });
+      const bad = checks.filter((c) => !c.ok);
+      console.log(bad.length ? `[shots:dienvo] ${bad.length} nút HỎNG` : `[shots:dienvo] ${checks.length}/${checks.length} mục của tab Diễn Võ đạt`);
+      return;
+    }
     // Xưởng VFX: `--fx id1,id2` phát từng timeline lên con sói gần nhất của cảnh `soi_thuong` (đã đóng băng) và chụp ở +30/+150/+400 ms
     // (dừng lớp hình đúng mốc). Bỏ qua bộ cảnh mẫu.
     const fxIds = opt('--fx', '')

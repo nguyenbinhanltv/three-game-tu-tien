@@ -76,6 +76,8 @@ const GM_GROUP_IDS: GmGroup[] = ['lab', 'char', 'skill', 'gear', 'outfit', 'weap
 const LAB_STATES = ['weak', 'break', 'stun', 'chant', 'clear'] as const;
 const LAB_PHASES = [0, 1, 2, 3];
 const LAB_SPEEDS = [100, 50, 25, 10];
+/** Nhóm con của tab Diễn Võ: bảng F3 không cuộn được nên mỗi lúc chỉ hiện một nhóm cho vừa màn 720p. */
+const LAB_TABS = ['scene', 'mon', 'fx', 'time'] as const;
 const FX_IDS = [...FX_TIMELINE.keys()].sort();
 /** Số lớp tối đa hiện nút bật tắt (bảng F3 không cuộn được; timeline dài hơn thì soi phần còn lại bằng `pnpm shots dienvo --layersoff`). */
 const FX_LAYER_BTNS = 48;
@@ -217,6 +219,7 @@ function Tools() {
   const [labLevel, setLabLevel] = useState(30);
   const [phase, setPhase] = useState(1);
   const [scene, setScene] = useState(LAB_SCENES[0]?.id ?? '');
+  const [labTab, setLabTab] = useState<(typeof LAB_TABS)[number]>('scene');
   // Tốc độ lớp hình (phần trăm; 0 = dừng). Chỉ đổi cách máy mình vẽ, không gửi gì lên server.
   const [speed, setSpeed] = useState(() => Math.round((Game.current?.timeScale ?? 1) * 100));
   const setLabSpeed = (n: number) => {
@@ -253,114 +256,131 @@ function Tools() {
             </Button>
           </div>
           <div className="debug-row wrap">
-            <Pick
-              label={t('ui.gm.lab.scene')}
-              value={scene}
-              onChange={setScene}
-              options={LAB_SCENES.map((s) => ({ value: s.id, label: t('lab.scene.' + s.id) }))}
-            />
-            <Button size="s" variant="primary" disabled={!scene} onClick={() => gm('scene ' + scene)}>
-              {t('ui.gm.lab.scene_btn')}
-            </Button>
-            <Button size="s" onClick={() => gm('scene save')}>
-              {t('ui.gm.lab.scene_save')}
-            </Button>
-          </div>
-          <div className="debug-row wrap">
-            <Pick
-              label={t('ui.gm.method')}
-              value={method}
-              onChange={setMethod}
-              options={METHODS.map((m) => ({ value: m.id, label: methodName(m.id) }))}
-            />
-            <Pick
-              label={t('ui.debug.realm')}
-              value={labLevel}
-              onChange={setLabLevel}
-              options={LAB_LEVELS.map((lv) => ({ value: lv, label: realmName(lv) }))}
-            />
-            <Button size="s" variant="primary" onClick={() => gm(`build ${method} ${labLevel}`)}>
-              {t('ui.gm.lab.build')}
-            </Button>
-            <Button size="s" onClick={() => gm('free')}>
-              {t('ui.gm.lab.free')}
-            </Button>
-            <Button size="s" onClick={() => gm('god')}>
-              {t('ui.debug.god')}
-            </Button>
-          </div>
-          <div className="debug-row wrap">
-            <label>
-              <span>{t('ui.gm.lab.find')}</span>
-              <input value={find} onChange={(e) => setFind(e.target.value)} onKeyDown={(e) => e.stopPropagation()} />
-            </label>
-            <Pick
-              label={t('ui.debug.spawn')}
-              value={labMon}
-              onChange={setMon}
-              options={found.map((m) => ({ value: m.id, label: monsterName(m.id) }))}
-            />
-            <Pick
-              label={t('ui.gm.spawn_n')}
-              value={count}
-              onChange={setCount}
-              options={SPAWN_COUNTS.map((v) => ({ value: v, label: String(v) }))}
-            />
-            <Button size="s" variant="primary" disabled={!labMon} onClick={() => gm(`spawn ${labMon} ${count}`)}>
-              {t('ui.debug.spawn_btn')}
-            </Button>
-            <Button size="s" onClick={() => gm('spawn clear')}>
-              {t('ui.gm.spawn_clear')}
-            </Button>
-          </div>
-          <div className="debug-row wrap">
-            <Button size="s" onClick={() => gm('freeze')}>
-              {t('ui.gm.lab.freeze')}
-            </Button>
-            <Button size="s" onClick={() => gm('lockhp')}>
-              {t('ui.gm.lab.lockhp')}
-            </Button>
-            <Button size="s" onClick={() => gm('hurt 50')}>
-              {t('ui.gm.lab.hurt')}
-            </Button>
-            <Button size="s" onClick={() => gm('killall')}>
-              {t('ui.debug.killall')}
-            </Button>
-          </div>
-          <div className="debug-row wrap">
-            {LAB_STATES.map((s) => (
-              <Button key={s} size="s" onClick={() => gm('state ' + s + (s === 'clear' ? '' : ' 20'))}>
-                {t('ui.gm.lab.st.' + s)}
+            {LAB_TABS.map((k) => (
+              <Button key={k} size="s" pressed={labTab === k} onClick={() => setLabTab(k)}>
+                {t('ui.gm.lab.tab.' + k)}
               </Button>
             ))}
-            <Pick
-              label={t('ui.gm.lab.phase')}
-              value={phase}
-              onChange={setPhase}
-              options={LAB_PHASES.map((v) => ({ value: v, label: String(v + 1) }))}
-            />
-            <Button size="s" onClick={() => gm('state phase ' + phase)}>
-              {t('ui.debug.set')}
-            </Button>
           </div>
-          <FxLab />
-          <div className="debug-row wrap">
-            <span>{t('ui.gm.lab.time')}</span>
-            {LAB_SPEEDS.map((n) => (
-              <Button key={n} size="s" pressed={speed === n} onClick={() => setLabSpeed(n)}>
-                {t('ui.gm.lab.time_v', { n })}
+          {labTab === 'scene' && (
+            <>
+              <div className="debug-row wrap">
+                <Pick
+                  label={t('ui.gm.lab.scene')}
+                  value={scene}
+                  onChange={setScene}
+                  options={LAB_SCENES.map((s) => ({ value: s.id, label: t('lab.scene.' + s.id) }))}
+                />
+                <Button size="s" variant="primary" disabled={!scene} onClick={() => gm('scene ' + scene)}>
+                  {t('ui.gm.lab.scene_btn')}
+                </Button>
+                <Button size="s" onClick={() => gm('scene save')}>
+                  {t('ui.gm.lab.scene_save')}
+                </Button>
+              </div>
+              <div className="debug-row wrap">
+                <Pick
+                  label={t('ui.gm.method')}
+                  value={method}
+                  onChange={setMethod}
+                  options={METHODS.map((m) => ({ value: m.id, label: methodName(m.id) }))}
+                />
+                <Pick
+                  label={t('ui.debug.realm')}
+                  value={labLevel}
+                  onChange={setLabLevel}
+                  options={LAB_LEVELS.map((lv) => ({ value: lv, label: realmName(lv) }))}
+                />
+                <Button size="s" variant="primary" onClick={() => gm(`build ${method} ${labLevel}`)}>
+                  {t('ui.gm.lab.build')}
+                </Button>
+                <Button size="s" onClick={() => gm('free')}>
+                  {t('ui.gm.lab.free')}
+                </Button>
+                <Button size="s" onClick={() => gm('god')}>
+                  {t('ui.debug.god')}
+                </Button>
+              </div>
+            </>
+          )}
+          {labTab === 'mon' && (
+            <>
+              <div className="debug-row wrap">
+                <label>
+                  <span>{t('ui.gm.lab.find')}</span>
+                  <input value={find} onChange={(e) => setFind(e.target.value)} onKeyDown={(e) => e.stopPropagation()} />
+                </label>
+                <Pick
+                  label={t('ui.debug.spawn')}
+                  value={labMon}
+                  onChange={setMon}
+                  options={found.map((m) => ({ value: m.id, label: monsterName(m.id) }))}
+                />
+                <Pick
+                  label={t('ui.gm.spawn_n')}
+                  value={count}
+                  onChange={setCount}
+                  options={SPAWN_COUNTS.map((v) => ({ value: v, label: String(v) }))}
+                />
+                <Button size="s" variant="primary" disabled={!labMon} onClick={() => gm(`spawn ${labMon} ${count}`)}>
+                  {t('ui.debug.spawn_btn')}
+                </Button>
+                <Button size="s" onClick={() => gm('spawn clear')}>
+                  {t('ui.gm.spawn_clear')}
+                </Button>
+              </div>
+              <div className="debug-row wrap">
+                <Button size="s" onClick={() => gm('freeze')}>
+                  {t('ui.gm.lab.freeze')}
+                </Button>
+                <Button size="s" onClick={() => gm('lockhp')}>
+                  {t('ui.gm.lab.lockhp')}
+                </Button>
+                <Button size="s" onClick={() => gm('hurt 50')}>
+                  {t('ui.gm.lab.hurt')}
+                </Button>
+                <Button size="s" onClick={() => gm('killall')}>
+                  {t('ui.debug.killall')}
+                </Button>
+              </div>
+              <div className="debug-row wrap">
+                {LAB_STATES.map((s) => (
+                  <Button key={s} size="s" onClick={() => gm('state ' + s + (s === 'clear' ? '' : ' 20'))}>
+                    {t('ui.gm.lab.st.' + s)}
+                  </Button>
+                ))}
+                <Pick
+                  label={t('ui.gm.lab.phase')}
+                  value={phase}
+                  onChange={setPhase}
+                  options={LAB_PHASES.map((v) => ({ value: v, label: String(v + 1) }))}
+                />
+                <Button size="s" onClick={() => gm('state phase ' + phase)}>
+                  {t('ui.debug.set')}
+                </Button>
+              </div>
+            </>
+          )}
+          {labTab === 'fx' && <FxLab />}
+          {labTab === 'time' && (
+            <div className="debug-row wrap">
+              <span>{t('ui.gm.lab.time')}</span>
+              {LAB_SPEEDS.map((n) => (
+                <Button key={n} size="s" pressed={speed === n} onClick={() => setLabSpeed(n)}>
+                  {t('ui.gm.lab.time_v', { n })}
+                </Button>
+              ))}
+              <Button size="s" pressed={speed === 0} onClick={() => setLabSpeed(0)}>
+                {t('ui.gm.lab.pause')}
               </Button>
-            ))}
-            <Button size="s" pressed={speed === 0} onClick={() => setLabSpeed(0)}>
-              {t('ui.gm.lab.pause')}
-            </Button>
-            <Button size="s" disabled={speed !== 0} onClick={() => Game.current && (Game.current.stepLeft += 1)}>
-              {t('ui.gm.lab.step')}
-            </Button>
-            <Button size="s" disabled={speed !== 0} onClick={() => Game.current && (Game.current.stepLeft += 5)}>
-              {t('ui.gm.lab.step5')}
-            </Button>
-          </div>
+              <Button size="s" disabled={speed !== 0} onClick={() => Game.current && (Game.current.stepLeft += 1)}>
+                {t('ui.gm.lab.step')}
+              </Button>
+              <Button size="s" disabled={speed !== 0} onClick={() => Game.current && (Game.current.stepLeft += 5)}>
+                {t('ui.gm.lab.step5')}
+              </Button>
+            </div>
+          )}
           <div className="debug-note">{t('ui.gm.lab.note')}</div>
         </>
       )}
