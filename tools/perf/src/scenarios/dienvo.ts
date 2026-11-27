@@ -300,6 +300,21 @@ export default {
       await btn('Trộn').click();
       await sleep(900);
       const nums = await pg.locator('.dmg-layer .dmg').count();
+      // Số cặp số sát thương đè lên nhau quá 30% diện tích số nhỏ hơn (đọc không ra khi chồng): đo ngay lúc đang bắn dày.
+      const clash = await pg.evaluate(() => {
+        const bs = [...document.querySelectorAll('.dmg-layer .dmg')].filter((e) => Number(getComputedStyle(e).opacity) > 0.5).map((e) => e.getBoundingClientRect());
+        let pairs = 0;
+        for (let i = 0; i < bs.length; i++)
+          for (let j = i + 1; j < bs.length; j++) {
+            const a = bs[i]!;
+            const b = bs[j]!;
+            const w = Math.min(a.right, b.right) - Math.max(a.left, b.left);
+            const h = Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top);
+            if (w > 0 && h > 0 && w * h > 0.3 * Math.min(a.width * a.height, b.width * b.height)) pairs++;
+          }
+        return { n: bs.length, pairs };
+      });
+      check('số sát thương bắn dày không đè lên nhau', clash.pairs <= 2, `${clash.pairs} cặp chồng nhau trên ${clash.n} số đang rõ`);
       check('nút "Trộn" bắn số sát thương lên màn hình', nums >= 5, `${nums} số đang hiện`);
       await snap(pg, r.out, `${view}/panel-ban-so.png`, { wait: 0 });
       await sleep(1500);
