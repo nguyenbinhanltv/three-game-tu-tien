@@ -51,6 +51,7 @@ interface ZoneEntry {
   from: string;
   src: string;
   tag: string;
+  seq: number;
   t0: number;
   at: number;
 }
@@ -59,6 +60,7 @@ interface Zones {
   setVisible(v: boolean): void;
   hold(on: boolean): void;
   log: ZoneEntry[];
+  count: number;
   screenMask(zone: unknown, cell: number, y: number): { w: number; h: number; dist: number[] };
 }
 type W = Window & { __labEdit?: { zones(): Zones | null } };
@@ -139,7 +141,7 @@ export default {
           await pg.evaluate(() => void (window.__game!.timeScale = 1));
           // Server bỏ tin chat cách tin trước dưới 800 ms: mọi lệnh GM cách nhau ≥ 900 ms.
           await gm(pg, `cast ${kind} loop`, 900);
-          const n0 = await zonesDo(pg, (z) => z.log.length);
+          const n0 = await zonesDo(pg, (z) => z.count);
           // Chờ vạch báo MỚI của quái (boss có thể phải đi tới gần rồi mới ra chiêu).
           const until = Date.now() + 14_000;
           let e: ZoneEntry | null = null;
@@ -150,9 +152,9 @@ export default {
                 const z = (window as W).__labEdit!.zones()!;
                 const mons = window.__game!.view.monsters;
                 // Chỉ nhận vạch của ĐÚNG con quái đang đo, đúng loại chiêu (chiêu mở rộng mang `mv`), còn đủ thời gian báo để kịp dừng hình.
-                const hit = z.log
-                  .slice(n as number)
-                  .find((x) => x.from === 'mon' && mons.get(x.src)?.t === mon && x.at - performance.now() >= 250 && (!mv || x.tag === mv));
+                const hit = z.log.find(
+                  (x) => x.seq > (n as number) && x.from === 'mon' && mons.get(x.src)?.t === mon && x.at - performance.now() >= 250 && (!mv || x.tag === mv),
+                );
                 return hit ? { ...hit, t0: hit.t0 - performance.now(), at: hit.at - performance.now() } : null;
               },
               [n0, id, MV[kind] ?? ''] as const,

@@ -18,6 +18,8 @@ export interface ZoneEntry {
   src: string;
   /** Loại chiêu mở rộng của quái (`mv` của tin) hoặc loại fx của chiêu người chơi. */
   tag: string;
+  /** Số thứ tự tăng dần từ lúc bật lớp vẽ (nhật ký chỉ giữ các mục gần nhất, nên công cụ đo lọc mục mới theo số này, không theo vị trí). */
+  seq: number;
   /** Giờ máy (ms) lúc tin tới và lúc server phán định (tin tới + `delay`). */
   t0: number;
   at: number;
@@ -78,6 +80,8 @@ export class ZoneOverlay {
   private subs = new Set<() => void>();
   /** Các vùng gần nhất (mới nhất ở cuối), cho kịch bản đo và bảng. */
   readonly log: ZoneEntry[] = [];
+  /** Tổng số vùng đã ghi (= `seq` của mục mới nhất). */
+  count = 0;
 
   constructor(private eng: Game) {
     this.group.name = 'lab-zone-overlay';
@@ -158,7 +162,8 @@ export class ZoneOverlay {
     }
   }
 
-  private push(e: ZoneEntry, extra = 0): void {
+  private push(e0: Omit<ZoneEntry, 'seq'>, extra = 0): void {
+    const e: ZoneEntry = { ...e0, seq: ++this.count };
     this.log.push(e);
     if (this.log.length > LOG_MAX) this.log.shift();
     const mat = new THREE.MeshBasicMaterial({ transparent: true, opacity: 0.9, depthTest: false, depthWrite: false, fog: false, toneMapped: false });
