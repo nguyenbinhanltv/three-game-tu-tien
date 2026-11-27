@@ -234,6 +234,12 @@ const DECAL_MAX = 6;
  * Xưởng VFX (Diễn Võ Trường V2b): chỉ số các LỚP (vị trí trong `events` của timeline) đang bị tắt để soi từng lớp. Rỗng = phát đủ. Chỉ công cụ dev
  * đổi tập này (`window.__fxLayerOff`, `pnpm shots dienvo --layersoff 0,3`); áp cho mọi timeline phát sau đó.
  */
+/**
+ * Dạ Họa: decal `strike` (vũng sáng chỗ sét đánh, sống 2 giây) bị lớp ánh đêm của khung vẽ tay biến thành một mảng mù xám vàng che chân và thân mục tiêu
+ * (Diễn Võ Trường, cổng duyệt: Lôi Phạt, Lôi Hải). Hạ độ đục ở phong cách này; phong cách mặc định giữ nguyên.
+ */
+const DA_STRIKE_DECAL = FLAGS.da ? 0.35 : 1;
+
 export const FX_LAYER_OFF = new Set<number>();
 /**
  * Chỉ số đặc biệt trong `FX_LAYER_OFF`: tắt mọi sự kiện tác động lên MÀN HÌNH/CAMERA/THỜI GIAN (đẩy camera, rung, chớp, tối viền, khung va chạm,
@@ -942,7 +948,7 @@ export class FxRunner {
     const m = this.v.fx(
       QUAD_XZ,
       toneOf(c.pal, ev.tone),
-      ev.alpha ?? 0.95,
+      (ev.alpha ?? 0.95) * (ev.tex === 'strike' ? DA_STRIKE_DECAL : 1),
       mapped ? (ev.top ? 'mapDecalTop' : 'mapDecal') : ev.top ? 'decalTop' : 'decal',
     );
     _col.setHex(c.pal.rim);
