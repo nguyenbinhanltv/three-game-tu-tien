@@ -49,6 +49,29 @@ export function dienVoSpawnAt(i: number, n: number, boss: boolean): { x: number;
   return { x: z.x + Math.sin(a) * ring, z: z.z - Math.cos(a) * ring };
 }
 
+/** Chỗ người chơi đứng khi nạp cảnh mẫu ở khu `id`: mép nam của khu (phía cửa ra), nhìn vào giữa khu; khu nhỏ thì đứng giữa. */
+export function dienVoStandAt(id: DienVoZoneId): { x: number; z: number } {
+  const z = dienVoZone(id);
+  const half = z.r ?? z.hz ?? 0;
+  return { x: z.x, z: half > 5 ? z.z + half - 2 : z.z };
+}
+
+/**
+ * Cảnh mẫu của phòng tập (`packages/content/data/lab/scenes.json`): một tình huống dựng lại y hệt bằng `/gm scene <id>`,
+ * là gốc của bộ ảnh chuẩn (`pnpm shots dienvo`). `state` ép lên mọi quái của cảnh; `cam` chỉ dùng khi chụp.
+ */
+export interface LabScene {
+  id: string;
+  at: DienVoZoneId;
+  /** Công pháp và cấp của nhân vật thử. */
+  method: string;
+  level: number;
+  mons: { id: string; n: number }[];
+  state?: 'weak' | 'break' | 'stun' | 'chant';
+  phase?: number;
+  cam?: { pitch?: number; dist?: number };
+}
+
 const lamp = (x: number, z: number): HandProp => ({ id: 'prop_den_da', x, z, yaw: 0, s: 1, r: 0.5 });
 const pillar = (x: number, z: number, s = 1): HandProp => ({ id: 'prop_tru_da_khac_van', x, z, yaw: 0, s, r: 0.8 });
 const sign = (x: number, z: number, yaw: number): HandProp => ({ id: 'prop_bia_da', x, z, yaw, s: 0.9, r: 0.6 });
