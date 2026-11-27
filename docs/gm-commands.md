@@ -88,7 +88,7 @@ Playtest luôn tắt tiếng: mở game với `?mute=1` (ví dụ `?mute=1&debug
 | `scene` | `/gm scene <id>` — nạp cảnh mẫu của Diễn Võ Trường; `/gm scene save [id]` in cảnh đang dựng thành JSON. | `/gm scene soi_vo_the` |
 | `labreset` | `/gm labreset` — trả phòng thử về như mới. |  |
 | `hurt` | `/gm hurt <pct>` — hạ máu quái quanh mình về pct%. | `/gm hurt 30` |
-| `dvt` | `/gm dvt` — vào Diễn Võ Trường (phòng tập riêng); gõ lại trong phòng để ra. Ra khỏi phòng, nhân vật trở về nguyên trạng. |  |
+| `dvt` | `/gm dvt [khóa]` — vào Diễn Võ Trường (phòng tập riêng; có khóa thì vào phòng chung với người gõ cùng khóa); gõ lại trong phòng để ra. Ra khỏi phòng, nhân vật trở về nguyên trạng. |  |
 | `tick` | `/gm tick` — số đo tick server. |  |
 
 ### Tra cứu
