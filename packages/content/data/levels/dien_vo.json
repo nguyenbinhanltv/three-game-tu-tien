@@ -1,0 +1,30 @@
+{
+  "id": "dien_vo",
+  "terrain": "cuu_kieu",
+  "spawns": [],
+  "nodes": [],
+  "dungeon": {
+    "spawn": {
+      "x": 1300,
+      "z": 1003
+    },
+    "exit": {
+      "x": 1300,
+      "z": 1012
+    },
+    "center": {
+      "x": 1300,
+      "z": 985
+    },
+    "minLevel": 1,
+    "returnLevel": "van_lam",
+    "returnSpawn": {
+      "x": 2048,
+      "z": 2088
+    },
+    "bound": 36,
+    "private": true,
+    "practice": true,
+    "waves": []
+  }
+}

@@ -691,6 +691,7 @@ export function wireGmSys(s: GameSim, priv: SimPrivates): ConstructorParameters<
     inDuel: (p) => s.duel.inDuel(p),
     isDead: (p) => priv.isDead(p),
     transferLevel: (p, level, spawn, o) => s.host.transferLevel?.(p, level, spawn, o) ?? false,
+    practice: (p) => s.host.leavePractice?.(p) || s.host.enterPractice?.(p) || false,
     teleportTo: (p, x, z, level) => s.teleportTo(p, x, z, level),
     teleGm: (p, arg) => s.tele.gm(p, arg),
     placeIds: () => s.placeIds(),

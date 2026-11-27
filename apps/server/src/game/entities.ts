@@ -247,6 +247,9 @@ export interface SimHost {
    * Trả false nếu bị chặn (đã báo lý do cho người chơi). Không có (test) thì từ chối.
    */
   transferLevel?(p: PlayerEnt, level: string, spawn: { x: number; z: number } | null, o?: TransferOpts): boolean;
+  /** Phòng tập GM (Diễn Võ Trường): room thế giới đưa người vào, room phòng tập đưa người ra. false = không làm được ở room này. */
+  enterPractice?(p: PlayerEnt): boolean;
+  leavePractice?(p: PlayerEnt): boolean;
   /** Độ kiếp ở room riêng (E1-F): cấp vé cho người độ kiếp và đồng đội trong tầm, báo client đổi room. false = bị chặn. */
   enterTribulationRoom?(p: PlayerEnt, def: TribDef, force: boolean): boolean;
   /** Một lần độ kiếp vừa kết thúc (thành công hoặc không). Room độ kiếp dùng để đóng phòng. */

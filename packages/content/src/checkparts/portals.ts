@@ -22,14 +22,16 @@ for (const lv of Object.values(LEVELS)) {
     if (d.waves.length) err(`${w}: sân độ kiếp không có đợt quái`);
   } else {
     // Phòng cầu Cửu Kiều vào bằng vé của Dẫn Kiều Nhân (KieuSystem.plan), không có cổng trên bản đồ thế giới.
-    if (kieuOfLevel(lv.id) === null && !(ret?.portals ?? []).some((q) => q.to === lv.id))
+    // Phòng tập GM (`practice`) vào bằng lệnh GM: không có cổng, không có đợt quái, và phải là phòng riêng.
+    if (d.practice && (!d.private || d.waves.length || d.reward)) err(`${w}: phòng tập phải private, không đợt quái, không thưởng`);
+    if (!d.practice && kieuOfLevel(lv.id) === null && !(ret?.portals ?? []).some((q) => q.to === lv.id))
       err(`${w}: ${d.returnLevel} không có cổng dẫn vào`);
     if (kieuOfLevel(lv.id) !== null) {
       if (!d.private) err(`${w}: phòng cầu phải là phó bản riêng (private)`);
       if (!NPCS.some((n) => n.id === 'npc_dan_kieu_nhan' && n.level === d.returnLevel))
         err(`${w}: returnLevel ${d.returnLevel} không có Dẫn Kiều Nhân`);
     }
-    if (!d.waves.length) err(`${w}: thiếu đợt quái`);
+    if (!d.practice && !d.waves.length) err(`${w}: thiếu đợt quái`);
   }
   for (const wv of d.waves) for (const g of wv.mons) if (!MONSTER.get(g.id)) err(`${w}: quái ${g.id} không tồn tại`);
   d.waves.forEach((wv, i) => {

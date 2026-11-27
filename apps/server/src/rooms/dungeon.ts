@@ -13,6 +13,7 @@ import { log } from '../log';
 import { RiftVeins, SteleHold } from '../game/xichtan';
 import type { MonEnt, PlayerEnt, SimOptions } from '../game/entities';
 import { tickets } from '../transfer';
+import { practiceBegin, practiceEnd, practiceOrigin } from '../game/practice';
 import { GameRoom, today, type JoinAuth } from './base';
 
 export class DungeonRoom extends GameRoom {
@@ -69,6 +70,8 @@ export class DungeonRoom extends GameRoom {
       }
     }
     if (!tickets.take(auth.charId, level)) throw new ServerError(ERR_NO_TICKET, 'no_ticket');
+    // Phòng tập: chụp nguyên trạng nhân vật TRƯỚC khi room nạp nó (room đi đã lưu ở `sendTransfer`).
+    if (LEVELS[level]?.dungeon?.practice) practiceBegin(auth.charId);
     return { ...auth, ticket: true };
   }
 
@@ -83,10 +86,13 @@ export class DungeonRoom extends GameRoom {
   }
 
   override noLootFor(char: Character): boolean {
+    // Phòng tập: rơi đồ bình thường để xem hiệu ứng; ra khỏi phòng là trả hết (ảnh chụp).
+    if (this.def.practice) return false;
     return this.usedDay(char) === today();
   }
 
   override afterJoin(p: PlayerEnt): void {
+    if (this.def.practice) return this.sim.sys(p, 'sys.practice_enter', { name: this.dname }, 'info');
     this.sim.sys(p, 'sys.dungeon_enter', { name: this.dname }, 'info');
     // Hook nhiệm vụ (mục tiêu `dungeon` ×1): phát sự kiện kèm đích của phó bản này để nhiệm vụ có `target` lọc được
     // (q2_phuc_mach, q3_kinh_nguyet, q4_than_tang). Kiếm Trủng không có đích: chỉ khớp mục tiêu `dungeon` không khai `target`.
@@ -97,6 +103,13 @@ export class DungeonRoom extends GameRoom {
   /** Về bản đồ thế giới `returnLevel` tại `returnSpawn`, bằng vé (cùng đường với mọi lần chuyển bản đồ). */
   protected leave(p: PlayerEnt): void {
     const d = this.def;
+    if (d.practice) {
+      // Về đúng level và chỗ đứng trước khi vào (vé không mang điểm = vị trí đã lưu, tức vị trí trong ảnh chụp).
+      const back = practiceOrigin(p.char.id);
+      const lv = back && LEVELS[back] && !LEVELS[back]!.dungeon ? back : null;
+      tickets.issue(p.char.id, lv ?? d.returnLevel, lv ? null : d.returnSpawn);
+      return this.sendTransfer(p, lv ?? d.returnLevel);
+    }
     tickets.issue(p.char.id, d.returnLevel, d.returnSpawn);
     this.sendTransfer(p, d.returnLevel);
   }
@@ -121,7 +134,20 @@ export class DungeonRoom extends GameRoom {
     this.sim.sys(p, 'sys.dungeon_revive', { n: max - used - 1 }, 'info');
   }
 
+  /** Lệnh GM rời phòng tập. */
+  leavePractice(p: PlayerEnt): boolean {
+    if (!this.def.practice) return false;
+    this.leave(p);
+    return true;
+  }
+
+  /** Người vừa rời hẳn room: phòng tập trả nhân vật về ảnh chụp (sau lần lưu cuối của `removePlayer`). */
+  override afterDrop(charId: number): void {
+    if (this.def.practice) practiceEnd(charId);
+  }
+
   override onMonsterKilled(m: MonEnt): void {
+    if (this.def.practice) return;
     // Hạ con quái đầu tiên là đã dùng lượt thưởng hôm nay; trong lượt này vẫn nhận đủ.
     void m;
     for (const p of this.sim.players.values()) {
@@ -155,6 +181,8 @@ export class DungeonRoom extends GameRoom {
   }
 
   private director(): void {
+    // Phòng tập: không có đợt, không kết thúc.
+    if (this.def.practice) return;
     const now = Date.now();
     if (this.clearedAt) {
       if (now >= this.clearedAt + 20000) {
