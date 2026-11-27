@@ -1,7 +1,11 @@
 // Công cụ phòng thử (Diễn Võ Trường) nằm ngoài lớp Game: khoảnh khắc giao diện bổ sung, máu/linh lực giả trên HUD, kiểm máy yếu.
 // Mọi thứ ở đây CHỈ là hình ở máy mình: không gửi gì lên server, không đổi dữ liệu nhân vật, không đổi mặc định của game.
 import { buildRecap } from '@dtl/shared';
-import { METHOD_SKILLS } from '@dtl/content';
+import { FX_TIMELINE, METHOD_SKILLS, POSE, SKILLS } from '@dtl/content';
+import { audioLevel, sfx, type Sfx, sfxNames, sfxProbe } from '../audio/audio';
+import { keyMoments } from '../debug/animLabMath';
+import { fxAudioReport, type FxAudioVerdict } from '../debug/fxAudio';
+import { sfxStats } from '../debug/sfxStats';
 import { closePanel, get, openPanel, type Panel, set } from '../../ui/store';
 import type { Game } from '../engine';
 
@@ -153,6 +157,99 @@ export function labWindow(id: string): boolean {
   return true;
 }
 
+// ---------- xưởng âm thanh ----------
+
+/** Phát một tiếng theo tên (đủ âm lượng, không giãn). Trả false nếu không có tên đó. Tắt tiếng thì chỉ ghi vào nhật ký đầu dò. */
+export function labSfx(name: string): boolean {
+  if (!sfxNames().includes(name)) return false;
+  sfx(name as Sfx, 1, undefined, false);
+  return true;
+}
+
+/** Bật/tắt đầu dò lời gọi phát tiếng; tắt thì xóa nhật ký. */
+export function labSfxProbe(on: boolean): boolean {
+  sfxProbe.on = on;
+  if (!on) sfxProbe.rows.length = 0;
+  return sfxProbe.on;
+}
+
+export const LAB_MUSIC = ['auto', 'calm', 'combat', 'boss'] as const;
+
+/** Ép trạng thái giao chiến của nhạc (`auto` = theo trận thật). */
+export function labMusic(eng: Game, mode: string): boolean {
+  if (!(LAB_MUSIC as readonly string[]).includes(mode)) return false;
+  eng.music.labForce = mode === 'auto' ? null : (mode as 'calm' | 'combat' | 'boss');
+  return true;
+}
+
+/** Số đo của xưởng âm thanh: mật độ tiếng 2 giây gần nhất, mức ra loa, trạng thái nhạc. */
+export function labAudioState(eng: Game) {
+  return { probe: sfxProbe.on, stats: sfxStats(sfxProbe.rows, performance.now()), level: audioLevel(), music: eng.music.debugState() };
+}
+
+/** Lệch tiếng so với mốc trúng của MỌI timeline chiêu `skl_*` (đo từ dữ liệu, xem `fxAudioReport`). */
+export function labFxAudioAll(): { id: string; verdict: FxAudioVerdict; nearestMs: number | null; sounds: number }[] {
+  return [...FX_TIMELINE.entries()]
+    .filter(([id]) => id.startsWith('skl_'))
+    .map(([id, tl]) => {
+      const r = fxAudioReport(tl.events);
+      return { id, verdict: r.verdict, nearestMs: r.nearestMs, sounds: r.sounds.length };
+    })
+    .sort((a, b) => a.id.localeCompare(b.id));
+}
+
+// ---------- xưởng animation ----------
+
+export interface LabPoseInfo {
+  id: string;
+  duration: number;
+  /** Khung trúng của pose [từ, tới] (giây); null = pose không khai. */
+  hit: [number, number] | null;
+  /** Chiêu dùng pose này và các mốc trúng của SERVER (giây từ lúc ra chiêu). */
+  skill: string | null;
+  hitAt: number[];
+  /** Mốc soi: dồn lực, đỉnh đòn, +30 ms, thu đòn. */
+  moments: { name: string; at: number }[];
+}
+
+export function labPoseInfo(pose: string): LabPoseInfo | null {
+  const d = POSE.get(pose);
+  if (!d) return null;
+  const sk = [...METHOD_SKILLS, ...SKILLS].find((s) => s.pose === pose);
+  return {
+    id: pose,
+    duration: d.duration,
+    hit: d.hit ?? null,
+    skill: sk?.id ?? null,
+    hitAt: sk?.hitAt ? [...sk.hitAt] : [],
+    moments: keyMoments(d.hit?.[0] ?? d.duration * 0.4, d.duration),
+  };
+}
+
+/** Cho nhân vật của mình diễn một pose (chỉ hình ở client, không ra chiêu). Trả false nếu không có pose hay model không nhận. */
+export function labPose(eng: Game, pose: string): boolean {
+  const m = eng.ents?.players.get(eng.sid)?.model;
+  return !!m?.perform && POSE.has(pose) && m.perform(pose, { skill: pose });
+}
+
+/** Dừng lớp hình, diễn pose từ đầu rồi bước đúng số khung 1/60 s tới mốc `sec`: hình đứng yên ở đó tới khi đổi tốc độ ở nhóm Thời gian. */
+export function labPoseSeek(eng: Game, pose: string, sec: number): boolean {
+  eng.timeScale = 0;
+  eng.stepLeft = 0;
+  if (!labPose(eng, pose)) return false;
+  eng.stepLeft = Math.max(1, Math.round(Math.max(0, sec) * 60));
+  return true;
+}
+
+/** Đồng hồ pose đang diễn của mình (giây) hoặc null. */
+export function labPoseClock(eng: Game): { t: number; skill: string } | null {
+  const m = eng.ents?.players.get(eng.sid)?.model;
+  const c = m?.performClock?.();
+  if (c) return c;
+  const p = (m as unknown as { perf?: { t: number; id: string } | null } | undefined)?.perf;
+  return p ? { t: p.t, skill: p.id } : null;
+}
+
 /** Cổng gọi công cụ phòng thử từ console / Playwright (`__game.labx.*`), để thêm công cụ mới không phải sửa lớp Game. */
 export function makeLabX(eng: Game) {
   return {
@@ -163,5 +260,14 @@ export function makeLabX(eng: Game) {
     uiTokenGet: labUiTokenGet,
     vitals: (what: 'hp' | 'mp', frac: number | null) => labVitalsSet(eng, what, frac),
     preset: (q: string) => labPreset(eng, q),
+    sfx: labSfx,
+    sfxProbe: labSfxProbe,
+    audio: () => labAudioState(eng),
+    music: (mode: string) => labMusic(eng, mode),
+    fxAudioAll: labFxAudioAll,
+    pose: (pose: string) => labPose(eng, pose),
+    poseSeek: (pose: string, sec: number) => labPoseSeek(eng, pose, sec),
+    poseInfo: labPoseInfo,
+    poseClock: () => labPoseClock(eng),
   };
 }

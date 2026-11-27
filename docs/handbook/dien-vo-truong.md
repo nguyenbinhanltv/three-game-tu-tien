@@ -25,9 +25,30 @@ Nhóm con thứ tám của tab Diễn Võ (`FeelLab`), tách khỏi Giao diện 
 - **Bốn token thời lượng** của bộ giao diện (`--u-dur-fast` 120, `--u-dur` 180, `--u-dur-open` 250, `--u-dur-ink` 400 ms ở `apps/client/src/ui/u2/tokens.css`): nút − / + mỗi lần 20 ms, "Về mặc định" bỏ ghi đè. Chỉ ghi đè trên `<html>` trong phiên; muốn đổi thật thì sửa `tokens.css` qua commit.
 - `__game.labx` (`makeLabX` ở `apps/client/src/game/engine/lab.ts`): cổng gọi công cụ từ console / Playwright — `window(id)` (đóng hết rồi mở một cửa sổ), `uiRate`, `uiToken`, `vitals`, `preset`. Công cụ mới thêm vào đây, không thêm phương thức vào lớp Game.
 
+## Xưởng âm thanh và xưởng animation (V2d)
+
+Hai nhóm con mới của tab Diễn Võ. Chơi thử tự động luôn tắt tiếng, nên phần âm thanh được dựng để ĐỌC SỐ khi tắt tiếng; người dùng bật tiếng thì nghe trực tiếp.
+
+**Âm thanh** (`SoundLab`):
+
+- Chọn một tiếng (âm tổng hợp + tên trong manifest đã tải, `sfxNames`) rồi **Phát**.
+- **Đo tiếng**: bật đầu dò `sfxProbe` ở `apps/client/src/game/audio/audio.ts` — ghi mọi LỜI GỌI phát tiếng kèm lý do bị bỏ (`mute` tắt tiếng, `quiet` quá nhỏ, `throttle` trùng tên trong 45 ms, `idle` chưa mở khóa). Bảng hiện số tiếng trong 2 giây, **đỉnh dồn** (nhiều tiếng nhất trong 0,1 giây và tổng âm lượng yêu cầu của cửa sổ đó: ước lượng độ dồn khi nhiều người cùng đánh, không phải dB) và mức ra loa thật (dBFS, `audioLevel`, đo sau âm lượng tổng; tắt tiếng thì báo im). Thống kê là hàm thuần `sfxStats` (`apps/client/src/game/debug/sfxStats.ts`, có test).
+- **Lệch tiếng so với mốc trúng** của một chiêu, đo từ DỮ LIỆU timeline (`fxAudioReport`, `apps/client/src/game/debug/fxAudio.ts`, có test): mốc trúng = `hitstop`/`impact` sớm nhất, tiếng = `soundAt`/`sound`; lệch quá 60 ms thì báo sớm/muộn. Nút "Phát chiêu" phát timeline đó lên mục tiêu.
+- **Nhạc**: Theo trận / Yên / Giao chiến / Đánh boss ép đầu vào giao chiến của đạo diễn nhạc (`MusicController.labForce`, `apps/client/src/game/audio/music.ts`) để nghe chuyển cảnh mà không cần quái; hysteresis của đạo diễn vẫn áp dụng. Cạnh đó là bài đang phát và mức lớp giao chiến.
+
+**Động tác** (`PoseLab`):
+
+- Tìm và chọn một trong 130 pose, **Diễn** cho nhân vật của mình (chỉ hình, không ra chiêu). Dòng thông tin đặt cạnh nhau thời lượng pose, khung trúng của pose và mốc trúng mà SERVER tính cho chiêu dùng pose đó.
+- **Dừng hình ở** Dồn lực / Đỉnh đòn / +30 ms / Thu đòn: dừng lớp hình, diễn lại từ đầu rồi bước đúng số khung 1/60 s tới mốc (`labPoseSeek`); chạy tiếp bằng nhóm Thời gian. Kiểm: đồng hồ pose 0,400 s tại mốc 0,400 s.
+- Chưa làm: xem chuyển tiếp đứng → chạy → dừng → né, hai bộ nhân vật cạnh nhau cùng một clip; đo trượt chân vẫn dùng `pnpm shots chrv3feet`.
+
+`pnpm shots labui --only sound,anim` bấm nút thật 11 mục và in bảng lệch tiếng của mọi chiêu.
+
+**Phòng đã chỉ ra (dữ liệu 104 timeline `skl_*`, 28/11):** 82 chiêu có tiếng khớp mốc trúng (không chiêu nào lệch quá 60 ms). **17 chiêu KHÔNG có sự kiện tiếng nào trong timeline**: `cu_bo_xung`, `hoi_nguyen_thuat`, `kiem_anh_bo`, `kiem_dan_ban_menh`, `kiem_vu_tam_diep`, `linh_khi_ho_the`, `loi_chich`, `loi_giap`, `loi_lien`, `loi_the`, `nghich_kiem_chuyen_phong`, `pha_phong_tien`, `phan_anh_kiem_anh`, `phi_kiem`, `thiem_loi_bo`, `thuan_di_tram`, `tran_kiem` (có thể vẫn có tiếng chung lúc ra chiêu từ đường khác; cần người nghe xác nhận). 5 chiêu không có mốc trúng (không khựng hình, không khung va chạm): `kim_thien_co`, `luu_huong_bo`, `ngu_kiem_tran`, `thai_hu_ho_tran`, `u_anh_bo` (đều là chiêu trận/bộ pháp, có thể cố ý). Sửa dữ liệu timeline là việc của tuyến VFX.
+
 ## `pnpm shots labui`
 
-`pnpm shots labui --out <thư mục> --query style=dahoa [--only tools,contrast,motion,windows] [--win char,wardrobe] [--winwait 900]`
+`pnpm shots labui --out <thư mục> --query style=dahoa [--only tools,contrast,motion,windows,sound,anim] [--win char,wardrobe] [--winwait 900]`
 
 - `tools`: bấm nút thật các công cụ trên rồi đối chiếu trạng thái game (20 mục).
 - `contrast`: **tương phản chữ HUD trên nền thật** (WCAG AA). Dồn HUD nặng nhất, lấy hộp + màu của từng dòng chữ, chụp lại với chữ trong suốt để có nền ngay dưới chữ, tính tỉ lệ tương phản theo từng điểm ảnh; dòng có phân vị 10% dưới 4,5 (chữ lớn: 3) bị báo, kèm ảnh đánh dấu `contrast-1-danh-dau.png` (đỏ: không có bóng chữ; cam: có bóng chữ nên thực tế dễ đọc hơn con số). Chữ tô bằng nền cắt theo chữ (tên boss) không đo được, đếm riêng.

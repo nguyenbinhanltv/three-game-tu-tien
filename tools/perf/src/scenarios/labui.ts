@@ -5,6 +5,8 @@
 //   của màu chữ với từng điểm ảnh nền; báo dòng có phân vị 10% dưới 4,5 (chữ thường) hoặc 3 (chữ lớn ≥ 24 px, hoặc ≥ 18,7 px đậm).
 //   Giới hạn: WCAG không tính bóng chữ/viền chữ, nên chữ có bóng đậm đọc được hơn con số ở đây.
 // - windows: dựng nhân vật đủ đồ rồi mở TỪNG cửa sổ ở năm cỡ màn hình; báo cửa sổ tràn khỏi khung nhìn và dòng chữ bị cắt (tràn ngang trong ô ẩn phần thừa).
+// - sound: xưởng âm thanh — bấm nút thật (đầu dò tiếng, ép nhạc boss), in bảng lệch tiếng so với mốc trúng của mọi chiêu `skl_*` (đo từ dữ liệu).
+// - anim: xưởng animation — diễn một pose, dừng hình ở đỉnh đòn và đối chiếu đồng hồ pose với mốc.
 // - motion: bật "Giảm chuyển động", gọi mọi khoảnh khắc rồi đếm animation CSS còn chạy trong HUD (phải bằng 0, trừ danh sách cho phép).
 import { num, opt } from '../lib/env';
 import { gm, skipCutscene, waitLevel } from '../lib/game';
@@ -38,7 +40,7 @@ export const contrast = (a: number, b: number): number => (Math.max(a, b) + 0.05
 export default {
   name: 'labui',
   desc: 'Diễn Võ Trường, khu Giao diện: bấm nút công cụ mới, đo tương phản chữ HUD trên nền thật, kiểm giảm chuyển động',
-  usage: '[--query style=dahoa] [--only tools,contrast,motion,windows] [--win char,wardrobe] [--winwait 900]',
+  usage: '[--query style=dahoa] [--only tools,contrast,motion,windows,sound,anim] [--win char,wardrobe] [--winwait 900]',
   env: { RATE_LIMIT_EXEMPT: 'loopback' },
   async run(r) {
     const query = opt('--query', '');
@@ -358,6 +360,86 @@ export default {
       console.log(`[shots:labui] cửa sổ: ${wins.length} cửa sổ × ${sizes.length} cỡ màn, ${badWin} tràn/không mở, ${cut} dòng chữ bị cắt`);
       check('mở các cửa sổ không sinh lỗi console', Object.keys(errAt).length === 0, Object.entries(errAt).map(([k, n]) => `${k}: ${n} lỗi`).join(', ') || 'không lỗi');
       writeJson(r.out, 'labui-windows.json', { query, badWin, cut, errAt, rows: report });
+    }
+
+    if (want('sound')) {
+      await pg.keyboard.press('F3');
+      await sleep(500);
+      await btn(/^Âm thanh$/).click();
+      await sleep(300);
+      const outS = await pg.evaluate(() => {
+        const lim = Math.min(innerHeight, document.querySelector('.debug-panel')!.getBoundingClientRect().bottom) + 1;
+        return [...document.querySelectorAll('.debug-panel button')].filter((b) => b.getBoundingClientRect().bottom > lim).length;
+      });
+      check('mọi nút của nhóm Âm thanh nằm trong khung 720p', outS === 0, `${outS} nút ngoài khung`);
+      // Đầu dò: bật, phát một tiếng bằng nút, ra một chiêu; nhật ký phải đếm được dù đang tắt tiếng.
+      await btn('Đo tiếng').click();
+      await sleep(200);
+      await btn(/^Phát$/).click();
+      await pg.keyboard.press('Digit2');
+      await sleep(1200);
+      const au = await pg.evaluate(() => window.__game!.labx.audio());
+      check('đầu dò đếm lời gọi phát tiếng (kể cả khi tắt tiếng)', au.probe && au.stats.calls >= 1, `${au.stats.calls} tiếng trong 2 giây, dồn nhất ${au.stats.burst}/0,1 s, nhiều nhất: ${au.stats.top.map((x) => x.name + '×' + x.n).join(', ')}`);
+      check('dòng số đo hiện trên bảng', (await pg.locator('[data-testid="lab-snd-stats"]').count()) === 1);
+      // Tám lần gọi dồn trong một khung: đỉnh dồn phải thấy được.
+      await pg.evaluate(() => {
+        for (let i = 0; i < 8; i++) window.__game!.labx.sfx('hit');
+      });
+      const au2 = await pg.evaluate(() => window.__game!.labx.audio());
+      check('tám tiếng cùng lúc hiện thành đỉnh dồn ≥ 8', au2.stats.burst >= 8, `dồn nhất ${au2.stats.burst}, tổng âm lượng ${au2.stats.burstVol}`);
+      // Nhạc: ép boss rồi trả về.
+      await btn('Đánh boss').click();
+      await sleep(2500);
+      const mu = await pg.evaluate(() => window.__game!.labx.audio().music);
+      check('nút "Đánh boss" đưa đạo diễn nhạc vào trạng thái boss', mu.force === 'boss' && mu.boss, JSON.stringify(mu));
+      await btn('Theo trận').click();
+      await sleep(300);
+      check('nút "Theo trận" bỏ ép nhạc', (await pg.evaluate(() => window.__game!.labx.audio().music.force)) === null);
+      await snap(pg, r.out, 'sound-0-nhom.png', { wait: 200 });
+      await btn('Đo tiếng').click();
+      // Bảng lệch tiếng của mọi chiêu (từ dữ liệu timeline).
+      const rows = await pg.evaluate(() => window.__game!.labx.fxAudioAll());
+      const by = (v: string) => rows.filter((x) => x.verdict === v);
+      console.log(`[shots:labui] tiếng so với mốc trúng: ${rows.length} chiêu — khớp ${by('ok').length}, sớm ${by('early').length}, muộn ${by('late').length}, không tiếng ${by('silent').length}, không mốc trúng ${by('nohit').length}`);
+      for (const x of rows.filter((y) => y.verdict !== 'ok')) console.log(`  ${x.verdict.padEnd(6)} ${x.id}${x.nearestMs === null ? '' : ' (' + (x.nearestMs > 0 ? '+' : '') + x.nearestMs + ' ms)'}`);
+      check('đọc được bảng lệch tiếng của mọi chiêu', rows.length >= 100, `${rows.length} chiêu`);
+      writeJson(r.out, 'labui-sound.json', { rows });
+      await pg.keyboard.press('F3');
+      await sleep(300);
+    }
+
+    if (want('anim')) {
+      await pg.keyboard.press('F3');
+      await sleep(500);
+      await btn(/^Động tác$/).click();
+      await sleep(300);
+      const outA = await pg.evaluate(() => {
+        const lim = Math.min(innerHeight, document.querySelector('.debug-panel')!.getBoundingClientRect().bottom) + 1;
+        return [...document.querySelectorAll('.debug-panel button')].filter((b) => b.getBoundingClientRect().bottom > lim).length;
+      });
+      check('mọi nút của nhóm Động tác nằm trong khung 720p', outA === 0, `${outA} nút ngoài khung`);
+      // Chọn pose của chiêu đầu tiên có pose (qua ô tìm), diễn, rồi dừng ở đỉnh đòn.
+      const pose = await pg.evaluate(() => {
+        const sel = [...document.querySelectorAll('.debug-panel select')].pop() as HTMLSelectElement | undefined;
+        return sel?.value ?? '';
+      });
+      const info = await pg.evaluate((p) => window.__game!.labx.poseInfo(p), pose);
+      check('ô chọn có pose và đọc được thông tin', !!info && info.duration > 0, info ? `${pose}: dài ${info.duration} s, khung trúng ${info.hit ? info.hit.join('–') : 'không khai'}, chiêu ${info.skill ?? 'không'}` : 'không có');
+      await btn(/^Diễn$/).click();
+      await sleep(250);
+      const c0 = await pg.evaluate(() => window.__game!.labx.poseClock());
+      check('nút "Diễn" làm nhân vật diễn pose', !!c0 && c0.skill === pose, c0 ? `đồng hồ ${c0.t.toFixed(2)} s` : 'không có đồng hồ pose');
+      await snap(pg, r.out, 'anim-0-dien.png', { wait: 0 });
+      await sleep(1500);
+      await btn('Đỉnh đòn').click();
+      await sleep(900);
+      const st = await pg.evaluate(() => ({ ts: window.__game!.timeScale, left: window.__game!.stepLeft, c: window.__game!.labx.poseClock() }));
+      const peak = info?.moments.find((m) => m.name === 'dinh')?.at ?? 0;
+      check('nút "Đỉnh đòn" dừng hình đúng mốc', st.ts === 0 && st.left === 0 && !!st.c && Math.abs(st.c.t - peak) <= 0.04, st.c ? `đồng hồ pose ${st.c.t.toFixed(3)} s, mốc ${peak.toFixed(3)} s` : 'không có đồng hồ pose');
+      await snap(pg, r.out, 'anim-1-dinh-don.png', { wait: 200 });
+      await pg.evaluate(() => void (window.__game!.timeScale = 1));
+      await pg.keyboard.press('F3');
+      await sleep(300);
     }
 
     if (want('motion')) {
