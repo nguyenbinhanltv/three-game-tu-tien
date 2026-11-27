@@ -180,15 +180,17 @@ const SPEC = {
   ],
   // Tâm Đao: đại đao cắm đứng phía trước, sau lưng đao là bức tường ánh thép dựng đứng, tua chuôi bay.
   skl_tam_dao: () => [
-    ...[gather('dao_planted', { size: 2.4, off: [0, 1.4, 0.8], rest: { at: 'self' } })],
-    pullIn('self', [0, 1.2, 0.8], -0.24),
-    shade('self', [0, 0.25, 0.8], 5, 0),
-    shade('self', [0, 0.25, 0.8], 3.6, 0.03),
-    strike('dao_planted', { size: 4.2, at: 'self', off: [0, 1.8, 0.9], dur: 1.6, erodeFrom: 0.55 }),
-    flash('self', [0, 1.4, 0.8], 1.6, 0.03, { dur: 0.12 }),
-    scorch('self', [0, -1.05, 0.8], 3.4, -0.05, 2.4),
-    scorch('self', [0, -1.05, 0.8], 2.4, 0, 2.4),
-    after('self', [0, 1.2, 0.8], 2.6, 0.25, 1),
+    ...[gather('dao_planted', { size: 2.0, off: [0, 1.3, -2.6], rest: { at: 'self' } })],
+    pullIn('self', [0, 1.2, -1.2], -0.24),
+    // Hào quang quanh mình (27/11): đao bật ĐẦY 0,16 s rồi ở lại dạng bóng mờ sau lưng; bóng đất thu nhỏ, lùi sau lưng.
+    shade('self', [0, 0.25, -1.2], 2, 0),
+    shade('self', [0, 0.25, -1.2], 1.5, 0.03),
+    strike('dao_planted', { size: 2.2, at: 'self', off: [0, 1.3, -2.6], dur: 0.16, erodeFrom: 0.6 }),
+    { ...sprite('dao_planted', { t: 0.13, dur: 1.47, at: 'self', off: [0, 1.3, -2.6], size: 2.2, erodeFrom: 0.5 }), alpha: 0.3 },
+    flash('self', [0, 1.4, -0.5], 1.6, 0.03, { dur: 0.12 }),
+    scorch('self', [0, -1.05, -0.7], 2.4, -0.05, 2.4),
+    scorch('self', [0, -1.05, -0.7], 2, 0, 2.4),
+    { ...after('self', [0, 1.2, -1.7], 1.8, 0.25, 0.8), alpha: 0.3 },
   ],
   // Đoạn Lưu: chém đứt dòng chảy — vết chém thẳng đứng mảnh, hai dải lụa khí thép bị tách đôi chảy lệch về hai phía.
   skl_doan_luu: () => [
