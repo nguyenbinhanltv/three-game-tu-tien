@@ -124,12 +124,16 @@ export function toonLevel(r: number): number {
  * so với màu gốc thành ba bậc có mép ngắn (không răng cưa). Sắc của ánh sáng (nắng, trời, đèn lồng) và phần viền sáng `rimLight` được giữ.
  * Không thêm draw call hay texture. Ngoại lệ của Dạ Cảnh so với art bible v3 (xem docs/handbook/da-canh.md).
  */
+/** Phòng thử (khu Phong cách): độ sâu chia bậc của Dạ Cảnh, 1 = ba bậc như quy định, 0 = tô mịn không chia bậc. Mặc định 1 cho ra đúng kết quả cũ. */
+export const toonDepth = uniform(1);
+
 export function toonBands(m: THREE.MeshStandardNodeMaterial): THREE.MeshStandardNodeMaterial {
   const lit = output.rgb;
   const base = luminance(diffuseColor.rgb).max(0.02);
   const r = luminance(lit).div(base);
   const lo = mix(float(TOON_LEVELS[0]), float(TOON_LEVELS[1]), smoothstep(TOON_EDGES[0] - TOON_SOFT, TOON_EDGES[0] + TOON_SOFT, r));
-  const lvl = mix(lo, float(TOON_LEVELS[2]), smoothstep(TOON_EDGES[1] - TOON_SOFT, TOON_EDGES[1] + TOON_SOFT, r));
+  const banded = mix(lo, float(TOON_LEVELS[2]), smoothstep(TOON_EDGES[1] - TOON_SOFT, TOON_EDGES[1] + TOON_SOFT, r));
+  const lvl = mix(r.min(TOON_HILITE), banded, toonDepth);
   // Phần vượt bậc sáng nhất (viền sáng, đèn mạnh) giữ nguyên để rim và điểm sáng không bị cắt.
   const k = lvl.add(r.sub(TOON_HILITE).max(0)).div(r.max(0.02));
   m.outputNode = vec4(lit.mul(k), output.a);

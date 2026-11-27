@@ -13,7 +13,7 @@ export function lowMistAt(F: RefField, xz: N, y: N): N {
   const away: N = smoothstep(16, 70, dist);
   const drift: N = F.noise(xz.mul(0.011).add(vec2(time.mul(0.012), time.mul(0.007))), false).a;
   const body: N = smoothstep(0.25, 0.75, drift).mul(0.7).add(0.3);
-  return floorBand.mul(away).mul(body).mul(themeU.mistK);
+  return floorBand.mul(away).mul(body).mul(themeU.mistK).mul(themeU.mistGain);
 }
 
 /** Trộn sương thấp vào một màu đất phát sáng. */

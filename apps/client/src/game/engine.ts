@@ -96,7 +96,8 @@ import { PostPipeline, postParams } from '../render/post';
 import { INK_TUNE } from './character/inkHull';
 import { patchDefaultTextureDestroy } from '../render/defaultTexFix';
 import { patchNodeCacheKey } from '../render/nodeCacheFix';
-import { createWorldMaterial } from '../render/materials/world';
+import { createWorldMaterial, toonDepth } from '../render/materials/world';
+import { themeU } from '../render/painted/theme';
 import { GRADING_DEFAULT, type GradingName } from '../render/grading';
 import { MusicController } from './audio/music';
 import { archWrap } from './world/occlusion';
@@ -199,6 +200,9 @@ export const LAB_STYLE = [
   ['ao', 0, 1, 0.1],
   ['grain', 0, 0.2, 0.01],
   ['ink', 0, 3, 0.25],
+  ['cel', 0, 1, 0.1],
+  ['night', 0.4, 1.6, 0.1],
+  ['fog', 0, 3, 0.25],
 ] as const;
 export type LabStyleKey = (typeof LAB_STYLE)[number][0];
 
@@ -1102,6 +1106,9 @@ export class Game {
       ao: postParams.aoStrength.value,
       grain: postParams.grain.value,
       ink: INK_TUNE.width,
+      cel: toonDepth.value,
+      night: themeU.nightGain.value,
+      fog: themeU.mistGain.value,
     };
   }
 
@@ -1135,6 +1142,15 @@ export class Game {
         break;
       case 'ink':
         INK_TUNE.width = v;
+        break;
+      case 'cel':
+        toonDepth.value = v;
+        break;
+      case 'night':
+        themeU.nightGain.value = v;
+        break;
+      case 'fog':
+        themeU.mistGain.value = v;
         break;
     }
     return true;

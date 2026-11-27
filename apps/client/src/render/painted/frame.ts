@@ -269,6 +269,7 @@ export function paintedOutput(scenePass: N, o: PaintedOutputOpts): N {
   const ln: N = dot(c, vec3(0.2126, 0.7152, 0.0722));
   const moonBase: N = mix(vec3(ln, ln, ln), c, 0.4)
     .mul(themeU.nightTint)
+    .mul(themeU.nightGain)
     .mul(0.62);
   // tương phản đêm theo level (theme.ts; 1 = giữ nguyên Vân Lam): kéo sáng/tối xa nhau quanh 0,1 để vách, nhân vật còn khối
   const moon: N = moonBase.sub(0.1).mul(themeU.nightContrast).add(0.1).max(0);
