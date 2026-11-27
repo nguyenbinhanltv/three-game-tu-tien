@@ -22,6 +22,11 @@ export interface GameInfo {
   textures: number;
   frames: number;
   room: string;
+  /** Vị trí nhân vật mình (toạ độ thế giới). */
+  x: number;
+  y: number;
+  z: number;
+  hp: number;
 }
 
 export interface HazardLog {

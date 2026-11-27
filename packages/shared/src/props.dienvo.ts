@@ -73,6 +73,11 @@ export interface LabScene {
   state?: 'weak' | 'break' | 'stun' | 'chant';
   phase?: number;
   cam?: { pitch?: number; dist?: number };
+  /**
+   * Cảnh ĐANG ĐÁNH (chỉ dùng khi chụp): nhắm quái gần nhất, bấm ô chiêu `slot` (0 = đòn thường, bật tự đánh) rồi chụp sau `waitMs`.
+   * Ảnh loại này không lặp lại y hệt nên không so SSIM; dùng để soi vệt chém, tự áp sát, nhịp đòn.
+   */
+  act?: { slot: number; waitMs: number };
 }
 
 const lamp = (x: number, z: number): HandProp => ({ id: 'prop_den_da', x, z, yaw: 0, s: 1, r: 0.5 });

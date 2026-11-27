@@ -62,7 +62,10 @@ Mọi cải thiện Dạ Họa (VFX, animation, nhân vật, đạo cụ, ánh s
 - **Thử máy yếu:** `pnpm shots dienvo ... --quality medium|low --renderer webgl2 --base <bộ gốc>`. Kết quả 27/11 (720p, so với bộ gốc WebGPU preset Cao): WebGL2 + Vừa SSIM 0,961–0,977 (trong sàn nhiễu, tức Dạ Họa không vỡ); WebGL2 + Thấp 0,885–0,973, viền mực và nhuộm trận vẫn đủ. Bộ gốc có cả 720p và 1080p.
 - **Đồng hồ hiệu năng:** bảng F3 vốn đã có draw call, tam giác, ms/khung kèm tô màu theo ngân sách ngay trên tab Diễn Võ; bộ ảnh chuẩn ghi số đo từng cảnh.
 
-Chưa có: nội dung riêng cho bục nhân vật, buồng ánh sáng và tường hiệu ứng (mới có ranh, biển và vài đạo cụ); số MB texture trên bảng F3.
+- **Cảnh đang đánh:** cảnh mẫu có `act: { slot, waitMs }` thì kịch bản chụp nhắm quái gần nhất, bấm ô chiêu rồi chụp ba khung (`<id>.png`, `.k1`, `.k2`) và ghi khoảng cách + máu mục tiêu trước/sau (`rows[].act`); loại ảnh này không so SSIM. Hiện có `kiem_chem_quet` (5 sói) và `kiem_ap_sat` (boss cách 23 m).
+- **Kiếm tu cận chiến (làm trong phòng, 27/11):** đang tự đánh mà mục tiêu ngoài tầm thì client TỰ ÁP SÁT bằng điểm đến của camera chéo (`game/combat/approach.ts`; WASD hoặc bấm chỗ khác là hủy; server vẫn kiểm tầm). Mỗi đòn thường vẽ vệt quạt trên sàn đúng hình vùng quét của server (`Vfx.arcSlash` từ `PathBasic.arc`). Điều kiện tầm tự đánh ở client giờ cộng bán kính thân quái như server (trước đó tới sát boss vẫn không đánh). Đo trong phòng: đòn quét trúng con chính và hai con bên; từ 23 m áp sát về 6,2 m rồi đánh trúng boss.
+
+Chưa có: nội dung riêng cho bục nhân vật, buồng ánh sáng và tường hiệu ứng (mới có ranh, biển và vài đạo cụ); số MB texture trên bảng F3. Kiếm tu: bài security `combo` chưa cập nhật cho tầm cận chiến; sim cân bằng chưa tính đòn quét; vệt quạt còn mờ dưới lớp tối quanh trận.
 
 **Phòng đã chỉ ra (việc phải sửa trong phòng trước khi ra bản đồ):**
 
