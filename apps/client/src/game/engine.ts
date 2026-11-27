@@ -1140,6 +1140,18 @@ export class Game {
     return true;
   }
 
+  /**
+   * Phòng thử: MÁY QUAY CẬN. Camera chéo của game khóa góc và khoảng cách (không zoom); riêng trong Diễn Võ Trường, khi trường này khác null thì
+   * camera dùng khoảng cách (m) và góc nghiêng (rad) ở đây để soi nhân vật, viền mực, chất liệu. Không có tác dụng ở bản đồ khác.
+   */
+  labCam: { dist: number; pitch: number } | null = null;
+
+  /** Phòng thử: bật máy quay cận (`dist` mét, `pitchDeg` độ nghiêng so với mặt đất); `dist` <= 0 trả về camera thường. */
+  labCamSet(dist: number, pitchDeg = 28): boolean {
+    this.labCam = dist > 0 ? { dist: Math.min(30, Math.max(3, dist)), pitch: (Math.min(80, Math.max(8, pitchDeg)) * Math.PI) / 180 } : null;
+    return true;
+  }
+
   /** Phòng thử (khu Phong cách): trả mọi tham số về giá trị lúc chưa chỉnh. */
   labStyleReset(): boolean {
     const b = this.labStyleBase;

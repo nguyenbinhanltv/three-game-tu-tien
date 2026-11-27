@@ -191,11 +191,13 @@ const SPEC = {
   skl_kiem_dan_ban_menh: () => [
     ...[gather('kiem_pill', { size: 1.6, off: [0, 1.2, 0], rest: { at: 'self' } })],
     pullIn('self', [0, 1.2, 0], -0.24),
-    strike('kiem_pill', { size: 3.4, at: 'self', off: [0, 1.3, 0], dur: 1.2, erodeFrom: 0.5 }),
-    sprite('kiem_slash', { t: 0.3, dur: 0.35, at: 'self', off: [0, 1.3, 2.4], size: 4, alpha: 0.9, align: 'aim', erodeFrom: 0.3 }),
-    flash('self', [0, 1.3, 0], 1.8, 0.02),
+    // Hào quang quanh mình (27/11): viên đan bật ĐẦY 0,16 s rồi ở lại dạng bóng mờ sau lưng; vệt đâm đẩy ra xa hơn người địch đứng sát.
+    strike('kiem_pill', { size: 2.4, at: 'self', off: [0, 1.3, -1.7], dur: 0.16, erodeFrom: 0.6 }),
+    { ...sprite('kiem_pill', { t: 0.13, dur: 1.07, at: 'self', off: [0, 1.3, -1.7], size: 2.4, erodeFrom: 0.45 }), alpha: 0.3 },
+    sprite('kiem_slash', { t: 0.3, dur: 0.35, at: 'self', off: [0, 1.3, 4.6], size: 3.4, alpha: 0.85, align: 'aim', erodeFrom: 0.3 }),
+    flash('self', [0, 1.3, -0.5], 1.6, 0.02),
     scorch('self', [0, -1.05, 0], 1.5, -0.1),
-    after('self', [0, 1.3, 0], 2, 0.3, 1.1),
+    { ...after('self', [0, 1.3, -1.7], 1.6, 0.3, 0.8), alpha: 0.3 },
   ],
   // Nghịch Kiếm Chuyển Phong (lướt, mọi mốc ≥ 0): kiếm quang thẳng quấn xoáy gió xoắn ốc như mũi khoan, cuốn lá bụi hai bên.
   skl_nghich_kiem_chuyen_phong: () => [

@@ -255,6 +255,9 @@ export default {
           const sc = LAB_SCENES.find((s) => s.id === id);
           await gm(sp, `scene ${id}`, 3500);
           await cam(sp, { ...dflt, ...(sc?.cam ?? {}) });
+          // Cảnh cận nhân vật: bật máy quay cận của phòng thử (camera chéo thường khóa khoảng cách nên không cận được).
+          await sp.evaluate((on) => window.__game!.labCamSet(on ? 6 : 0, 24), id === 'nhan_vat_can');
+          await sleep(1200);
           shots.push(await snap(sp, r.out, `styles/${st || 'macdinh'}-${id}.png`, { wait: 300 }));
         }
         perf.push({ style: st || null, outdoor: p0, room: await perfSample(sp) });
@@ -585,6 +588,17 @@ export default {
       const live1 = await pg.evaluate(() => (window.__game as unknown as { vfx: { pool: { live: number } } }).vfx.pool.live);
       check('nút "Phát" tạo lưới hiệu ứng', live1 > live0, `lưới sống ${live0} → ${live1}`);
       await snap(pg, r.out, `${view}/panel-2-hieu-ung.png`, { wait: 200 });
+      // Nút máy quay cận: bấm một lần bật, bấm lần nữa trả về camera thường.
+      await btn('Cảnh và nhân vật').click();
+      await sleep(200);
+      await btn('Máy quay cận / thường').click();
+      await sleep(1500);
+      const camOn = await pg.evaluate(() => ({ lab: window.__game!.labCam, d: window.__game!.camera.position.distanceTo(window.__game!.info() as never) }));
+      await snap(pg, r.out, `${view}/cam-can.png`, { wait: 200 });
+      await btn('Máy quay cận / thường').click();
+      await sleep(1500);
+      const camOff = await pg.evaluate(() => ({ lab: window.__game!.labCam, d: window.__game!.camera.position.distanceTo(window.__game!.info() as never) }));
+      check('nút "Máy quay cận / thường" kéo camera lại gần rồi trả về', !!camOn.lab && !camOff.lab && camOn.d < camOff.d * 0.6, `khoảng cách camera ${camOn.d.toFixed(1)} m → ${camOff.d.toFixed(1)} m`);
       // Khu Phong cách: bấm nút + / − thật, kiểm tham số hậu kỳ và bề dày viền mực đổi theo; "Về mặc định" trả lại; hai ô nhớ A/B.
       await btn('Phong cách').click();
       await sleep(200);
@@ -839,6 +853,9 @@ export default {
     for (const sc of scenes) {
       await gm(pg, `scene ${sc.id}`, 3500);
       await cam(pg, { ...dflt, ...sc.cam });
+      // Cảnh có `cam.dist` < 12 là cảnh CẬN: bật máy quay cận của phòng thử (camera chéo thường bỏ qua camDist/camPitch).
+      await pg.evaluate((d) => window.__game!.labCamSet(d, 24), sc.cam?.dist && sc.cam.dist < 12 ? 6 : 0);
+      if (sc.cam?.dist && sc.cam.dist < 12) await sleep(1200);
       const file = `${view}/${sc.id}.png`;
       if (sc.act) {
         // Cảnh đang đánh: nhắm quái gần nhất, bấm ô chiêu, chụp sau `waitMs` rồi thêm hai khung cách 120 ms (bắt vệt chém đang quét).
