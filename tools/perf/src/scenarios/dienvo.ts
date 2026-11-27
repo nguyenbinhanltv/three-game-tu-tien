@@ -293,6 +293,16 @@ export default {
       await sleep(200);
       check('nút "0 ms" tắt ping giả', (await pg.evaluate(() => window.__game!.fakePing)) === 0);
       // Hiệu ứng: tắt lớp 0 rồi bật hết; phát một timeline.
+      // Khu Giao diện: máy bắn số sát thương (20 số trộn, nhịp 80 ms) — đếm phần tử số đang hiện.
+      await pg.locator('.debug-panel button', { hasText: /^Giao diện$/ }).first().click();
+      await sleep(200);
+      await btn('20 số').click();
+      await btn('Trộn').click();
+      await sleep(900);
+      const nums = await pg.locator('.dmg-layer .dmg').count();
+      check('nút "Trộn" bắn số sát thương lên màn hình', nums >= 5, `${nums} số đang hiện`);
+      await snap(pg, r.out, `${view}/panel-ban-so.png`, { wait: 0 });
+      await sleep(1500);
       await btn('Hiệu ứng').click();
       await sleep(200);
       await btn('+200 ms').click();
