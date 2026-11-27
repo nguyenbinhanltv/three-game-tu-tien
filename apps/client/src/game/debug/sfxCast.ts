@@ -40,6 +40,11 @@ export function castMark(kind: CastMarkKind, skill: string, combo = -1, index = 
 
 /** Tiếng trúng lệch khung trúng quá ngần này (ms) thì tai nghe ra tiếng và hình không khớp. */
 export const CAST_TOL_MS = 60;
+/**
+ * Sát thương về muộn hơn khung trúng quá ngần này (ms) thì không phải lệch mạng mà là chiêu có sát thương TỚI SAU theo thiết kế (triệu hồi, trận,
+ * độc, đạn bay xa). Lưu ý: tin sát thương không mang id chiêu, nên khi đang có nguồn sát thương kéo dài thì cột này của chiêu ra sau bị lẫn.
+ */
+export const CAST_DELAYED_MS = 300;
 /** Một lần ra chiêu gom tiếng và sát thương tối đa chừng này ms sau lúc vào thế (hoặc tới lần vào thế kế tiếp). */
 export const CAST_WINDOW_MS = 4000;
 /** Tiếng trúng đòn (phát ở `applyDmg`) và tiếng vung (đặt lịch ở `windup`). */
@@ -56,9 +61,10 @@ export interface CastSound {
 
 /**
  * `ok` tiếng trúng trong dung sai; `late`/`early` lệch quá dung sai; `mute` có sát thương mà không có tiếng trúng (bị giãn hoặc thiếu);
+ * `delayed` sát thương tới sau theo thiết kế (muộn hơn `CAST_DELAYED_MS`), không tính là lệch;
  * `miss` không gây sát thương (đánh hụt, hoặc chiêu tự thân như khiên/hồi); `cut` chiêu bị hủy trước khung trúng.
  */
-export type CastVerdict = 'ok' | 'late' | 'early' | 'mute' | 'miss' | 'cut';
+export type CastVerdict = 'ok' | 'late' | 'early' | 'delayed' | 'mute' | 'miss' | 'cut';
 
 export interface CastRow {
   skill: string;
@@ -99,6 +105,7 @@ export function castRows(marks: readonly CastMark[], sfx: readonly CastSfx[]): C
     let verdict: CastVerdict;
     if (!hit) verdict = 'cut';
     else if (!dmg) verdict = 'miss';
+    else if (dmg.at - hit.at > CAST_DELAYED_MS) verdict = 'delayed';
     else if (hitSndMs === null) verdict = 'mute';
     else if (Math.abs(hitSndMs) <= CAST_TOL_MS) verdict = 'ok';
     else verdict = hitSndMs < 0 ? 'early' : 'late';
