@@ -7,7 +7,7 @@ import type { Game } from '../engine';
 import type { CharacterView, LabAnimPort } from '../character/view';
 import { walkableGround } from '../character/mannequinFeet';
 import { BlendLog, type BlendRow } from './blendLog';
-import { FootSlide, type FootSample, type FootState, type SlideRow } from './footSlide';
+import { FootSlide, StrideSlip, type FootSample, type FootState, type SlideRow, type StrideRow } from './footSlide';
 
 export type LabSubject = 'me' | 'target';
 
@@ -44,6 +44,8 @@ export interface AnimSnapshot {
   /** Gốc nhân vật cao hơn mặt đất (m). */
   lift: number;
   slide: SlideRow[];
+  /** Trượt chân theo vận tốc (dùng được cho quái nhấc chân thấp), theo clip nền. */
+  stride: StrideRow[];
   blends: BlendRow[];
 }
 
@@ -113,6 +115,9 @@ export class AnimWorkshop {
   private feet: THREE.Object3D[] = [];
   private spins: { bone: THREE.Object3D; q: THREE.Quaternion; at: number }[] = [];
   private slide = new FootSlide();
+  private stride = new StrideSlip();
+  /** Mốc trước của từng bàn chân cho phép đo theo vận tốc: vị trí trong hệ cây xương (để biết xương có đổi không), vị trí thế giới, gốc nhân vật, thời điểm. */
+  private strideRef: { lx: number; ly: number; lz: number; wx: number; wz: number; rx: number; rz: number; at: number }[] = [];
   /** Gốc nhân vật cao hơn mặt đất bao nhiêu (m) ở khung vừa đo: khác 0 nhiều là nhân vật đang lơ lửng hoặc hàm mặt đất không khớp level. */
   private lift = 0;
   private blends = new BlendLog();
@@ -155,6 +160,8 @@ export class AnimWorkshop {
   /** Xóa số đo trượt chân và nhật ký chuyển clip (giữ clip đang ép). */
   resetStats(): void {
     this.slide.reset();
+    this.stride.reset();
+    this.strideRef = [];
     this.blends.reset();
   }
 
@@ -221,13 +228,31 @@ export class AnimWorkshop {
     // Sàn nhân vật đang đứng cao hơn hàm mặt đất (sàn phòng tập, bậc không có trong va chạm): tính độ cao bàn chân theo mặt sàn đó.
     const floor = this.lift > 0 && this.lift < 0.6 ? this.lift : 0;
     const space = this.port.space;
-    const feet: FootSample[] = this.feet.map((b) => {
+    const key = this.blends.current || act[0]?.name || '';
+    const feet: FootSample[] = this.feet.map((b, i) => {
       b.getWorldPosition(_p);
+      const lx = _p.x;
+      const ly = _p.y;
+      const lz = _p.z;
       // Cây xương tách khỏi cảnh: vị trí trên là ở hệ của asset, đưa ra thế giới qua gốc asset.
       if (space) _p.applyMatrix4(space.matrixWorld);
+      // Trượt theo vận tốc: chỉ lấy mẫu ở khung XƯƠNG vừa đổi (model ở xa chạy mixer 30 Hz; giữa hai lần đó bàn chân chỉ trôi theo gốc), vận tốc
+      // tính trên cả khoảng giữa hai lần đổi cho cả bàn chân lẫn gốc nhân vật.
+      const ref = this.strideRef[i];
+      const moved = !space || !ref || Math.abs(lx - ref.lx) + Math.abs(ly - ref.ly) + Math.abs(lz - ref.lz) > 1e-6;
+      if (moved && dt > 0) {
+        if (ref) {
+          const span = (now - ref.at) / 1000;
+          const bx = s.x - ref.rx;
+          const bz = s.z - ref.rz;
+          const bd = Math.hypot(bx, bz);
+          if (span > 1e-3 && span < 0.25 && bd > 1e-4) this.stride.push(key, ((_p.x - ref.wx) * bx + (_p.z - ref.wz) * bz) / bd / span, bd / span);
+        }
+        this.strideRef[i] = { lx, ly, lz, wx: _p.x, wz: _p.z, rx: s.x, rz: s.z, at: now };
+      }
       return { x: _p.x, y: _p.y, z: _p.z, ground: ground(_p.x, _p.z) + floor };
     });
-    this.slide.push(dt, this.blends.current || act[0]?.name || '', s.x, s.z, feet);
+    this.slide.push(dt, key, s.x, s.z, feet);
   }
 
   /** Danh sách clip của model đang soi (theo tên). */
@@ -319,6 +344,7 @@ export class AnimWorkshop {
       feet: this.feet.map((b, i) => ({ bone: b.name, ...(this.slide.now[i] ?? { h: 0, planted: false, v: 0 }) })),
       lift: this.lift,
       slide: this.slide.rows(),
+      stride: this.stride.rows(),
       blends: [...this.blends.rows],
     };
   }
