@@ -204,7 +204,8 @@ export default {
       seenIntro: true,
     });
     // Bộ đo phải có mặt TRƯỚC khi game tạo renderer (đếm đủ texture): cài rồi tải lại trang.
-    await ctx.addInitScript(initScript);
+    // tsx (esbuild keepNames) chèn helper `__name` vào hàm đã biên dịch; trang không có helper này nên tạo shim (như bench.ts).
+    await ctx.addInitScript({ content: `globalThis.__name ??= (f) => f; (${initScript.toString()})();` });
     await pg.reload({ waitUntil: 'load' });
     await waitInGame(pg);
     await skipCutscene(pg, 20);
