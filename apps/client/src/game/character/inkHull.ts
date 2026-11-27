@@ -6,7 +6,9 @@ import { createInkHullMaterial } from '../../render/materials/world';
 import { markVfxMask } from '../../render/post';
 
 /** Số thể tối đa được viền cùng lúc (người chơi + quái). */
-export const INK_HULL_MAX = 10;
+export const INK_HULL_MAX = 16;
+/** Thể đang có viền được ưu tiên giữ chỗ: điểm ưu tiên nhân với hệ số này (tránh hai thể cách đều giành viền qua lại mỗi khung). */
+export const INK_KEEP_BIAS = 0.8;
 /** Bề dày viền (m, không gian thế giới) và màu mực mặc định. */
 export const INK_WIDTH = 0.03;
 export const INK_COLOR = 0x05040a;
@@ -147,8 +149,27 @@ export class InkHulls {
     ink.color = st.color;
   }
 
+  private wants = new Map<THREE.Object3D, { prio: number; state: InkState }>();
+
+  /**
+   * Xin viền cho `root` ở khung này với điểm ưu tiên `prio` (NHỎ hơn = cần hơn: mình âm, mục tiêu âm, còn lại là bình phương khoảng cách tới mình).
+   * `sync()` chia `INK_HULL_MAX` suất cho các thể xin có điểm nhỏ nhất, nhả viền của thể không còn trong nhóm đó (kể cả thể không xin nữa).
+   */
+  want(root: THREE.Object3D, prio: number, state: InkState = 'normal'): void {
+    this.wants.set(root, { prio: this.hulls.has(root) && prio > 0 ? prio * INK_KEEP_BIAS : prio, state });
+  }
+
+  private resolveWants(): void {
+    const ranked = [...this.wants.entries()].sort((a, b) => a[1].prio - b[1].prio).slice(0, INK_HULL_MAX);
+    const keep = new Set(ranked.map((r) => r[0]));
+    for (const root of [...this.hulls.keys()]) if (!keep.has(root)) this.release(root);
+    for (const [root, w] of ranked) if (this.attach(root)) this.style(root, w.state);
+    this.wants.clear();
+  }
+
   /** Đồng bộ hiện/ẩn với lưới gốc (LOD, chết, chui đất). Gọi mỗi khung. */
   sync(): void {
+    if (this.wants.size) this.resolveWants();
     for (const [root, h] of this.hulls) {
       // Thể đã bị gỡ khỏi cảnh (quái bị dọn, mô hình tạm bị thay bằng skin): trả chỗ, nếu không trần `INK_HULL_MAX` đầy dần và thể mới không được viền.
       if (!root.parent) {
