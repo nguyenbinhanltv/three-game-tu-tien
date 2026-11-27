@@ -28,7 +28,7 @@ import {
   strikeTier,
 } from '@dtl/shared';
 import { groundAt } from '../../base/levelCtx';
-import { ITEM, METHOD_SKILLS, MONSTER, t } from '@dtl/content';
+import { ITEM, METHOD_SKILLS, MONSTER, pathBasicOf, t } from '@dtl/content';
 import { MON_BURROW_DIRT, type MonFlagEdge } from '../entities/monFlags';
 import { fxColor, METHOD_FX, playMethodFx, playVariantExtras } from '../fx/methodFx';
 import { isTranEnd, playTranFx, tranKind } from '../fx/tranFx';
@@ -312,6 +312,13 @@ export function handleFx(eng: Game, m: FxMsg, held = false): void {
   // Màu theo công pháp (chiêu chung đổi màu khi đã chọn công pháp) và hình dạng theo biến thức / cấp chiêu.
   const tint = (d: number) => fxColor(m, d);
   const mctx = { v, m, src: posSrc, dst: posDst, mine: src === eng.sid, flash: (a: number) => eng.post?.flash(a) };
+  // Đòn thường chém quét của hướng cận chiến (Kiếm tu): vệt quạt trên sàn đúng hình vùng quét server dùng (`PathBasic.arc`: bán kính, góc mở,
+  // hướng người đánh → mục tiêu). Chỉ là hình: ai trúng do server quyết.
+  if (m.t === 'sword') {
+    const arc = pathBasicOf({ combo: true }, eng.methodOfPlayer(src))?.arc;
+    if (arc && e.chestOf(src, _v) && e.chestOf(dst, _v2))
+      v.arcSlash(_v.x, _v.z, Math.atan2(_v2.x - _v.x, _v2.z - _v.z), arc.r, (arc.deg * Math.PI) / 360, tint(0xbfeaff));
+  }
   // Timeline kích hoạt theo S.FX (lướt: không có động tác riêng) hoặc đã thay hình cũ của công pháp (chỉ khi model phát sự kiện chiêu).
   if (METHOD_FX.has(m.t)) {
     if (!(replacedFx(m.t) && typeof pSrc?.model.performClock === 'function')) playMethodFx(mctx);
