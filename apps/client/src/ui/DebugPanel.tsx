@@ -17,7 +17,7 @@ import {
   skillName,
   t,
 } from '@dtl/content';
-import { Game } from '../game/engine';
+import { Game, LAB_STYLE } from '../game/engine';
 import { FX_PALETTE } from '../render/vfx/palette';
 import { FX_LAYER_OFF } from '../game/fx/fxTimeline';
 import { Button } from './u2/win';
@@ -79,7 +79,8 @@ const LAB_PHASES = [0, 1, 2, 3];
 const LAB_SPEEDS = [100, 50, 25, 10];
 const LAB_PINGS = [0, 50, 150, 300];
 /** Nhóm con của tab Diễn Võ: bảng F3 không cuộn được nên mỗi lúc chỉ hiện một nhóm cho vừa màn 720p. */
-const LAB_TABS = ['scene', 'mon', 'fx', 'look', 'ui', 'time'] as const;
+const LAB_TABS = ['scene', 'mon', 'fx', 'look', 'style', 'ui', 'time'] as const;
+const LAB_STYLE_SLOTS = ['A', 'B'] as const;
 const FX_IDS = [...FX_TIMELINE.keys()].sort();
 /** Số lớp tối đa hiện nút bật tắt (bảng F3 không cuộn được; timeline dài hơn thì soi phần còn lại bằng `pnpm shots dienvo --layersoff`). */
 const FX_LAYER_BTNS = 48;
@@ -134,6 +135,88 @@ function UiLab() {
   );
 }
 const LAB_PALETTES = ['', ...Object.keys(FX_PALETTE)];
+/**
+ * Khu Phong cách: chỉnh tại chỗ các tham số nhìn của game (phơi sáng, tương phản, bão hòa, quầng sáng, tối viền, bóng khe, hạt, bề dày viền mực) để SO và chốt.
+ * Chỉ đổi trong phiên; hai ô nhớ A/B (localStorage) để bật qua lại giữa hai bộ thử. Không đổi mặc định của game.
+ */
+function StyleLab() {
+  const [vals, setVals] = useState<Record<string, number>>(() => ({ ...(Game.current?.labStyleGet() ?? {}) }));
+  const refresh = () => setVals({ ...(Game.current?.labStyleGet() ?? {}) });
+  const slotKey = (s: string) => 'dtl.labStyle.' + s;
+  return (
+    <>
+      <div className="debug-row wrap">
+        {LAB_STYLE.map(([k, , , step]) => (
+          <span key={k} className="lab-style" data-k={k}>
+            <span>
+              {t('ui.gm.lab.style.' + k)} {(vals[k] ?? 0).toFixed(2)}
+            </span>
+            <Button
+              size="s"
+              onClick={() => {
+                Game.current?.labStyle(k, (vals[k] ?? 0) - step);
+                refresh();
+              }}
+            >
+              −
+            </Button>
+            <Button
+              size="s"
+              onClick={() => {
+                Game.current?.labStyle(k, (vals[k] ?? 0) + step);
+                refresh();
+              }}
+            >
+              +
+            </Button>
+          </span>
+        ))}
+      </div>
+      <div className="debug-row wrap">
+        <Button
+          size="s"
+          variant="primary"
+          onClick={() => {
+            Game.current?.labStyleReset();
+            refresh();
+          }}
+        >
+          {t('ui.gm.lab.style.reset')}
+        </Button>
+        {LAB_STYLE_SLOTS.map((s) => (
+          <span key={s} className="lab-style">
+            <Button
+              size="s"
+              onClick={() => {
+                try {
+                  localStorage.setItem(slotKey(s), JSON.stringify(Game.current?.labStyleGet() ?? {}));
+                } catch {
+                  /* không lưu được (chế độ riêng tư): bỏ qua */
+                }
+              }}
+            >
+              {t('ui.gm.lab.style.save', { s })}
+            </Button>
+            <Button
+              size="s"
+              onClick={() => {
+                try {
+                  const o = JSON.parse(localStorage.getItem(slotKey(s)) ?? '{}') as Record<string, number>;
+                  for (const k of Object.keys(o)) Game.current?.labStyle(k, o[k]!);
+                } catch {
+                  /* ô nhớ hỏng: bỏ qua */
+                }
+                refresh();
+              }}
+            >
+              {t('ui.gm.lab.style.load', { s })}
+            </Button>
+          </span>
+        ))}
+      </div>
+    </>
+  );
+}
 function LookLab() {
   const [floor, setFloor] = useState<string>('dark');
   const [pal, setPal] = useState<string>(() => Game.current?.labPalette ?? '');
@@ -458,6 +541,7 @@ function Tools() {
           )}
           {labTab === 'fx' && <FxLab />}
           {labTab === 'look' && <LookLab />}
+          {labTab === 'style' && <StyleLab />}
           {labTab === 'ui' && <UiLab />}
           {labTab === 'time' && (
             <>
