@@ -362,6 +362,7 @@ import fx_skl_thai_co_quyen from '../data/fx/skl_thai_co_quyen.json';
 import fx_skl_tinh_bao from '../data/fx/skl_tinh_bao.json';
 import fx_skl_huyet_cu_ho from '../data/fx/skl_huyet_cu_ho.json';
 import fx_skl_co_than_nhat_kich from '../data/fx/skl_co_than_nhat_kich.json';
+import fx_skl_co_than_nhat_kich__pilot from '../data/fx/skl_co_than_nhat_kich__pilot.json';
 import fx_skl_hoa_hinh from '../data/fx/skl_hoa_hinh.json';
 import fx_skl_loi_an_kich from '../data/fx/skl_loi_an_kich.json';
 import fx_skl_cuu_tieu_thien_loi from '../data/fx/skl_cuu_tieu_thien_loi.json';
@@ -585,6 +586,7 @@ export const FX_TIMELINES = [
   fx_skl_tinh_bao,
   fx_skl_huyet_cu_ho,
   fx_skl_co_than_nhat_kich,
+  fx_skl_co_than_nhat_kich__pilot,
   fx_skl_hoa_hinh,
   fx_skl_loi_an_kich,
   fx_skl_cuu_tieu_thien_loi,

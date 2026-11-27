@@ -1,0 +1,392 @@
+{
+ "skill": "skl_co_than_nhat_kich__pilot",
+ "events": [
+  {
+   "type": "soundAt",
+   "t": -0.5,
+   "id": "cast",
+   "gain": 0.55,
+   "rate": 0.62,
+   "jitter": 0.05
+  },
+  {
+   "type": "vignette",
+   "t": -0.45,
+   "amount": 0.3,
+   "ms": 500,
+   "tone": "dark",
+   "tier": 1
+  },
+  {
+   "type": "camera",
+   "t": -0.45,
+   "pull": 0.2,
+   "dur": 1.4,
+   "fov": 4,
+   "tier": 1
+  },
+  {
+   "type": "soundAt",
+   "t": -0.3,
+   "id": "slash",
+   "gain": 0.6,
+   "rate": 0.62,
+   "jitter": 0.05
+  },
+  {
+   "type": "particles",
+   "kind": "spark",
+   "t": -0.3,
+   "n": 12,
+   "speed": 1.7,
+   "spread": 1,
+   "life": 0.26,
+   "size": 0.07,
+   "at": "target",
+   "offset": [
+    0,
+    5,
+    0
+   ],
+   "tone": "rim",
+   "tier": 1,
+   "inward": true
+  },
+  {
+   "type": "mesh",
+   "t": -0.3,
+   "dur": 0.12,
+   "at": "target",
+   "sweep": 0,
+   "erodeFrom": 0.85,
+   "ragged": 0.5,
+   "tone": "body",
+   "alpha": 0.55,
+   "tier": 0,
+   "seed": 1000,
+   "shape": "sprite",
+   "sprite": "cth_nk_1",
+   "billboard": true,
+   "offset": [
+    0,
+    1.4,
+    2.6
+   ],
+   "scale": 3.4
+  },
+  {
+   "type": "mesh",
+   "t": -0.21,
+   "dur": 0.12,
+   "at": "target",
+   "sweep": 0,
+   "erodeFrom": 0.85,
+   "ragged": 0.5,
+   "tone": "body",
+   "alpha": 0.75,
+   "tier": 0,
+   "seed": 1001,
+   "shape": "sprite",
+   "sprite": "cth_nk_2",
+   "billboard": true,
+   "offset": [
+    0,
+    1.4,
+    2.6
+   ],
+   "scale": 3.4
+  },
+  {
+   "type": "mesh",
+   "t": -0.12,
+   "dur": 0.15,
+   "at": "target",
+   "sweep": 0,
+   "erodeFrom": 0.85,
+   "ragged": 0.5,
+   "tone": "body",
+   "alpha": 0.9,
+   "tier": 0,
+   "seed": 1002,
+   "shape": "sprite",
+   "sprite": "cth_nk_3",
+   "billboard": true,
+   "offset": [
+    0,
+    1.4,
+    2.6
+   ],
+   "scale": 3.4
+  },
+  {
+   "type": "decal",
+   "tex": "scorch",
+   "t": -0.02,
+   "r": 4.5,
+   "dur": 3,
+   "at": "area",
+   "offset": [
+    0,
+    0,
+    0
+   ],
+   "grow": 0.08,
+   "tone": "shadow",
+   "alpha": 0.6,
+   "tier": 0
+  },
+  {
+   "type": "decal",
+   "tex": "crack",
+   "t": -0.02,
+   "r": 9.450000000000001,
+   "dur": 2.6,
+   "at": "area",
+   "offset": [
+    0,
+    0,
+    0
+   ],
+   "grow": 0.1,
+   "tone": "core",
+   "alpha": 0.3,
+   "tier": 1
+  },
+  {
+   "type": "slowmo",
+   "t": 0,
+   "scale": 0.4,
+   "ms": 260,
+   "tier": 2
+  },
+  {
+   "type": "soundAt",
+   "t": 0,
+   "id": "impact",
+   "gain": 1,
+   "rate": 0.6,
+   "jitter": 0.04
+  },
+  {
+   "type": "particles",
+   "kind": "spark",
+   "t": 0,
+   "n": 50,
+   "speed": 10,
+   "spread": 1,
+   "life": 0.5,
+   "size": 0.1,
+   "at": "area",
+   "offset": [
+    0,
+    1,
+    0
+   ],
+   "tone": "rim",
+   "tier": 0
+  },
+  {
+   "type": "particles",
+   "kind": "dust",
+   "t": 0,
+   "n": 22,
+   "speed": 5,
+   "spread": 1,
+   "life": 0.4,
+   "size": 0.14,
+   "at": "area",
+   "offset": [
+    0,
+    0.3,
+    0
+   ],
+   "tone": "core",
+   "tier": 1
+  },
+  {
+   "type": "hitstop",
+   "t": 0,
+   "ms": 80
+  },
+  {
+   "type": "shake",
+   "t": 0,
+   "level": 0.55
+  },
+  {
+   "type": "flash",
+   "t": 0,
+   "amount": 0.14,
+   "tier": 0
+  },
+  {
+   "type": "vignette",
+   "t": 0,
+   "amount": 0.4,
+   "ms": 300,
+   "tone": "dark",
+   "tier": 1
+  },
+  {
+   "type": "camera",
+   "t": 0,
+   "pull": 0.2,
+   "dur": 0.5,
+   "fov": 4.5,
+   "tier": 1
+  },
+  {
+   "type": "particles",
+   "kind": "spark",
+   "t": 0,
+   "n": 12,
+   "speed": 3.5,
+   "spread": 1,
+   "life": 0.35,
+   "size": 0.07,
+   "at": "target",
+   "offset": [
+    0,
+    1.4,
+    0
+   ],
+   "tone": "rim",
+   "tier": 1
+  },
+  {
+   "type": "mesh",
+   "t": 0.0,
+   "dur": 0.12,
+   "at": "target",
+   "sweep": 0,
+   "erodeFrom": 0.85,
+   "ragged": 0.5,
+   "tone": "body",
+   "alpha": 1.0,
+   "tier": 0,
+   "seed": 1003,
+   "shape": "sprite",
+   "sprite": "cth_nk_4",
+   "billboard": true,
+   "offset": [
+    0,
+    1.4,
+    2.6
+   ],
+   "scale": 3.4
+  },
+  {
+   "type": "soundAt",
+   "t": 0.02,
+   "id": "crit",
+   "gain": 0.5,
+   "rate": 0.8,
+   "jitter": 0.05
+  },
+  {
+   "type": "decal",
+   "tex": "scorch",
+   "t": 0.04,
+   "r": 4.2,
+   "dur": 2.6,
+   "at": "target",
+   "offset": [
+    0,
+    0.02,
+    0
+   ],
+   "grow": 0.1,
+   "tone": "shadow",
+   "alpha": 0.78,
+   "tier": 0
+  },
+  {
+   "type": "mesh",
+   "t": 0.08,
+   "dur": 0.14,
+   "at": "target",
+   "sweep": 0,
+   "erodeFrom": 0.85,
+   "ragged": 0.5,
+   "tone": "body",
+   "alpha": 1.0,
+   "tier": 0,
+   "seed": 1004,
+   "shape": "sprite",
+   "sprite": "cth_nk_5",
+   "billboard": true,
+   "offset": [
+    0,
+    1.4,
+    2.6
+   ],
+   "scale": 3.4
+  },
+  {
+   "type": "mesh",
+   "t": 0.18,
+   "dur": 0.19,
+   "at": "target",
+   "sweep": 0,
+   "erodeFrom": 0.85,
+   "ragged": 0.5,
+   "tone": "body",
+   "alpha": 0.95,
+   "tier": 0,
+   "seed": 1005,
+   "shape": "sprite",
+   "sprite": "cth_nk_6",
+   "billboard": true,
+   "offset": [
+    0,
+    1.4,
+    2.6
+   ],
+   "scale": 3.4
+  },
+  {
+   "type": "mesh",
+   "t": 0.32,
+   "dur": 0.23,
+   "at": "target",
+   "sweep": 0,
+   "erodeFrom": 0.85,
+   "ragged": 0.5,
+   "tone": "body",
+   "alpha": 0.8,
+   "tier": 0,
+   "seed": 1006,
+   "shape": "sprite",
+   "sprite": "cth_nk_7",
+   "billboard": true,
+   "offset": [
+    0,
+    1.4,
+    2.6
+   ],
+   "scale": 3.4
+  },
+  {
+   "type": "mesh",
+   "t": 0.5,
+   "dur": 0.63,
+   "at": "target",
+   "sweep": 0,
+   "erodeFrom": 0.85,
+   "ragged": 0.5,
+   "tone": "body",
+   "alpha": 0.55,
+   "tier": 0,
+   "seed": 1007,
+   "shape": "sprite",
+   "sprite": "cth_nk_8",
+   "billboard": true,
+   "offset": [
+    0,
+    1.4,
+    2.6
+   ],
+   "scale": 3.4
+  }
+ ]
+}

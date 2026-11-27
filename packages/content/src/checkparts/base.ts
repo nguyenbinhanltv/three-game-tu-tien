@@ -75,7 +75,7 @@ uniqueIds('pose', POSES);
 for (const p of POSES) for (const m of validatePose(p)) err(m);
 export const POSE = new Map(POSES.map((p) => [p.id, p]));
 // Dòng thời gian hiệu ứng (VFX-V0): chiêu có thật, mốc hợp lệ, ngân sách ≤ 12 draw và ≤ 1.500 hạt mỗi chiêu.
-for (const f of FX_TIMELINES) for (const m of validateFxTimeline(f, (id) => SKILL.has(id) || id.startsWith('fx_'))) err(m);
+for (const f of FX_TIMELINES) for (const m of validateFxTimeline(f, (id) => SKILL.has(id.replace(/__pilot$/, '')) || id.startsWith('fx_'))) err(m);
 // Thẻ chiêu VFX (V-P0): mỗi file data/vfx/cards/<skillId>.json, tên file = skillId; chiêu và hướng tu có thật, ngân sách trong trần.
 {
   const dir = new URL('../../data/vfx/cards/', import.meta.url);

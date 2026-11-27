@@ -123,22 +123,39 @@ async function packSheet(sh) {
   }
   const cw = Math.floor(W / sh.cols);
   const ch = Math.floor(H / sh.rows);
+  const bboxOf = (r, c) => {
+    let x0 = cw;
+    let y0 = ch;
+    let x1 = -1;
+    let y1 = -1;
+    for (let y = 0; y < ch; y++)
+      for (let x = 0; x < cw; x++) {
+        if (rgba[((r * ch + y) * W + c * cw + x) * 4 + 3] > 90) {
+          if (x < x0) x0 = x;
+          if (x > x1) x1 = x;
+          if (y < y0) y0 = y;
+          if (y > y1) y1 = y;
+        }
+      }
+    return { x0, y0, x1, y1 };
+  };
+  // `--uniform`: mọi ô của bảng dùng CHUNG một khung bao (hợp của các ô, theo tọa độ trong ô) nên các khung của một flipbook giữ nguyên tỉ lệ cỡ với nhau
+  // (mặc định mỗi ô tự cắt khung bao và thu vừa ô: khung đầu nhỏ của cánh tay rơi sẽ bị phóng bằng khung cuối).
+  let uni = null;
+  if (argv.includes('--uniform')) {
+    uni = { x0: cw, y0: ch, x1: -1, y1: -1 };
+    for (let r = 0; r < sh.rows; r++)
+      for (let c = 0; c < sh.cols; c++) {
+        const bb = bboxOf(r, c);
+        if (bb.x1 < 0) continue;
+        uni = { x0: Math.min(uni.x0, bb.x0), y0: Math.min(uni.y0, bb.y0), x1: Math.max(uni.x1, bb.x1), y1: Math.max(uni.y1, bb.y1) };
+      }
+  }
   for (let r = 0; r < sh.rows; r++)
     for (let c = 0; c < sh.cols; c++) {
       if (sh.only && (r !== sh.only.row || c !== sh.only.col)) continue;
-      let x0 = cw;
-      let y0 = ch;
-      let x1 = -1;
-      let y1 = -1;
-      for (let y = 0; y < ch; y++)
-        for (let x = 0; x < cw; x++) {
-          if (rgba[((r * ch + y) * W + c * cw + x) * 4 + 3] > 90) {
-            if (x < x0) x0 = x;
-            if (x > x1) x1 = x;
-            if (y < y0) y0 = y;
-            if (y > y1) y1 = y;
-          }
-        }
+      const own = bboxOf(r, c);
+      const { x0, y0, x1, y1 } = uni && own.x1 >= 0 ? uni : own;
       const idx = sh.forcedIdx ?? cellNo++;
       if (x1 < 0) {
         report.push(`ô ${idx}: trống`);
