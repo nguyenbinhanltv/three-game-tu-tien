@@ -1831,6 +1831,8 @@
   "gm.cmd.lockhp": "/gm lockhp [on|off] — quái không tụt dưới 1 máu (đánh mãi không chết).",
   "gm.cmd.state": "/gm state <weak|break|stun|chant|phase N|clear> [giây] — ép trạng thái lên quái quanh mình. VD: /gm state break 10",
   "gm.cmd.build": "/gm build <công pháp> [cấp] — dựng nhân vật thử một nút: cấp (mặc định 30), công pháp, chiêu cấp tối đa, chiêu không hồi. VD: /gm build lac_kiem_quyet 30",
+  "gm.cmd.scene": "/gm scene <id> — nạp cảnh mẫu của Diễn Võ Trường (dựng nhân vật, quái, trạng thái y hệt mỗi lần). VD: /gm scene soi_vo_the",
+  "gm.msg.scene_no": "Cảnh mẫu chỉ nạp được trong Diễn Võ Trường (/gm dvt).",
   "gm.cmd.labreset": "/gm labreset — trả phòng thử về như mới: dọn quái gọi, tắt freeze/lockhp/free/god, hồi đầy.",
   "gm.cmd.free": "/gm free [on|off] — chiêu không hồi, linh lực luôn đầy.",
   "gm.cmd.hurt": "/gm hurt <pct> — hạ máu quái quanh mình về pct%. VD: /gm hurt 30",

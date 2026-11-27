@@ -53,11 +53,19 @@ Mọi cải thiện Dạ Họa (VFX, animation, nhân vật, đạo cụ, ánh s
 
 - **Lệnh GM của phòng thử** (server quyết, chỉ tài khoản thử; dùng được ở mọi room): `/gm freeze` (quái đứng yên, giữ trạng thái), `/gm lockhp` (quái không tụt dưới 1 máu), `/gm state weak|break|stun|chant|phase N|clear [giây]` (ép trạng thái lên quái trong 40 m; `weak`/`chant` chỉ bật cờ nên dùng kèm `freeze`), `/gm free` (chiêu không hồi, linh lực đầy; GCD và khóa đòn giữ nguyên), `/gm build <công pháp> [cấp]` (dựng nhân vật thử một nút), `/gm labreset` (trả phòng về như mới).
 - **Tab "Diễn Võ"** ở bảng F3 (`apps/client/src/ui/DebugPanel.tsx`): gom các nút trên, gọi quái có ô tìm theo tên.
-- **Kịch bản chụp** `pnpm shots dienvo --out <thư mục> --query style=dahoa`: vào phòng, dựng nhân vật, gọi quái, ép trạng thái, chụp 5 ảnh + số đo, rồi ra và kiểm nhân vật đã về nguyên trạng.
+- **Cảnh mẫu** (V1): `packages/content/data/lab/scenes.json` (kiểu `LabScene`): nhân vật thử, khu đứng, quái, trạng thái, camera khi chụp. `/gm scene <id>` hoặc nút "Nạp cảnh" dựng lại y hệt mỗi lần (trả phòng về như mới → dựng nhân vật → đưa tới khu → gọi quái vào chỗ cố định → đóng băng, khóa máu, bất tử → ép trạng thái). Thêm cảnh = thêm một mục JSON + một dòng tên ở `lab.scene.<id>`.
+- **Bộ ảnh chuẩn** `pnpm shots dienvo --out <thư mục> --view 720p|1080p --query style=dahoa [--base <bộ trước>] [--ssim 0.9] [--only id1,id2]`: chụp mọi cảnh mẫu (ẩn HUD) + số đo từng cảnh; có `--base` thì so SSIM/ΔE từng cảnh với bộ trước, báo cảnh dưới ngưỡng và dựng trang `index-<view>.html` (trước · bản đồ chênh · sau). Bộ ảnh nằm ngoài repo. **Sàn nhiễu:** hai lần chụp liên tiếp không đổi gì cho SSIM 0,966–0,986 (đom đóm, tư thế đứng thở), nên ngưỡng mặc định 0,9.
 
 - **Sáu khu** (`packages/shared/src/props.dienvo.ts`, dùng chung client và server): sàn đấu, hố boss, bục nhân vật, hành lang đạo cụ, buồng ánh sáng, tường hiệu ứng. Client vẽ MỘT tấm sàn đá đều màu có ranh và tên khu (`apps/client/src/game/world/dienVoRoom.ts`, 1 draw call); camera phòng khóa 0° để chữ đọc thẳng. `/gm spawn` trong phòng xếp quái thường vào sàn đấu và boss vào hố boss (`dienVoSpawnAt`). Đo ở Dạ Họa, 3 sói: 34 draw call, 137 nghìn tam giác (720p và 1080p).
 
-Chưa có: nội dung riêng cho bục nhân vật, buồng ánh sáng và tường hiệu ứng (mới có ranh, biển và vài đạo cụ); cảnh mẫu lưu lại; bộ ảnh chuẩn so trước/sau; đồng hồ hiệu năng trên tab. Thấy ở ảnh đầu, sẽ sửa trong phòng: trạng thái vỡ thế/lộ yếu điểm của quái chưa đọc ra ở khoảng cách mặc định; ô lát sàn gần như không thấy.
+Chưa có: nội dung riêng cho bục nhân vật, buồng ánh sáng và tường hiệu ứng (mới có ranh, biển và vài đạo cụ); đồng hồ hiệu năng trên tab; nút WebGL2/preset thấp; lưu cảnh từ trong game (hiện sửa JSON bằng tay).
+
+**Phòng đã chỉ ra (việc phải sửa trong phòng trước khi ra bản đồ):**
+
+- Quái bị vỡ thế hay lộ yếu điểm không khác quái thường ở khoảng cách mặc định (viền trạng thái quá mảnh).
+- Cảnh boss ở Dạ Họa KHÔNG ngả đỏ: mood theo loại trận đổi sương và trời, mà nền Họa Cảnh không dùng sương.
+- Đạo cụ ở Dạ Họa gần như đen đặc (thiếu ánh viền và ánh bù), và tỉ lệ các món lệch nhau nhiều khi đặt cạnh nhau.
+- Ô lát sàn gần như không thấy.
 
 ## Lộ trình
 

@@ -14,6 +14,7 @@ import {
   type JointDef,
   type MarkDef,
   type PathBasic,
+  type LabScene,
   type PathDef,
   type StarTable,
   type ResolvedSkill,
@@ -56,6 +57,7 @@ import methodsJson from '../data/methods.json';
 import marksJson from '../data/marks.json';
 import jointsJson from '../data/joints.json';
 import pathsJson from '../data/paths.json';
+import labScenesJson from '../data/lab/scenes.json';
 import recipesJson from '../data/recipes.json';
 import artifactsJson from '../data/artifacts.json';
 import clonesJson from '../data/clones.json';
@@ -294,6 +296,8 @@ export const MARK: ReadonlyMap<string, MarkDef> = new Map(MARKS.map((m) => [m.id
 /** Thang sao Cổ Thần (TN-5, stars.json). */
 export const STARS = starsJson as StarTable;
 export const PATHS = pathsJson as PathDef[];
+/** Cảnh mẫu của Diễn Võ Trường (phòng tập GM). */
+export const LAB_SCENES = labScenesJson as LabScene[];
 export const PATH: ReadonlyMap<string, PathDef> = new Map(PATHS.map((p) => [p.id, p]));
 /** Hướng tu của một khóa (id công pháp, id hướng, hoặc bí danh cũ); không ra thì undefined. */
 export function pathOf(key: string | undefined): PathDef | undefined {
