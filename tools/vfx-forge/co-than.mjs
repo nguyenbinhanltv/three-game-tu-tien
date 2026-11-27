@@ -166,16 +166,16 @@ const SPEC = {
   ],
   // Tinh Bạo: khối đá nhân hổ phách nổ thành chùm mảnh hổ phách hóa thạch nhọn tỏa như sao.
   skl_tinh_bao: () => [
-    ...[gather('cth_core', { size: 2.4, off: [0, 1.4, 0] })],
+    ...[gather('cth_core', { size: 2.4, off: [0, 2.8, 0] })],
     pullIn('target', [0, 1.4, 0], -0.26),
     zoneEdge('target', 8, 0.06, 0.13),
-    shade('target', [0, 0.3, 0], 5, 0.03),
-    strike('cth_core', { size: 3, off: [0, 1.4, 0], t: -0.04, dur: 0.12, erodeFrom: 0.2 }),
-    strike('cth_shards', { size: 8, off: [0, 1.4, 0], t: 0.0, dur: 0.7, erodeFrom: 0.3 }),
-    sprite('cth_dust', { t: 0.05, dur: 1, off: [0, 0.9, 0], size: 4.4, alpha: 0.5, erodeFrom: 0.3 }),
-    flash('target', [0, 1.4, 0], 2.2, 0.03, { dur: 0.12 }),
+    shade('target', [0, 0.3, 0], 5, 0.03, { dur: 0.4, alpha: 0.5 }),
+    strike('cth_core', { size: 3, off: [0, 3.0, 0], t: -0.04, dur: 0.12, erodeFrom: 0.2 }),
+    strike('cth_shards', { size: 8, off: [0, 5.6, 0], t: 0.0, dur: 0.45, erodeFrom: 0.25 }),
+    sprite('cth_dust', { t: 0.05, dur: 0.36, off: [0, 0.9, 0], size: 3.2, alpha: 0.35, erodeFrom: 0.2 }),
+    flash('target', [0, 2.2, 0], 2.8, 0.03, { dur: 0.16 }),
     scorch('target', [0, 0.02, 0], 3.4, 0.03, 2),
-    after('target', [0, 1.4, 0], 3.2, 0.22, 1.2),
+    after('target', [0, 4.0, 0], 3.2, 0.22, 1.2),
     sparks('target', [0, 1.3, 0], 14, 0.02),
   ],
   // Huyết Cự Hộ: bia đá cổ khắc phù văn đứng sau lưng, rễ hóa thạch ôm thân, phù văn hổ phách chạy dọc thân bia.
