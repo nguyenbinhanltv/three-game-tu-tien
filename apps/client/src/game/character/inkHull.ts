@@ -12,6 +12,8 @@ export const INK_KEEP_BIAS = 0.8;
 /** Bề dày viền (m, không gian thế giới) và màu mực mặc định. */
 export const INK_WIDTH = 0.03;
 export const INK_COLOR = 0x05040a;
+/** Phòng thử (khu Phong cách): hệ số nhân bề dày viền của MỌI thể, chỉnh lúc chạy; 1 = như thiết kế. Không lưu, không đổi mặc định của game. */
+export const INK_TUNE = { width: 1 };
 /** Bậc LOD của lưới dùng làm vỏ (1 = lưới gộp ít tam giác của v3); thể không có bậc này thì dùng bậc 0. */
 export const INK_LOD = 1;
 /** Trần bề dày viền theo cỡ thân: không quá ngần này lần bán kính bao (thân sói nhỏ không bị viền trạng thái nuốt mất). */
@@ -145,7 +147,7 @@ export class InkHulls {
     const ink = h.mesh.userData.ink as { w: number; color: number };
     // Bề dày tính theo mét thế giới: chia cho tỉ lệ thế giới thật của đỉnh để ra đơn vị cục bộ (tính lại mỗi khung ở `sync`, khi xương đã cập nhật).
     const sc = skinnedWorldScale(h.src);
-    ink.w = inkWidthOf(st.mul, h.rad * sc) / sc;
+    ink.w = (inkWidthOf(st.mul, h.rad * sc) * INK_TUNE.width) / sc;
     ink.color = st.color;
   }
 
@@ -179,7 +181,7 @@ export class InkHulls {
       h.mesh.visible = this.enabled && h.src.parent !== null && h.bodies.some((b) => b.visible);
       if (h.mesh.visible) {
         const sc = skinnedWorldScale(h.src);
-        (h.mesh.userData.ink as { w: number }).w = inkWidthOf(h.mul, h.rad * sc) / sc;
+        (h.mesh.userData.ink as { w: number }).w = (inkWidthOf(h.mul, h.rad * sc) * INK_TUNE.width) / sc;
       }
     }
   }
