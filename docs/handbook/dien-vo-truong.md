@@ -293,3 +293,36 @@ Dạ Họa 720p, WebGPU preset Cao; hai lượt đo cho số lệch nhau dưới
 - **Chưa sửa, chạy lại khi clip dừng còn phát:** bắp tay phải xoay 4200 đến 9400°/s trong một lần cập nhật, trọng số nhảy 0,25 đến 0,69 (đủ 9 lối). Cùng chỗ với lỗi dừng chạy ở trên (`stepPatch` / `blendBases` trong `apps/client/src/game/character/mannequin.ts`).
 - **Tiếng bước chân:** lệch trung vị so với lúc chân chạm đất từ −79 đến +66 ms tùy lượt (5/9 lối trong ±40 ms); 23 đến 24 tiếng trên 29 đến 37 lần chạm đất. Tiếng phát theo pha của clip chứ không theo bàn chân thật, nên lệch theo nhịp khởi động/dừng; chưa sửa.
 - **Chưa đo được:** phản ứng bị đánh (4 giây sói thả ra không tạo chuyển clip nào ở 8/9 lối: phản ứng là lớp thủ tục, hoặc sói chưa kịp đánh); boss theo từng pha.
+
+## Bộ nhớ texture: khảo sát và đề xuất (28/11, CHƯA đổi asset hay mã)
+
+Nguồn số: `textures.json` của `roomperf` (mọi texture đang sống trên GPU cuối một phiên đi qua đủ 23 cảnh mẫu + cảnh đông, Dạ Họa, WebGPU preset Cao, 720p). Byte là ước tính từ kích thước × định dạng × mip, cùng cách với `pnpm bench:client`. Tổng cuối phiên: **344 MB, 105 texture** (ngân sách 512 MB).
+
+| Nhóm | MB | Số texture | Thành phần chính |
+| --- | --- | --- | --- |
+| RGBA8 không nén | 161 | 26 | ba atlas sprite VFX 2048² (21,3 MB mỗi cái: `vfx_sprites_dp`, `_loi`, `_kiem`), bốn atlas 2048×1024 (10,7 MB mỗi cái, có `vfx_sprites_hq`, `_canh`), normal 2048² của bộ áo v3 (21,3 MB), ~14 normal 512² của quái và đạo cụ (1,3 MB mỗi cái), biển thư pháp |
+| Render target, bóng đổ, depth | 57 | 7 | bản đồ bóng 2048² + depth của nó (16 + 16 MB), đích vẽ HDR 1280×720 (7 + 7), `aux`, depth |
+| Mảng texture mặt đất | 53 | 2 | 8 lớp 1024² (42,7 MB) + 8 lớp 512² (10,7 MB), RGBA8 |
+| Texture vẽ bằng canvas | 44 | 11 | sàn phòng tập 1536² (12 MB, `apps/client/src/game/world/dienVoRoom.ts`), một tấm 2048×1024 (10,7), nhãn tên, hình VFX dựng bằng mã |
+| KTX2 nén | 26 | 32 | màu và ORM của nhân vật, quái, đạo cụ (màu 2048² của bộ áo v3 chỉ 2,7 MB) |
+| DataTexture nhỏ | 4 | 27 | bảng tra, nhiễu |
+
+**Theo cảnh** (số `tex` của bảng ngân sách phía trên; texture chỉ tăng trong một phiên, không được trả lại): vào cảnh đầu đã 278 MB (nền chung: mặt đất, bóng đổ, đích vẽ, sàn, atlas VFX của Kiếm tu, bộ áo v3); `soi_yeu_diem` +10,7 MB (khớp cỡ một atlas 2048×1024); `tinh_anh` +4,8; `boss` +28,5 (khớp một atlas 2048² cộng texture của boss; nguồn suy từ mức tăng, chưa dò từng texture); `dao_cu` +5,5 và `anh_sang` +6,7 (normal của các đạo cụ). Chín cảnh cận nhân vật không tăng thêm vì các bộ khác dùng chung texture đã nạp.
+
+**Điều rút ra:** 32 texture đã nén chỉ tốn 26 MB, còn 26 texture chưa nén tốn 161 MB. Bộ nhớ nằm ở vài tấm lớn chưa nén, không nằm ở số lượng.
+
+### Phương án, xếp theo lợi ích trên rủi ro
+
+| # | Việc | Tiết kiệm ước tính | Rủi ro chất lượng | Ai sở hữu |
+| --- | --- | --- | --- | --- |
+| 1 | Atlas sprite VFX (`hoa-truc/vfx_sprites_*.webp`) sang KTX2 nén khối (1 byte/điểm ảnh thay vì 4) | 64–80 MB (75% của 85–107 MB) | Trung bình: sprite có vùng alpha mềm và dải sáng, nén khối dễ lộ bậc; cần so ảnh từng atlas ở cổng VFX. BC1/BC3 (thứ WebGPU của three r178 nhận) kém hơn BC7 | -300 (VFX, `tools/vfx-forge`) |
+| 2 | Nạp lười atlas VFX theo lối tu đang có mặt (chỉ nạp atlas của lối tu mình và người quanh mình) | 20–40 MB trong chơi thường; trong phòng tập ít hơn vì đi qua cả 9 lối tu | Thấp về hình; có nguy cơ khựng một nhịp lúc người lối tu mới xuất hiện (cần nạp trước khi họ ra chiêu) | -300 |
+| 3 | Normal map không còn giải ra RGBA8 | ~30 MB ở phòng tập (21,3 → 5,3 MB cho mỗi bộ áo v3; 1,3 → 0,33 MB cho mỗi normal 512²); tăng theo số bộ v3 cùng lúc | Thấp nếu làm đúng định dạng, cao nếu ép xuống BC1. Hiện giải ra RGBA8 là CỐ Ý (`GameKtx2Loader` ở `apps/client/src/game/core/assets.ts`): three r178 chưa tạo được texture BC7 trên WebGPU. Hai đường: (a) nâng three lên bản có BC7 trên WebGPU rồi bỏ nhánh `plain`; (b) mã hóa normal kiểu hai kênh (X ở alpha, Y ở lục) để BC3 giữ được chất lượng, cần sửa pipeline và shader | chung (lõi asset); cần quyết |
+| 4 | Mảng texture mặt đất sang nén khối, hoặc dùng bậc 512² cho level mà mặt đất bị che (phòng tập có sàn đá phủ gần hết) | 40 MB nếu nén; 32 MB nếu chỉ hạ bậc cho phòng tập | Nén: thấp tới trung bình (mặt đất nhiều chi tiết nhỏ, lặp, xem gần ở góc 52°). Hạ bậc riêng phòng tập: không đáng kể | chung (`apps/client/src/base/groundTextures.ts`) |
+| 5 | Bản đồ bóng 2048² → 1536² (hoặc 1024² cho phòng nhỏ) | 14 MB (1536²) tới 24 MB (1024²) | Thấp ở phòng tập (cảnh 48 m, mật độ điểm ảnh bóng vẫn cao); trung bình ở bản đồ rộng, mép bóng mềm hơn | chung (render) |
+| 6 | Sàn phòng tập 1536² → 1152² (24 điểm ảnh/m) | 5 MB | Thấp: chữ tên khu hơi mềm ở máy quay cận | -307 (file của mình) |
+| 7 | Trả texture của quái/boss khi đổi cảnh trong phòng tập | chặn mức tăng 278 → 334 MB (tới 56 MB) | Không về hình; nạp lại cảnh cũ chậm hơn, có thể khựng | chung (`AssetCache`) |
+
+Gộp 1 + 3 + 4 + 5: khoảng **150–175 MB**, đưa phòng tập từ 344 MB về quanh 170–195 MB. Đề xuất thứ tự: **1** (lợi lớn nhất, đã có cổng VFX để so ảnh), rồi **4** bản hạ bậc cho phòng tập và **5** cho phòng tập (không rủi ro cho bản đồ khác), rồi mới tới **3** vì phải quyết đường nâng three hay đổi mã hóa.
+
+Chưa biết: bốn tấm 2048×1024 và 1024×2048 không có tên file là của hệ nào (hai tấm trong đó không mang đường dẫn nguồn); mức lộ bậc thật của BC1/BC3 trên sprite VFX (phải nén thử mới biết); số trên là của MỘT phiên ở preset Cao, preset Vừa/Thấp và WebGL2 chưa đo (WebGL2 nhận BC7 nên normal đã nén sẵn ở đó).
