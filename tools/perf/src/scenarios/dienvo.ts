@@ -3,7 +3,7 @@
 // Có `--base <thư mục bộ trước>` thì so từng cảnh bằng SSIM/ΔE (tools/painted-compare/compare.mjs) và dựng trang trước/sau `index.html`.
 //   pnpm shots dienvo --out <thư mục> [--view 720p|1080p] [--query style=dahoa] [--base <thư mục>] [--ssim 0.9] [--only id1,id2]
 //                     [--quality high|medium|low] [--renderer webgl2] [--diag 1] [--layersoff 2,3] [--fx id1,id2] [--panel 1]
-//                     [--ping 150] [--swings 1 --window 4000] [--crowd 8,20,50]
+//                     [--ping 150] [--swings 1 --window 4000] [--crowd 8,20,50] [--fx 'skl_kiem*' --gate 1]
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -73,6 +73,38 @@ async function coverIn(
   }
   // Thân quá nhỏ trong khung (dưới 40 điểm ảnh) thì không đủ để kết luận.
   return body >= 40 ? hid / body : null;
+}
+
+/**
+ * Cổng duyệt VFX tự chấm (`--fx … --gate 1`). Ngưỡng TẠM (27/11), chỉnh khi đã chấm đủ nhiều chiêu:
+ * che thân mục tiêu (như `COVER_WARN`), lóa = phần màn hình bị hiệu ứng đẩy lên gần trắng, phủ = phần màn hình hiệu ứng làm đổi rõ,
+ * lưới = số lưới hiệu ứng sống cùng lúc, dài = thời lượng timeline (giây, tính từ dữ liệu).
+ */
+export const FX_GATE = { cover: COVER_WARN, glare: 0.02, spread: 0.35, live: 120, dur: 4 };
+
+/** Lóa và phủ của một khung: so ảnh có VFX với ảnh ẩn VFX trên TOÀN màn hình. Lóa: cả ba kênh ≥ 245 mà ảnh ẩn VFX chưa trắng. */
+async function glareOf(bare: Buffer, shot: Buffer): Promise<{ glare: number; spread: number }> {
+  const raw = (b: Buffer) => sharp(b).removeAlpha().raw().toBuffer();
+  const [a, c] = await Promise.all([raw(bare), raw(shot)]);
+  const n = Math.min(a.length, c.length) / 3;
+  let white = 0;
+  let changed = 0;
+  for (let i = 0; i < n; i++) {
+    const k = i * 3;
+    const d = Math.abs(a[k]! - c[k]!) + Math.abs(a[k + 1]! - c[k + 1]!) + Math.abs(a[k + 2]! - c[k + 2]!);
+    if (d > 45) changed++;
+    if (c[k]! >= 245 && c[k + 1]! >= 245 && c[k + 2]! >= 245 && d > 45) white++;
+  }
+  return { glare: white / n, spread: changed / n };
+}
+
+/** Thời lượng một timeline (giây): mốc kết thúc muộn nhất của các sự kiện (`t` + `dur`). */
+function fxDuration(id: string): number | null {
+  const f = path.resolve(process.cwd(), '../../packages/content/data/fx', id + '.json');
+  if (!fs.existsSync(f)) return null;
+  const j = JSON.parse(fs.readFileSync(f, 'utf8')) as { events?: { t?: number; dur?: number }[] };
+  const t0 = Math.min(0, ...(j.events ?? []).map((e) => e.t ?? 0));
+  return Math.max(0, ...(j.events ?? []).map((e) => (e.t ?? 0) + (e.dur ?? 0))) - t0;
 }
 
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
@@ -262,9 +294,19 @@ export default {
     }
     // Xưởng VFX: `--fx id1,id2` phát từng timeline lên con sói gần nhất của cảnh `soi_thuong` (đã đóng băng) và chụp ở +30/+150/+400 ms
     // (dừng lớp hình đúng mốc). Bỏ qua bộ cảnh mẫu.
+    // `--fx a,b`: id timeline; `skl_kiem*` (dấu * ở cuối) = mọi timeline có tiền tố đó trong packages/content/data/fx.
+    const fxDir = path.resolve(process.cwd(), '../../packages/content/data/fx');
+    const fxAll = fs.existsSync(fxDir)
+      ? fs
+          .readdirSync(fxDir)
+          .filter((f) => f.endsWith('.json'))
+          .map((f) => f.slice(0, -5))
+      : [];
     const fxIds = opt('--fx', '')
       .split(',')
-      .filter(Boolean);
+      .filter(Boolean)
+      .flatMap((k) => (k.endsWith('*') ? fxAll.filter((f) => f.startsWith(k.slice(0, -1))) : [k]));
+    const gate = !!opt('--gate', '');
     if (fxIds.length) {
       await gm(pg, 'scene soi_thuong', 3500);
       await pg.evaluate(() => {
@@ -281,7 +323,9 @@ export default {
         });
         g.targetId = best;
       });
-      const fxRows: { id: string; ok: boolean }[] = [];
+      type Gate = { coverMax?: number; cover: number | null; glare: number; spread: number; live: number; dur: number | null; fail: string[] };
+      const fxRows: { id: string; ok: boolean; gate?: Gate }[] = [];
+      const frames2 = () => pg.evaluate(() => new Promise<void>((res) => requestAnimationFrame(() => requestAnimationFrame(() => res()))));
       for (const id of fxIds) {
         const ok = await pg.evaluate((k) => window.__game!.labFx(k), id);
         fxRows.push({ id, ok });
@@ -289,13 +333,41 @@ export default {
           console.log(`[shots:dienvo] không có timeline ${id}`);
           continue;
         }
+        const covers: number[] = [];
+        const g: Gate = { cover: null, glare: 0, spread: 0, live: 0, dur: fxDuration(id), fail: [] };
         let last = 0;
         for (const ms of [30, 150, 400]) {
           await sleep(ms - last);
           last = ms;
           await pg.evaluate(() => void (window.__game!.timeScale = 0));
           await pg.evaluate(() => new Promise<void>((res) => requestAnimationFrame(() => requestAnimationFrame(() => res()))));
-          await snap(pg, r.out, `${view}/fx/${id}+${ms}ms.png`, { wait: 0 });
+          const shot = await snap(pg, r.out, `${view}/fx/${id}+${ms}ms.png`, { wait: 0 });
+          if (gate) {
+            // Cùng khung đã dừng: ảnh ẩn VFX (lóa, phủ) và ảnh ẩn cả mục tiêu (mặt nạ thân để đo che), như cảnh đang đánh.
+            const st = (await pg.evaluate(`(() => {
+              var g = window.__game, v = new g.camera.position.constructor(), u = new g.camera.position.constructor();
+              var live = g.vfx.pool.live, box = null;
+              if (g.ents.chestOf(g.targetId, v)) {
+                u.copy(v); u.y += 1; v.project(g.camera); u.project(g.camera);
+                var W = window.innerWidth, H = window.innerHeight, cx = (v.x * 0.5 + 0.5) * W, cy = (-v.y * 0.5 + 0.5) * H;
+                box = { cx: cx, cy: cy, half: Math.max(18, Math.abs((-u.y * 0.5 + 0.5) * H - cy) * 1.1) };
+              }
+              g.vfx.group.visible = false;
+              return { live: live, box: box };
+            })()`)) as { live: number; box: { cx: number; cy: number; half: number } | null };
+            await frames2();
+            const bare = await pg.screenshot();
+            await pg.evaluate(`(() => { var m = window.__game.ents.monsters.get(window.__game.targetId); if (m) { m.model.root.userData.__s = m.model.root.scale.x; m.model.root.scale.setScalar(1e-4); } })()`);
+            await frames2();
+            const empty = await pg.screenshot();
+            await pg.evaluate(`(() => { var g = window.__game, m = g.ents.monsters.get(g.targetId); if (m && m.model.root.userData.__s) m.model.root.scale.setScalar(m.model.root.userData.__s); g.vfx.group.visible = true; })()`);
+            const gl = await glareOf(bare, shot);
+            const cv = st.box ? await coverIn(bare, shot, st.box, empty) : null;
+            if (cv !== null) covers.push(cv);
+            g.glare = Math.max(g.glare, gl.glare);
+            g.spread = Math.max(g.spread, gl.spread);
+            g.live = Math.max(g.live, st.live);
+          }
           if (opt('--diag', '') && ms === 150) {
             // Các lô lưới hiệu ứng đang vẽ ở mốc +150 ms: tên lô, số instance, và vị trí + cỡ của từng instance (so với mục tiêu). Để biết một lớp có được
             // DỰNG không, nằm ở đâu và to bao nhiêu, khi trên ảnh không thấy gì.
@@ -338,12 +410,34 @@ export default {
           }
           await pg.evaluate(() => void (window.__game!.timeScale = 1));
         }
+        if (gate) {
+          // Che thân chấm theo mốc GIỮA của ba mốc (trung vị): chớp trúng đòn che thân trong một khung là chủ ý, che kéo dài qua hai mốc mới là hỏng.
+          if (covers.length) {
+            const so = [...covers].sort((x, y) => x - y);
+            g.cover = so[Math.floor(so.length / 2)]!;
+            g.coverMax = so[so.length - 1]!;
+          }
+          if ((g.cover ?? 0) > FX_GATE.cover) g.fail.push('che thân');
+          if (g.glare > FX_GATE.glare) g.fail.push('lóa');
+          if (g.spread > FX_GATE.spread) g.fail.push('phủ màn hình');
+          if (g.live > FX_GATE.live) g.fail.push('nhiều lưới');
+          if ((g.dur ?? 0) > FX_GATE.dur) g.fail.push('quá dài');
+          fxRows[fxRows.length - 1]!.gate = g;
+          const pc = (x: number | null) => (x === null ? '  ?' : String(Math.round(x * 100)).padStart(3)) + '%';
+          console.log(
+            `  ${g.fail.length ? 'HỎNG' : 'ĐẠT '} ${id.padEnd(30)} che ${pc(g.cover)} (đỉnh ${pc(g.coverMax ?? null)})  lóa ${pc(g.glare)}  phủ ${pc(g.spread)}  lưới ${String(g.live).padStart(3)}  dài ${g.dur?.toFixed(2) ?? '?'} s${g.fail.length ? '  ← ' + g.fail.join(', ') : ''}`,
+          );
+        }
         await sleep(1500);
       }
       await gm(pg, 'labreset', 1500);
       await gm(pg, 'dvt');
       await waitLevel(pg, 'van_lam');
-      writeJson(r.out, `dienvo-fx-${view}.json`, { view, query, fx: fxRows });
+      if (gate) {
+        const bad = fxRows.filter((x) => x.gate?.fail.length);
+        console.log(`[shots:dienvo] cổng duyệt VFX: ${fxRows.length - bad.length}/${fxRows.length} đạt` + (bad.length ? '; hỏng: ' + bad.map((x) => x.id).join(', ') : ''));
+      }
+      writeJson(r.out, `dienvo-fx-${view}.json`, { view, query, gate: gate ? FX_GATE : undefined, fx: fxRows });
       return;
     }
     const dflt = await pg.evaluate(() => ({ pitch: window.__game!.camPitch, dist: window.__game!.camDist }));
