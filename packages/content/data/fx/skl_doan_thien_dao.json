@@ -195,13 +195,13 @@
   {
    "type": "mesh",
    "t": 0.04,
-   "dur": 1.2,
+   "dur": 0.4,
    "at": "target",
    "sweep": 0,
    "erodeFrom": 0.4,
    "ragged": 0.5,
    "tone": "body",
-   "alpha": 0.7,
+   "alpha": 0.35,
    "tier": 0,
    "seed": 1001,
    "shape": "sprite",
@@ -218,10 +218,10 @@
   {
    "type": "mesh",
    "t": 0,
-   "dur": 0.8,
+   "dur": 0.3,
    "at": "target",
    "sweep": 0,
-   "erodeFrom": 0.4,
+   "erodeFrom": 0.25,
    "ragged": 0.5,
    "tone": "body",
    "alpha": 0.95,
@@ -232,7 +232,7 @@
    "billboard": true,
    "offset": [
     0,
-    5.4,
+    6.6,
     0
    ],
    "scale": 3.1,
@@ -241,13 +241,13 @@
   {
    "type": "mesh",
    "t": 0.08,
-   "dur": 1.1,
+   "dur": 0.36,
    "at": "target",
    "sweep": 0,
-   "erodeFrom": 0.45,
+   "erodeFrom": 0.15,
    "ragged": 0.5,
    "tone": "body",
-   "alpha": 0.95,
+   "alpha": 0.35,
    "tier": 0,
    "seed": 1003,
    "shape": "sprite",
@@ -264,13 +264,13 @@
   {
    "type": "mesh",
    "t": 0.1,
-   "dur": 1,
+   "dur": 0.36,
    "at": "target",
    "sweep": 0,
-   "erodeFrom": 0.3,
+   "erodeFrom": 0.2,
    "ragged": 0.5,
    "tone": "body",
-   "alpha": 0.5,
+   "alpha": 0.4,
    "tier": 0,
    "seed": 1004,
    "shape": "sprite",
@@ -281,13 +281,13 @@
     0.9,
     0
    ],
-   "scale": 1.35,
-   "scaleTo": 1.35
+   "scale": 1.08,
+   "scaleTo": 1.08
   },
   {
    "type": "mesh",
    "t": 0.05,
-   "dur": 0.14,
+   "dur": 0.12,
    "at": "target",
    "sweep": 0,
    "erodeFrom": 0.3,
@@ -301,11 +301,11 @@
    "billboard": true,
    "offset": [
     0,
-    1.4,
+    1.9,
     0
    ],
-   "scale": 1.08,
-   "scaleTo": 1.35
+   "scale": 0.99,
+   "scaleTo": 1.24
   },
   {
    "type": "decal",
@@ -341,7 +341,7 @@
    "billboard": true,
    "offset": [
     0,
-    1.6,
+    2.9,
     0
    ],
    "scale": 1.62,
@@ -350,7 +350,7 @@
     "to": "target",
     "offset": [
      0,
-     3,
+     4.3,
      0
     ],
     "ease": "out"
