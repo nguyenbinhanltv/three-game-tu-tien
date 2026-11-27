@@ -80,22 +80,29 @@ async function coverIn(
  * che thân mục tiêu (như `COVER_WARN`), lóa = phần màn hình bị hiệu ứng đẩy lên gần trắng, phủ = phần màn hình hiệu ứng làm đổi rõ,
  * lưới = số lưới hiệu ứng sống cùng lúc, dài = thời lượng timeline (giây, tính từ dữ liệu).
  */
-export const FX_GATE = { cover: COVER_WARN, glare: 0.02, spread: 0.35, live: 120, dur: 4 };
+export const FX_GATE = { pop: 0.13, cover: COVER_WARN, glare: 0.02, spread: 0.35, live: 120, dur: 4 };
 
 /** Lóa và phủ của một khung: so ảnh có VFX với ảnh ẩn VFX trên TOÀN màn hình. Lóa: cả ba kênh ≥ 245 mà ảnh ẩn VFX chưa trắng. */
-async function glareOf(bare: Buffer, shot: Buffer): Promise<{ glare: number; spread: number }> {
+async function glareOf(bare: Buffer, shot: Buffer): Promise<{ glare: number; spread: number; pop: number }> {
   const raw = (b: Buffer) => sharp(b).removeAlpha().raw().toBuffer();
   const [a, c] = await Promise.all([raw(bare), raw(shot)]);
   const n = Math.min(a.length, c.length) / 3;
   let white = 0;
   let changed = 0;
+  let seen = 0;
+  let sum = 0;
   for (let i = 0; i < n; i++) {
     const k = i * 3;
     const d = Math.abs(a[k]! - c[k]!) + Math.abs(a[k + 1]! - c[k + 1]!) + Math.abs(a[k + 2]! - c[k + 2]!);
     if (d > 45) changed++;
+    // Độ NỔI: chênh trung bình (0..1) của mọi điểm ảnh hiệu ứng làm đổi thấy được (> 12) so với nền ngay dưới nó. Thấp = hiệu ứng chìm vào nền.
+    if (d > 12) {
+      seen++;
+      sum += d;
+    }
     if (c[k]! >= 245 && c[k + 1]! >= 245 && c[k + 2]! >= 245 && d > 45) white++;
   }
-  return { glare: white / n, spread: changed / n };
+  return { glare: white / n, spread: changed / n, pop: seen > 200 ? sum / seen / 765 : 0 };
 }
 
 /** Timeline chỉ có lớp neo ở mình (mọi sự kiện có `at` đều là `self`): chiêu tự cường hóa, không có gì để che mục tiêu. */
@@ -371,7 +378,7 @@ export default {
       // Cổng duyệt: tắt sự kiện màn hình/camera (chỉ số -1 = `FX_SCREEN_OFF`), nếu không camera đẩy và chớp vẫn chạy giữa ảnh có VFX và ảnh ẩn VFX,
       // thân mục tiêu lệch đi và bị tính nhầm là bị che (đo 27/11: Kiếm Khí Trảm 60% → xem số sau khi tắt).
       if (gate) await pg.evaluate(() => void (window as unknown as { __fxLayerOff?: Set<number> }).__fxLayerOff?.add(-1));
-      type Gate = { selfOnly?: boolean; coverMax?: number; cover: number | null; glare: number; spread: number; live: number; dur: number | null; fail: string[] };
+      type Gate = { pop: number; selfOnly?: boolean; coverMax?: number; cover: number | null; glare: number; spread: number; live: number; dur: number | null; fail: string[] };
       const fxRows: { id: string; ok: boolean; gate?: Gate }[] = [];
       const frames2 = () => pg.evaluate(() => new Promise<void>((res) => requestAnimationFrame(() => requestAnimationFrame(() => res()))));
       for (const id of fxIds) {
@@ -385,7 +392,7 @@ export default {
           continue;
         }
         const covers: number[] = [];
-        const g: Gate = { cover: null, glare: 0, spread: 0, live: 0, dur: fxDuration(id), fail: [] };
+        const g: Gate = { pop: 0, cover: null, glare: 0, spread: 0, live: 0, dur: fxDuration(id), fail: [] };
         let last = 0;
         // Cổng duyệt chấm NĂM mốc (33 / 100 / 200 / 300 / 450 ms); chụp thường giữ ba mốc cũ.
         for (const ms of gate ? [33, 100, 200, 300, 450] : [30, 150, 400]) {
@@ -424,6 +431,7 @@ export default {
             if (cv !== null) covers.push(cv);
             g.glare = Math.max(g.glare, gl.glare);
             g.spread = Math.max(g.spread, gl.spread);
+            g.pop = Math.max(g.pop, gl.pop);
             g.live = Math.max(g.live, st.live);
           }
           if (opt('--diag', '') && ms === 150) {
@@ -481,13 +489,14 @@ export default {
           }
           if ((g.cover ?? 0) > FX_GATE.cover) g.fail.push('che thân');
           if (g.glare > FX_GATE.glare) g.fail.push('lóa');
+          if (g.pop < FX_GATE.pop) g.fail.push('chìm vào nền');
           if (g.spread > FX_GATE.spread) g.fail.push('phủ màn hình');
           if (g.live > FX_GATE.live) g.fail.push('nhiều lưới');
           if ((g.dur ?? 0) > FX_GATE.dur) g.fail.push('quá dài');
           fxRows[fxRows.length - 1]!.gate = g;
           const pc = (x: number | null) => (x === null ? '  ?' : String(Math.round(x * 100)).padStart(3)) + '%';
           console.log(
-            `  ${g.fail.length ? 'HỎNG' : 'ĐẠT '} ${id.padEnd(30)} che ${pc(g.cover)} (đỉnh ${pc(g.coverMax ?? null)})  lóa ${pc(g.glare)}  phủ ${pc(g.spread)}  lưới ${String(g.live).padStart(3)}  dài ${g.dur?.toFixed(2) ?? '?'} s${g.selfOnly ? '  [neo ở mình]' : ''}${g.fail.length ? '  ← ' + g.fail.join(', ') : ''}`,
+            `  ${g.fail.length ? 'HỎNG' : 'ĐẠT '} ${id.padEnd(30)} che ${pc(g.cover)} (đỉnh ${pc(g.coverMax ?? null)})  lóa ${pc(g.glare)}  phủ ${pc(g.spread)}  nổi ${pc(g.pop)}  lưới ${String(g.live).padStart(3)}  dài ${g.dur?.toFixed(2) ?? '?'} s${g.selfOnly ? '  [neo ở mình]' : ''}${g.fail.length ? '  ← ' + g.fail.join(', ') : ''}`,
           );
         }
         await sleep(1500);
