@@ -1288,10 +1288,25 @@ export class Vfx {
 
 /** Số sát thương bay lên, vẽ bằng DOM. */
 /** Số thường lên cùng mục tiêu trong khoảng này (giây) thì gom. */
-const MERGE_WINDOW = 0.22;
+export const MERGE_WINDOW = 0.25;
+/** Số mới lên mục tiêu đang còn số bay (chưa quá `STACK_AGE` giây) thì xếp cao hơn `STACK_PX` mỗi số, để chuỗi đòn nhanh không chồng chữ lên nhau. */
+export const STACK_AGE = 0.7;
+export const STACK_PX = 22;
+/** Lớp số được gom: số thường, và số thường khắc chế (gom riêng với nhau, giữ chữ báo). */
+const MERGEABLE = new Set(['hit', 'hit ke']);
 
 export class DamageNumbers {
-  items: { el: HTMLDivElement; pos: THREE.Vector3; t: number; dx: number; lift: number | null; key?: string; sum?: number }[] = [];
+  items: {
+    el: HTMLDivElement;
+    pos: THREE.Vector3;
+    t: number;
+    dx: number;
+    lift: number | null;
+    key?: string;
+    sum?: number;
+    cls?: string;
+    row?: number;
+  }[] = [];
   pool: HTMLDivElement[] = [];
   constructor(private layer: HTMLElement) {}
 
@@ -1299,12 +1314,13 @@ export class DamageNumbers {
    * Hiện một số. Số thường (`cls` = 'hit') liên tiếp lên cùng `key` (mục tiêu) trong `MERGE_WINDOW` giây thì gom vào số đang bay
    * (cộng dồn, không bật số mới) để đòn nhỏ dồn dập không phủ kín màn hình. Vị trí ngang lệch ngẫu nhiên, cỡ cố định theo lớp CSS.
    */
-  spawn(text: string, pos: THREE.Vector3, cls: string, key?: string, n?: number): void {
-    if (key && n !== undefined && cls.startsWith('hit') && !cls.includes(' ')) {
-      const it = this.items.find((o) => o.key === key && o.t < MERGE_WINDOW && o.sum !== undefined);
+  spawn(text: string, pos: THREE.Vector3, cls: string, key?: string, n?: number, suffix = ''): void {
+    const merge = !!key && n !== undefined && MERGEABLE.has(cls);
+    if (merge) {
+      const it = this.items.find((o) => o.key === key && o.cls === cls && o.t < MERGE_WINDOW && o.sum !== undefined);
       if (it) {
-        it.sum = (it.sum ?? 0) + n;
-        it.el.textContent = String(it.sum);
+        it.sum = (it.sum ?? 0) + n!;
+        it.el.textContent = String(it.sum) + suffix;
         return;
       }
     }
@@ -1313,7 +1329,8 @@ export class DamageNumbers {
     el.className = 'dmg ' + cls;
     el.textContent = text;
     this.layer.appendChild(el);
-    this.items.push({ el, pos: pos.clone(), t: 0, dx: (Math.random() - 0.5) * 40, lift: null, key, sum: cls === 'hit' ? n : undefined });
+    const row = key ? this.items.filter((o) => o.key === key && o.t < STACK_AGE).length : 0;
+    this.items.push({ el, pos: pos.clone(), t: 0, dx: (Math.random() - 0.5) * 40, lift: null, key, sum: merge ? n : undefined, cls, row });
   }
 
   update(dt: number, camera: THREE.Camera, w: number, h: number, avoid: readonly Box[] = []): void {
@@ -1341,7 +1358,7 @@ export class DamageNumbers {
           if (Math.abs(x - b.x) < b.hw + 26 && Math.abs(y0 - b.y) < b.hh + 14) it.lift = Math.max(it.lift, y0 - (b.y - b.hh - 16));
         }
       }
-      const y = y0 - it.lift - k * 60;
+      const y = y0 - it.lift - k * 60 - (it.row ?? 0) * STACK_PX;
       it.el.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px) translate(-50%, -50%) scale(${(1.25 - k * 0.3).toFixed(2)})`;
       it.el.style.opacity = String(k < 0.6 ? 1 : 1 - (k - 0.6) / 0.4);
     }
