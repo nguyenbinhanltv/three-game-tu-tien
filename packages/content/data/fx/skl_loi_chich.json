@@ -47,7 +47,7 @@
   {
    "type": "mesh",
    "t": -0.02,
-   "dur": 0.34,
+   "dur": 0.24,
    "at": "self",
    "sweep": 0,
    "erodeFrom": 0.5,
@@ -72,7 +72,7 @@
     "offset": [
      0,
      1.3,
-     -2.2
+     -3
     ],
     "ease": "out"
    }
@@ -97,7 +97,7 @@
   {
    "type": "mesh",
    "t": 0.03,
-   "dur": 0.18,
+   "dur": 0.12,
    "at": "target",
    "sweep": 0,
    "erodeFrom": 0.3,
@@ -114,8 +114,8 @@
     1.3,
     0
    ],
-   "scale": 2.08,
-   "scaleTo": 2.6
+   "scale": 1.44,
+   "scaleTo": 1.8
   },
   {
    "type": "mesh",
@@ -134,11 +134,11 @@
    "billboard": true,
    "offset": [
     0,
-    1,
+    2.4,
     0
    ],
-   "scale": 1.6,
-   "scaleTo": 1.6
+   "scale": 1.44,
+   "scaleTo": 1.44
   },
   {
    "type": "mesh",
@@ -157,7 +157,7 @@
    "billboard": true,
    "offset": [
     0,
-    1.3,
+    2.1,
     0
    ],
    "scale": 1.92,
@@ -166,7 +166,7 @@
     "to": "target",
     "offset": [
      0,
-     2.6,
+     3.4000000000000004,
      0
     ],
     "ease": "out"
