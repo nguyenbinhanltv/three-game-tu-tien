@@ -465,6 +465,7 @@ export class GameSim {
     prof.lap('methods');
     this.camps.tick();
     prof.lap('camps');
+    this.gmSys.tick();
     this.duel.tick();
     this.tele.tick();
     this.questObj.tick();

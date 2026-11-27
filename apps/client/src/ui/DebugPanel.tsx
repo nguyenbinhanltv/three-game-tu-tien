@@ -68,8 +68,11 @@ function PerfRows({ p }: { p: DebugPerf }) {
   );
 }
 
-type GmGroup = 'char' | 'skill' | 'gear' | 'outfit' | 'weapon' | 'map' | 'mon';
-const GM_GROUP_IDS: GmGroup[] = ['char', 'skill', 'gear', 'outfit', 'weapon', 'map', 'mon'];
+type GmGroup = 'lab' | 'char' | 'skill' | 'gear' | 'outfit' | 'weapon' | 'map' | 'mon';
+const GM_GROUP_IDS: GmGroup[] = ['lab', 'char', 'skill', 'gear', 'outfit', 'weapon', 'map', 'mon'];
+const LAB_STATES = ['weak', 'break', 'stun', 'chant', 'clear'] as const;
+const LAB_PHASES = [0, 1, 2, 3];
+const LAB_LEVELS = [10, 16, 20, 24, 28, 30, 36, 44];
 const TIERS = [1, 2, 3, 4];
 const BRANCHES = ['kiem', 'hophap', 'dansu'] as const;
 const PLUSES = Array.from({ length: 11 }, (_, i) => i);
@@ -120,7 +123,7 @@ function Tools() {
   const level = useUI((s) => s.char?.level ?? 1);
   const inTrib = useUI((s) => (s.flags & PF_TRIBULATION) !== 0);
   const colliders = useUI((s) => s.debugColliders);
-  const [group, setGroup] = useState<GmGroup>('char');
+  const [group, setGroup] = useState<GmGroup>('lab');
   const [realm, setRealm] = useState(0);
   const [mon, setMon] = useState(MONSTERS[0]?.id ?? '');
   const [count, setCount] = useState(1);
@@ -133,7 +136,14 @@ function Tools() {
   const [method, setMethod] = useState(METHODS[0]?.id ?? '');
   const [skill, setSkill] = useState(SKILL_IDS[0] ?? '');
   const [place, setPlace] = useState('tong_mon');
+  const [find, setFind] = useState('');
+  const [labLevel, setLabLevel] = useState(30);
+  const [phase, setPhase] = useState(1);
   const want = realm || level;
+  // Tìm quái theo tên hiển thị hoặc id (không dấu cách thừa); rỗng thì hiện tất cả.
+  const q = find.trim().toLowerCase();
+  const found = q ? MONSTERS.filter((m) => m.id.includes(q) || monsterName(m.id).toLowerCase().includes(q)) : MONSTERS;
+  const labMon = found.some((m) => m.id === mon) ? mon : (found[0]?.id ?? '');
   const plusArg = plus > 0 ? ' +' + plus : '';
   return (
     <div className="debug-tools">
@@ -148,6 +158,96 @@ function Tools() {
           {t('ui.gm.help')}
         </Button>
       </div>
+      {group === 'lab' && (
+        <>
+          <div className="debug-row wrap">
+            <Button size="s" variant="primary" onClick={() => gm('dvt')}>
+              {t('ui.gm.lab.enter')}
+            </Button>
+            <Button size="s" onClick={() => gm('labreset')}>
+              {t('ui.gm.lab.reset')}
+            </Button>
+          </div>
+          <div className="debug-row wrap">
+            <Pick
+              label={t('ui.gm.method')}
+              value={method}
+              onChange={setMethod}
+              options={METHODS.map((m) => ({ value: m.id, label: methodName(m.id) }))}
+            />
+            <Pick
+              label={t('ui.debug.realm')}
+              value={labLevel}
+              onChange={setLabLevel}
+              options={LAB_LEVELS.map((lv) => ({ value: lv, label: realmName(lv) }))}
+            />
+            <Button size="s" variant="primary" onClick={() => gm(`build ${method} ${labLevel}`)}>
+              {t('ui.gm.lab.build')}
+            </Button>
+            <Button size="s" onClick={() => gm('free')}>
+              {t('ui.gm.lab.free')}
+            </Button>
+            <Button size="s" onClick={() => gm('god')}>
+              {t('ui.debug.god')}
+            </Button>
+          </div>
+          <div className="debug-row wrap">
+            <label>
+              <span>{t('ui.gm.lab.find')}</span>
+              <input value={find} onChange={(e) => setFind(e.target.value)} onKeyDown={(e) => e.stopPropagation()} />
+            </label>
+            <Pick
+              label={t('ui.debug.spawn')}
+              value={labMon}
+              onChange={setMon}
+              options={found.map((m) => ({ value: m.id, label: monsterName(m.id) }))}
+            />
+            <Pick
+              label={t('ui.gm.spawn_n')}
+              value={count}
+              onChange={setCount}
+              options={SPAWN_COUNTS.map((v) => ({ value: v, label: String(v) }))}
+            />
+            <Button size="s" variant="primary" disabled={!labMon} onClick={() => gm(`spawn ${labMon} ${count}`)}>
+              {t('ui.debug.spawn_btn')}
+            </Button>
+            <Button size="s" onClick={() => gm('spawn clear')}>
+              {t('ui.gm.spawn_clear')}
+            </Button>
+          </div>
+          <div className="debug-row wrap">
+            <Button size="s" onClick={() => gm('freeze')}>
+              {t('ui.gm.lab.freeze')}
+            </Button>
+            <Button size="s" onClick={() => gm('lockhp')}>
+              {t('ui.gm.lab.lockhp')}
+            </Button>
+            <Button size="s" onClick={() => gm('hurt 50')}>
+              {t('ui.gm.lab.hurt')}
+            </Button>
+            <Button size="s" onClick={() => gm('killall')}>
+              {t('ui.debug.killall')}
+            </Button>
+          </div>
+          <div className="debug-row wrap">
+            {LAB_STATES.map((s) => (
+              <Button key={s} size="s" onClick={() => gm('state ' + s + (s === 'clear' ? '' : ' 20'))}>
+                {t('ui.gm.lab.st.' + s)}
+              </Button>
+            ))}
+            <Pick
+              label={t('ui.gm.lab.phase')}
+              value={phase}
+              onChange={setPhase}
+              options={LAB_PHASES.map((v) => ({ value: v, label: String(v + 1) }))}
+            />
+            <Button size="s" onClick={() => gm('state phase ' + phase)}>
+              {t('ui.debug.set')}
+            </Button>
+          </div>
+          <div className="debug-note">{t('ui.gm.lab.note')}</div>
+        </>
+      )}
       {group === 'char' && (
         <>
           <div className="debug-row">
