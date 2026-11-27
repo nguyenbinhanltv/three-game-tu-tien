@@ -260,6 +260,46 @@ export default {
           await pg.evaluate(() => void (window.__game!.timeScale = 0));
           await pg.evaluate(() => new Promise<void>((res) => requestAnimationFrame(() => requestAnimationFrame(() => res()))));
           await snap(pg, r.out, `${view}/fx/${id}+${ms}ms.png`, { wait: 0 });
+          if (opt('--diag', '') && ms === 150) {
+            // Các lô lưới hiệu ứng đang vẽ ở mốc +150 ms: tên lô, số instance, và vị trí + cỡ của từng instance (so với mục tiêu). Để biết một lớp có được
+            // DỰNG không, nằm ở đâu và to bao nhiêu, khi trên ảnh không thấy gì.
+            const dump = await pg.evaluate(`(() => {
+              var g = window.__game, V = g.camera.position.constructor, c = new V(), out = [];
+              g.ents.chestOf(g.targetId, c);
+              g.vfx.group.traverse(function (o) {
+                if (!o.isMesh || !o.visible) return;
+                var row = { n: o.name || '?', inst: o.isInstancedMesh ? o.count : -1, items: [] };
+                if (o.isInstancedMesh && o.count > 0 && o.instanceMatrix) {
+                  var e = o.instanceMatrix.array;
+                  for (var i = 0; i < Math.min(o.count, 30); i++) {
+                    var k = i * 16;
+                    var sx = Math.hypot(e[k], e[k + 1], e[k + 2]), sy = Math.hypot(e[k + 4], e[k + 5], e[k + 6]), sz = Math.hypot(e[k + 8], e[k + 9], e[k + 10]);
+                    row.items.push([+(e[k + 12] - c.x).toFixed(1), +(e[k + 13] - c.y).toFixed(1), +(e[k + 14] - c.z).toFixed(1), +sx.toFixed(2), +sy.toFixed(2), +sz.toFixed(2)]);
+                  }
+                }
+                if (o.isInstancedMesh && o.count > 1) {
+                  // Thuộc tính theo instance của lô (độ đục, tiến độ quét/tan, màu): 2 instance đầu.
+                  row.attrs = {};
+                  var at = o.geometry.attributes;
+                  Object.keys(at).forEach(function (k) {
+                    var A = at[k];
+                    if (!A.isInstancedBufferAttribute) return;
+                    row.attrs[k] = Array.prototype.slice.call(A.array, 0, A.itemSize * 2).map(function (v) { return +(+v).toFixed(3); });
+                  });
+                  row.mat = { type: o.material.type, transparent: o.material.transparent, depthTest: o.material.depthTest, side: o.material.side, vis: o.material.visible, ro: o.renderOrder, layers: o.layers.mask };
+                  row.pos = [+o.position.x.toFixed(1), +o.position.y.toFixed(1), +o.position.z.toFixed(1)];
+                  var mw = o.matrixWorld.elements;
+                  row.world = [+mw[12].toFixed(1), +mw[13].toFixed(1), +mw[14].toFixed(1)];
+                  row.auto = [o.matrixAutoUpdate, o.matrixWorldAutoUpdate, o.frustumCulled];
+                  row.geoVerts = o.geometry.attributes.position.count;
+                  row.bs = o.boundingSphere ? [+o.boundingSphere.center.x.toFixed(1), +o.boundingSphere.center.y.toFixed(1), +o.boundingSphere.center.z.toFixed(1), +o.boundingSphere.radius.toFixed(1)] : null;
+                }
+                if (row.inst !== 0) out.push(row);
+              });
+              return out;
+            })()`);
+            console.log('[fxdiag] ' + id + ' ' + JSON.stringify(dump));
+          }
           await pg.evaluate(() => void (window.__game!.timeScale = 1));
         }
         await sleep(1500);
