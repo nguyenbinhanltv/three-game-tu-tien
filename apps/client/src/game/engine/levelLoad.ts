@@ -111,9 +111,8 @@ export async function loadGround(eng: Game): Promise<void> {
   }
 }
 
-/** Dựng lớp riêng của Bắc Hoang: vệt nứt Giới Khích (3 draw call), cây chết (≤ 3 draw call). `?bhart=0` tắt để so ảnh. */
+/** Dựng lớp riêng của Bắc Hoang: vệt nứt Giới Khích (3 draw call), cây chết (≤ 3 draw call). */
 function buildBacHoang(eng: Game): void {
-  if (!FLAGS.bhArt) return;
   const T = levelTerrain();
   eng.riftMood = true;
   eng.riftMoodT = -1;
@@ -138,7 +137,6 @@ function buildBacHoang(eng: Game): void {
 }
 
 function buildXich(eng: Game, id: string, q: (typeof QUALITY)[string]): void {
-  if (!FLAGS.xichArt) return;
   const T = levelTerrain();
   const paths = xichCracks(T.def, (x, z) => heightAt(x, z));
   // DUN-1 PR6: màn đỏ dày của `riftVeil` được thay bằng vết nứt dung nham lõm có gờ đá (`XichTanArt`); khe mạch ngọc lam và quầng giữ nguyên.

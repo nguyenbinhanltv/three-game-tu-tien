@@ -1,6 +1,6 @@
 // Ảnh/video duyệt mỹ thuật phó bản Xích Tẫn Khích (DV-3K): vào bằng cổng thật (vé một lần) bằng tài khoản thử bất tử, chụp 6 điểm cố định
 // (lối vào, toàn cảnh, bia giữ, khe mạch/vị trí boss, vách hẻm, nhìn dọc hẻm) rồi tùy chọn quay một lượt đi dọc hẻm. Mỗi điểm dọn quái trước (`killall`).
-// Số đo khung hình (`--perf`) ghi vào perf.json cùng thư mục. Dùng chung cho bản trước và sau để so ảnh (`?xichart=0` chỉ tắt vết nứt + đèn nhấn).
+// Số đo khung hình (`--perf`) ghi vào perf.json cùng thư mục. Dùng chung cho bản trước và sau để so ảnh.
 import fs from 'node:fs';
 import path from 'node:path';
 import { LEVELS } from '@dtl/content';

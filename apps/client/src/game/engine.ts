@@ -1261,7 +1261,7 @@ export class Game {
   faceMoodDuong = 0;
   faceMoodApplied = -9;
 
-  /** Xích Tẫn Khích (DV-3K): vết nứt phát sáng trên sàn hẻm (3 vết × 2 draw call), đèn nhấn quanh bia giữ và ba khe mạch. `?xichart=0` tắt để so ảnh. */
+  /** Xích Tẫn Khích (DV-3K): vết nứt phát sáng trên sàn hẻm (3 vết × 2 draw call), đèn nhấn quanh bia giữ và ba khe mạch. */
   xichRifts: RiftVeil[] = [];
 
   /**
