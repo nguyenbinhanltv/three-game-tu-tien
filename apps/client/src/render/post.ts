@@ -94,7 +94,18 @@ export const postParams = {
   focusDark: uniform(0),
   focus: uniform(new THREE.Vector2(0.5, 0.5)),
   focusAspect: uniform(16 / 9),
+  /**
+   * Dạ Họa, "nhuộm theo loại trận": Họa Cảnh không có sương nên mood tinh anh/boss của `daMood` không lên hình; lớp này nhuộm phần khung XA tâm trận
+   * về `moodTint` (đỏ sẫm), giữ độ chói tương đối và giữ nguyên điểm ảnh sáng. `moodW` 0 = không vẽ gì. Đặt bởi `game/engine/daMood.ts`.
+   */
+  moodW: uniform(0),
+  moodTint: uniform(new THREE.Color(0.5, 0.06, 0.09)),
 };
+
+/** Bán kính trong/ngoài (theo chiều cao khung) của lớp nhuộm theo loại trận, và mức nhuộm tối đa ở ngoài cùng. */
+export const MOOD_R0 = 0.14;
+export const MOOD_R1 = 0.72;
+export const MOOD_MAX = 0.82;
 
 /** Bán kính trong/ngoài (theo chiều cao khung hình) của vùng được giữ sáng quanh tâm trận, và mức tối tối đa ở ngoài cùng. */
 export const FOCUS_R0 = 0.26;
@@ -217,6 +228,10 @@ function feedbackLayers(rgb: Node, fromCenter: Node): Node {
   const fDark = smoothstep(FOCUS_R0, FOCUS_R1, length(fd)).mul(FOCUS_MAX).mul(postParams.focusDark);
   const fKeep = smoothstep(0.5, 0.85, luminance(vec3(g)));
   g = vec3(vec3(g).mul(float(1).sub(fDark.mul(float(1).sub(fKeep)))));
+  // Dạ Họa: nhuộm đỏ sẫm theo loại trận (tinh anh/boss), mạnh dần ra xa tâm; giữa khung và điểm ảnh sáng giữ màu thật để đọc chiêu.
+  const mMask = smoothstep(MOOD_R0, MOOD_R1, length(fd)).mul(MOOD_MAX).mul(postParams.moodW).mul(float(1).sub(fKeep));
+  const mLum = luminance(vec3(g));
+  g = vec3(mix(vec3(g), vec3(postParams.moodTint).mul(mLum.mul(2.2).add(0.05)), mMask));
   // Trúng đòn: viền đỏ ở mép. Chớp: sáng trắng cả màn.
   const edge = smoothstep(0.3, 0.75, length(fromCenter));
   g = vec3(mix(g, vec3(0.75, 0.05, 0.04), edge.mul(postParams.hit).mul(0.55)));
