@@ -67,7 +67,7 @@
    "erodeFrom": 0.5,
    "ragged": 0.5,
    "tone": "body",
-   "alpha": 0.95,
+   "alpha": 0.85,
    "tier": 0,
    "seed": 1001,
    "shape": "sprite",
@@ -75,18 +75,18 @@
    "billboard": true,
    "offset": [
     0,
-    2.7159999999999997,
+    2.158,
     -0.4
    ],
-   "scale": 8.6,
-   "scaleTo": 8.6,
+   "scale": 6.8,
+   "scaleTo": 6.8,
    "align": "aim",
    "move": {
     "to": "target",
     "offset": [
      0,
-     2.7159999999999997,
-     -6.4
+     3.4,
+     -4.6
     ],
     "ease": "out"
    }
@@ -117,8 +117,8 @@
     "to": "target",
     "offset": [
      0,
-     1.8,
-     -2.8
+     4,
+     0.4
     ],
     "ease": "out"
    }
@@ -157,7 +157,7 @@
    "billboard": true,
    "offset": [
     0,
-    1.8,
+    2.2,
     0
    ],
    "scale": 2,
@@ -180,7 +180,7 @@
    "billboard": true,
    "offset": [
     0,
-    2.6,
+    3.6,
     0
    ],
    "scale": 2.2,
@@ -203,7 +203,7 @@
    "billboard": true,
    "offset": [
     0,
-    2.7,
+    3.6,
     0
    ],
    "scale": 2.2,
@@ -212,7 +212,7 @@
     "to": "target",
     "offset": [
      0,
-     3.9000000000000004,
+     4.8,
      0
     ],
     "ease": "out"
