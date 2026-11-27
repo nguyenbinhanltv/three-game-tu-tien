@@ -98,6 +98,15 @@ async function glareOf(bare: Buffer, shot: Buffer): Promise<{ glare: number; spr
   return { glare: white / n, spread: changed / n };
 }
 
+/** Timeline chỉ có lớp neo ở mình (mọi sự kiện có `at` đều là `self`): chiêu tự cường hóa, không có gì để che mục tiêu. */
+function fxSelfOnly(id: string): boolean {
+  const f = path.resolve(process.cwd(), '../../packages/content/data/fx', id + '.json');
+  if (!fs.existsSync(f)) return false;
+  const j = JSON.parse(fs.readFileSync(f, 'utf8')) as { events?: { at?: string }[] };
+  const ats = (j.events ?? []).map((e) => e.at).filter((a): a is string => !!a);
+  return ats.length > 0 && ats.every((a) => a === 'self');
+}
+
 /** Thời lượng một timeline (giây): mốc kết thúc muộn nhất của các sự kiện (`t` + `dur`). */
 function fxDuration(id: string): number | null {
   const f = path.resolve(process.cwd(), '../../packages/content/data/fx', id + '.json');
@@ -326,10 +335,13 @@ export default {
       // Cổng duyệt: tắt sự kiện màn hình/camera (chỉ số -1 = `FX_SCREEN_OFF`), nếu không camera đẩy và chớp vẫn chạy giữa ảnh có VFX và ảnh ẩn VFX,
       // thân mục tiêu lệch đi và bị tính nhầm là bị che (đo 27/11: Kiếm Khí Trảm 60% → xem số sau khi tắt).
       if (gate) await pg.evaluate(() => void (window as unknown as { __fxLayerOff?: Set<number> }).__fxLayerOff?.add(-1));
-      type Gate = { coverMax?: number; cover: number | null; glare: number; spread: number; live: number; dur: number | null; fail: string[] };
+      type Gate = { selfOnly?: boolean; coverMax?: number; cover: number | null; glare: number; spread: number; live: number; dur: number | null; fail: string[] };
       const fxRows: { id: string; ok: boolean; gate?: Gate }[] = [];
       const frames2 = () => pg.evaluate(() => new Promise<void>((res) => requestAnimationFrame(() => requestAnimationFrame(() => res()))));
       for (const id of fxIds) {
+        // Cổng duyệt: DỪNG lớp hình trước khi phát rồi bước đúng số khung 1/60 s tới từng mốc (không chờ theo ms thật), để hai lượt chạy dừng ở cùng
+        // một khung của timeline (trước đây chờ theo ms: số che lệch 10–20 điểm giữa hai lượt).
+        if (gate) await pg.evaluate(() => void (window.__game!.timeScale = 0));
         const ok = await pg.evaluate((k) => window.__game!.labFx(k), id);
         fxRows.push({ id, ok });
         if (!ok) {
@@ -339,10 +351,17 @@ export default {
         const covers: number[] = [];
         const g: Gate = { cover: null, glare: 0, spread: 0, live: 0, dur: fxDuration(id), fail: [] };
         let last = 0;
-        for (const ms of [30, 150, 400]) {
-          await sleep(ms - last);
+        // Cổng duyệt chấm NĂM mốc (33 / 100 / 200 / 300 / 450 ms); chụp thường giữ ba mốc cũ.
+        for (const ms of gate ? [33, 100, 200, 300, 450] : [30, 150, 400]) {
+          if (gate) {
+            const n = Math.round(((ms - last) * 60) / 1000);
+            await pg.evaluate((k) => void (window.__game!.stepLeft = k), n);
+            await pg.waitForFunction(() => window.__game!.stepLeft === 0, undefined, { timeout: 10_000 });
+          } else {
+            await sleep(ms - last);
+            await pg.evaluate(() => void (window.__game!.timeScale = 0));
+          }
           last = ms;
-          await pg.evaluate(() => void (window.__game!.timeScale = 0));
           await pg.evaluate(() => new Promise<void>((res) => requestAnimationFrame(() => requestAnimationFrame(() => res()))));
           const shot = await snap(pg, r.out, `${view}/fx/${id}+${ms}ms.png`, { wait: 0 });
           if (gate) {
@@ -411,10 +430,14 @@ export default {
             })()`);
             console.log('[fxdiag] ' + id + ' ' + JSON.stringify(dump));
           }
-          await pg.evaluate(() => void (window.__game!.timeScale = 1));
+          if (!gate) await pg.evaluate(() => void (window.__game!.timeScale = 1));
         }
+        if (gate) await pg.evaluate(() => void (window.__game!.timeScale = 1));
         if (gate) {
-          // Che thân chấm theo mốc GIỮA của ba mốc (trung vị): chớp trúng đòn che thân trong một khung là chủ ý, che kéo dài qua hai mốc mới là hỏng.
+          // Chiêu chỉ có lớp neo ở MÌNH (hộ thể, hóa thân, nhưng cả đòn cận chiến như Tam Đao): vẫn chấm che (mục tiêu cận chiến đứng sát mình), chỉ ĐÁNH DẤU
+          // để người đọc bảng biết số che phụ thuộc khoảng đứng trong phòng (~3 m).
+          g.selfOnly = fxSelfOnly(id);
+          // Che thân chấm theo mốc GIỮA của các mốc (trung vị): chớp trúng đòn che thân trong một khung là chủ ý, che kéo dài qua hai mốc mới là hỏng.
           if (covers.length) {
             const so = [...covers].sort((x, y) => x - y);
             g.cover = so[Math.floor(so.length / 2)]!;
@@ -428,7 +451,7 @@ export default {
           fxRows[fxRows.length - 1]!.gate = g;
           const pc = (x: number | null) => (x === null ? '  ?' : String(Math.round(x * 100)).padStart(3)) + '%';
           console.log(
-            `  ${g.fail.length ? 'HỎNG' : 'ĐẠT '} ${id.padEnd(30)} che ${pc(g.cover)} (đỉnh ${pc(g.coverMax ?? null)})  lóa ${pc(g.glare)}  phủ ${pc(g.spread)}  lưới ${String(g.live).padStart(3)}  dài ${g.dur?.toFixed(2) ?? '?'} s${g.fail.length ? '  ← ' + g.fail.join(', ') : ''}`,
+            `  ${g.fail.length ? 'HỎNG' : 'ĐẠT '} ${id.padEnd(30)} che ${pc(g.cover)} (đỉnh ${pc(g.coverMax ?? null)})  lóa ${pc(g.glare)}  phủ ${pc(g.spread)}  lưới ${String(g.live).padStart(3)}  dài ${g.dur?.toFixed(2) ?? '?'} s${g.selfOnly ? '  [neo ở mình]' : ''}${g.fail.length ? '  ← ' + g.fail.join(', ') : ''}`,
           );
         }
         await sleep(1500);
