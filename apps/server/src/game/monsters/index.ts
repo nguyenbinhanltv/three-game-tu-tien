@@ -4,6 +4,7 @@ import { tickMonsterImpl } from './tickMonster';
 import { tickHazardsImpl } from './tickHazards';
 import { tickBoltsImpl } from './tickBolts';
 import { noteDealt } from '../matchstats';
+import { labMeter } from '../gm/meter';
 import {
   BOLT_MAX_LIFE,
   BOLT_MAX_LIVE,
@@ -165,6 +166,8 @@ export class MonsterSystem {
   /** Phòng thử GM (`/gm freeze`, `/gm lockhp`): quái đứng yên không nghĩ; quái không tụt dưới 1 máu. Chỉ lệnh GM bật, mặc định tắt. */
   gmFreeze = false;
   gmLockHp = false;
+  /** Sân boss (`/gm phase`): pha boss không tự đổi theo máu, chỉ lệnh GM đổi. Mặc định tắt. */
+  gmPhaseLock = false;
 
   /** sid người chơi → id quái đang giữ ô cận chiến của người đó. */
   meleeSlot = new Map<string, string>();
@@ -347,8 +350,14 @@ export class MonsterSystem {
   checkPhase(m: MonEnt): void {
     const phases = m.def.phases;
     if (!phases || m.s.hp <= 0) return;
+    if (this.gmPhaseLock) return;
     const ph = bossPhaseAt(m.s.hp / m.s.mhp, phases, m.phase);
     if (ph === m.phase) return;
+    this.enterPhase(m, ph);
+  }
+
+  /** Vào pha `ph` như trong trận thật: đổi bộ chiêu, hủy chiêu dở của pha cũ, báo client. Lệnh `/gm phase` gọi thẳng (kể cả lùi pha). */
+  enterPhase(m: MonEnt, ph: number): void {
     this.setPhase(m, ph);
     this.c.mirror.onPhase(m, ph);
     // Pha mới bỏ chú/đọc chú thì hủy cái đang dở, không để kẹt cờ niệm chú.
@@ -447,6 +456,8 @@ export class MonsterSystem {
     const hp = Math.max(mon.def.rift || this.gmLockHp ? 1 : 0, mon.s.hp - dmg);
     // Tổng kết trận (U5): chỉ tính phần sát thương thật (không vượt máu còn lại), không tính bóng tâm ma của độ kiếp.
     if (!mon.owner) noteDealt(p, mon.s.hp - hp);
+    // Đồng hồ phòng tập (`/gm dps`): hình nộm khóa máu thì tính sát thương gốc của đòn, còn lại tính phần máu mất thật.
+    if (p && !mon.owner) labMeter.hit(p, this.c.now, mon.id, mon.def.id, mon.s.mhp, this.gmLockHp ? dmg : mon.s.hp - hp, crit, dot);
     mon.s.hp = hp;
     const msg: DmgMsg = { dst: mon.id, n: dmg };
     if (crit) msg.crit = true;
@@ -477,6 +488,7 @@ export class MonsterSystem {
       if (ps && p) this.addPosture(mon, postureGain(ps, dmg, mon.s.mhp, heavy) * (1 + passiveValue(p.char.equip, p.char.meta, 'posture')));
     }
     if (hp <= 0) {
+      if (p) labMeter.kill(p, this.c.now, mon.id);
       this.killMonster(mon);
       // VS-2f: người hạ gục đang mang Mộc ấn của đồng đội thì ấn kết (bóng tâm ma, đệ tử của quái không tính).
       if (p && !mon.owner && !mon.minionOf) this.c.jointFinish(p);

@@ -198,8 +198,8 @@ for (const m of MONSTERS_ELITE()) {
   const lv = sp.levelMax;
   const ms = monsterStats(lv, m.hpMul, m.atkMul);
   const set = fullSet(lv, 2);
-  const t0 = METHOD_IDS.map((id) => ms.hp / playerDps(lv, playerM(lv, id).atk, ms.def, id, m.elem));
-  const t1 = METHOD_IDS.map((id) => ms.hp / playerDps(lv, set.atk, ms.def, id, m.elem));
+  const t0 = METHOD_IDS.map((id) => ms.hp / playerDps(lv, playerM(lv, id).atk, ms.def, id, m.elem, 'avg', 0));
+  const t1 = METHOD_IDS.map((id) => ms.hp / playerDps(lv, set.atk, ms.def, id, m.elem, 'avg', 0));
   const inc = monsterDps(m, ms.atk, set.def);
   console.log(
     `${(m.id + ' (' + lv + ')').padEnd(26)} ${t0.map((x) => x.toFixed(0).padStart(3) + 's').join('/')} | ${t1.map((x) => x.toFixed(0).padStart(3) + 's').join('/')}   ${pct(inc / set.hp).padStart(4)}   cả trận ${pct((inc * at(t1, 0)) / set.hp)}`,

@@ -123,7 +123,7 @@ function ch6Timeline(id: MethodId) {
     const eDef = MONSTER.get(eSp.mon)!;
     const eLv = Math.min(eSp.levelMax, Math.max(eSp.levelMin, level));
     const eMs = monsterStats(eLv, eDef.hpMul, eDef.atkMul);
-    const eTtk = eMs.hp / playerDps(level, pl.atk, eMs.def, id, eDef.elem);
+    const eTtk = eMs.hp / playerDps(level, pl.atk, eMs.def, id, eDef.elem, 'avg', 0);
     const eLost = Math.max(0, monsterDps(eDef, eMs.atk, pl.def) * eTtk - selfSustain(level, id) * pl.hp * eTtk);
     const eRest = eLost / (pl.hp * HP_REGEN_MEDITATE);
     const eXp = monsterXp(eLv, eDef.xpMul) * xpLevelFactor(level, eLv) + meditateXpPerSec(level) * eRest;

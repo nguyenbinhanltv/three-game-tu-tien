@@ -24,6 +24,12 @@ import {
   MF_STUN,
   MF_WEAK,
   MS_DEAD,
+  MS_IDLE,
+  MS_RETURN,
+  MS_CHASE,
+  MON_SKILLS,
+  bossPhaseAt,
+  type MonSkillName,
   tribDef,
   chainDone,
   setChainCleared,
@@ -42,6 +48,7 @@ import {
   methodName,
   LEVELS,
   MONSTER,
+  monsterName,
   QUEST,
   QUESTS,
   SET,
@@ -72,6 +79,15 @@ import {
 import { grantPathOf, methodOf, picksOf, resourceOf, setSkillLevel, skillLevelOf } from '../method';
 import { DIEN_VO_ZONES, dienVoSpawnAt, dienVoStandAt, type LabScene, type LevelDef, type MonsterDef } from '@dtl/shared';
 import type { MonEnt, PlayerEnt } from '../entities';
+import { labMeter, meterLines } from './meter';
+
+/** Loại chiêu quái ép được bằng `/gm cast`: bốn chiêu nền (hẹn giờ trên `MonEnt`) + chiêu mở rộng (`MON_SKILLS`, hẹn giờ ở `mx.next`). */
+const CAST_BASE = ['chant', 'sweep', 'caster', 'slam'] as const;
+type CastKind = (typeof CAST_BASE)[number] | MonSkillName;
+const CAST_KINDS: readonly CastKind[] = [...CAST_BASE, ...MON_SKILLS];
+/** Lặp một chiêu: nghỉ chừng này (ms) giữa hai lần; các chiêu khác bị hoãn `CAST_HOLD` ms. */
+const CAST_LOOP_GAP = 1200;
+const CAST_HOLD = 600_000;
 
 /** Phần GameSim mà lệnh GM cần (giao diện hẹp, tránh import vòng lớp GameSim). */
 interface GmCtx {
@@ -91,6 +107,10 @@ interface GmCtx {
   lab(): {
     gmFreeze: boolean;
     gmLockHp: boolean;
+    gmPhaseLock: boolean;
+    enterPhase(m: MonEnt, ph: number): void;
+    resetAi(m: MonEnt): void;
+    setMonState(m: MonEnt, st: number): void;
     stagger(m: MonEnt, sec: number): void;
     stun(m: MonEnt, sec: number): void;
     setPhase(m: MonEnt, ph: number): void;
@@ -158,7 +178,21 @@ export class GmSystem {
 
   /** Mỗi tick: người bật `/gm free` được xóa hồi chiêu và hồi đầy linh lực (GCD và khóa đòn giữ nguyên để nhịp ra chiêu vẫn thật). */
   tick(): void {
+    if (this.dummy || this.loop) {
+      const now = Date.now();
+      for (const m of this.spawned) {
+        if (m.state === MS_DEAD) continue;
+        // Hình nộm cạn máu: chốt một lần "hạ" cho mọi đồng hồ đang đo rồi hồi đầy.
+        if (this.dummy && m.s.hp <= 1) {
+          for (const p of this.c.players()) labMeter.kill(p, now, m.id);
+          m.s.hp = m.s.mhp;
+        }
+        if (this.loop) this.prime(m, this.loop, true);
+      }
+    }
     for (const p of this.c.players()) {
+      if (labMeter.active(p))
+        for (const k of labMeter.drain(p)) this.c.sys(p, 'sys.gm', { m: `hạ ${monsterName(k.def)}: ${k.ttk.toFixed(1)} s` }, 'info');
       if (!p.gmFree) continue;
       p.char.mp = p.char.mmp;
       if (p.cds.size) {
@@ -269,6 +303,65 @@ export class GmSystem {
 
   /** Quái gọi bằng `/gm spawn` (để `spawn clear` dọn). */
   readonly spawned = new Set<MonEnt>();
+  /** `/gm dummy`: quái gọi bằng lệnh là hình nộm (cạn máu thì tính một lần hạ rồi hồi đầy). */
+  private dummy = false;
+  /** `/gm cast <loại> loop`: quái gọi bằng lệnh chỉ lặp một loại chiêu. */
+  private loop: CastKind | null = null;
+
+  /** Loại chiêu mà pha hiện tại của quái có. */
+  private castKinds(m: MonEnt): CastKind[] {
+    const ai = m.rules.ai;
+    return CAST_KINDS.filter((k) => !!ai[k]);
+  }
+
+  private setCastAt(m: MonEnt, k: CastKind, f: (cur: number) => number): void {
+    if (k === 'chant') m.chantAt = f(m.chantAt);
+    else if (k === 'sweep') m.sweepAt = f(m.sweepAt);
+    else if (k === 'caster') m.castReadyAt = f(m.castReadyAt);
+    else if (k === 'slam') m.abilityAt = f(m.abilityAt);
+    else m.mx.next[k] = f(m.mx.next[k] ?? 0);
+  }
+
+  /**
+   * Hẹn chiêu `kind` của quái ra ngay (`only` = false) hoặc lặp mỗi `CAST_LOOP_GAP` ms và hoãn mọi chiêu khác (`only` = true).
+   * Chỉ đổi mốc hẹn giờ: điều kiện ra chiêu (khoảng cách, với tới, đang không niệm dở) vẫn do AI thật kiểm.
+   */
+  private prime(m: MonEnt, kind: CastKind, only: boolean): void {
+    const now = Date.now();
+    for (const k of this.castKinds(m)) {
+      if (k === kind) this.setCastAt(m, k, (cur) => (only ? Math.min(cur || now + CAST_LOOP_GAP, now + CAST_LOOP_GAP) : now));
+      else if (only) this.setCastAt(m, k, (cur) => Math.max(cur, now + CAST_HOLD));
+    }
+  }
+
+  /** Thôi lặp: các chiêu bị hoãn được dùng lại sau 2 giây. */
+  private unloop(): void {
+    this.loop = null;
+    const now = Date.now();
+    for (const m of this.spawned) for (const k of CAST_KINDS) this.setCastAt(m, k, (cur) => (cur > now + 60_000 ? now + 2000 : cur));
+  }
+
+  /** Dọn mọi quái gọi bằng lệnh và các công tắc sân boss/hình nộm. */
+  private clearLab(): void {
+    for (const m of [...this.spawned]) {
+      this.c.removeMonster(m);
+      this.spawned.delete(m);
+    }
+    this.c.lab().gmPhaseLock = false;
+    this.dummy = false;
+    this.loop = null;
+  }
+
+  private meterSay(p: PlayerEnt): void {
+    const r = labMeter.report(p);
+    if (!r) return;
+    for (const line of meterLines(
+      r,
+      (id) => (SKILL.has(id) ? skillName(id) : id),
+      (id) => monsterName(id),
+    ))
+      this.c.sys(p, 'sys.gm', { m: line }, 'info');
+  }
 
   /** Mặc `n` món đầu của bộ `st` (Địa phẩm), cất đồ cũ vào túi. Dùng cho `/gm set` và `/gm outfit`. */
   wearSet(p: PlayerEnt, st: { pieces: string[] }, n: number): boolean {
@@ -904,7 +997,8 @@ export class GmSystem {
       case 'labreset': {
         // /gm labreset: trả phòng thử về như mới: dọn mọi quái gọi bằng lệnh, tắt freeze/lockhp/free/god, xóa hồi chiêu, hồi đầy.
         const lab = this.c.lab();
-        for (const m of [...this.spawned]) this.c.removeMonster(m);
+        this.clearLab();
+        labMeter.stop(p);
         lab.gmFreeze = false;
         lab.gmLockHp = false;
         p.gmFree = false;
@@ -914,6 +1008,132 @@ export class GmSystem {
         this.c.sendCd(p);
         this.c.heal(p);
         return say('phòng thử đã về như mới');
+      }
+      case 'dps': {
+        // /gm dps [start|stop]: đồng hồ sát thương của riêng mình. Lần đầu gõ = bắt đầu đo; gõ lại = xem số (vẫn đo tiếp); stop = xem rồi dừng.
+        if (a[1] === 'stop' || a[1] === 'off') {
+          if (!labMeter.active(p)) return say('dps: chưa đo');
+          this.meterSay(p);
+          labMeter.stop(p);
+          return say('dps: đã dừng');
+        }
+        if (a[1] === 'start' || a[1] === 'reset' || !labMeter.active(p)) {
+          labMeter.start(p, Date.now());
+          return say('dps: bắt đầu đo từ 0 (gõ /gm dps để xem số, /gm dps stop để dừng)');
+        }
+        return this.meterSay(p);
+      }
+      case 'dummy': {
+        // /gm dummy [id quái] [cấp] | off: hình nộm đo sát thương trong phòng tập: một con đứng yên, khóa máu, cạn máu thì tính một lần hạ rồi hồi đầy.
+        if (!this.c.level().dungeon?.practice) return say(t('gm.msg.scene_no'));
+        if (a[1] === 'off') {
+          this.dummy = false;
+          return say('dummy off');
+        }
+        const def = MONSTER.get(a[1] ?? 'mon_soi_xam');
+        if (!def) return say(t('gm.msg.no_mon', { id: a[1] ?? '' }));
+        const lv = Math.max(1, Math.min(MAX_LEVEL, Math.floor(Number(a[2]) || c.level)));
+        this.clearLab();
+        const at = dienVoSpawnAt(0, 1, !!def.boss);
+        this.spawned.add(this.c.spawnMonster(def, lv, at.x, at.z, null));
+        const lab = this.c.lab();
+        lab.gmFreeze = true;
+        lab.gmLockHp = true;
+        this.dummy = true;
+        labMeter.start(p, Date.now());
+        return say(`hình nộm ${def.id} cấp ${lv}: đứng yên, cạn máu thì tính một lần hạ rồi hồi đầy; đồng hồ đang đo (/gm dps)`);
+      }
+      case 'boss': {
+        // /gm boss <id> [cấp]: sân boss của phòng tập: dọn quái cũ, gọi boss/tinh anh vào hố boss ở cấp cho trước (mặc định cấp mình), AI chạy thật,
+        // mình bất tử, đồng hồ đo từ 0. Đi kèm /gm phase, /gm hp, /gm cast.
+        if (!this.c.level().dungeon?.practice) return say(t('gm.msg.scene_no'));
+        const def = MONSTER.get(a[1] ?? '');
+        if (!def || !(def.boss || def.elite))
+          return say(
+            'boss <id> [cấp] — ' +
+              [...MONSTER.values()]
+                .filter((m) => m.boss)
+                .map((m) => m.id)
+                .join(' | '),
+          );
+        const lv = Math.max(1, Math.min(MAX_LEVEL, Math.floor(Number(a[2]) || c.level)));
+        this.clearLab();
+        const lab = this.c.lab();
+        lab.gmFreeze = false;
+        lab.gmLockHp = false;
+        const at = dienVoSpawnAt(0, 1, true);
+        const m = this.c.spawnMonster(def, lv, at.x, at.z, null);
+        this.spawned.add(m);
+        p.god = true;
+        labMeter.start(p, Date.now());
+        const kinds = new Set<string>();
+        for (const ai of [def.ai, ...(def.phases ?? []).map((ph) => ph.ai)]) for (const k of CAST_KINDS) if (ai?.[k]) kinds.add(k);
+        return say(
+          `boss ${def.id} cấp ${lv}: máu ${m.s.mhp}, ${def.phases?.length ?? 0} lần đổi pha, chiêu ${[...kinds].join(', ') || 'không'}; god on, đồng hồ đang đo`,
+        );
+      }
+      case 'phase': {
+        // /gm phase <n> | off: ép boss quanh mình vào pha n (0 = pha đầu) như trận thật rồi KHÓA pha (máu đổi không đổi pha); off = bỏ khóa.
+        const lab = this.c.lab();
+        if (a[1] === 'off') {
+          lab.gmPhaseLock = false;
+          return say('phase: bỏ khóa, pha đổi theo máu');
+        }
+        const n = Number(a[1]);
+        if (!Number.isInteger(n) || n < 0) return say(helpLine('phase')!);
+        let k = 0;
+        for (const m of this.near(p)) {
+          if (!m.def.phases?.length) continue;
+          const ph = Math.min(n, m.def.phases.length);
+          if (m.phase !== ph) lab.enterPhase(m, ph);
+          k++;
+        }
+        lab.gmPhaseLock = true;
+        return say(`phase ${n}: ${k} boss, khóa pha on`);
+      }
+      case 'hp': {
+        // /gm hp <pct>: tua máu quái quanh mình về đúng pct% (lên hoặc xuống, không qua sát thương). Chưa khóa pha thì pha đặt lại theo mức máu mới.
+        const pct = Number(a[1]);
+        if (!(pct >= 1 && pct <= 100)) return say(helpLine('hp')!);
+        const lab = this.c.lab();
+        const ms = this.near(p);
+        for (const m of ms) {
+          m.s.hp = Math.max(1, Math.ceil((m.s.mhp * pct) / 100));
+          if (lab.gmPhaseLock || !m.def.phases?.length) continue;
+          const ph = bossPhaseAt(m.s.hp / m.s.mhp, m.def.phases, 0);
+          if (ph !== m.phase) lab.enterPhase(m, ph);
+        }
+        return say(`hp ${pct}%: ${ms.length} quái`);
+      }
+      case 'cast': {
+        // /gm cast <loại> [loop] | off: quái gọi bằng lệnh ra ngay một loại chiêu (loop: chỉ lặp chiêu đó, hoãn mọi chiêu khác); off = thôi lặp.
+        // Chỉ đổi mốc hẹn giờ, AI thật vẫn kiểm khoảng cách/với tới; quái đang đứng yên thì cho vào trận với người gọi.
+        if (a[1] === 'off') {
+          this.unloop();
+          return say('cast: thôi lặp');
+        }
+        const live = [...this.spawned].filter((m) => m.state !== MS_DEAD);
+        const kind = CAST_KINDS.find((k) => k === a[1]);
+        const has = kind ? live.filter((m) => this.castKinds(m).includes(kind)) : [];
+        if (!kind || !has.length) {
+          const all = [...new Set(live.flatMap((m) => this.castKinds(m)))];
+          return say('cast <loại> [loop] | off — pha hiện tại có: ' + (all.join(', ') || 'không có (gọi quái bằng /gm boss hoặc /gm spawn trước)'));
+        }
+        const lab = this.c.lab();
+        lab.gmFreeze = false;
+        const loop = a[2] === 'loop';
+        if (this.loop && !loop) this.unloop();
+        for (const m of has) {
+          if (m.state === MS_IDLE || m.state === MS_RETURN) {
+            lab.resetAi(m);
+            m.target = p.sid;
+            m.unreachableSince = 0;
+            lab.setMonState(m, MS_CHASE);
+          }
+          this.prime(m, kind, loop);
+        }
+        this.loop = loop ? kind : null;
+        return say(`cast ${kind}${loop ? ' (lặp)' : ''}: ${has.length} quái`);
       }
       case 'dvt':
         // /gm dvt: vào Diễn Võ Trường (phòng tập riêng); gõ lại trong phòng để ra. Nhân vật được trả về nguyên trạng khi ra.
