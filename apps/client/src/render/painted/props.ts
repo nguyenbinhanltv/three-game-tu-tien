@@ -6,7 +6,10 @@ import {
   float,
   materialEmissive,
   mix,
+  normalView,
   normalWorld,
+  positionViewDirection,
+  pow,
   positionWorld,
   smoothstep,
   uniform,
@@ -28,6 +31,12 @@ const SUN = new THREE.Vector3(...LIGHT.sunDir).normalize();
 /** Hai tông nhân với màu gốc: sáng ngả ấm, tối ngả lam (pha tay, không phải sáng nhân cho tối). */
 const LIT_TINT = [1.1, 1.05, 0.9] as const;
 const SHADE_TINT = [0.46, 0.56, 0.82] as const;
+/**
+ * Dạ Họa: đạo cụ và kiến trúc trong đêm của Họa Cảnh gần như đen đặc (Diễn Võ Trường chỉ ra). Hai lớp chỉ bật khi có lớp Dạ Cảnh:
+ * ánh bù nhân `DA_PROP_LIFT` lên hai tông (khối còn đọc được sau bước nhuộm trăng), và ánh viền lam lạnh theo góc nhìn để tách khối khỏi nền tối.
+ */
+export const DA_PROP_LIFT = 1.5;
+export const DA_PROP_RIM = [0.14, 0.22, 0.36] as const;
 const EDGE = 0.5;
 const SOFT = 0.05;
 
@@ -108,7 +117,12 @@ export function paintedProp<M extends THREE.MeshStandardNodeMaterial>(m: M): M {
     smoothstep(themeU.face.y.negate(), themeU.face.y, positionWorld.x.sub(themeU.face.x)),
   );
   const albedo: N = mix(base, themed, themeU.propMix).mul(faceTint);
-  m.emissiveNode = albedo.mul(tint).sub(diffuseColor.rgb).add(glow);
+  let lit: N = albedo.mul(tint);
+  if (FLAGS.da) {
+    const rim = pow(float(1).sub(normalView.dot(positionViewDirection).clamp(0, 1)), 3);
+    lit = lit.mul(DA_PROP_LIFT).add(vec3(...DA_PROP_RIM).mul(rim));
+  }
+  m.emissiveNode = lit.sub(diffuseColor.rgb).add(glow);
   m.needsUpdate = true;
   return m;
 }

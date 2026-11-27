@@ -45,7 +45,8 @@ export function dienVoSpawnAt(i: number, n: number, boss: boolean): { x: number;
   const z = dienVoZone(boss ? 'boss' : 'arena');
   if (n <= 1) return { x: z.x, z: z.z };
   const ring = Math.min((z.r ?? 6) - 1.5, boss ? 3 : 2.5 + n * 0.25);
-  const a = (i / n) * Math.PI * 2;
+  // Lệch nửa bước: không con nào đứng thẳng hướng bắc (mép trên khung hình ở camera 0°), con đầu danh sách (tinh anh) nằm chếch trong khung.
+  const a = ((i + 0.5) / n) * Math.PI * 2;
   return { x: z.x + Math.sin(a) * ring, z: z.z - Math.cos(a) * ring };
 }
 
@@ -75,18 +76,20 @@ export interface LabScene {
 }
 
 const lamp = (x: number, z: number): HandProp => ({ id: 'prop_den_da', x, z, yaw: 0, s: 1, r: 0.5 });
-const pillar = (x: number, z: number, s = 1): HandProp => ({ id: 'prop_tru_da_khac_van', x, z, yaw: 0, s, r: 0.8 });
+// Trụ đá khắc vân cao 9 m ở tỉ lệ 1: trong phòng chỉ cần ~3,6 m để đánh dấu hố boss mà không che khung hình.
+const pillar = (x: number, z: number, s = 0.4): HandProp => ({ id: 'prop_tru_da_khac_van', x, z, yaw: 0, s, r: 0.5 });
 const sign = (x: number, z: number, yaw: number): HandProp => ({ id: 'prop_bia_da', x, z, yaw, s: 0.9, r: 0.6 });
 
 /** Hàng đạo cụ mẫu của hành lang (mỗi món cách nhau 2 m, quay mặt về phía nam): đá, cây, kiến trúc nhỏ, đồ tông môn. */
-const CORRIDOR = [
-  'prop_da_dung',
-  'prop_da_nam',
-  'prop_tuong_da_vo_si',
-  'prop_tc_lu_huong',
-  'prop_tc_gia_kiem',
-  'prop_tc_chuong_dong',
-  'prop_tc_tinh_the_tim',
+// Tỉ lệ `s` đưa mỗi món về cỡ 2–2,5 m (chiều cao chuẩn ở assets/source/prop/<id>/meta.json: đá dựng 5 m, tượng võ sĩ 7 m…) để so chất liệu cạnh nhau.
+const CORRIDOR: readonly (readonly [string, number])[] = [
+  ['prop_da_dung', 0.45],
+  ['prop_da_nam', 0.5],
+  ['prop_tuong_da_vo_si', 0.34],
+  ['prop_tc_lu_huong', 0.7],
+  ['prop_tc_gia_kiem', 0.7],
+  ['prop_tc_chuong_dong', 0.55],
+  ['prop_tc_tinh_the_tim', 0.7],
 ];
 
 export const DIEN_VO_PROPS: readonly HandProp[] = [
@@ -103,8 +106,8 @@ export const DIEN_VO_PROPS: readonly HandProp[] = [
   lamp(1290.5, 994.5),
   lamp(1309.5, 994.5),
   // Hố boss: bốn trụ đá khắc vân.
-  pillar(1293, 963, 1.1),
-  pillar(1307, 963, 1.1),
+  pillar(1293, 963),
+  pillar(1307, 963),
   pillar(1293, 973),
   pillar(1307, 973),
   // Biển tên khu (bia đá), đặt ở mép mỗi khu, mặt quay về giữa phòng.
@@ -115,10 +118,10 @@ export const DIEN_VO_PROPS: readonly HandProp[] = [
   sign(1312, 968, -1.57),
   sign(1314, 992, -1.57),
   // Hành lang đạo cụ.
-  ...CORRIDOR.map((id, i): HandProp => ({ id, x: 1279 + i * 2, z: 963, yaw: 0, s: 1, r: 0.8 })),
+  ...CORRIDOR.map(([id, s], i): HandProp => ({ id, x: 1279 + i * 2, z: 963, yaw: 0, s, r: 0.7 })),
   // Buồng ánh sáng: góc cảnh mẫu (đá, cây khô, đèn lồng giấy) để chỉnh mood, sương, đèn.
-  { id: 'prop_cay_goc_kho', x: 1320, z: 965, yaw: 0.6, s: 1, r: 0.8 },
-  { id: 'prop_da_phien', x: 1316.5, z: 966, yaw: 0.2, s: 1 },
+  { id: 'prop_cay_goc_kho', x: 1320, z: 965, yaw: 0.6, s: 0.5, r: 0.6 },
+  { id: 'prop_da_phien', x: 1316.5, z: 966, yaw: 0.2, s: 0.7 },
   { id: 'prop_tc_long_den_giay', x: 1318, z: 971, yaw: 0, s: 1, r: 0.4 },
-  { id: 'prop_tc_da_reu', x: 1321, z: 970.5, yaw: 2.1, s: 1, r: 0.7 },
+  { id: 'prop_tc_da_reu', x: 1321, z: 970.5, yaw: 2.1, s: 0.7, r: 0.6 },
 ];
