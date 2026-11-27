@@ -44,6 +44,8 @@ export interface PlayerEnt {
   dev: boolean;
   /** `?god` / `/gm god`: vẫn nhận đòn (số sát thương, khựng) nhưng không mất máu. Chỉ bật cho `dev`. */
   god: boolean;
+  /** `/gm free`: chiêu không hồi, linh lực luôn đầy (thử chiêu liên tục). Chỉ lệnh GM bật. */
+  gmFree?: boolean;
   move: MoveState;
   inputs: MoveInput[];
   budget: number;

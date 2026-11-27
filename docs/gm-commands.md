@@ -80,6 +80,10 @@ Playtest luôn tắt tiếng: mở game với `?mute=1` (ví dụ `?mute=1&debug
 | --- | --- | --- |
 | `spawn` | `/gm spawn <id quái\|boss\|clear> [n ≤ 20]` — gọi quái trước mặt; clear dọn quái đã gọi. | `/gm spawn boss_han_giao 1` |
 | `killall` | `/gm killall` — hạ quái trong 40 m. |  |
+| `freeze` | `/gm freeze [on|off]` — quái trong room đứng yên, giữ nguyên trạng thái. |  |
+| `lockhp` | `/gm lockhp [on|off]` — quái không tụt dưới 1 máu. |  |
+| `state` | `/gm state <weak|break|stun|chant|phase N|clear> [giây]` — ép trạng thái lên quái quanh mình. | `/gm state break 10` |
+| `free` | `/gm free [on|off]` — chiêu không hồi, linh lực luôn đầy. |  |
 | `hurt` | `/gm hurt <pct>` — hạ máu quái quanh mình về pct%. | `/gm hurt 30` |
 | `dvt` | `/gm dvt` — vào Diễn Võ Trường (phòng tập riêng); gõ lại trong phòng để ra. Ra khỏi phòng, nhân vật trở về nguyên trạng. |  |
 | `tick` | `/gm tick` — số đo tick server. |  |

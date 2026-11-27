@@ -162,6 +162,10 @@ const BLOCK_GAP_MS = 600;
 export class MonsterSystem {
   constructor(readonly c: MonsterCtx) {}
 
+  /** Phòng thử GM (`/gm freeze`, `/gm lockhp`): quái đứng yên không nghĩ; quái không tụt dưới 1 máu. Chỉ lệnh GM bật, mặc định tắt. */
+  gmFreeze = false;
+  gmLockHp = false;
+
   /** sid người chơi → id quái đang giữ ô cận chiến của người đó. */
   meleeSlot = new Map<string, string>();
   /** sid người chơi → lần cuối có quái cận chiến phải chờ ở vòng ngoài. */
@@ -440,7 +444,7 @@ export class MonsterSystem {
     }
     dmg = mxDmg;
     // Khe mạch (DV-3D): boss có `rift` không chết vì sát thương, chỉ về 1 máu; chỉ gột hết tầng cháy (GameSim.purifyMonster) mới hạ được.
-    const hp = Math.max(mon.def.rift ? 1 : 0, mon.s.hp - dmg);
+    const hp = Math.max(mon.def.rift || this.gmLockHp ? 1 : 0, mon.s.hp - dmg);
     // Tổng kết trận (U5): chỉ tính phần sát thương thật (không vượt máu còn lại), không tính bóng tâm ma của độ kiếp.
     if (!mon.owner) noteDealt(p, mon.s.hp - hp);
     mon.s.hp = hp;
