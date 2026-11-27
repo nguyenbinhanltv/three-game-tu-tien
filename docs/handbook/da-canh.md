@@ -64,8 +64,9 @@ Mọi cải thiện Dạ Họa (VFX, animation, nhân vật, đạo cụ, ánh s
 
 - **Cảnh đang đánh:** cảnh mẫu có `act: { slot, waitMs }` thì kịch bản chụp nhắm quái gần nhất, bấm ô chiêu rồi chụp ba khung (`<id>.png`, `.k1`, `.k2`) và ghi khoảng cách + máu mục tiêu trước/sau (`rows[].act`); loại ảnh này không so SSIM. Hiện có `kiem_chem_quet` (5 sói) và `kiem_ap_sat` (boss cách 23 m).
 - **Kiếm tu cận chiến (làm trong phòng, 27/11):** đang tự đánh mà mục tiêu ngoài tầm thì client TỰ ÁP SÁT bằng điểm đến của camera chéo (`game/combat/approach.ts`; WASD hoặc bấm chỗ khác là hủy; server vẫn kiểm tầm). Mỗi đòn thường vẽ vệt quạt trên sàn đúng hình vùng quét của server (`Vfx.arcSlash` từ `PathBasic.arc`). Điều kiện tầm tự đánh ở client giờ cộng bán kính thân quái như server (trước đó tới sát boss vẫn không đánh). Đo trong phòng: đòn quét trúng con chính và hai con bên; từ 23 m áp sát về 6,2 m rồi đánh trúng boss.
+- **Kiếm tu, cân bằng và bảo mật (27/11):** sim tính đòn quét (`CLEAVE_EXTRA` = 1 quái khác trong cung, `simparts/common.ts`). Với hệ số quét 0,6 Kiếm tu tới Ngưng Khí 15 viên mãn trong 2,92 giờ (dưới mục tiêu 3–4 giờ, nhanh nhất 9 lối) nên hệ số hạ còn **0,4** → 3,02 giờ (các lối khác 3,01–3,52). Bài security `combo` thêm hai mục tầm cận chiến (xa 16 m bị từ chối `sys.out_of_range`, áp sát 3 m ra đòn): 8/8 đạt. Vệt quạt sáng hơn, giữ lâu hơn và đặt theo điểm cao nhất của vùng quét (trước đó nửa quạt chìm dưới sàn).
 
-Chưa có: nội dung riêng cho bục nhân vật, buồng ánh sáng và tường hiệu ứng (mới có ranh, biển và vài đạo cụ); số MB texture trên bảng F3. Kiếm tu: bài security `combo` chưa cập nhật cho tầm cận chiến; sim cân bằng chưa tính đòn quét; vệt quạt còn mờ dưới lớp tối quanh trận.
+Chưa có: nội dung riêng cho bục nhân vật, buồng ánh sáng và tường hiệu ứng (mới có ranh, biển và vài đạo cụ); số MB texture trên bảng F3.
 
 **Phòng đã chỉ ra (việc phải sửa trong phòng trước khi ra bản đồ):**
 

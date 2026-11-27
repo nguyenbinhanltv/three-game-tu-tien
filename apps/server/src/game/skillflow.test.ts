@@ -467,7 +467,7 @@ describe('đòn thường cận chiến chém quét của Kiếm tu (Dạ Cảnh
     expect(dmgOf(sent, back.id)).toBe(0);
   });
 
-  it('đòn quét yếu hơn đòn chính (hệ số 0,6)', () => {
+  it('đòn quét yếu hơn đòn chính (theo hệ số trong dữ liệu)', async () => {
     const { sim, p, mon, fresh, resolve, sent } = setup(10, 'lac_kiem_quyet');
     const main = mon(X + 4, Z);
     const side = mon(X + 3.5, Z + 2);
@@ -479,8 +479,13 @@ describe('đòn thường cận chiến chém quét của Kiếm tu (Dạ Cảnh
       sim.now = p.gcdAt;
     }
     const ratio = sum(side.id) / sum(main.id);
-    expect(ratio).toBeGreaterThan(0.5);
-    expect(ratio).toBeLessThan(0.7);
+    // Hệ số lấy từ dữ liệu (paths.json, cân bằng theo sim). Tỉ lệ thật thấp hơn hệ số một chút vì phần trừ phòng ngự không nhân theo hệ số quét.
+    const { PATHS } = await import('@dtl/content');
+    const mul = PATHS.find((x) => x.id === 'kiem_tu')!.basic!.arc!.mul;
+    expect(mul).toBeGreaterThan(0);
+    expect(mul).toBeLessThan(1);
+    expect(ratio).toBeGreaterThan(mul * 0.7);
+    expect(ratio).toBeLessThan(mul * 1.1);
   });
 
   it('người không phải Kiếm tu không có chém quét; chiêu khác của Kiếm tu cũng không quét', () => {
