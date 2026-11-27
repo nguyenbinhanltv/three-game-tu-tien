@@ -14,7 +14,6 @@ import {
   type GroundLevel,
 } from '../../render/materials/ground';
 import type { GroundTextures } from '../../base/groundTextures';
-import { FLAGS } from '../../base/flags';
 import { logger } from '../../base/log';
 import { levelId, levelTerrain } from '../../base/levelCtx';
 import { COLLIDERS_LAYOUT, featureWeight, FOREST, hash01, LAKE, trailsOf, WATER_Y } from '@dtl/shared';
@@ -244,8 +243,7 @@ export class Terrain {
   private results: TileRes[] = [];
 
   private startWorker(): void {
-    // Cờ `tc=0` đổi bộ cây trong propScatter mà worker không thấy (worker không có chuỗi truy vấn): dựng đồng bộ như cũ.
-    if (typeof Worker === 'undefined' || !FLAGS.tcProps) return;
+    if (typeof Worker === 'undefined') return;
     try {
       const w = new Worker(new URL('./terrainBuild.worker.ts', import.meta.url), { type: 'module' });
       w.onmessage = (e: MessageEvent<TileRes>) => {

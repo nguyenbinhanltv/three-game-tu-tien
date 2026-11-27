@@ -25,7 +25,7 @@ Kế hoạch đã duyệt: ~80 món (76 asset = 38 món × 2 biến thể), phon
 - món có va chạm (vòng tròn, món dài như rào/sạp có nhiều vòng) không nằm trong bãi quái hay điểm tinh anh; món không va chạm (cỏ, nấm, khúc gỗ) được vào bãi quái để khu săn không trống trơn;
 - vòng va chạm cộng vào địa hình qua `registerTerrain`, client và server thấy giống nhau; `pnpm map:report --level <id>` vẫn 0 chỗ kẹt.
 
-Bật/tắt: `?tc=0` ẩn hình (so ảnh trước/sau, đo); vòng va chạm vẫn còn.
+Cờ `?tc=0` (ẩn hình để so) đã gỡ ở V4 (28/11/2026).
 
 ## Kiểm
 

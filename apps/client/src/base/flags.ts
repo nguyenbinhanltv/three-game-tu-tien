@@ -82,8 +82,6 @@ interface Flags {
   ambient: string | null;
   /** `?cine=0` tắt cảnh mở đầu và cảnh boss/chuyển pha (công cụ đo bench/crowd/load/compat dùng để camera đo không bị cảnh điện ảnh chiếm). */
   cinematics: boolean;
-  /** `?tc=0` ẩn bộ prop "Thiên Công Khai Vật" (PROP-1; so ảnh trước/sau, đo hiệu năng). Chỉ ẩn hình, va chạm vẫn còn. */
-  tcProps: boolean;
   /** `?bf=0` tắt bướm trang trí (so ảnh, đo). */
   butterflies: boolean;
   /** `?birds=0` tắt đàn chim lượn trên Lạc Kiếm (Chân Cảnh M4): ảnh đối chứng. */
@@ -183,7 +181,6 @@ export const FLAG_DOCS: Readonly<Record<string, { scope: 'user' | 'diag' | 'test
   music: { scope: 'diag', doc: 'id bài nhạc thử (dev)' },
   ambient: { scope: 'diag', doc: 'id âm môi trường thử (dev)' },
   cine: { scope: 'diag', doc: '=0 tắt cảnh mở đầu/boss (công cụ đo dùng)' },
-  tc: { scope: 'diag', doc: '=0 ẩn bộ prop Thiên Công Khai Vật (PROP-1, so ảnh/đo)' },
   bf: { scope: 'diag', doc: '=0 tắt bướm trang trí' },
   birds: { scope: 'diag', doc: '=0 tắt đàn chim lượn trên Lạc Kiếm (Chân Cảnh M4)' },
   hero: { scope: 'diag', doc: '=0 tắt viền nhân vật (hero light)' },
@@ -270,7 +267,6 @@ export function readFlags(search: string): Flags {
     music: q.get('music'),
     ambient: q.get('ambient'),
     cinematics: !off(q.get('cine')),
-    tcProps: !off(q.get('tc')),
     butterflies: !off(q.get('bf')),
     birds: !off(q.get('birds')),
     hero: !off(q.get('hero')),
