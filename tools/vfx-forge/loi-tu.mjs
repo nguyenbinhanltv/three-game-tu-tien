@@ -168,10 +168,12 @@ const SPEC = {
     ...[gather('loi_spiral', { size: 3.4, off: [0, 1.2, 0], rest: { at: 'self' } })],
     scorch('self', [0, -1.05, 0], 1.7, -0.1),
     pullIn('self', [0, 1, 0], -0.24),
-    strike('loi_spiral', { size: 3.4, at: 'self', off: [0, 1.25, 0], dur: 0.9, erodeFrom: 0.3 }),
-    sprite('loi_arcs_pair', { t: 0.02, dur: 0.6, at: 'self', off: [0, 1.2, 0.3], size: 1.8, alpha: 0.9, erodeFrom: 0.25 }),
+    // Hào quang quanh mình (27/11): bật ĐẦY 0,16 s rồi chỉ còn bóng mờ ~1/3, để địch đứng sát (2,8 m) không bị che suốt chiêu.
+    strike('loi_spiral', { size: 3.4, at: 'self', off: [0, 1.25, 0], dur: 0.16, erodeFrom: 0.6 }),
+    { ...sprite('loi_spiral', { t: 0.13, dur: 0.77, at: 'self', off: [0, 1.25, 0], size: 3.4, erodeFrom: 0.3 }), alpha: 0.16 },
+    sprite('loi_arcs_pair', { t: 0.02, dur: 0.2, at: 'self', off: [0, 1.2, 0.3], size: 1.8, alpha: 0.9, erodeFrom: 0.25 }),
     flash('self', [0, 1.2, 0], 2.2, 0.01),
-    after('self', [0, 1.3, 0], 2.4, 0.2, 1.2),
+    { ...after('self', [0, 1.3, 0], 2.4, 0.2, 1.2), alpha: 0.2 },
   ],
   // Lôi Chích: ngọn giáo sét dài đâm thẳng từ người ra mục tiêu, mũi nhọn lõi trắng.
   skl_loi_chich: () => [

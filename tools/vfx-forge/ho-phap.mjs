@@ -159,12 +159,14 @@ const SPEC = {
   skl_kim_cuong_bat_hoai: () => [
     ...[gather('hp_crystal', { size: 2.6, off: [0, 1.2, 0], rest: { at: 'self' } })],
     pullIn('self', [0, 1.1, 0], -0.28),
-    strike('hp_crystal', { size: 4.8, at: 'self', off: [0, 1.25, 0], dur: 1.6, erodeFrom: 0.45 }),
-    sprite('hp_rubble', { t: 0.1, dur: 0.8, at: 'self', off: [0, 1.4, 0], size: 4.2, alpha: 0.8, erodeFrom: 0.3 }),
+    // Hào quang quanh mình (27/11): khối tinh thể bật ĐẦY 0,16 s rồi ở lại dạng bóng mờ (giữ luật hình hộ thể ở lại >= 1 s), địch đứng sát không bị che suốt chiêu.
+    strike('hp_crystal', { size: 4.8, at: 'self', off: [0, 1.25, 0], dur: 0.16, erodeFrom: 0.6 }),
+    { ...sprite('hp_crystal', { t: 0.13, dur: 1.47, at: 'self', off: [0, 1.25, 0], size: 4.8, erodeFrom: 0.45 }), alpha: 0.16 },
+    sprite('hp_rubble', { t: 0.1, dur: 0.22, at: 'self', off: [0, 1.4, 0], size: 4.2, alpha: 0.8, erodeFrom: 0.3 }),
     flash('self', [0, 1.3, 0], 2.8, 0.03, { dur: 0.18 }),
     scorch('self', [0, -1.05, 0], 2.4, -0.1, 2.4),
     scorch('self', [0, -1.05, 0], 2.04, -0.1, 2.4),
-    after('self', [0, 1.4, 0], 3, 0.25, 1.4),
+    { ...after('self', [0, 1.4, 0], 3, 0.25, 1.4), alpha: 0.2 },
     sparks('self', [0, 1.2, 0], 14, 0),
   ],
   // Thiết Quyền Chấn Địa: nắm đấm khổng lồ vàng-đá giáng xuống đất, đất nứt tia xòe, đá tảng bay lên rồi rơi.
@@ -245,11 +247,14 @@ const SPEC = {
   skl_thien_kim_phap_tuong: () => [
     ...[gather('hp_guardian', { size: 5, off: [0, 3.6, -2.2], rest: { at: 'self' } })],
     pullIn('self', [0, 1.4, 0], -0.3),
-    strike('hp_guardian', { size: 9, at: 'self', off: [0, 4, -2.4], dur: 1.8, alpha: 0.9, erodeFrom: 0.5 }),
-    strike('hp_cracks', { size: 9, at: 'self', off: [0, 0.4, 0], t: 0.1, dur: 1.1, erodeFrom: 0.4 }),
+    // Hào quang quanh mình (27/11): pháp tướng bật ĐẦY 0,16 s rồi ở lại dạng bóng mờ; vết nứt đất mỏng hẳn sau nhịp đầu.
+    strike('hp_guardian', { size: 9, at: 'self', off: [0, 4, -2.4], dur: 0.16, alpha: 0.9, erodeFrom: 0.6 }),
+    { ...sprite('hp_guardian', { t: 0.13, dur: 1.67, at: 'self', off: [0, 4, -2.4], size: 9, erodeFrom: 0.5 }), alpha: 0.16 },
+    strike('hp_cracks', { size: 9, at: 'self', off: [0, 0.4, 0], t: 0.1, dur: 0.14, erodeFrom: 0.4 }),
+    { ...sprite('hp_cracks', { t: 0.22, dur: 0.98, at: 'self', off: [0, 0.4, 0], size: 9, erodeFrom: 0.4 }), alpha: 0.14 },
     flash('self', [0, 1.4, 0], 2.8, 0.04, { dur: 0.16 }),
     scorch('self', [0, -1.05, 0], 3.4, 0, 2.6),
-    after('self', [0, 1.5, 0], 3.4, 0.25, 1.4),
+    { ...after('self', [0, 1.5, 0], 3.4, 0.25, 1.4), alpha: 0.2 },
     sparks('self', [0, 1.4, 0], 12, 0.04),
   ],
 };
