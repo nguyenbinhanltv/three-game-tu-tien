@@ -133,7 +133,8 @@
     0
    ],
    "scale": 1,
-   "scaleTo": 1.44
+   "scaleTo": 1.44,
+   "spriteStyle": 15
   },
   {
    "type": "particles",
@@ -175,7 +176,8 @@
     0
    ],
    "scale": 2.38,
-   "scaleTo": 2.38
+   "scaleTo": 2.38,
+   "spriteStyle": 15
   },
   {
    "type": "mesh",
@@ -198,7 +200,8 @@
     0
    ],
    "scale": 2.46,
-   "scaleTo": 3
+   "scaleTo": 3,
+   "spriteStyle": 15
   },
   {
    "type": "mesh",
@@ -222,7 +225,8 @@
    ],
    "scale": 3.6,
    "scaleTo": 3.6,
-   "align": "aim"
+   "align": "aim",
+   "spriteStyle": 15
   },
   {
    "type": "mesh",
@@ -245,7 +249,8 @@
     0
    ],
    "scale": 2.6,
-   "scaleTo": 2.6
+   "scaleTo": 2.6,
+   "spriteStyle": 15
   },
   {
    "type": "mesh",
@@ -268,7 +273,8 @@
     0
    ],
    "scale": 1.4,
-   "scaleTo": 1.75
+   "scaleTo": 1.75,
+   "spriteStyle": 15
   },
   {
    "type": "decal",
@@ -317,7 +323,8 @@
      0
     ],
     "ease": "out"
-   }
+   },
+   "spriteStyle": 15
   },
   {
    "type": "particles",

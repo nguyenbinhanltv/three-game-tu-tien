@@ -201,6 +201,7 @@ const HEAD = {
   skl_cu_bo_xung: { trigger: 'fx', fxKind: 'dash', method: 'co_than_quyet' },
 };
 
+const RIM15 = new Set(['skl_tinh_bao', 'skl_thai_co_quyen']);
 const ids = process.argv.slice(2).length ? process.argv.slice(2) : Object.keys(SPEC);
 for (const id of ids) {
   if (!SPEC[id]) throw new Error(`chưa có công thức cho ${id}`);
@@ -228,6 +229,8 @@ for (const id of ids) {
     }
   }
   const evs = SPEC[id]().flat();
+  // Hai chiêu bị cổng báo "chìm vào nền": tô sprite bằng kiểu 15 (Cổ Thần đậm, viền sáng rộng; render/vfx/stylized.ts) thay vì kiểu 11.
+  if (RIM15.has(id)) for (const e of evs) if (e.type === 'mesh' && e.shape === 'sprite') e.spriteStyle = 15;
   if (t.trigger === 'fx') for (const e of evs) e.t = Math.max(0, e.t);
   t.events.push(...evs);
   if (t.variants) {
