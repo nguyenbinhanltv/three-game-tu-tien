@@ -34,6 +34,7 @@ import {
   ARTIFACT,
   APPEARANCE,
   ITEM,
+  LAB_SCENES,
   itemName,
   itemTier,
   methodName,
@@ -67,7 +68,7 @@ import {
   type GmBranch,
 } from './tools';
 import { grantPathOf, methodOf, picksOf, resourceOf, setSkillLevel, skillLevelOf } from '../method';
-import { dienVoSpawnAt, type LevelDef, type MonsterDef } from '@dtl/shared';
+import { dienVoSpawnAt, dienVoStandAt, type LabScene, type LevelDef, type MonsterDef } from '@dtl/shared';
 import type { MonEnt, PlayerEnt } from '../entities';
 
 /** Phần GameSim mà lệnh GM cần (giao diện hẹp, tránh import vòng lớp GameSim). */
@@ -209,6 +210,37 @@ export class GmSystem {
         return helpLine('state')!;
     }
     return `state ${kind}: ${ms.length} quái`;
+  }
+
+  /**
+   * `/gm scene <id>`: dựng lại một cảnh mẫu của phòng tập: trả phòng về như mới, dựng nhân vật, đưa tới khu, gọi quái vào chỗ cố định,
+   * đóng băng + khóa máu + bất tử rồi ép trạng thái. Chỉ chạy trong phòng tập (chỗ đứng là tọa độ của phòng).
+   */
+  private scene(p: PlayerEnt, sc: LabScene): string {
+    this.run(p, ['labreset']);
+    this.run(p, ['build', sc.method, String(sc.level)]);
+    const at = dienVoStandAt(sc.at);
+    this.c.teleportTo(p, at.x, at.z);
+    const lab = this.c.lab();
+    lab.gmFreeze = true;
+    lab.gmLockHp = true;
+    p.god = true;
+    const list = sc.mons.flatMap((g) => {
+      const def = MONSTER.get(g.id);
+      return def ? Array.from({ length: Math.min(GM_SPAWN_MAX, g.n) }, () => def) : [];
+    });
+    const small = list.filter((d) => !d.boss);
+    const big = list.filter((d) => d.boss);
+    const put = (defs: MonsterDef[], boss: boolean) =>
+      defs.forEach((def, i) => {
+        const s = dienVoSpawnAt(i, defs.length, boss);
+        this.spawned.add(this.c.spawnMonster(def, Math.max(1, sc.level - 1), s.x, s.z, null));
+      });
+    put(small, false);
+    put(big, true);
+    if (sc.phase !== undefined) for (const m of this.spawned) lab.setPhase(m, Math.min(sc.phase, m.def.phases?.length ?? 0));
+    if (sc.state) this.forceState(p, sc.state, '600');
+    return `scene ${sc.id}: ${list.length} quái`;
   }
 
   /** Quái gọi bằng `/gm spawn` (để `spawn clear` dọn). */
@@ -808,6 +840,13 @@ export class GmSystem {
         return say('free ' + (p.gmFree ? 'on' : 'off'));
       case 'state':
         return say(this.forceState(p, a[1], a[2]));
+      case 'scene': {
+        // /gm scene <id>: nạp cảnh mẫu của phòng tập (danh sách ở packages/content/data/lab/scenes.json).
+        const sc = LAB_SCENES.find((s) => s.id === a[1]);
+        if (!sc) return say('scene ' + LAB_SCENES.map((s) => s.id).join(' | '));
+        if (!this.c.level().dungeon?.practice) return say(t('gm.msg.scene_no'));
+        return say(this.scene(p, sc));
+      }
       case 'build': {
         // /gm build <công pháp> [cấp]: dựng nhân vật thử một nút: đặt cấp (mặc định 30), theo công pháp, mọi chiêu cấp tối đa, chiêu không hồi, hồi đầy.
         if (!METHOD.has(a[1] ?? '')) return say('build ' + [...METHOD.keys()].join(' | ') + ' [cấp]');

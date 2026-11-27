@@ -152,7 +152,7 @@ export const GM_GROUPS: readonly { id: string; cmds: readonly string[] }[] = [
   { id: 'outfit', cmds: ['outfit', 'skin'] },
   { id: 'weapon', cmds: ['weapon'] },
   { id: 'map', cmds: ['tp', 'tele', 'dvt', 'qdone', 'qev'] },
-  { id: 'mon', cmds: ['spawn', 'killall', 'hurt', 'freeze', 'lockhp', 'state', 'labreset', 'tick'] },
+  { id: 'mon', cmds: ['spawn', 'killall', 'hurt', 'freeze', 'lockhp', 'state', 'scene', 'labreset', 'tick'] },
   { id: 'find', cmds: ['find'] },
 ];
 
