@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "tsx watch --clear-screen=false src/index.ts",
+    "dev": "tsx watch --clear-screen=false --exclude \"../../packages/content/data/fx/**\" --exclude \"../../packages/content/data/lab/**\" --exclude \"../../packages/content/data/i18n/**\" --exclude \"../../packages/shared/src/props.dienvo.layout.json\" src/index.ts",
     "start": "tsx src/index.ts",
     "typecheck": "tsc -p tsconfig.json",
     "test": "vitest run",

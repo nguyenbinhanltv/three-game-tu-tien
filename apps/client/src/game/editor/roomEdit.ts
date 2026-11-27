@@ -61,8 +61,13 @@ const discGeo = new THREE.CircleGeometry(0.34, 20).rotateX(-Math.PI / 2);
 // Vạch chỉ hướng mặt trước của đạo cụ (+Z khi yaw = 0).
 const noseGeo = new THREE.PlaneGeometry(0.14, 1).rotateX(-Math.PI / 2).translate(0, 0, 0.5);
 
+/** Hệ số sáng của tay nắm: lớp ánh đêm của Dạ Họa nhuộm lam mọi điểm ảnh chưa đủ sáng, nên màu tay nắm phải vượt ngưỡng đó. */
+const GLOW = 2.6;
+
 function mat(color: number): THREE.MeshBasicMaterial {
-  return new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.95, depthTest: false, depthWrite: false, fog: false, toneMapped: false });
+  const m = new THREE.MeshBasicMaterial({ transparent: true, opacity: 0.95, depthTest: false, depthWrite: false, fog: false, toneMapped: false });
+  m.color.setHex(color).multiplyScalar(GLOW);
+  return m;
 }
 
 /** Dựng lại lớp đạo cụ, quầng đèn và đèn điểm của phòng từ `DIEN_VO_PROPS` hiện tại (sau khi bố cục đổi). Chỉ gọi khi đang ở phòng tập. */

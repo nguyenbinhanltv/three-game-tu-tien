@@ -83,3 +83,45 @@ Hai nhóm con mới của tab Diễn Võ. Chơi thử tự động luôn tắt t
 | `nhan_vat_can` (máy quay cận) | 0,871 | 0,892 |
 
 Sáu cảnh nằm trong sàn nhiễu của phòng: Dạ Họa không vỡ trên đường lùi WebGL2 ở cả hai preset. Cảnh cận lệch vì hào quang cảnh giới (mây lam quanh nhân vật) chuyển động giữa hai lượt chụp, soi ảnh không thấy lớp nào mất; muốn so cảnh cận cho chặt thì phải dừng lớp hình trước khi chụp (chưa làm).
+
+## V3: nạp lại dữ liệu tức thì và chế độ chỉnh phòng (28/11)
+
+Chỉ có ở máy phát triển. Bản build của client không chứa mã này (nạp động sau `import.meta.env.DEV` ở `apps/client/src/main.tsx`); server chỉ bật khi đăng nhập thử đang bật (`config.devBypass`, tự tắt ở production hoặc khi có `GOOGLE_CLIENT_ID`).
+
+### Nạp lại dữ liệu tức thì
+
+Sửa rồi lưu một file "nóng" thì phòng nhận ngay, **không tải lại trang, không khởi động lại server, không rời phòng**:
+
+| File | Client | Server dev |
+| --- | --- | --- |
+| `packages/content/data/fx/*.json` (timeline đã khai báo) | vá tại chỗ; đang ở phòng tập thì tự phát lại hiệu ứng vừa sửa | vá (server không dùng) |
+| `packages/content/data/lab/scenes.json` | danh sách cảnh của tab Diễn Võ đổi ngay | `/gm scene` dùng bản mới |
+| `packages/content/data/i18n/vi.json`, `vi.ui.json` | chuỗi đổi ở lần vẽ kế của giao diện | chuỗi tin hệ thống đổi |
+| `packages/shared/src/props.dienvo.layout.json` (bố cục phòng) | dựng lại đạo cụ, quầng đèn, đèn điểm | điểm gọi quái đổi |
+
+- Đường đi: plugin Vite `apps/client/dtlHotData.ts` chặn việc tải lại trang cho các file trên và gửi nội dung mới qua sự kiện HMR `dtl:data`; `apps/client/src/game/editor/hotData.ts` nhận và gọi `applyHotData` (`packages/content/src/hot.ts`, đường import `@dtl/content/hot`). Server: `apps/server/src/devReload.ts` theo dõi cùng các file bằng `fs.watch` và gọi cùng hàm.
+- Cách vá: giữ nguyên danh tính đối tượng/mảng đã xuất (`FX_TIMELINE.get(id)`, `LAB_SCENES`, `DIEN_VO_PROPS`) và thay nội dung bên trong. JSON hỏng (đang ghi dở) hoặc sai luật thì giữ bản cũ và báo trong nhật ký của bảng Chỉnh phòng.
+- **Chưa nóng** (vẫn như trước): pose (`data/poses`, client nướng thành clip lúc nạp nên trang tự tải lại), timeline/chuỗi có **id mới** (phải khai báo import rồi tải lại), và mọi dữ liệu luật chơi hay phần thưởng (`skills.json`, `monsters.json`, `items.json`, `loot.json`, level…): client tải lại trang, server phải khởi động lại tay. Cố ý: không có đường nào đổi luật chơi của server đang chạy.
+- `tsx watch` của server khởi động lại mỗi khi một file JSON nó nạp đổi, nên trước V3 sửa một timeline fx là rớt khỏi phòng ("Mất kết nối"). Script `dev` của `apps/server/package.json` nay loại các file nóng khỏi việc theo dõi (`--exclude`); `devReload` vá chúng tại chỗ. File dữ liệu khác vẫn làm server khởi động lại như cũ.
+
+Kiểm: `pnpm --filter @dtl/perf exec tsx src/roomedit.ts --out <thư mục> --query style=dahoa` (`tools/perf/src/scenarios/roomedit.ts`, 17 mục bằng chuột và nút thật: sửa fx không tải lại trang, JSON hỏng giữ bản cũ, kéo thả, lăn chuột xoay, thêm, hoàn tác, lưu, server đặt quái đúng điểm gọi, sửa tay file bố cục). Kịch bản sửa rồi trả lại `fx_blink.json` và file bố cục.
+
+### Chế độ chỉnh phòng
+
+Vào phòng (`/gm dvt`), bấm **F4** mở bảng "Chỉnh phòng" → "Bật chỉnh phòng". Mỗi đạo cụ có một vòng tròn trên sàn (lam: đạo cụ, vàng: đèn đá, vạch chỉ mặt trước); điểm gọi quái là vòng nhỏ có số (lục: sàn đấu, tím: hố boss).
+
+- **Kéo** vòng tròn để dời (bám lưới 0,25 m, giữ Alt để bỏ bám). **Lăn chuột**: xoay 15°; **Shift + lăn**: phóng 5%; **Delete**: xóa; **Ctrl+Z**: hoàn tác (50 bước); **Esc**: bỏ chọn. Bảng có nút tương ứng, cùng nút bật tắt va chạm.
+- **Thêm**: đạo cụ (chọn id trong danh sách), đèn đá, điểm gọi quái của sàn đấu / hố boss; món mới hiện cách nhân vật 2,5 m về phía trên màn hình.
+- **Đèn** của phòng chính là đạo cụ `prop_den_da`: dời đèn thì quầng sáng và đèn điểm đi theo.
+- **Điểm gọi quái**: quái thứ n của `/gm spawn` hay của cảnh mẫu đứng ở điểm thứ n của khu (`dienVoSpawnAt`); hết điểm thì xếp vòng quanh tâm khu như cũ. Không đặt điểm nào thì phòng y như trước V3.
+- **Lưu vào file** ghi `packages/shared/src/props.dienvo.layout.json` (mỗi đạo cụ một dòng) qua cổng `POST /__lab/layout` của Vite dev; server tự nạp lại. Muốn giữ thì commit file đó. **Bỏ thay đổi** đọc lại file.
+- Trước khi lưu, mọi thay đổi chỉ là hình ở máy mình; server không nhận gì từ trình chỉnh. Điểm gọi quái vì thế chỉ có hiệu lực sau khi Lưu.
+- Luật của bố cục nằm ở `checkDienVoLayout` (`packages/shared/src/props.dienvo.ts`): đạo cụ trong sàn 48 × 48 m, tỉ lệ 0,05–5, điểm gọi quái trong khu của nó và cách mép ≥ 1 m. Cổng ghi file và server đều kiểm bằng hàm này.
+
+Mã: `apps/client/src/game/editor/` (`roomLayout.ts` phép sửa thuần có test, `roomEdit.ts` tay nắm + chuột + lưu, `boot.ts` điểm vào), bảng `apps/client/src/ui/lab-editor/RoomEditPanel.tsx` (dùng lớp CSS của bảng F3 nên nhúng thẳng được vào tab Diễn Võ). Cổng cho console / Playwright: `__labEdit.editor()` (`enable`, `select`, `moveSel`, `addProp`, `addSpawn`, `save`, `revert`, `layout`), `__labEdit.hot()`.
+
+### Hàng rào
+
+- Cổng ghi file chỉ tồn tại trong `vite dev`, chỉ nhận từ loopback, cần header `x-dtl-lab` + `content-type: application/json`, chỉ ghi đúng một file sau khi qua `checkDienVoLayout`, thân tối đa 64 KB.
+- Server không có tin nhắn hay lệnh GM nào kích nạp lại; nguồn duy nhất là file trên đĩa của máy chạy server, và danh sách file nóng (`hotKind`) không gồm dữ liệu luật chơi hay phần thưởng (có test).
+- `setDienVoLayout` từ chối bố cục sai và giữ bản đang dùng.
