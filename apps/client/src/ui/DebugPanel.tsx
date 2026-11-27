@@ -79,7 +79,7 @@ const LAB_PHASES = [0, 1, 2, 3];
 const LAB_SPEEDS = [100, 50, 25, 10];
 const LAB_PINGS = [0, 50, 150, 300];
 /** Nhóm con của tab Diễn Võ: bảng F3 không cuộn được nên mỗi lúc chỉ hiện một nhóm cho vừa màn 720p. */
-const LAB_TABS = ['scene', 'mon', 'fx', 'look', 'time'] as const;
+const LAB_TABS = ['scene', 'mon', 'fx', 'look', 'ui', 'time'] as const;
 const FX_IDS = [...FX_TIMELINE.keys()].sort();
 /** Số lớp tối đa hiện nút bật tắt (bảng F3 không cuộn được; timeline dài hơn thì soi phần còn lại bằng `pnpm shots dienvo --layersoff`). */
 const FX_LAYER_BTNS = 48;
@@ -90,6 +90,40 @@ const FX_LAYER_BTNS = 48;
  */
 const LAB_FLOORS = ['dark', 'light', 'grass', 'snow'] as const;
 const LAB_SEEKS = [33, 100, 200, 400, 800, 1500];
+const LAB_NUM_KINDS = ['hit', 'hv', 'crit', 'ke', 'heal', 'hurt', 'immune', 'mix'] as const;
+const LAB_NUM_COUNTS = [1, 5, 20];
+const LAB_NUM_GAPS = [0, 80, 250];
+/** Khu Giao diện của phòng thử: máy bắn số sát thương (chỉ hình ở client). */
+function UiLab() {
+  const [count, setCount] = useState(5);
+  const [gap, setGap] = useState(80);
+  return (
+    <>
+      <div className="debug-row wrap">
+        <span>{t('ui.gm.lab.num')}</span>
+        {LAB_NUM_KINDS.map((k) => (
+          <Button key={k} size="s" onClick={() => Game.current?.labNumbers(k, count, gap)}>
+            {t('ui.gm.lab.num.' + k)}
+          </Button>
+        ))}
+      </div>
+      <div className="debug-row wrap">
+        <span>{t('ui.gm.lab.num_count')}</span>
+        {LAB_NUM_COUNTS.map((n) => (
+          <Button key={n} size="s" pressed={count === n} onClick={() => setCount(n)}>
+            {t('ui.gm.lab.num_count_v', { n })}
+          </Button>
+        ))}
+        <span>{t('ui.gm.lab.num_gap')}</span>
+        {LAB_NUM_GAPS.map((n) => (
+          <Button key={n} size="s" pressed={gap === n} onClick={() => setGap(n)}>
+            {t('ui.gm.lab.num_gap_v', { n })}
+          </Button>
+        ))}
+      </div>
+    </>
+  );
+}
 const LAB_PALETTES = ['', ...Object.keys(FX_PALETTE)];
 function LookLab() {
   const [floor, setFloor] = useState<string>('dark');
@@ -415,6 +449,7 @@ function Tools() {
           )}
           {labTab === 'fx' && <FxLab />}
           {labTab === 'look' && <LookLab />}
+          {labTab === 'ui' && <UiLab />}
           {labTab === 'time' && (
             <>
               <div className="debug-row wrap">

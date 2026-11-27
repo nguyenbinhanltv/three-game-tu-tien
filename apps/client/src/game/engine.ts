@@ -925,6 +925,39 @@ export class Game {
    * Chỉ là lớp hình ở máy mình (không gửi gì lên server, không gây sát thương). Trả false nếu không có timeline hay chưa vào game.
    */
   /** Phòng thử: đổi nền thử của sàn Diễn Võ Trường (`dark` | `light` | `grass` | `snow`). Chỉ có tác dụng trong phòng. */
+  /**
+   * Phòng thử (khu Giao diện): máy bắn số sát thương. Bắn `count` số loại `kind` vào mục tiêu đang khóa (hồi máu và mất máu bắn vào mình), cách nhau
+   * `gapMs`. Chỉ là HÌNH ở client, dùng đúng lớp `DamageNumbers` và lớp CSS của trận đánh thật; không gửi gì lên server. Trả số đã xếp lịch.
+   */
+  labNumbers(kind: string, count: number, gapMs: number): number {
+    const self = kind === 'heal' || kind === 'hurt';
+    const pos = new THREE.Vector3();
+    const me = this.ents?.players.get(this.sid);
+    if (!me) return 0;
+    if (self || !this.targetId || !this.ents.chestOf(this.targetId, pos)) pos.set(me.x, me.y + 1.5, me.z);
+    const key = self ? this.sid : this.targetId || 'lab';
+    const n = Math.max(1, Math.min(60, Math.floor(count)));
+    const kinds = kind === 'mix' ? ['hit', 'hit', 'hv', 'crit', 'ke', 'hit', 'immune'] : [kind];
+    for (let i = 0; i < n; i++) {
+      const k = kinds[i % kinds.length]!;
+      const v = 80 + ((i * 7919) % 900) * (k === 'crit' ? 6 : k === 'hv' ? 3 : 1);
+      window.setTimeout(
+        () => {
+          if (this.disposed) return;
+          if (k === 'heal') this.dmg.spawn('+' + v, pos, 'heal', key);
+          else if (k === 'hurt') this.dmg.spawn('-' + v, pos, 'hurt', key);
+          else if (k === 'immune') this.dmg.spawn(t('ui.immune'), pos, 'hit', key);
+          else if (k === 'crit') this.dmg.spawn(v + '!', pos, 'crit', key);
+          else if (k === 'ke') this.dmg.spawn(v + ' ' + t('ui.dmg.ke'), pos, 'hit ke', key, v, ' ' + t('ui.dmg.ke'));
+          else if (k === 'hv') this.dmg.spawn(String(v), pos, 'hit hv', key);
+          else this.dmg.spawn(String(v), pos, 'hit', key, v);
+        },
+        Math.max(0, gapMs) * i,
+      );
+    }
+    return n;
+  }
+
   labFloor(id: string): boolean {
     const room = this.vdWonders as { setFloor?(id: string): boolean } | null;
     return room?.setFloor?.(id) ?? false;
