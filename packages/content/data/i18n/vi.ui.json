@@ -1276,6 +1276,8 @@
   "ui.gm.lab.fx_loop": "Phát lặp",
   "ui.gm.lab.fx_layers": "Lớp ({on}/{n} đang bật)",
   "ui.gm.lab.fx_all": "Bật hết",
+  "ui.gm.lab.seek": "Tua tới (dừng hình)",
+  "ui.gm.lab.seek_v": "+{n} ms",
   "ui.gm.lab.floor": "Nền thử",
   "ui.gm.lab.floor.dark": "Nền tối",
   "ui.gm.lab.floor.light": "Nền sáng",

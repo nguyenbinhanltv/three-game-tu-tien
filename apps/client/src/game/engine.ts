@@ -930,6 +930,18 @@ export class Game {
     return room?.setFloor?.(id) ?? false;
   }
 
+  /**
+   * Phòng thử: tua một timeline tới mốc `ms` — dừng lớp hình, phát lại từ đầu rồi bước đúng số khung 1/60 s tới mốc (như cổng duyệt VFX làm),
+   * để soi một khung bất kỳ của hiệu ứng. Hình đứng yên ở mốc đó cho tới khi đổi tốc độ ở nhóm Thời gian.
+   */
+  labSeek(key: string, ms: number): boolean {
+    this.timeScale = 0;
+    this.stepLeft = 0;
+    if (!this.labFx(key)) return false;
+    this.stepLeft = Math.max(1, Math.round((Math.max(0, ms) * 60) / 1000));
+    return true;
+  }
+
   labFx(key: string): boolean {
     const hf = this.hitFx;
     const me = this.ents?.players.get(this.sid);
