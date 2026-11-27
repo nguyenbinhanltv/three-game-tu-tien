@@ -17,6 +17,8 @@ interface Row {
   file: string;
   perf: unknown;
   ink?: unknown;
+  /** Cảnh đang đánh: khoảng cách tới mục tiêu trước khi bấm và sau khi chụp, máu mục tiêu (không so SSIM). */
+  act?: unknown;
   ssim?: number;
   deltaE00?: number;
   diff?: string;
@@ -82,6 +84,35 @@ export default {
       await gm(pg, `scene ${sc.id}`, 3500);
       await cam(pg, { ...dflt, ...sc.cam });
       const file = `${view}/${sc.id}.png`;
+      if (sc.act) {
+        // Cảnh đang đánh: nhắm quái gần nhất, bấm ô chiêu, chụp sau `waitMs` rồi thêm hai khung cách 120 ms (bắt vệt chém đang quét).
+        const d0 = await pg.evaluate((slot) => {
+          const g = window.__game!;
+          const me = g.info();
+          let best = '';
+          let bd = 1e9;
+          g.view.monsters.forEach((m, id) => {
+            const d = Math.hypot(m.x - me.x, m.z - me.z);
+            if (m.st !== 4 && d < bd) {
+              bd = d;
+              best = id;
+            }
+          });
+          g.targetId = best;
+          g.useSkill(slot);
+          return bd;
+        }, sc.act.slot);
+        await snap(pg, r.out, file, { wait: sc.act.waitMs });
+        for (const k of [1, 2]) await snap(pg, r.out, `${view}/${sc.id}.k${k}.png`, { wait: 120 });
+        const d1 = await pg.evaluate(() => {
+          const g = window.__game!;
+          const me = g.info();
+          const m = g.view.monsters.get(g.targetId);
+          return m ? { d: Math.hypot(m.x - me.x, m.z - me.z), hp: m.hp, mhp: m.mhp } : null;
+        });
+        rows.push({ id: sc.id, file, perf: await perfSample(pg), act: { distBefore: d0, after: d1 } });
+        continue;
+      }
       await snap(pg, r.out, file, { wait: 1200 });
       // Chẩn đoán viền mực: số vỏ đang hiện và màu của chúng (trạng thái quái phải lên hình, không chỉ có ở state).
       const ink = await pg.evaluate(`(() => { var out = []; window.__game.scene.traverse(function (o) { if (o.userData && o.userData.inkHull && o.visible) out.push((o.userData.ink.color || 0).toString(16) + '@' + o.userData.ink.w.toFixed(3)); }); return out; })()`);
@@ -102,7 +133,7 @@ export default {
       const tool = path.resolve(process.cwd(), '../painted-compare/compare.mjs');
       for (const row of rows) {
         const before = path.join(base, row.file);
-        if (!fs.existsSync(before)) continue;
+        if (!fs.existsSync(before) || row.act) continue;
         const diff = `${view}/${row.id}.diff.png`;
         try {
           const res = JSON.parse(
