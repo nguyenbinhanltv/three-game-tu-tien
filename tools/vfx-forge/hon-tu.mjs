@@ -163,17 +163,17 @@ const SPEC = {
   ],
   // Âm Phong: lốc phễu xoáy cao quanh mục tiêu, sợi hồn và mặt hồn bị cuốn lên.
   skl_am_phong: () => [
-    ...gather('hon_tornado', { size: 4.2, off: [0, 1.6, 0] }),
+    ...gather('hon_tornado', { size: 3.6, off: [0, 5.6, 0] }),
     pullIn('target', [0, 1.2, 0], -0.22),
-    ...strike('hon_tornado', { size: 4.2, off: [0, 2.2, 0], flash: true, dur: 0.7, erodeFrom: 0.08 }),
-    sprite('hon_tornado', { t: 0.05, dur: 0.7, off: [0.3, 1.9, 0.2], size: 3.2, alpha: 0.5, erodeFrom: 0.2 }),
-    puff('target', [0, 0.35, 0], 2.2, 0, 0.4),
-    after('target', [0, 3.0, 0], 3, 0.17, 1.5),
+    ...strike('hon_tornado', { size: 4.2, off: [0, 6.4, 0], flash: true, dur: 0.3, erodeFrom: 0.08 }),
+    sprite('hon_tornado', { t: 0.05, dur: 0.3, off: [0.3, 5.8, -0.2], size: 3.2, alpha: 0.4, erodeFrom: 0.2 }),
+    puff('target', [0, 0.35, 0], 1.6, 0, 0.2, 0.4),
+    after('target', [0, 4.4, 0], 3, 0.17, 1.5),
     ...[0, 1, 2].map((i) =>
       sprite('hon_face_grin', {
         t: 0.08 + i * 0.05,
         dur: 0.6,
-        off: [r2(Math.cos(i * 2.1) * 2.1), 0.9, r2(Math.sin(i * 2.1) * 2.1)],
+        off: [r2(Math.cos(i * 2.1) * 2.4), 2.6, r2(Math.sin(i * 2.1) * 2.4)],
         size: 1.2,
         alpha: 0.75,
         erodeFrom: 0.3,

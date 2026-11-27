@@ -154,14 +154,14 @@ const SPEC = {
   ],
   // Vạn Kiếm Quy Tông (chiêu cuối): mưa kiếm hình nón rơi chụm, cắm nghiêng thành vòng kiếm đứng quanh cột sáng, nứt đất lan.
   skl_van_kiem_quy_tong: () => [
-    ...[gather('kiem_rain', { size: 7, off: [0, 5, 0] })],
+    ...[gather('kiem_rain', { size: 6, off: [0, 6.4, 0] })],
     pullIn('target', [0, 4.5, 0], -0.3),
-    strike('kiem_rain', { size: 9, off: [0, 6.2, 0], dur: 0.3, erodeFrom: 0.2 }),
-    strike('kiem_circle', { size: 9, off: [0, 0.5, 0], t: 0.05, dur: 0.36, alpha: 0.3, erodeFrom: 0.12 }),
-    flash('target', [0, 1.4, 0], 2.0, 0.03, { dur: 0.12 }),
-    ground('target', [0, 0.15, 0], 6.5, 0.04, { dur: 0.34, alpha: 0.3 }),
+    strike('kiem_rain', { size: 9, off: [0, 7.6, 0], dur: 0.28, erodeFrom: 0.2 }),
+    strike('kiem_circle', { size: 9, off: [0, 0.5, 0], t: 0.05, dur: 0.3, alpha: 0.2, erodeFrom: 0.12 }),
+    flash('target', [0, 2.0, 0], 2.0, 0.03, { dur: 0.12 }),
+    ground('target', [0, 0.15, 0], 6.5, 0.04, { dur: 0.3, alpha: 0.2 }),
     scorch('target', [0, 0.02, 0], 4.2, 0.03, 2.4),
-    after('target', [0, 2.6, 0], 4, 0.22, 1.8),
+    after('target', [0, 4.6, 0], 3.4, 0.22, 1.8),
     sparks('target', [0, 1.4, 0], 16, 0),
   ],
   // Hoành Kiếm Phá Mạch: đạo kiếm khí bản rộng răng cưa quét ngang 12 m, để lại vết nứt đất.
@@ -222,11 +222,11 @@ const SPEC = {
   skl_thuan_di_tram: () => [
     sprite('kiem_sparks', { t: -0.1, dur: 0.3, at: 'self', off: [0, 1.0, 0], size: 2, alpha: 0.6, erodeFrom: 0.3 }),
     pullIn('target', [0, 1.4, 0], -0.2),
-    strike('kiem_rift', { size: 4.6, off: [0, 2.6, 0], t: 0, dur: 0.34, erodeFrom: 0.2 }),
-    strike('kiem_slash', { size: 4, off: [0, 2.2, 0], t: 0.05, dur: 0.26, rot: [0, 0, 90], erodeFrom: 0.2 }),
-    flash('target', [0, 1.4, 0], 1.6, 0.03, { dur: 0.12 }),
+    strike('kiem_rift', { size: 4.6, off: [0, 4.2, 0], t: 0, dur: 0.28, erodeFrom: 0.2 }),
+    strike('kiem_slash', { size: 4, off: [0, 4.0, 0], t: 0.05, dur: 0.24, rot: [0, 0, 90], erodeFrom: 0.2 }),
+    flash('target', [0, 2.0, 0], 1.6, 0.03, { dur: 0.12 }),
     scorch('target', [0, 0.02, 0], 1.8, 0.03),
-    after('target', [0, 2.6, 0], 2.6, 0.2, 1.3),
+    after('target', [0, 3.8, 0], 2.6, 0.2, 1.3),
     sparks('target', [0, 1.3, 0], 10, 0.02),
   ],
   // Thiên Kiếm Hóa Hình (chiêu cuối): thanh kiếm khổng lồ trong suốt từ trời cắm xuống, nứt đất lan, vành đá vỡ bay lên.
