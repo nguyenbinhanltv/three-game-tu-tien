@@ -3,7 +3,7 @@
 // Có `--base <thư mục bộ trước>` thì so từng cảnh bằng SSIM/ΔE (tools/painted-compare/compare.mjs) và dựng trang trước/sau `index.html`.
 //   pnpm shots dienvo --out <thư mục> [--view 720p|1080p] [--query style=dahoa] [--base <thư mục>] [--ssim 0.9] [--only id1,id2]
 //                     [--quality high|medium|low] [--renderer webgl2] [--diag 1] [--layersoff 2,3] [--fx id1,id2] [--panel 1]
-//                     [--ping 150] [--swings 1 --window 4000] [--crowd 8,20,50] [--fx 'skl_kiem*' --gate 1]
+//                     [--ping 150] [--swings 1 --window 4000] [--crowd 8,20,50] [--fx 'skl_kiem*' --gate 1] [--silhouette 1]
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -114,6 +114,31 @@ function fxDuration(id: string): number | null {
   const j = JSON.parse(fs.readFileSync(f, 'utf8')) as { events?: { t?: number; dur?: number }[] };
   const t0 = Math.min(0, ...(j.events ?? []).map((e) => e.t ?? 0));
   return Math.max(0, ...(j.events ?? []).map((e) => (e.t ?? 0) + (e.dur ?? 0))) - t0;
+}
+
+/**
+ * Phép thử bóng đen: từ ảnh cảnh và ảnh cùng khung đã ẩn mọi nhân vật + quái, dựng ảnh chỉ còn DÁNG (đen trên nền xám phẳng) để soi nhân vật/quái có
+ * đọc được bằng hình khối không, bỏ hết màu, viền và chi tiết. Trả tỉ lệ diện tích bóng trên màn hình.
+ */
+/** Tổng chênh ba kênh để coi một điểm ảnh thuộc thân (thấp hơn ngưỡng đo che: thân tối trên nền tối chỉ chênh vài chục). */
+const SIL_DIFF = 16;
+async function silhouette(shot: Buffer, empty: Buffer, out: string): Promise<number> {
+  const meta = await sharp(shot).metadata();
+  const W = meta.width ?? 0;
+  const H = meta.height ?? 0;
+  const raw = (b: Buffer) => sharp(b).removeAlpha().raw().toBuffer();
+  const [a, e] = await Promise.all([raw(shot), raw(empty)]);
+  const px = Buffer.alloc(W * H * 3);
+  let n = 0;
+  for (let i = 0; i < W * H; i++) {
+    const k = i * 3;
+    const on = Math.abs(a[k]! - e[k]!) + Math.abs(a[k + 1]! - e[k + 1]!) + Math.abs(a[k + 2]! - e[k + 2]!) > SIL_DIFF;
+    if (on) n++;
+    px[k] = px[k + 1] = px[k + 2] = on ? 12 : 150;
+  }
+  // Lọc trung vị 3×3 bỏ điểm lẻ (hạt bụi, nhiễu nén) để mép dáng sạch.
+  await sharp(px, { raw: { width: W, height: H, channels: 3 } }).median(5).png().toFile(out);
+  return n / (W * H);
 }
 
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
@@ -570,7 +595,21 @@ export default {
         if (cover !== null) console.log(`  ${sc.id}: hiệu ứng che thân mục tiêu lớn nhất ${Math.round(cover * 100)}%, trung bình ${Math.round((coverAvg ?? 0) * 100)}% (4 mốc)`);
         continue;
       }
-      await snap(pg, r.out, file, { wait: 1200 });
+      const still = await snap(pg, r.out, file, { wait: 1200 });
+      // `--silhouette 1`: thêm ảnh bóng đen `<id>.sil.png` của cảnh (ẩn VFX, rồi ẩn mọi nhân vật + quái để lấy mặt nạ dáng).
+      if (opt('--silhouette', '')) {
+        await pg.evaluate(() => void (window.__game!.timeScale = 0));
+        const f2 = () => pg.evaluate(() => new Promise<void>((res) => requestAnimationFrame(() => requestAnimationFrame(() => res()))));
+        await f2();
+        const withBodies = await pg.screenshot();
+        await pg.evaluate(`(() => { var g = window.__game; [g.ents.monsters, g.ents.players].forEach(function (mp) { mp.forEach(function (v) { v.model.root.traverse(function (o) { o.userData.__silL = o.layers.mask; o.layers.set(31); }); }); }); })()`);
+        await f2();
+        const empty = await pg.screenshot();
+        await pg.evaluate(`(() => { var g = window.__game; [g.ents.monsters, g.ents.players].forEach(function (mp) { mp.forEach(function (v) { v.model.root.traverse(function (o) { if (o.userData.__silL !== undefined) { o.layers.mask = o.userData.__silL; delete o.userData.__silL; } }); }); }); g.timeScale = 1; })()`);
+        const area = await silhouette(withBodies, empty, path.join(r.out, `${view}/${sc.id}.sil.png`));
+        console.log(`  ${sc.id}: bóng đen chiếm ${(area * 100).toFixed(1)}% màn hình → ${view}/${sc.id}.sil.png`);
+        void still;
+      }
       // Chẩn đoán viền mực: số vỏ đang hiện và màu của chúng (trạng thái quái phải lên hình, không chỉ có ở state).
       const ink = await pg.evaluate(`(() => { var out = []; window.__game.scene.traverse(function (o) { if (o.userData && o.userData.inkHull && o.visible) out.push((o.userData.ink.color || 0).toString(16) + '@' + o.userData.ink.w.toFixed(3)); }); return out; })()`);
       if (opt('--diag', '')) {
