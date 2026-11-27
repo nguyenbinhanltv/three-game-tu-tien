@@ -85,6 +85,9 @@ for (const k of ['drain', 'seal', 'shield', 'heal', 'reap']) if (!ARTIFACTS.some
   if (spiritRadius(SPIRIT_UNLOCK_LEVEL) !== 60 || spiritRadius(21) !== 80 || spiritRadius(28) !== 120)
     err('spiritRadius: phải 60 / 80 / 120 theo thiết kế (Kết Đan sơ/trung, Hóa Thần)');
   for (const m of METHODS)
+    if (m.late && !(Number.isInteger(m.late.level) && m.late.level >= 16 && m.late.dmgMul >= 0.7 && m.late.dmgMul <= 1))
+      err(`công pháp ${m.id}: late phải có level nguyên ≥ 16 và dmgMul trong 0,7–1`);
+  for (const m of METHODS)
     if (thanThongSkill(m.id)?.unlock !== SPIRIT_UNLOCK_LEVEL)
       err(`công pháp ${m.id}: thiếu thần thông ô 9 (chiêu mở ở cấp ${SPIRIT_UNLOCK_LEVEL}, không khóa)`);
   for (const k of [

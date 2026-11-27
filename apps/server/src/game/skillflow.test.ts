@@ -480,11 +480,12 @@ describe('đòn thường cận chiến chém quét của Kiếm tu (Dạ Cảnh
     }
     const ratio = sum(side.id) / sum(main.id);
     // Hệ số lấy từ dữ liệu (paths.json, cân bằng theo sim). Tỉ lệ thật thấp hơn hệ số một chút vì phần trừ phòng ngự không nhân theo hệ số quét.
+    // Hệ số càng nhỏ thì phần trừ phòng ngự càng chiếm nhiều (0,3 ở cấp 10: tỉ lệ thật ~0,65 lần hệ số), nên cận dưới để 0,55.
     const { PATHS } = await import('@dtl/content');
     const mul = PATHS.find((x) => x.id === 'kiem_tu')!.basic!.arc!.mul;
     expect(mul).toBeGreaterThan(0);
     expect(mul).toBeLessThan(1);
-    expect(ratio).toBeGreaterThan(mul * 0.7);
+    expect(ratio).toBeGreaterThan(mul * 0.55);
     expect(ratio).toBeLessThan(mul * 1.1);
   });
 

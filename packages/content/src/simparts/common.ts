@@ -1,5 +1,5 @@
 // Tách từ sim.ts (tối ưu Đợt E): common.
-import { formationHurts, skillLock, type MonsterDef, type SkillDef } from '@dtl/shared';
+import { formationHurts, methodLateMul, skillLock, type MonsterDef, type SkillDef } from '@dtl/shared';
 import {
   counterMul,
   CRIT_CHANCE,
@@ -91,6 +91,19 @@ export type PlayMode = 'base' | 'avg' | 'skilled';
  * vốn không tính (dấu Truy hồn +20%, Lôi Đình xả Kiếm ý, chuỗi cũ) vẫn để ngoài: nhịp 3–4 giờ đã được hiệu chỉnh như thế.
  */
 export function playerDps(
+  level: number,
+  atk: number,
+  monDef: number,
+  id?: MethodId,
+  monElem?: string,
+  mode: PlayMode = 'avg',
+  cleaveExtra = CLEAVE_EXTRA,
+): number {
+  // Hệ số cấp cao của công pháp (`MethodDef.late`): server chỉ nhân đòn trực tiếp; ở đây nhân cả phần theo thời gian (nhỏ, cho gọn).
+  return playerDpsRaw(level, atk, monDef, id, monElem, mode, cleaveExtra) * methodLateMul(methodAt(level, id), level);
+}
+
+function playerDpsRaw(
   level: number,
   atk: number,
   monDef: number,

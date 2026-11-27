@@ -2521,7 +2521,7 @@
   "skill.skl_hinh_giap.name": "Hình Giáp",
   "skill.skl_hinh_giap.desc": "Chiêu hóa hình. Dựng khiên huyết 6 giây, chặn lượng sát thương bằng 16% khí huyết tối đa.",
   "skill.skl_tinh_bao.name": "Tinh Bạo",
-  "skill.skl_tinh_bao.desc": "Cần Tam Tinh. Dồn huyết nổ vòng 8 m quanh mình, gây 220% công kích. Có từ 40 Cổ huyết thì xả 40 và mạnh thêm 50%.",
+  "skill.skl_tinh_bao.desc": "Dồn huyết nổ vòng 8 m quanh mình, gây 220% công kích. Có từ 40 Cổ huyết thì xả 40 và mạnh thêm 50%.",
   "skill.skl_co_than_nhat_kich.name": "Cổ Thần Nhất Kích",
   "skill.skl_co_than_nhat_kich.desc": "Chiêu tối thượng, cần Tam Tinh. Xả hết Cổ huyết giáng một đòn quanh mình 9 m, gây 420% công kích (mỗi điểm Cổ huyết thêm 1%) và làm choáng 1,5 giây.",
   "item.itm_co_huyet_tinh.name": "Cổ Huyết Tinh",

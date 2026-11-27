@@ -66,7 +66,7 @@ Phòng đã chỉ ra (CHƯA SỬA, là cân bằng của game thật nên chờ 
 - **Kiếm tu và Đao tu nhanh gấp ~2 lần Đan sư, ~1,6 lần các hướng còn lại** khi bấm đủ chiêu; từ cấp 32 hai hướng này hạ tinh anh trong 11–17 giây (dưới ngưỡng 18).
 - **Kính Điện Ma Quân (cấp 22) quá lì với 7/9 hướng** (44–64 giây), riêng Kiếm tu và Đao tu 34–36 giây.
 - **Đan sư vượt 40 giây ở 7 tinh anh**: là hướng hỗ trợ nên chậm là có chủ ý, nhưng đi một mình thì tinh anh thành trận dài.
-- **Nhánh Huyết Trận (mốc cấp 16) của Cổ Thần cho chiêu Tinh Bạo cần 3 sao**, mà sao thứ ba chỉ rèn được từ cấp 32: người chọn nhánh này có một ô chiêu không bấm được suốt cấp 16–31.
+- **Nhánh Huyết Trận (mốc cấp 16) của Cổ Thần cho chiêu Tinh Bạo cần 3 sao**, mà sao thứ ba chỉ rèn được từ cấp 32: người chọn nhánh này có một ô chiêu không bấm được suốt cấp 16–31. (Đã sửa 28/11. Nhánh còn lại của mốc này, Huyết Cự, cho chiêu Huyết Cự Hộ cũng cần 3 sao: CHƯA đổi, chờ quyết.)
 
 ## Bảng sát thương mỗi giây trên hình nộm: `fight:check --dps`
 
@@ -96,9 +96,49 @@ Phòng đã chỉ ra (CHƯA SỬA, chờ người dùng quyết):
 - **Đan sư 0,61–0,68 từ cấp 23**, Thể tu 0,76–0,87: hai hướng hỗ trợ/chống chịu thấp hơn là có chủ ý, nhưng khoảng cách với Kiếm tu là ~2,4 lần ở cấp 31–44.
 - Trung vị cấp 47 thấp hơn cấp 44 (quái cấp 47 phòng ngự cao hơn mà trang bị vẫn bậc 5): chỗ này cần đo lại với `--tier 6`.
 
+## Cân bằng game thật đã chỉnh 28/11 (người dùng quyết)
+
+Bốn quyết định sau lượt đo đầu; ba mục đổi số, một mục giữ nguyên.
+
+| Mục | Trước | Sau | Ở đâu |
+| --- | --- | --- | --- |
+| Đòn quét đòn thường của Kiếm tu | quái khác trong cung nhận 0,4 lần đòn chính | 0,3 lần | `packages/content/data/paths.json` (`basic.arc.mul`) |
+| Kiếm tu từ Anh Biến (cấp 32) | đòn trực tiếp lên quái ×1 | ×0,85 | `methods.json` → `late` của `lac_kiem_quyet` |
+| Đao tu từ Anh Biến (cấp 32) | ×1 | ×0,93 | `methods.json` → `late` của `liet_nhan_dao_kinh` |
+| Tinh Bạo (Cổ Thần, nhánh Huyết Trận mốc 16) | cần Tam Tinh (rèn được từ cấp 32) | không đòi sao, dùng từ cấp 16 | `methods.json` (bỏ `star`), mô tả ở `vi.json` |
+| Kính Điện Ma Quân (cấp 22) | 44–64 giây với 7/9 hướng | GIỮ NGUYÊN (lì là có chủ ý) | |
+
+Cơ chế mới `MethodDef.late` (`packages/shared/src/methods.ts`, `methodLateMul`): từ cảnh giới `level`, đòn đánh trực tiếp lên quái của công pháp đó nhân `dmgMul`. Server áp ở `MonsterSystem.hitMonster` (không áp cho sát thương theo thời gian, tỉ thí); sim áp trong `playerDps`; `content:check` chặn `dmgMul` ngoài 0,7–1. Chọn hệ số theo cấp vì phần vượt của hai hướng này trải trên nhiều chiêu (chiêu tối thượng 16–26%, còn lại mỗi chiêu 5–18%), không có chiêu nào mở ở cấp 32 để chỉnh riêng. Đao tu dừng ở 0,93 vì ở 0,88 sim báo Đao tu hạ quái thường chương 7 chậm quá trần 7,3 giây.
+
+Sát thương mỗi giây trên hình nộm, tỉ lệ so với trung vị (trước → sau):
+
+| Cấp | Kiếm tu | Đao tu |
+| --- | --- | --- |
+| 32 | (chưa đo) → 1,24 | (chưa đo) → 1,10 |
+| 36 | 1,51 → 1,33 | 1,31 → 1,10 |
+| 40 | 1,42 → 1,20 | 1,19 → 1,07 |
+| 44 | 1,47 → 1,21 | 1,28 → 1,10 |
+| 47 | 1,49 → 1,31 | 1,20 → 1,18 |
+
+Thời gian hạ tinh anh cấp 32+ (giây, trước → sau; khoảng mong muốn 18–40):
+
+| Tinh anh (cấp) | Kiếm tu | Đao tu |
+| --- | --- | --- |
+| elite_anh_hac_vuong (32) | 13 → 15 | 14 → 16 |
+| elite_hu_anh_nhan (37) | 14 → 16 | 15 → 15 |
+| elite_sa_tuong (41) | 12 → 14 | 11 → 12 |
+| elite_may_lang_vuong (44) | 15 → 18 | 18 → 19 |
+| elite_lo_thach_tuong (46) | 17 → 19 | 17 → 22 |
+
+**Chưa đạt hết:** hai tinh anh Cửu Kiều đã vào khoảng, nhưng ba tinh anh Vấn Đỉnh (Ảnh Hạc Vương, Hư Ảnh Nhân, Sa Tướng) vẫn 12–16 giây với Kiếm tu và Đao tu. Muốn kéo ba con này về 18 giây chỉ bằng cách giảm hai hướng công thì phải giảm thêm 15–35% (Kiếm tu tổng cộng ×0,72, Đao tu ×0,6), khi đó hai hướng công sẽ ngang hoặc dưới trung vị trên hình nộm: không còn là "giảm nhẹ". Ba con này cũng ngắn với Cổ tu (14–17 giây); đề xuất tiếp theo là tăng máu riêng ba tinh anh Vấn Đỉnh khoảng 15% (Đan sư khi đó 35–39 giây, vẫn trong khoảng). Chưa làm, chờ quyết.
+
+Các ô dưới 18 giây của Kiếm tu ở cấp thấp (Xích Diễm Hồ 16, Liệt Cốt Báo 16, Xích Sa Ngô Công 16, Hôi Giác Cự Thú 17) không thuộc quyết định "cấp 32+" nên không đổi; ở cấp 16 Kiếm tu đã 1,5 lần trung vị trên hình nộm.
+
+`sim:progress` sau khi chỉnh: 6 dòng LỖI còn 2 (Kiếm tu hạ quái thường 3,7 giây ở cấp 27 và 31, ngưỡng dưới 3,8); nhịp Ngưng Khí 15 của sim 3,1 → 3,2 giờ, mốc Trúc Cơ 4 giờ vẫn trong ±12%.
+
 ## Mô hình `sim:progress` đã sửa (28/11)
 
 - Đòn quét của đòn thường cận chiến (`CLEAVE_EXTRA`): bản 27/11 sáng tính trọn một quái đứng cạnh cho MỌI phép tính thời gian hạ, kể cả tinh anh là mục tiêu đơn, nên Kiếm tu ra số nhanh giả (tinh anh Xích Diễm Hồ 19 giây trong sim). Nay: kéo `PULL` con thì bình quân (`PULL` − 1) / 2 con đứng cạnh (= `PULL_FACTOR` − 1), và các phép tính tinh anh truyền 0 (`playerDps(..., 'avg', 0)`).
 - Kết quả: 13 dòng LỖI còn 6; hết mọi lỗi tinh anh. Nhịp Ngưng Khí 15 của sim 3,0 → 3,1 giờ, mốc Trúc Cơ 4 giờ vẫn trong ±12%.
-- **Còn 6 dòng LỖI**, đều là Kiếm tu hạ quái thường trong 3,7–3,8 giây so với ngưỡng dưới 3,8 giây (chương 4, 5, 6): phần nhanh thật do đòn quét (`arc.mul` 0,4). Hai cách xử: hạ `arc.mul` của Kiếm tu về 0,3, hoặc nới ngưỡng dưới về 3,6 giây. Chưa làm cách nào.
+- Lúc đó còn 6 dòng LỖI, đều là Kiếm tu hạ quái thường trong 3,7–3,8 giây so với ngưỡng dưới 3,8 giây (chương 4, 5, 6): phần nhanh thật do đòn quét. Đã xử ở mục "Cân bằng game thật đã chỉnh 28/11" (còn 2 dòng).
 - Bot của `fight:check` trước đây không biết chiêu cần sao Cổ Thần: bấm mãi chiêu bị server từ chối thay cho đòn thường, nên Cổ Thần cấp 21+ chạm trần 600 giây. Nay bot được số sao theo cấp và bỏ chiêu chưa đủ sao.

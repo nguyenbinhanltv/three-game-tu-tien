@@ -7,6 +7,7 @@ import { noteDealt } from '../matchstats';
 import { labMeter } from '../gm/meter';
 import {
   BOLT_MAX_LIFE,
+  methodLateMul,
   BOLT_MAX_LIVE,
   type CollisionSet,
   slideOut,
@@ -73,7 +74,7 @@ import { MonS } from '../../state';
 import { type Character } from '../character';
 import { hitReactCfg } from '../hitreactCfg';
 import { LEASH, visualSeed } from '../combat/consts';
-import { passiveOf } from '../method';
+import { methodOf, passiveOf } from '../method';
 import { newRt } from '../monskill';
 import { parties } from '../party';
 import { passiveValue } from '../artifact';
@@ -198,7 +199,8 @@ export class MonsterSystem {
     if (pas0?.melee && Math.hypot(mon.s.x - p.move.x, mon.s.z - p.move.z) <= pas0.melee.r + mon.def.scale) meleeMul += pas0.melee.mul;
     const { dmg, crit } = computeDamage(
       p.char.atk,
-      power * mul * counterMul(ke) * meleeMul,
+      // Hệ số cấp cao của công pháp (`MethodDef.late`): chỉ đòn đánh trực tiếp lên quái.
+      power * mul * counterMul(ke) * meleeMul * methodLateMul(methodOf(p.char.meta), p.char.level),
       mon.defn * defScale,
       Math.random(),
       Math.random(),

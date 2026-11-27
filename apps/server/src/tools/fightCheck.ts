@@ -14,6 +14,7 @@
 //   --dps [giây]: BẢNG SÁT THƯƠNG MỖI GIÂY trên hình nộm (bàn cân bằng V2e): mỗi cấp × hướng tu đánh một quái thường hợp cấp bị khóa máu
 //     và hồi đầy mỗi nhịp trong chừng đó giây (mặc định 60), quái vẫn đánh lại (để hướng tích tài nguyên khi bị đánh có tài nguyên), bot bất tử.
 //     Số lấy từ đồng hồ `/gm dps` của server. In kèm tỉ lệ so với trung vị của cấp đó; "!" = lệch quá ±35%.
+//     Thêm --skills: dưới mỗi cấp in phần đóng góp của từng chiêu (lần đo cuối của mỗi hướng tu), để thấy sát thương đến từ đâu.
 //   Cấp thử từ 32 trở lên mặc bộ 7 ô bậc 5 phẩm Huyền theo ilvl = cấp; `--tier 6` mặc bộ bậc 6 (mốc mặc trọn; người chơi thật pha dần, xem `CH6_GEAR_FRAC` ở sim.ts). Ở cấp 43 với `--tier 6`: Kiếm tu 3,0 s, còn lại 3,1–5,8 s.
 process.env.DB_FILE = ':memory:';
 
@@ -53,6 +54,8 @@ const NOGEAR = process.argv.includes('--nogear');
 let GOD = process.argv.includes('--god');
 /** `--dps [giây]`: > 0 thì `fightOnce` đánh hình nộm khóa máu trong chừng đó giây và trả sát thương mỗi giây ở trường `ttk`. */
 let DUMMY_SECS = 0;
+/** Phần đóng góp từng chiêu của lần đo hình nộm gần nhất (`--dps --skills`). */
+let lastSkills = '';
 /** `--nostance`: bot không vào tư thế (đo riêng phần đóng góp của tư thế, VS-2e). */
 const NOSTANCE = process.argv.includes('--nostance');
 
@@ -257,7 +260,12 @@ function fightOnce(level: number, method: string | undefined): Result {
   }
   void METHODS;
   if (DUMMY_SECS) {
-    const total = labMeter.report(lead)?.total ?? 0;
+    const rep = labMeter.report(lead);
+    const total = rep?.total ?? 0;
+    lastSkills = (rep?.skills ?? [])
+      .slice(0, 14)
+      .map((x) => `${x.id.replace(/^skl_/, '')} ${Math.round(x.share * 100)}%/${x.hits}`)
+      .join(', ');
     labMeter.stop(lead);
     return { ttk: total / DUMMY_SECS, lost: avgLost(), dead: false };
   }
@@ -321,8 +329,10 @@ if (process.argv.includes('--dps')) {
   for (const lv of levels) {
     const { def, mlv } = pickMon(lv);
     TARGET = `${def.id}:${mlv}`;
+    const parts: string[] = [];
     const dps = METHODS.map((m) => {
       const rs = Array.from({ length: RUNS }, () => fightOnce(lv, lv >= METHOD_UNLOCK_LEVEL ? m.id : undefined));
+      parts.push(`    ${m.id}: ${lastSkills}`);
       return rs.reduce((n, x) => n + x.ttk, 0) / rs.length;
     });
     const sorted = [...dps].sort((a, b) => a - b);
@@ -338,6 +348,7 @@ if (process.argv.includes('--dps')) {
         })
         .join('')}`,
     );
+    if (process.argv.includes('--skills')) console.log(parts.join('\n'));
   }
   if (bad.length) console.log(`\nLệch quá ±${OFF * 100}% so với trung vị (${bad.length} ô):\n  ` + bad.join('\n  '));
   process.exit(STRICT && bad.length ? 1 : 0);
