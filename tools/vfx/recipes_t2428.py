@@ -108,13 +108,13 @@ def phan_co_thuat():
         parts('spark', -0.45, 18, 1.4, 1, 0.3, 0.06, at='self', offset=[0.3, 0.9, 0.5], inward=True, tone='rim', tier=1),
         snd(-0.45, 'cast', 0.45, 1.0),
         decal('rune', -0.4, 8.0, 0.9, at='area', grow=0.3, tone='body', alpha=1, tier=0),
-        orb(-0.2, 0.2, [0.2, 1.0, 0.6], [0, 1.0, 0], scale=1.0, seed=5),
+        orb(-0.2, 0.2, [0.2, 1.0, 0.6], [0, 2.6, 0], scale=1.0, seed=5),
         snd(0.0, 'impact', 0.8, 0.85, 0.04),
-        mesh('burst', 0.0, 0.12, at='area', offset=[0, 1.4, 0], scale=2.4, billboard=True, sweep=0, tone='core', cross=True, tier=0),
+        mesh('burst', 0.0, 0.12, at='area', offset=[0, 3.4, 0], scale=2.4, camFade=True, billboard=True, sweep=0, tone='core', cross=True, tier=0),
         mesh('ripple', 0.0, 0.5, at='area', offset=[0, 0.12, 0], scale=0.6, scaleTo=3.6, sweep=0.4, erodeFrom=0.4, tone='rim', alpha=0.9, tier=0, seed=9),
         decal('scorch', 0.0, 6.0, 3.0, at='area', grow=0.1, tone='core', alpha=0.85, tier=0),
-        parts('dust', 0.0, 80, 6, 1, 0.9, 0.22, at='area', offset=[0, 0.6, 0], tone='body', grav=-0.4, tier=0),
-        smoke(0.04, 'area', y=0.6, scale=5.0, tone='core', alpha=0.6),
+        parts('dust', 0.0, 36, 6, 1, 0.5, 0.14, at='area', offset=[0, 0.6, 0], tone='body', grav=-0.4, tier=0),
+        smoke(0.04, 'area', y=0.6, scale=3.6, tone='core', alpha=0.25),
     ]
     for i in range(10):
         a = i / 10 * math.tau + 0.5

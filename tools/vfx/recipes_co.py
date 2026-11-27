@@ -134,15 +134,15 @@ def co_bao():
         snd(-0.45, 'cast', 0.45, 0.9),
         decal('rune', -0.4, 7.0, 0.9, at='area', grow=0.3, tone='body', alpha=1, tier=0),
         mesh('rune_ring2', -0.4, 0.4, at='area', offset=[0, 0.08, 0], scale=0.45, scaleTo=1.2, fit='area', sweep=0.04, erodeFrom=0.7, alpha=1, shadow=False, tone='rim', tier=0, seed=3),
-        glob(-0.2, 0.2, [0.2, 1.0, 0.6], [0, 0.9, 0], scale=1.0, seed=5),
+        glob(-0.2, 0.2, [0.2, 1.0, 0.6], [0, 2.6, 0], scale=1.0, seed=5),
         snd(0.0, 'impact', 0.9, 0.75, 0.04),
-        mesh('burst', 0.0, 0.12, at='area', offset=[0, 1.6, 0], scale=2.6, billboard=True, sweep=0, tone='core', cross=True, tier=0),
+        mesh('burst', 0.0, 0.12, at='area', offset=[0, 3.4, 0], scale=2.6, camFade=True, billboard=True, sweep=0, tone='core', cross=True, tier=0),
         mesh('ripple', 0.0, 0.5, at='area', offset=[0, 0.12, 0], scale=0.6, scaleTo=3.2, sweep=0.4, erodeFrom=0.4, tone='rim', alpha=0.9, tier=0, seed=9),
-        mesh('shock_cone', 0.02, 0.45, at='area', offset=[0, 0.05, 0], scale=[1.0] * 3, scaleTo=[8.0] * 3, alpha=0.8, sweep=0.3, erodeFrom=0.3, tone='body', tier=1),
+        mesh('shock_cone', 0.02, 0.3, at='area', offset=[0, 0.05, 0], scale=[1.0] * 3, scaleTo=[8.0] * 3, alpha=0.4, sweep=0.3, erodeFrom=0.2, tone='body', tier=1),
         decal('scorch', 0.0, 5.5, 3.0, at='area', grow=0.1, tone='core', alpha=0.85, tier=0),
-        parts('dust', 0.0, 90, 6, 1, 0.9, 0.24, at='area', offset=[0, 0.6, 0], tone='body', grav=-0.4, tier=0),
-        parts('spark', 0.0, 40, 8, 1, 0.5, 0.09, at='area', offset=[0, 1.2, 0], tone='rim', tier=0),
-        smoke(0.04, 'area', y=0.6, scale=5.0, tone='core', alpha=0.7),
+        parts('dust', 0.0, 36, 6, 1, 0.5, 0.14, at='area', offset=[0, 0.6, 0], tone='body', grav=-0.4, tier=0),
+        parts('spark', 0.0, 24, 8, 1, 0.5, 0.09, at='area', offset=[0, 2.6, 0], tone='rim', tier=0),
+        smoke(0.04, 'area', y=0.6, scale=3.6, tone='core', alpha=0.25),
     ]
     # mảnh cổ văng: tám cục cổ bay ra rồi rơi lại, cao tối đa 2,2 m
     for i in range(8):
