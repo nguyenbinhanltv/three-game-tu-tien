@@ -33,19 +33,19 @@
   },
   {
    "type": "hitstop",
-   "t": 0.0,
+   "t": 0,
    "ms": 70
   },
   {
    "type": "slowmo",
-   "t": 0.0,
+   "t": 0,
    "scale": 0.35,
    "ms": 300,
    "tier": 2
   },
   {
    "type": "camera",
-   "t": 0.0,
+   "t": 0,
    "pull": 0.4,
    "dur": 1.2,
    "fov": 4.5,
@@ -53,7 +53,7 @@
   },
   {
    "type": "vignette",
-   "t": 0.0,
+   "t": 0,
    "amount": 0.3,
    "ms": 700,
    "tone": "dark",
@@ -61,20 +61,20 @@
   },
   {
    "type": "shake",
-   "t": 0.0,
+   "t": 0,
    "level": 0.5
   },
   {
    "type": "flash",
-   "t": 0.0,
+   "t": 0,
    "amount": 0.14,
    "tier": 0
   },
   {
    "type": "soundAt",
-   "t": 0.0,
+   "t": 0,
    "id": "impact",
-   "gain": 1.0,
+   "gain": 1,
    "rate": 0.62,
    "jitter": 0.04
   },
@@ -95,13 +95,13 @@
    "at": "self",
    "offset": [
     0.4,
-    4.2,
-    9.8
+    2.4,
+    6
    ],
    "billboard": true,
    "scale": [
-    6.4,
-    9.6,
+    3,
+    4.5,
     1
    ],
    "sweep": 0.22,
@@ -123,13 +123,13 @@
    "at": "self",
    "offset": [
     0,
-    4.5,
-    9.2
+    2.3,
+    5.6
    ],
    "billboard": true,
    "scale": [
-    6.0,
-    9.0,
+    2.8,
+    4.2,
     1
    ],
    "sweep": 0.22,
@@ -146,7 +146,7 @@
    "type": "decal",
    "tex": "scorch",
    "t": -0.1,
-   "r": 5.2,
+   "r": 3,
    "dur": 2.8,
    "at": "self",
    "offset": [
@@ -162,8 +162,8 @@
   {
    "type": "decal",
    "tex": "rune",
-   "t": 0.0,
-   "r": 6.0,
+   "t": 0,
+   "r": 3.6,
    "dur": 2.4,
    "at": "self",
    "offset": [
@@ -179,7 +179,7 @@
   {
    "type": "mesh",
    "shape": "rune_ring2",
-   "t": 0.0,
+   "t": 0,
    "dur": 1.4,
    "at": "self",
    "offset": [
@@ -200,7 +200,7 @@
   {
    "type": "mesh",
    "shape": "shock_cone",
-   "t": 0.0,
+   "t": 0,
    "dur": 0.5,
    "at": "self",
    "offset": [
@@ -209,14 +209,14 @@
     0
    ],
    "scale": [
-    1.0,
-    1.0,
-    1.0
+    1,
+    1,
+    1
    ],
    "scaleTo": [
-    5.0,
-    5.0,
-    5.0
+    3,
+    3,
+    3
    ],
    "alpha": 0.6,
    "sweep": 0.3,
@@ -244,9 +244,9 @@
     0.8
    ],
    "scaleTo": [
-    4.0,
-    4.0,
-    4.0
+    2.6,
+    2.6,
+    2.6
    ],
    "alpha": 0.5,
    "sweep": 0.3,
@@ -261,7 +261,7 @@
    "type": "decal",
    "tex": "crack",
    "t": 0.02,
-   "r": 4.8,
+   "r": 3,
    "dur": 2.4,
    "at": "self",
    "offset": [
@@ -280,13 +280,13 @@
    "t": 0.02,
    "dur": 0.4,
    "flip": "spark_burst",
-   "scale": 3.2,
+   "scale": 2.2,
    "billboard": true,
    "at": "self",
    "offset": [
     0,
     0.4,
-    0
+    -1.7
    ],
    "alpha": 0.7,
    "tone": "accent",
@@ -295,7 +295,7 @@
   {
    "type": "particles",
    "kind": "spark",
-   "t": 0.0,
+   "t": 0,
    "n": 90,
    "speed": 9,
    "spread": 1,
@@ -313,7 +313,7 @@
   {
    "type": "particles",
    "kind": "dust",
-   "t": 0.0,
+   "t": 0,
    "n": 50,
    "speed": 4,
    "spread": 1,
@@ -322,7 +322,7 @@
    "at": "self",
    "offset": [
     0,
-    -1.0,
+    -1,
     0
    ],
    "tone": "core",
