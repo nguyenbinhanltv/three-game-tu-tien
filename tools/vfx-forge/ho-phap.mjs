@@ -196,13 +196,15 @@ const SPEC = {
   ],
   // Sơn Nhạc Hóa Thân: thân phình lớn thành ngọn núi — ba đỉnh núi đá lởm chởm trồi lên quanh người, tảng đá và mây bụi quấn chân.
   skl_son_nhac_hoa_than: () => [
-    ...[gather('hp_peaks', { size: 2.6, off: [0, 1.4, -0.4], rest: { at: 'self' } })],
-    pullIn('self', [0, 0.8, 0], -0.26),
-    strike('hp_peaks', { size: 5.4, at: 'self', off: [0, 2.4, -0.6], dur: 1.6, erodeFrom: 0.5 }),
-    sprite('hp_dust', { t: 0.04, dur: 1, at: 'self', off: [0, 0.8, 0], size: 4.6, alpha: 0.7, erodeFrom: 0.3 }),
-    flash('self', [0, 1.4, 0], 2.2, 0.03, { dur: 0.14 }),
-    scorch('self', [0, -1.05, 0], 2.6, -0.1, 2.4),
-    after('self', [0, 1.2, 0], 3, 0.25, 1.2),
+    ...[gather('hp_peaks', { size: 2.2, off: [0, 1.4, -1.8], rest: { at: 'self' } })],
+    pullIn('self', [0, 0.8, -0.8], -0.26),
+    // Hào quang quanh mình (27/11): ba đỉnh núi bật ĐẦY 0,16 s rồi ở lại dạng bóng mờ sau lưng.
+    strike('hp_peaks', { size: 2.5, at: 'self', off: [0, 1.5, -1.8], dur: 0.16, erodeFrom: 0.6 }),
+    { ...sprite('hp_peaks', { t: 0.13, dur: 1.47, at: 'self', off: [0, 1.5, -1.8], size: 2.5, erodeFrom: 0.5 }), alpha: 0.3 },
+    sprite('hp_dust', { t: 0.04, dur: 1, at: 'self', off: [0, 0.8, -1.8], size: 2.4, alpha: 0.4, erodeFrom: 0.3 }),
+    flash('self', [0, 1.4, -0.5], 1.8, 0.03, { dur: 0.14 }),
+    scorch('self', [0, -1.05, 0], 2.4, -0.1, 2.4),
+    { ...after('self', [0, 1.2, -1.8], 1.8, 0.25, 0.8), alpha: 0.3 },
   ],
   // Dịch Sơn Xung (lướt, mọi mốc ≥ 0): sóng đất đá hình tường nghiêng hất ra xa, tảng đá lăn theo hướng húc.
   skl_dich_son_xung: () => [

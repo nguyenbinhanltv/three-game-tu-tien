@@ -208,13 +208,15 @@ const SPEC = {
   ],
   // Lôi Giáp (khiên): vảy giáp sét sáu cạnh ghép bao quanh thân, hồ quang chạy giữa các vảy.
   skl_loi_giap: () => [
-    ...[gather('loi_scales', { size: 3.4, off: [0, 1.0, 0], rest: { at: 'self' } })],
+    ...[gather('loi_scales', { size: 2.2, off: [0, 1.1, -1.7], rest: { at: 'self' } })],
     scorch('self', [0, -1.05, 0], 1.7, -0.1),
-    pullIn('self', [0, 1, 0], -0.24),
-    strike('loi_scales', { size: 3.4, at: 'self', off: [0, 1.05, 0], dur: 0.9, erodeFrom: 0.3 }),
-    flash('self', [0, 1.1, 0], 2.2, 0.01),
-    sprite('loi_arcs_pair', { t: 0.06, dur: 0.5, at: 'self', off: [0, 1.4, 0.2], size: 1.6, alpha: 0.8, erodeFrom: 0.25 }),
-    after('self', [0, 1.2, 0], 2.4, 0.2, 1.2),
+    pullIn('self', [0, 1, -0.8], -0.24),
+    // Hào quang quanh mình (27/11): vảy giáp bật ĐẦY 0,16 s rồi ở lại dạng bóng mờ sau lưng.
+    strike('loi_scales', { size: 2.4, at: 'self', off: [0, 1.1, -1.7], dur: 0.16, erodeFrom: 0.6 }),
+    { ...sprite('loi_scales', { t: 0.13, dur: 0.77, at: 'self', off: [0, 1.1, -1.7], size: 2.4, erodeFrom: 0.3 }), alpha: 0.3 },
+    flash('self', [0, 1.1, -0.5], 1.6, 0.01),
+    sprite('loi_arcs_pair', { t: 0.06, dur: 0.5, at: 'self', off: [0, 1.4, -1.2], size: 1.4, alpha: 0.6, erodeFrom: 0.25 }),
+    { ...after('self', [0, 1.2, -1.7], 1.6, 0.2, 0.8), alpha: 0.3 },
   ],
   // Phích Lịch Tuyến: một tia sét ngang dày xuyên 10 m, hai đầu nổ chớp, nhiều nhánh rẽ nhỏ hai bên.
   skl_phich_lich: () => [
@@ -239,12 +241,14 @@ const SPEC = {
   ],
   // Lôi Võng (thủ): quả cầu lưới hồ quang bao quanh người, chỗ giao nhau có điểm sáng, tia lửa tóe khi chịu đòn.
   skl_loi_vong: () => [
-    ...[gather('loi_web', { size: 3.6, off: [0, 1.1, 0], rest: { at: 'self' } })],
-    pullIn('self', [0, 1, 0], -0.24),
-    strike('loi_web', { size: 3.6, at: 'self', off: [0, 1.15, 0], dur: 0.95, erodeFrom: 0.35 }),
-    flash('self', [0, 1.2, 0], 2.2, 0.01),
-    after('self', [0, 1.2, 0], 2.6, 0.2, 1.2),
-    sparks('self', [0, 1.2, 0], 10, 0.05),
+    ...[gather('loi_web', { size: 2.2, off: [0, 1.1, -1.7], rest: { at: 'self' } })],
+    pullIn('self', [0, 1, -0.8], -0.24),
+    // Hào quang quanh mình (27/11): lưới sét bật ĐẦY 0,16 s rồi ở lại dạng bóng mờ sau lưng.
+    strike('loi_web', { size: 2.4, at: 'self', off: [0, 1.15, -1.7], dur: 0.16, erodeFrom: 0.6 }),
+    { ...sprite('loi_web', { t: 0.13, dur: 0.82, at: 'self', off: [0, 1.15, -1.7], size: 2.4, erodeFrom: 0.35 }), alpha: 0.3 },
+    flash('self', [0, 1.2, -0.5], 1.6, 0.01),
+    { ...after('self', [0, 1.2, -1.7], 1.6, 0.2, 0.8), alpha: 0.3 },
+    sparks('self', [0, 1.2, -0.8], 10, 0.05),
   ],
   // Lôi Phạt: lệnh bài đạo gia cổ phong khắc phù sét giáng từ mây xuống đầu mục tiêu, xích sét quấn, tia điện lan trên đất.
   skl_loi_phat: () => [

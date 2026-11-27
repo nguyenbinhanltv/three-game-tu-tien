@@ -16,8 +16,8 @@
    "type": "decal",
    "tex": "scorch",
    "t": -0.25,
-   "r": 3.8,
-   "dur": 5,
+   "r": 2.6,
+   "dur": 2.2,
    "at": "self",
    "offset": [
     0,
@@ -71,10 +71,10 @@
    "offset": [
     0,
     1.1,
-    0
+    -1.7
    ],
-   "scale": 1.71,
-   "scaleTo": 2.46
+   "scale": 1.05,
+   "scaleTo": 1.5
   },
   {
    "type": "particles",
@@ -89,7 +89,7 @@
    "offset": [
     0,
     1,
-    0
+    -0.8
    ],
    "tone": "rim",
    "tier": 1,
@@ -98,10 +98,10 @@
   {
    "type": "mesh",
    "t": 0,
-   "dur": 0.95,
+   "dur": 0.16,
    "at": "self",
    "sweep": 0,
-   "erodeFrom": 0.35,
+   "erodeFrom": 0.6,
    "ragged": 0.5,
    "tone": "body",
    "alpha": 0.52,
@@ -113,10 +113,33 @@
    "offset": [
     0,
     1.15,
-    0
+    -1.7
    ],
-   "scale": 2.8,
-   "scaleTo": 3.42
+   "scale": 1.87,
+   "scaleTo": 2.28
+  },
+  {
+   "type": "mesh",
+   "t": 0.13,
+   "dur": 0.82,
+   "at": "self",
+   "sweep": 0,
+   "erodeFrom": 0.35,
+   "ragged": 0.5,
+   "tone": "body",
+   "alpha": 0.3,
+   "tier": 0,
+   "seed": 1002,
+   "shape": "sprite",
+   "sprite": "loi_web",
+   "billboard": true,
+   "offset": [
+    0,
+    1.15,
+    -1.7
+   ],
+   "scale": 2.28,
+   "scaleTo": 2.28
   },
   {
    "type": "mesh",
@@ -129,17 +152,17 @@
    "tone": "body",
    "alpha": 0.9,
    "tier": 0,
-   "seed": 1002,
+   "seed": 1003,
    "shape": "sprite",
    "sprite": "loi_flash",
    "billboard": true,
    "offset": [
     0,
     1.2,
-    0
+    -0.5
    ],
-   "scale": 2.09,
-   "scaleTo": 2.61
+   "scale": 1.52,
+   "scaleTo": 1.9
   },
   {
    "type": "mesh",
@@ -150,25 +173,25 @@
    "erodeFrom": 0.2,
    "ragged": 0.5,
    "tone": "body",
-   "alpha": 0.41,
+   "alpha": 0.3,
    "tier": 0,
-   "seed": 1003,
+   "seed": 1004,
    "shape": "sprite",
    "sprite": "loi_sparks",
    "billboard": true,
    "offset": [
     0,
     1.2,
-    0
+    -1.7
    ],
-   "scale": 2.47,
-   "scaleTo": 2.47,
+   "scale": 1.52,
+   "scaleTo": 1.52,
    "move": {
     "to": "self",
     "offset": [
      0,
-     2.4,
-     0
+     2,
+     -1.7
     ],
     "ease": "out"
    }
@@ -186,7 +209,7 @@
    "offset": [
     0,
     1.2,
-    0
+    -0.8
    ],
    "tone": "rim",
    "tier": 1
