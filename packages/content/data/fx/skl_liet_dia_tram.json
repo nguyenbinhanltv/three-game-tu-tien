@@ -74,11 +74,11 @@
    "type": "particles",
    "kind": "dust",
    "t": 0,
-   "n": 50,
+   "n": 22,
    "speed": 5,
    "spread": 1,
-   "life": 0.8,
-   "size": 0.28,
+   "life": 0.4,
+   "size": 0.14,
    "at": "area",
    "offset": [
     0,
@@ -182,13 +182,13 @@
   {
    "type": "mesh",
    "t": 0.02,
-   "dur": 0.36,
+   "dur": 0.16,
    "at": "target",
    "sweep": 0,
    "erodeFrom": 0.4,
    "ragged": 0.5,
    "tone": "body",
-   "alpha": 0.35,
+   "alpha": 0.5,
    "tier": 0,
    "seed": 1001,
    "shape": "sprite",
@@ -205,13 +205,13 @@
   {
    "type": "mesh",
    "t": 0.04,
-   "dur": 0.36,
+   "dur": 0.15,
    "at": "target",
    "sweep": 0,
-   "erodeFrom": 0.15,
+   "erodeFrom": 0.1,
    "ragged": 0.5,
    "tone": "body",
-   "alpha": 0.4,
+   "alpha": 0.6,
    "tier": 0,
    "seed": 1002,
    "shape": "sprite",
@@ -228,13 +228,13 @@
   {
    "type": "mesh",
    "t": 0.06,
-   "dur": 0.36,
+   "dur": 0.34,
    "at": "target",
    "sweep": 0,
-   "erodeFrom": 0.15,
+   "erodeFrom": 0.2,
    "ragged": 0.5,
    "tone": "body",
-   "alpha": 0.5,
+   "alpha": 0.9,
    "tier": 0,
    "seed": 1003,
    "shape": "sprite",
@@ -242,7 +242,7 @@
    "billboard": true,
    "offset": [
     0,
-    1.5,
+    3.8,
     0
    ],
    "scale": 3.8,
@@ -251,7 +251,7 @@
   {
    "type": "mesh",
    "t": 0.04,
-   "dur": 0.12,
+   "dur": 0.14,
    "at": "target",
    "sweep": 0,
    "erodeFrom": 0.3,
@@ -265,11 +265,11 @@
    "billboard": true,
    "offset": [
     0,
-    1.2,
+    2,
     0
    ],
-   "scale": 1.71,
-   "scaleTo": 2.14
+   "scale": 2.28,
+   "scaleTo": 2.85
   },
   {
    "type": "decal",
@@ -305,7 +305,7 @@
    "billboard": true,
    "offset": [
     0,
-    2.5,
+    4,
     0
    ],
    "scale": 3.04,
@@ -314,7 +314,7 @@
     "to": "target",
     "offset": [
      0,
-     3.7,
+     5.2,
      0
     ],
     "ease": "out"
