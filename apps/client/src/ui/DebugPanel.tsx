@@ -92,6 +92,7 @@ const LAB_FLOORS = ['dark', 'light', 'grass', 'snow'] as const;
 const LAB_SEEKS = [33, 100, 200, 400, 800, 1500];
 const LAB_NUM_KINDS = ['hit', 'hv', 'crit', 'ke', 'heal', 'hurt', 'immune', 'mix'] as const;
 const LAB_NUM_COUNTS = [1, 5, 20];
+const LAB_MOMENTS = ['toast', 'log', 'chapter', 'ascend', 'bossline', 'loot'] as const;
 const LAB_NUM_GAPS = [0, 80, 250];
 /** Khu Giao diện của phòng thử: máy bắn số sát thương (chỉ hình ở client). */
 function UiLab() {
@@ -104,6 +105,14 @@ function UiLab() {
         {LAB_NUM_KINDS.map((k) => (
           <Button key={k} size="s" onClick={() => Game.current?.labNumbers(k, count, gap)}>
             {t('ui.gm.lab.num.' + k)}
+          </Button>
+        ))}
+      </div>
+      <div className="debug-row wrap">
+        <span>{t('ui.gm.lab.moment')}</span>
+        {LAB_MOMENTS.map((k) => (
+          <Button key={k} size="s" onClick={() => Game.current?.labMoment(k)}>
+            {t('ui.gm.lab.moment.' + k)}
           </Button>
         ))}
       </div>
