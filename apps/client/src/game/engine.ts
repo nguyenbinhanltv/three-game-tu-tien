@@ -28,7 +28,9 @@ import { knownLevel, levelAssets, levelId, sameLayout, setActiveLevel } from '..
 import {
   FX_TIMELINE,
   ARTIFACT,
+  ITEMS,
   METHOD,
+  monsterName,
   realmName,
   skillBar,
   stanceSkill,
@@ -53,6 +55,7 @@ import { CamFrame, type ChapterKind } from './camera/chapter';
 import { DeathFx } from './fx/deathFx';
 import { Cutscene } from './camera/cutscene';
 import { LootFly } from './fx/lootFly';
+import { chapter as labChapter } from './engine/cine';
 import { EntityManager, type PState, type WorldView } from './entities/entities';
 import { Environment } from './world/env';
 import { FrameBudget, type SectionStat } from '../base/frameBudget';
@@ -956,6 +959,48 @@ export class Game {
       );
     }
     return n;
+  }
+
+  /**
+   * Phòng thử (khu Giao diện): gọi một KHOẢNH KHẮC giao diện để soi nhịp và chỗ đứng của nó mà không phải chơi tới đó. Chỉ là hình ở client:
+   * dùng đúng store/hàm của trận thật, không gửi gì lên server, không đổi dữ liệu nhân vật. Trả false nếu không có loại đó.
+   */
+  labMoment(kind: string): boolean {
+    switch (kind) {
+      case 'toast':
+        // Ba kiểu thông báo nổi liên tiếp, chữ dài nhất thường gặp.
+        pushToast(t('sys.too_far'), 'bad');
+        window.setTimeout(() => pushToast(t('sys.welcome', { name: 'Diễn Võ Trường' }), 'good'), 350);
+        window.setTimeout(() => pushToast(t('sys.no_target'), 'info'), 700);
+        return true;
+      case 'log':
+        pushLog(t('sys.welcome', { name: 'Diễn Võ Trường' }), 'good');
+        pushLog(t('sys.too_far'), 'bad');
+        return true;
+      case 'chapter':
+        labChapter(this, 'dungeon', false);
+        return true;
+      case 'ascend':
+        labChapter(this, 'ascend', false);
+        return true;
+      case 'bossline': {
+        const m = this.targetId ? this.view.monsters.get(this.targetId) : undefined;
+        set({ bossLine: { id: ++this.bossLineId, name: m ? monsterName(m.t) : t('ui.gm.lab.tab.mon'), text: t('ui.gm.lab.moment.bossline_text'), until: Date.now() + 3200 } });
+        return true;
+      }
+      case 'loot': {
+        // Năm món rơi bay về túi, bậc 1 → 4, từ giữa màn hình.
+        const icons = ITEMS.filter((i) => i.icon).slice(0, 5);
+        icons.forEach((it, i) =>
+          window.setTimeout(() => {
+            if (!this.disposed) this.lootFly.spawn(it.icon!, it.iconFallback ?? '❔', window.innerWidth / 2 + (i - 2) * 60, window.innerHeight / 2, Math.min(4, i + 1));
+          }, i * 140),
+        );
+        return icons.length > 0;
+      }
+      default:
+        return false;
+    }
   }
 
   labFloor(id: string): boolean {

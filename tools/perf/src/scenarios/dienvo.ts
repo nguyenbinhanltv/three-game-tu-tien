@@ -317,6 +317,25 @@ export default {
       check('số sát thương bắn dày không đè lên nhau', clash.pairs <= 2, `${clash.pairs} cặp chồng nhau trên ${clash.n} số đang rõ`);
       check('nút "Trộn" bắn số sát thương lên màn hình', nums >= 5, `${nums} số đang hiện`);
       await snap(pg, r.out, `${view}/panel-ban-so.png`, { wait: 0 });
+      // Gọi khoảnh khắc giao diện: mỗi nút bấm xong chụp một ảnh; kiểm phần tử tương ứng có trên màn hình.
+      await sleep(1200);
+      await btn('Thông báo nổi').click();
+      await sleep(900);
+      const toasts = await pg.evaluate(() => document.querySelectorAll('[class*="toast"]').length);
+      check('nút "Thông báo nổi" hiện thông báo', toasts >= 1, `${toasts} phần tử toast`);
+      await snap(pg, r.out, `${view}/moment-toast.png`, { wait: 0 });
+      await btn('Lời boss').click();
+      await sleep(500);
+      await snap(pg, r.out, `${view}/moment-bossline.png`, { wait: 0 });
+      await btn('Thẻ đột phá').click();
+      await sleep(900);
+      await snap(pg, r.out, `${view}/moment-ascend.png`, { wait: 0 });
+      await btn('Đồ rơi bay về túi').click();
+      await sleep(450);
+      const fly = await pg.evaluate(() => document.querySelectorAll('.loot-fly').length);
+      check('nút "Đồ rơi bay về túi" bắn biểu tượng đồ rơi', fly >= 1, `${fly} biểu tượng đang bay`);
+      await snap(pg, r.out, `${view}/moment-loot.png`, { wait: 0 });
+      await sleep(3500);
       await sleep(1500);
       await btn('Hiệu ứng').click();
       await sleep(200);
