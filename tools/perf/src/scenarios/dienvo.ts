@@ -3,7 +3,7 @@
 // Có `--base <thư mục bộ trước>` thì so từng cảnh bằng SSIM/ΔE (tools/painted-compare/compare.mjs) và dựng trang trước/sau `index.html`.
 //   pnpm shots dienvo --out <thư mục> [--view 720p|1080p] [--query style=dahoa] [--base <thư mục>] [--ssim 0.9] [--only id1,id2]
 //                     [--quality high|medium|low] [--renderer webgl2] [--diag 1] [--layersoff 2,3] [--fx id1,id2] [--panel 1]
-//                     [--ping 150] [--swings 1 --window 4000] [--crowd 8,20,50] [--fx 'skl_kiem*' --gate 1 [--far 8]] [--silhouette 1] [--floor light|grass|snow]
+//                     [--ping 150] [--swings 1 --window 4000] [--crowd 8,20,50] [--fx 'skl_kiem*' --gate 1 [--far 8] [--keepbare 1]] [--silhouette 1] [--floor light|grass|snow]
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -611,6 +611,8 @@ export default {
             })()`)) as { live: number; box: { cx: number; cy: number; half: number } | null };
             await frames2();
             const bare = await pg.screenshot();
+            // `--keepbare 1`: lưu cả ảnh ẩn VFX của từng mốc (`<id>+<ms>ms.bare.png`) để thử cách đo khác ngoài luồng mà không phải chấm lại.
+            if (opt('--keepbare', '')) fs.writeFileSync(path.join(r.out, `${view}/fx/${id}+${ms}ms.bare.png`), bare);
             await pg.evaluate(`(() => { var m = window.__game.ents.monsters.get(window.__game.targetId); if (m) { m.model.root.userData.__s = m.model.root.scale.x; m.model.root.scale.setScalar(1e-4); } })()`);
             await frames2();
             const empty = await pg.screenshot();
@@ -688,7 +690,13 @@ export default {
             `  ${g.fail.length ? 'HỎNG' : 'ĐẠT '} ${id.padEnd(30)} che ${pc(g.cover)} (đỉnh ${pc(g.coverMax ?? null)})  lóa ${pc(g.glare)}  phủ ${pc(g.spread)}  nổi ${pc(g.pop)}  lưới ${String(g.live).padStart(3)}  dài ${g.dur?.toFixed(2) ?? '?'} s${g.selfOnly ? '  [neo ở mình]' : ''}${g.fail.length ? '  ← ' + g.fail.join(', ') : ''}`,
           );
         }
-        await sleep(1500);
+        // Chờ hiệu ứng của chiêu vừa chấm TAN HẾT (lưới sống về 0) rồi mới sang chiêu sau: vòng triện/vết cháy sống 2–4 s, nếu chỉ chờ 1,5 s thì dư ảnh của nó
+        // lọt vào ảnh của chiêu kế và làm lệch độ nổi, độ phủ (đo 27/11: Thiết Bích Xung 11% hay 24% tùy chiêu đứng trước nó).
+        if (gate) {
+          const until = Date.now() + 9000;
+          while (Date.now() < until && (await pg.evaluate(() => (window.__game as unknown as { vfx: { pool: { live: number } } }).vfx.pool.live)) > 0) await sleep(250);
+          await sleep(400);
+        } else await sleep(1500);
       }
       await gm(pg, 'labreset', 1500);
       await gm(pg, 'dvt');
