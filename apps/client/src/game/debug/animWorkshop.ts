@@ -201,12 +201,14 @@ export class AnimWorkshop {
     if (!this.feet.length) return;
     const ground = walkableGround(s.model.root.position.y);
     this.lift = s.model.root.position.y - ground(s.x, s.z);
+    // Sàn nhân vật đang đứng cao hơn hàm mặt đất (sàn phòng tập, bậc không có trong va chạm): tính độ cao bàn chân theo mặt sàn đó.
+    const floor = this.lift > 0 && this.lift < 0.6 ? this.lift : 0;
     const space = this.port.space;
     const feet: FootSample[] = this.feet.map((b) => {
       b.getWorldPosition(_p);
       // Cây xương tách khỏi cảnh: vị trí trên là ở hệ của asset, đưa ra thế giới qua gốc asset.
       if (space) _p.applyMatrix4(space.matrixWorld);
-      return { x: _p.x, y: _p.y, z: _p.z, ground: ground(_p.x, _p.z) };
+      return { x: _p.x, y: _p.y, z: _p.z, ground: ground(_p.x, _p.z) + floor };
     });
     this.slide.push(dt, this.blends.current || act[0]?.name || '', s.x, s.z, feet);
   }

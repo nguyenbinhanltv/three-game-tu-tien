@@ -42,6 +42,12 @@ describe('castRows (lệch tiếng so với khung trúng của từng lần ra c
     expect(cut[0]!.hitMs).toBeNull();
   });
 
+  it('sát thương tới sau theo thiết kế (triệu hồi, trận, độc) không tính là lệch', () => {
+    const rows = castRows([mark('windup', 0, 'skl_summon'), mark('hit', 500, 'skl_summon'), mark('dmg', 1500, '')], [snd('hit', 1500)]);
+    expect(rows[0]).toMatchObject({ verdict: 'delayed', dmgMs: 1000, hitSndMs: 1000 });
+    expect(castSummary(rows)[0]!.bad).toBe(0);
+  });
+
   it('chuỗi đòn thường: tiếng của đòn sau không tính cho đòn trước', () => {
     const rows = castRows(
       [mark('windup', 0, 'basic', 0), mark('hit', 180, 'basic', 0), mark('dmg', 185, ''), mark('windup', 420, 'basic', 1), mark('hit', 600, 'basic', 1), mark('dmg', 700, '')],
