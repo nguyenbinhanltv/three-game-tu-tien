@@ -3,6 +3,7 @@
 import type { FxTimeline } from '@dtl/shared';
 
 import fxKiemKhiTramJson from '../data/fx/skl_kiem_khi_tram.json';
+import fx_skl_kiem_khi_tram__pilot from '../data/fx/skl_kiem_khi_tram__pilot.json';
 import fxPhiKiemJson from '../data/fx/skl_phi_kiem.json';
 import fx_mon_bolt_impact from '../data/fx/mon_bolt_impact.json';
 import fx_mon_bolt_muzzle from '../data/fx/mon_bolt_muzzle.json';
@@ -470,6 +471,7 @@ import fx_mon_warn_line__elite_sa_tuong__line from '../data/fx/mon_warn_line__el
 /** Dòng thời gian hiệu ứng theo chiêu (VFX-V0): `data/fx/<id chiêu>.json`. Chiêu không có thì dùng đường hiệu ứng cũ. */
 export const FX_TIMELINES = [
   fxKiemKhiTramJson,
+  fx_skl_kiem_khi_tram__pilot,
   fxPhiKiemJson,
   fx_fx_blink,
   fx_fx_dotpha_hn,

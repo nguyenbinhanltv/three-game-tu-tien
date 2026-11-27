@@ -24,7 +24,7 @@ let atlas: THREE.Texture | null = null;
 export const SPRITE_GROUPS = {
   hon: { file: 'hoa-truc/vfx_sprites_hon.ec4ebc360d.webp', cols: 4, rows: 6 },
   loi: { file: 'hoa-truc/vfx_sprites_loi.147ce2e73d.webp', cols: 4, rows: 4 },
-  kiem: { file: 'hoa-truc/vfx_sprites_kiem.22301e4193.webp', cols: 4, rows: 4 },
+  kiem: { file: 'hoa-truc/vfx_sprites_kiem.817313d1ea.webp', cols: 4, rows: 6 },
   hp: { file: 'hoa-truc/vfx_sprites_hp.dc9596e2f9.webp', cols: 4, rows: 4 },
   dao: { file: 'hoa-truc/vfx_sprites_dao.ae813bcb35.webp', cols: 4, rows: 6 },
   cth: { file: 'hoa-truc/vfx_sprites_cth.e58e4bded1.webp', cols: 4, rows: 6 },
