@@ -1,6 +1,6 @@
 import * as THREE from 'three/webgpu';
 import { describe, expect, it } from 'vitest';
-import { INK_HULL_MAX, INK_STATE, INK_WIDTH, InkHulls, inkStateOf, skinnedWorldScale } from './inkHull';
+import { INK_HULL_MAX, INK_MAX_OF_BODY, INK_STATE, INK_WIDTH, InkHulls, inkStateOf, inkWidthOf, skinnedWorldScale } from './inkHull';
 
 function body(scale = 1): THREE.Group {
   const g = new THREE.Group();
@@ -143,5 +143,15 @@ describe('InkHulls với skin quái (Diễn Võ Trường tìm ra)', () => {
     h.sync();
     expect(h.count).toBe(INK_HULL_MAX - 3);
     expect(h.attach(fresh)).toBe(true);
+  });
+});
+
+describe('inkWidthOf (bề dày viền theo cỡ thân)', () => {
+  it('thân lớn: đủ bề dày của trạng thái; thân nhỏ: bị trần theo bán kính, nhưng không mỏng hơn viền thường', () => {
+    const mul = INK_STATE.weak.mul;
+    expect(inkWidthOf(mul, 3)).toBeCloseTo(INK_WIDTH * mul, 6);
+    expect(inkWidthOf(mul, 0.9)).toBeCloseTo(0.9 * INK_MAX_OF_BODY, 6);
+    expect(inkWidthOf(mul, 0.1)).toBe(INK_WIDTH);
+    expect(inkWidthOf(1, 0.9)).toBe(INK_WIDTH);
   });
 });
