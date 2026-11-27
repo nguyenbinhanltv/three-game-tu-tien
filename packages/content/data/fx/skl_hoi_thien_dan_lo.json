@@ -150,7 +150,8 @@
     -1.7
    ],
    "scale": 1.05,
-   "scaleTo": 1.51
+   "scaleTo": 1.51,
+   "spriteStyle": 12
   },
   {
    "type": "particles",
@@ -209,7 +210,8 @@
     -1.7
    ],
    "scale": 1.95,
-   "scaleTo": 2.38
+   "scaleTo": 2.38,
+   "spriteStyle": 12
   },
   {
    "type": "mesh",
@@ -232,7 +234,8 @@
     -1.7
    ],
    "scale": 2.38,
-   "scaleTo": 2.38
+   "scaleTo": 2.38,
+   "spriteStyle": 12
   },
   {
    "type": "mesh",
@@ -255,7 +258,8 @@
     -1.7
    ],
    "scale": 2.1,
-   "scaleTo": 2.1
+   "scaleTo": 2.1,
+   "spriteStyle": 12
   },
   {
    "type": "mesh",
@@ -278,7 +282,8 @@
     -1.7
    ],
    "scale": 1.61,
-   "scaleTo": 1.96
+   "scaleTo": 1.96,
+   "spriteStyle": 12
   },
   {
    "type": "mesh",
@@ -301,7 +306,8 @@
     -1.7
    ],
    "scale": 1.96,
-   "scaleTo": 1.96
+   "scaleTo": 1.96,
+   "spriteStyle": 12
   },
   {
    "type": "mesh",
@@ -324,7 +330,8 @@
     -0.5
    ],
    "scale": 1.54,
-   "scaleTo": 1.92
+   "scaleTo": 1.92,
+   "spriteStyle": 12
   },
   {
    "type": "mesh",
@@ -356,7 +363,8 @@
      -1.7
     ],
     "ease": "out"
-   }
+   },
+   "spriteStyle": 12
   },
   {
    "type": "particles",

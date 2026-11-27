@@ -158,7 +158,8 @@
     -2.4
    ],
    "scale": 0.87,
-   "scaleTo": 1.25
+   "scaleTo": 1.25,
+   "spriteStyle": 12
   },
   {
    "type": "particles",
@@ -217,7 +218,8 @@
     -2.4
    ],
    "scale": 2.19,
-   "scaleTo": 2.67
+   "scaleTo": 2.67,
+   "spriteStyle": 12
   },
   {
    "type": "mesh",
@@ -240,7 +242,8 @@
     -2.4
    ],
    "scale": 2.67,
-   "scaleTo": 2.67
+   "scaleTo": 2.67,
+   "spriteStyle": 12
   },
   {
    "type": "mesh",
@@ -251,7 +254,7 @@
    "erodeFrom": 0.6,
    "ragged": 0.5,
    "tone": "body",
-   "alpha": 0.72,
+   "alpha": 0.8,
    "tier": 0,
    "seed": 1003,
    "shape": "sprite",
@@ -262,8 +265,9 @@
     2.6,
     -2.8
    ],
-   "scale": 1.28,
-   "scaleTo": 1.28
+   "scale": 1.62,
+   "scaleTo": 1.62,
+   "spriteStyle": 12
   },
   {
    "type": "mesh",
@@ -274,7 +278,7 @@
    "erodeFrom": 0.6,
    "ragged": 0.5,
    "tone": "body",
-   "alpha": 0.72,
+   "alpha": 0.8,
    "tier": 0,
    "seed": 1004,
    "shape": "sprite",
@@ -285,8 +289,9 @@
     2.8,
     -2.4
    ],
-   "scale": 1.28,
-   "scaleTo": 1.28
+   "scale": 1.62,
+   "scaleTo": 1.62,
+   "spriteStyle": 12
   },
   {
    "type": "mesh",
@@ -297,7 +302,7 @@
    "erodeFrom": 0.6,
    "ragged": 0.5,
    "tone": "body",
-   "alpha": 0.72,
+   "alpha": 0.8,
    "tier": 0,
    "seed": 1005,
    "shape": "sprite",
@@ -308,8 +313,9 @@
     3.2,
     -3.2
    ],
-   "scale": 1.28,
-   "scaleTo": 1.28
+   "scale": 1.62,
+   "scaleTo": 1.62,
+   "spriteStyle": 12
   },
   {
    "type": "mesh",
@@ -320,7 +326,7 @@
    "erodeFrom": 0.5,
    "ragged": 0.5,
    "tone": "body",
-   "alpha": 0.76,
+   "alpha": 0.8,
    "tier": 0,
    "seed": 1006,
    "shape": "sprite",
@@ -331,8 +337,9 @@
     3.6,
     -2.4
    ],
-   "scale": 1.39,
-   "scaleTo": 1.39
+   "scale": 1.74,
+   "scaleTo": 1.74,
+   "spriteStyle": 12
   },
   {
    "type": "mesh",
@@ -355,7 +362,8 @@
     -0.5
    ],
    "scale": 1.39,
-   "scaleTo": 1.74
+   "scaleTo": 1.74,
+   "spriteStyle": 12
   },
   {
    "type": "mesh",
@@ -387,7 +395,8 @@
      -2.4
     ],
     "ease": "out"
-   }
+   },
+   "spriteStyle": 12
   },
   {
    "type": "particles",
@@ -428,7 +437,8 @@
     -2.4
    ],
    "scale": 1.74,
-   "scaleTo": 2.17
+   "scaleTo": 2.17,
+   "spriteStyle": 12
   }
  ],
  "variants": {

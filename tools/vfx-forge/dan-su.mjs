@@ -395,8 +395,8 @@ const SPEC = {
       [-2.6, 2.6, -2.8, 0.04],
       [2.6, 2.8, -2.4, 0.1],
       [0, 3.2, -3.2, 0.16],
-    ].map(([x, y, z, dt]) => sprite('dan_pills3', { t: dt, dur: 1.8, at: 'self', off: [x, y, z], size: 2.2, alpha: 0.9, erodeFrom: 0.6 })),
-    sprite('dan_flame', { t: 0.05, dur: 1.6, at: 'self', off: [0, 3.6, -2.4], size: 2.4, alpha: 0.95, erodeFrom: 0.5 }),
+    ].map(([x, y, z, dt]) => sprite('dan_pills3', { t: dt, dur: 1.8, at: 'self', off: [x, y, z], size: 2.8, alpha: 1, erodeFrom: 0.6 })),
+    sprite('dan_flame', { t: 0.05, dur: 1.6, at: 'self', off: [0, 3.6, -2.4], size: 3, alpha: 1, erodeFrom: 0.5 }),
     flash('self', [0, 1.4, -0.5], 2.4, 0.03, { dur: 0.22 }),
     { ...after('self', [0, 1.6, -2.4], 2.2, 0.24, 0.8), alpha: 0.3 },
     sparks('self', [0, 1.8, -2], 24, 0.05),
@@ -408,6 +408,7 @@ const HEAD = {
   skl_luu_huong_bo: { trigger: 'fx', fxKind: 'dash', method: 'thanh_moc_dan_kinh' },
 };
 
+const BOLD = new Set(['skl_thien_dan_phap_gioi', 'skl_hoi_thien_dan_lo']);
 const ids = process.argv.slice(2).length ? process.argv.slice(2) : Object.keys(SPEC);
 for (const id of ids) {
   if (!SPEC[id]) throw new Error(`chưa có công thức cho ${id}`);
@@ -425,6 +426,8 @@ for (const id of ids) {
       !(e.type === 'particles' && e.tier === 1 && e.tone === 'rim' && (e.kind === 'spark' || e.kind === 'petal')),
   );
   const evs = SPEC[id]().flat();
+  // Hai chiêu cuối có hình thu nhỏ bị báo "chìm vào nền" (nổi < 13%): tô sprite bằng màu thân của sự kiện (kiểu 12, đậm hơn bảng đan nhạt) thay vì bảng đan mặc định.
+  if (BOLD.has(id)) for (const e of evs) if (e.type === 'mesh' && e.shape === 'sprite') e.spriteStyle = 12;
   if (t.trigger === 'fx') for (const e of evs) e.t = Math.max(0, e.t);
   t.events.push(...evs);
   fs.writeFileSync(p, JSON.stringify(t, null, 1) + '\n');
