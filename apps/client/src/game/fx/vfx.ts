@@ -862,13 +862,17 @@ export class Vfx {
    * Quét nhanh ra mép trong ~0,1 s rồi tan; nằm sát đất, mờ, để không che thân quái.
    */
   arcSlash(x: number, z: number, yaw: number, r: number, halfAngle: number, color: number): void {
-    const m = this.sigil(SIGIL_CONE, x, z, yaw, r, halfAngle, color, groundAt(x, z) + 0.1);
+    // Mặt đất không phẳng: lấy điểm cao nhất ở đỉnh, hai mép và mũi quạt rồi nâng 0,25 m, nếu không nửa quạt chìm dưới sàn (thấy ở Diễn Võ Trường).
+    let y = groundAt(x, z);
+    for (const a of [-halfAngle, 0, halfAngle]) y = Math.max(y, groundAt(x + Math.sin(yaw + a) * r, z + Math.cos(yaw + a) * r));
+    const m = this.sigil(SIGIL_CONE, x, z, yaw, r, halfAngle, color, y + 0.25);
     m.fxOpacity = 0;
+    // Lên nhanh (0,05 s), giữ tới nửa đường rồi tan: đủ sáng để vượt lớp tối quanh trận của Dạ Họa (lớp đó giữ nguyên điểm ảnh sáng).
     this.add(
-      0.3,
+      0.36,
       (k) => {
         m.fxA.x = Math.min(1, k * 3);
-        m.fxOpacity = (k < 0.2 ? k / 0.2 : 1 - (k - 0.2) / 0.8) * 0.7;
+        m.fxOpacity = k < 0.14 ? k / 0.14 : k < 0.5 ? 1 : 1 - (k - 0.5) / 0.5;
       },
       () => this.drop(m),
     );
