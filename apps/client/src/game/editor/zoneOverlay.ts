@@ -73,6 +73,8 @@ export class ZoneOverlay {
   private bound: unknown = null;
   private unbind: (() => void)[] = [];
   private raf = 0;
+  /** Đang giữ nguyên các viền (kịch bản đo dừng hình để chụp): không mờ, không dọn. */
+  private held = false;
   private subs = new Set<() => void>();
   /** Các vùng gần nhất (mới nhất ở cuối), cho kịch bản đo và bảng. */
   readonly log: ZoneEntry[] = [];
@@ -94,7 +96,7 @@ export class ZoneOverlay {
     const tick = () => {
       if (!this.on) return;
       this.rebind();
-      this.prune(performance.now());
+      if (!this.held) this.prune(performance.now());
       this.raf = requestAnimationFrame(tick);
     };
     this.raf = requestAnimationFrame(tick);
@@ -206,6 +208,12 @@ export class ZoneOverlay {
         dist[j * w + i] = t > 0 ? Math.round(zoneDistOutside(zone, o.x + v.x * t, o.z + v.z * t) * 100) / 100 : -1;
       }
     return { w, h, dist };
+  }
+
+  /** Giữ nguyên các viền đang hiện (không mờ dần, không dọn) trong lúc kịch bản đo dừng hình; `false` thì chạy tiếp và dọn như thường. */
+  hold(on: boolean): void {
+    this.held = on;
+    if (on) for (const l of this.live) (l.mesh.material as THREE.MeshBasicMaterial).opacity = 1;
   }
 
   /** Ẩn/hiện viền mà không tắt việc ghi nhật ký (kịch bản đo chụp ảnh KHÔNG có viền). */
