@@ -6,6 +6,9 @@
 //   cho mình và cho quái, chụp ảnh, thả ra và kiểm game điều khiển lại.
 // - loud: N bot cùng đánh một bầy sói trong phòng chung, mình đánh cùng; đồng hồ từng bus báo đỉnh (dBFS, đo trước âm lượng tổng nên đo được cả
 //   khi tắt tiếng) và số lần chạm trần 0 dBFS, kèm mật độ lời gọi phát tiếng.
+// - mons: gọi từng quái/boss (`--mons`, mặc định 12 con đại diện mỗi kiểu xương), cho nó đuổi rồi đánh mình; in trượt chân theo clip và nhật ký chuyển clip.
+// - bossfade: thử A/B thời gian mờ vào của đòn lớn boss (`SKIN_TUNE.moveFade` ở skinned.ts): ép từng boss ra slam / sweep bằng `/gm cast`, in tốc độ
+//   xoay khớp lớn nhất lúc clip đòn lên.
 // - stopfade: thử A/B thời gian mờ vào của clip DỪNG (`PATCH_TUNE.stopFade` ở mannequin.ts): mỗi mức chạy rồi dừng 4 lần, in tốc độ xoay khớp
 //   lớn nhất lúc clip dừng lên và độ trượt chân của nhịp dừng.
 // - ui: gắn hai nhóm nút của xưởng (`ui/lab/WorkshopLab.tsx`) vào trang rồi BẤM NÚT THẬT: bật đo lệch, ra chiêu, đọc bảng ở lớp phủ; bật đo chân,
@@ -109,7 +112,7 @@ const f = (v: number | null, unit = ''): string => (v === null ? '—' : `${v > 
 export default {
   name: 'xuong',
   desc: 'Diễn Võ Trường, xưởng âm thanh + animation: đo lệch tiếng so với khung trúng theo từng chiêu, trượt chân, chuyển clip, tua clip',
-  usage: '[--query style=dahoa] [--only cast,anim,stopfade,ui,loud] [--paths kiem_tu,the_tu] [--ping 0] [--wait 2200] [--bots 8]',
+  usage: '[--query style=dahoa] [--only cast,anim,mons,bossfade,stopfade,ui,loud] [--mons id1,id2] [--bosses id1,id2] [--paths kiem_tu,the_tu] [--ping 0] [--wait 2200] [--bots 8]',
   env: { RATE_LIMIT_EXEMPT: 'loopback' },
   async run(r) {
     const query = opt('--query', '');
@@ -318,6 +321,102 @@ export default {
       await pg.evaluate(`window.__xuong.ws.stop()`);
       await pg.evaluate(`window.__xuong.ws.setSubject('me')`);
       report.anim = { slide: moved.slide, blends: moved.blends, clips: moved.clips, monClips: mon.clips, monBones, checks, trace, feetTrace };
+      save();
+    }
+
+    if (want('mons')) {
+      const ids = opt('--mons', 'mon_soi_xam,mon_thiet_boi_tru,mon_hoa_van_ho,mon_thach_vien,mon_ngo_cong_au,elite_huyet_nha_lang,boss_huyet_lang_vuong,boss_kiem_khoi,boss_han_giao,boss_thu_mo_tuong,boss_dia_mach_long,boss_kinh_nguyet_chan_quan')
+        .split(',')
+        .filter(Boolean);
+      await gm(pg, 'labreset', 1800);
+      await gm(pg, 'god on', 900);
+      await gm(pg, 'lockhp on', 900);
+      await gm(pg, 'freeze off', 900);
+      const out: unknown[] = [];
+      for (const id of ids) {
+        await gm(pg, 'spawn clear', 1100);
+        await gm(pg, `spawn ${id} 1`, 3200);
+        const aim = await aimNearest(pg);
+        if (!aim) {
+          console.log(`  ${id}: không gọi được`);
+          continue;
+        }
+        await pg.evaluate(`(() => { const w = window.__xuong.ws; w.setSubject('target'); w.start(); w.resetStats(); })()`);
+        // Chạy ra xa cho quái đuổi (clip chạy), rồi đứng yên cho nó áp sát và đánh (chuyển chạy → đánh → đứng).
+        for (const key of ['KeyW', 'KeyS']) {
+          await pg.keyboard.down(key);
+          await sleep(2200);
+          await pg.keyboard.up(key);
+          await sleep(2600);
+        }
+        const sn = await animSnap(pg);
+        const bones = sn.feet.length
+          ? []
+          : ((await pg.evaluate(`(() => { const g = window.__game, m = g.ents.monsters.get(g.targetId), p = m && m.model.labAnim && m.model.labAnim(); const o = []; if (p) p.rig.traverse((b) => { if (b.isBone) o.push(b.name); }); return o; })()`)) as string[]);
+        const worst = sn.blends.reduce<(typeof sn.blends)[number] | null>((w, b) => (!w || b.spin > w.spin ? b : w), null);
+        const hard = sn.blends.filter((b) => b.pop >= 0.5);
+        console.log(`\n  ${id}: ${sn.ok ? `${sn.clips.length} clip (${sn.clips.map((c) => c.name).join(', ')}), chân: ${sn.feet.map((x) => x.bone).join(' ') || 'KHÔNG THẤY'}` : 'không có cổng soi (model khối hoặc chưa nạp)'}`);
+        for (const s of sn.slide.filter((x) => x.time >= 0.5))
+          console.log(`    trượt ${s.key.padEnd(14)} ${s.time.toFixed(1)} s · đi ${s.travel.toFixed(1)} m · ${s.cmPerM === null ? '—' : s.cmPerM.toFixed(1)} cm/m · ${s.cmPerS.toFixed(0)} cm/s lúc trụ`);
+        console.log(`    chuyển clip: ${sn.blends.length} lần, ${hard.length} lần đổi cứng${hard.length ? ' (' + [...new Set(hard.map((b) => b.from + '→' + b.to))].join(', ') + ')' : ''}; xoay nhanh nhất ${worst ? `${worst.spin}°/s ở ${worst.bone} (${worst.from}→${worst.to}, ${worst.ms} ms)` : '—'}`);
+        if (bones.length) console.log(`    xương (${bones.length}): ${bones.slice(0, 50).join(', ')}`);
+        out.push({ id, ok: sn.ok, clips: sn.clips, feet: sn.feet.map((x) => x.bone), slide: sn.slide, blends: sn.blends, bones });
+      }
+      await pg.evaluate(`(() => { const w = window.__xuong.ws; w.stop(); w.setSubject('me'); })()`);
+      await gm(pg, 'spawn clear', 1100);
+      report.mons = out;
+      save();
+    }
+
+    if (want('bossfade')) {
+      const ids = opt('--bosses', 'boss_thu_mo_tuong,boss_kiem_khoi,boss_huyet_lang_vuong,boss_kinh_nguyet_chan_quan')
+        .split(',')
+        .filter(Boolean);
+      await gm(pg, 'labreset', 1800);
+      await gm(pg, 'god on', 900);
+      await gm(pg, 'lockhp on', 900);
+      await pg.evaluate(`(async () => { window.__xuong.sk = await import('/src/game/character/skinned.ts'); })()`);
+      const base = (await pg.evaluate(`window.__xuong.sk.SKIN_TUNE.moveFade`)) as number;
+      const acc = new Map<number, { spin: number[]; pop: number[]; ms: number[] }>();
+      const rowsOut: unknown[] = [];
+      console.log(`\n  Thử thời gian mờ vào của đòn lớn boss (đang dùng ${base} s):`);
+      for (const id of ids) {
+        await gm(pg, 'spawn clear', 1100);
+        await gm(pg, `spawn ${id} 1`, 3200);
+        const aim = await aimNearest(pg);
+        if (!aim) continue;
+        await tp(pg, aim.x, aim.z - 5);
+        await sleep(600);
+        await aimNearest(pg);
+        await pg.evaluate(`(() => { const w = window.__xuong.ws; w.setSubject('target'); w.start(); })()`);
+        for (const fade of [0.07, 0.14, 0.2]) {
+          await pg.evaluate(`(() => { window.__xuong.sk.SKIN_TUNE.moveFade = ${fade}; window.__xuong.ws.resetStats(); })()`);
+          for (const kind of ['slam', 'sweep', 'slam', 'sweep']) {
+            await gm(pg, 'cast ' + kind, 1100);
+            await sleep(2600);
+          }
+          const sn = await animSnap(pg);
+          const mv = sn.blends.filter((b) => b.to === 'slam' || b.to === 'sweep');
+          const a = acc.get(fade) ?? { spin: [], pop: [], ms: [] };
+          acc.set(fade, a);
+          for (const b of mv) {
+            a.spin.push(b.spin);
+            a.pop.push(b.pop);
+            a.ms.push(b.ms);
+          }
+          rowsOut.push({ id, fade, moves: mv });
+          console.log(`    ${id} mờ vào ${fade.toFixed(2)} s: ${mv.length} lần vào đòn · ${mv.map((b) => `${b.from}→${b.to} ${b.spin}°/s ${b.bone ?? ''} (${b.ms} ms, nhảy ${b.pop})`).join(' | ') || 'không ghi được lần nào'}`);
+        }
+      }
+      const med = (xs: number[]) => {
+        const s2 = [...xs].sort((p, q) => p - q);
+        return s2.length ? s2[s2.length >> 1]! : 0;
+      };
+      for (const [fade, a] of acc) console.log(`  TỔNG mờ vào ${fade.toFixed(2)} s: ${a.spin.length} lần · xoay khớp trung vị ${med(a.spin)}°/s, lớn nhất ${Math.max(0, ...a.spin)} · bước nhảy trọng số trung vị ${med(a.pop)} · lên trong ${med(a.ms)} ms`);
+      await pg.evaluate(`(() => { window.__xuong.sk.SKIN_TUNE.moveFade = ${base}; const w = window.__xuong.ws; w.stop(); w.setSubject('me'); })()`);
+      await gm(pg, 'cast off', 1100);
+      await gm(pg, 'spawn clear', 1100);
+      report.bossfade = rowsOut;
       save();
     }
 

@@ -69,6 +69,13 @@ const _footL = new THREE.Vector3();
 const FADE_BASE = 0.22;
 /** Vào đòn một lần (tấn công, trúng đòn) nhanh để thấy ngay. */
 const FADE_IN_SHOT = 0.07;
+/**
+ * Thời gian (giây) đòn LỚN của boss (`bossMove`: slam, sweep) mờ vào. Xưởng animation của phòng thử đổi được trong phiên để so (không lưu).
+ * Đo 28/11 (`pnpm shots xuong --only bossfade`, 4 boss, 9 lần vào đòn mỗi mức): 0,07 s → khớp xoay nhanh nhất 5951°/s (đang niệm chuyển sang đập),
+ * bước nhảy trọng số 0,24 mỗi lần cập nhật xương; 0,14 s → 2514°/s và 0,12; 0,20 s → 2155°/s và 0,11. Boss ở tầm camera chỉ cập nhật xương 30 Hz
+ * nên 0,07 s chỉ là hai bước. Chọn 0,14: đòn lớn có nhịp báo trước dài, và thời điểm chạm không đổi (chỉ trộn, không dời đồng hồ clip).
+ */
+export const SKIN_TUNE = { moveFade: 0.14 };
 /** Về lại nền trước khi clip một lần hết. */
 const FADE_OUT_SHOT = 0.16;
 const FADE_DEATH = 0.12;
@@ -1074,7 +1081,7 @@ export class SkinnedCharacter implements CharacterView {
     act.clampWhenFinished = true;
     act.timeScale = rate;
     act.reset();
-    this.fadeTo(act, FADE_IN_SHOT);
+    this.fadeTo(act, SKIN_TUNE.moveFade);
     // Trạng thái 'attack': trúng đòn không cắt ngang động tác (xem onHit).
     this.shot = { state: 'attack', action: act, left: act.getClip().duration / rate, move: true };
   }
