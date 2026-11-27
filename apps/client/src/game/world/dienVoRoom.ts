@@ -18,7 +18,7 @@ const PPM = 32;
 const SEG = 24;
 const LIFT = 0.05;
 const BASE = '#232a34';
-const TILE = '#2b333f';
+const TILE = '#343f4e';
 const LINE = '#d6e8ff';
 
 /** Tọa độ thế giới → điểm ảnh trên canvas (x tăng sang phải, z tăng xuống dưới). */

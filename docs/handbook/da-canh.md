@@ -64,10 +64,12 @@ Chưa có: nội dung riêng cho bục nhân vật, buồng ánh sáng và tư�
 
 - ~~Quái bị vỡ thế hay lộ yếu điểm không khác quái thường~~ **ĐÃ SỬA (27/11).** Không phải do viền mảnh: viền mực CHƯA BAO GIỜ hiện trên skin quái. Ba lỗi chồng nhau ở `inkHull.ts`: (1) skin quái gắn xương kiểu `detached` còn vỏ tạo kiểu mặc định nên bị vẽ lệch khỏi khung; (2) vỏ của mô hình tạm không được nhả khi skin nạp xong; (3) vỏ của thể đã gỡ khỏi cảnh không trả chỗ nên trần 10 thể đầy dần. Sửa cả ba, bề dày trạng thái ×3,2–3,6 (≈ 0,1 m, 3 px ở 720p). Bộ ảnh chuẩn ghi cả danh sách vỏ đang hiện của từng cảnh (`rows[].ink`) để lỗi này không lọt lại.
 - ~~Cảnh boss ở Dạ Họa không ngả đỏ~~ **ĐÃ SỬA (27/11).** Thêm lớp nhuộm khung theo loại trận ở hậu kỳ (`postParams.moodW/moodTint`, `daMoodTint`): đỏ sẫm mạnh dần ra xa tâm trận, giữa khung và điểm ảnh sáng giữ màu thật; tinh anh nửa mức boss. Chỉ bật khi nền là Họa Cảnh (Dạ Cảnh thuần đã có sương đỏ).
-- Đạo cụ ở Dạ Họa gần như đen đặc (thiếu ánh viền và ánh bù), và tỉ lệ các món lệch nhau nhiều khi đặt cạnh nhau.
-- Ô lát sàn gần như không thấy.
-- Trụ đá hố boss to quá cỡ (cao hơn cả khung hình); tinh anh của cảnh `tinh_anh` đứng sát mép trên khung.
-- Viền lộ yếu điểm (vàng) dày tới mức gần che thân sói nhỏ: cân lại bề dày theo cỡ thân.
+- ~~Đạo cụ ở Dạ Họa gần như đen đặc~~ **ĐÃ SỬA (27/11).** `paintedProp` khi có lớp Dạ Cảnh: ánh bù ×`DA_PROP_LIFT` (1,5) lên hai tông + ánh viền lam lạnh theo góc nhìn (`DA_PROP_RIM`). Áp cho MỌI đạo cụ/kiến trúc đi qua `paintedProp` ở Dạ Họa, nên các bản đồ cũng sáng lên theo: phải soát lại từng bản đồ khi đem ra.
+- ~~Tỉ lệ đạo cụ, trụ đá quá cỡ~~ **ĐÃ SỬA:** hành lang đưa mỗi món về 2–2,5 m theo chiều cao chuẩn trong `meta.json`; trụ hố boss 3,6 m.
+- ~~Ô lát sàn không thấy~~ **ĐÃ SỬA** (tăng tương phản ô, vẫn rất nhẹ).
+- ~~Viền trạng thái nuốt thân sói nhỏ~~ **ĐÃ SỬA:** bề dày có trần 7% bán kính bao của thân (`inkWidthOf`).
+- ~~Tinh anh sát mép trên khung~~ **ĐÃ SỬA:** vòng xếp quái lệch nửa bước, không con nào đứng thẳng hướng bắc.
+- Còn lại: hào quang cảnh giới (mây lam quanh nhân vật cấp cao) bị bút Kuwahara làm nhòe thành vệt; cảnh bầy 12 sói chỉ 9 con có viền (trần 10 thể).
 
 ## Lộ trình
 

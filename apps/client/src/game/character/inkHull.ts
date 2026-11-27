@@ -12,6 +12,14 @@ export const INK_WIDTH = 0.03;
 export const INK_COLOR = 0x05040a;
 /** Bậc LOD của lưới dùng làm vỏ (1 = lưới gộp ít tam giác của v3); thể không có bậc này thì dùng bậc 0. */
 export const INK_LOD = 1;
+/** Trần bề dày viền theo cỡ thân: không quá ngần này lần bán kính bao (thân sói nhỏ không bị viền trạng thái nuốt mất). */
+export const INK_MAX_OF_BODY = 0.07;
+
+/** Bề dày viền (m thế giới) của thân có bán kính bao `radWorld` ở hệ số trạng thái `mul`. Hàm thuần. */
+export function inkWidthOf(mul: number, radWorld: number): number {
+  const w = INK_WIDTH * mul;
+  return radWorld > 0 ? Math.min(w, Math.max(INK_WIDTH, radWorld * INK_MAX_OF_BODY)) : w;
+}
 
 /** Màu và hệ số bề dày viền theo trạng thái quái: lộ yếu điểm = vàng (hue > 45°, không cam), vỡ thế = lam nhạt, boss đổi pha = đỏ thẫm dày. */
 export const INK_STATE = {
@@ -38,6 +46,8 @@ interface Hull {
   bodies: THREE.SkinnedMesh[];
   /** Hệ số bề dày của trạng thái đang đặt (`INK_STATE[..].mul`); bề dày cục bộ tính lại mỗi khung ở `sync`. */
   mul: number;
+  /** Bán kính bao của lưới nguồn (đơn vị cục bộ): trần bề dày viền theo cỡ thân. */
+  rad: number;
 }
 
 const _m = new THREE.Matrix4();
@@ -118,7 +128,8 @@ export class InkHulls {
     g.castShadow = false;
     g.receiveShadow = false;
     src.parent.add(g);
-    this.hulls.set(root, { mesh: g, src, bodies, mul: 1 });
+    if (!src.geometry.boundingSphere) src.geometry.computeBoundingSphere();
+    this.hulls.set(root, { mesh: g, src, bodies, mul: 1, rad: src.geometry.boundingSphere?.radius ?? 0 });
     this.style(root, 'normal');
     return true;
   }
@@ -131,7 +142,8 @@ export class InkHulls {
     h.mul = st.mul;
     const ink = h.mesh.userData.ink as { w: number; color: number };
     // Bề dày tính theo mét thế giới: chia cho tỉ lệ thế giới thật của đỉnh để ra đơn vị cục bộ (tính lại mỗi khung ở `sync`, khi xương đã cập nhật).
-    ink.w = (INK_WIDTH * st.mul) / skinnedWorldScale(h.src);
+    const sc = skinnedWorldScale(h.src);
+    ink.w = inkWidthOf(st.mul, h.rad * sc) / sc;
     ink.color = st.color;
   }
 
@@ -144,7 +156,10 @@ export class InkHulls {
         continue;
       }
       h.mesh.visible = this.enabled && h.src.parent !== null && h.bodies.some((b) => b.visible);
-      if (h.mesh.visible) (h.mesh.userData.ink as { w: number }).w = (INK_WIDTH * h.mul) / skinnedWorldScale(h.src);
+      if (h.mesh.visible) {
+        const sc = skinnedWorldScale(h.src);
+        (h.mesh.userData.ink as { w: number }).w = inkWidthOf(h.mul, h.rad * sc) / sc;
+      }
     }
   }
 
