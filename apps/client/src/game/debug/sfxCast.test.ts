@@ -48,6 +48,17 @@ describe('castRows (lệch tiếng so với khung trúng của từng lần ra c
     expect(castSummary(rows)[0]!.bad).toBe(0);
   });
 
+  it('tin sát thương có id chiêu (/gm dps): bỏ độc và đòn của chiêu khác, chỉ quy đúng chiêu', () => {
+    const rows = castRows(
+      [mark('windup', 0, 'skl_x'), mark('dmg', 120, '(dot)'), mark('dmg', 150, 'skl_khac'), mark('hit', 200, 'skl_x'), mark('dmg', 210, 'skl_x')],
+      [snd('hit', 120), snd('hit', 211)],
+    );
+    expect(rows[0]).toMatchObject({ dmgMs: 10, verdict: 'ok' });
+    // Không có id nào thì giữ cách cũ: tin đầu tiên trong cửa sổ.
+    const plain = castRows([mark('windup', 0, 'skl_x'), mark('dmg', 120, ''), mark('hit', 200, 'skl_x')], [snd('hit', 200)]);
+    expect(plain[0]!.dmgMs).toBe(-80);
+  });
+
   it('chuỗi đòn thường: tiếng của đòn sau không tính cho đòn trước', () => {
     const rows = castRows(
       [mark('windup', 0, 'basic', 0), mark('hit', 180, 'basic', 0), mark('dmg', 185, ''), mark('windup', 420, 'basic', 1), mark('hit', 600, 'basic', 1), mark('dmg', 700, '')],

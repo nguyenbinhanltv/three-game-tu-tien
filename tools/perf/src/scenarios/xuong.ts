@@ -155,6 +155,8 @@ export default {
         await gm(pg, `build ${method} 30`, 1600);
         await gm(pg, 'lockhp on', 900);
         await gm(pg, 'charge', 900);
+        // Đồng hồ sát thương bật thì tin S.DMG mang id chiêu (`sk`): bảng lệch quy đúng sát thương về chiêu, không lẫn độc/trận/thú triệu hồi.
+        await gm(pg, 'dps start', 900);
         let aim = await aimNearest(pg);
         if (!aim) {
           console.log(`  ${p.id}: không có quái trong cảnh, bỏ qua`);
@@ -166,7 +168,9 @@ export default {
         aim = await aimNearest(pg);
         const bar = await pg.evaluate(() => window.__game!.bar().map((s) => s.id));
         const rows: CastRow[] = [];
+        const onlySkills = opt('--skills', '').split(',').filter(Boolean);
         for (let slot = 0; slot < bar.length; slot++) {
+          if (onlySkills.length && !onlySkills.includes(bar[slot]!)) continue;
           await clearLogs(pg);
           await pg.evaluate((i) => window.__game!.useSkill(i), slot);
           // Ô 1 là đòn thường: để tự đánh chạy hết chuỗi ba đòn (vài vòng) rồi mới dừng.

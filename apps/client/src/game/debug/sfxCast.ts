@@ -8,7 +8,7 @@ export interface CastMark {
   kind: CastMarkKind;
   /** `performance.now()` lúc mốc xảy ra. */
   at: number;
-  /** Id chiêu (mốc `dmg` để rỗng: tin sát thương không mang id chiêu). */
+  /** Id chiêu. Mốc `dmg`: rỗng khi tin sát thương không mang id chiêu; có id (hoặc '(dot)') khi đang bật `/gm dps`. */
   skill: string;
   /** Đòn thứ mấy của chuỗi đánh thường, -1 nếu không phải chuỗi. */
   combo: number;
@@ -42,7 +42,8 @@ export function castMark(kind: CastMarkKind, skill: string, combo = -1, index = 
 export const CAST_TOL_MS = 60;
 /**
  * Sát thương về muộn hơn khung trúng quá ngần này (ms) thì không phải lệch mạng mà là chiêu có sát thương TỚI SAU theo thiết kế (triệu hồi, trận,
- * độc, đạn bay xa). Lưu ý: tin sát thương không mang id chiêu, nên khi đang có nguồn sát thương kéo dài thì cột này của chiêu ra sau bị lẫn.
+ * độc, đạn bay xa). Lưu ý: tin sát thương thường không mang id chiêu, nên khi đang có nguồn sát thương kéo dài thì cột này của chiêu ra sau
+ * bị lẫn; bật `/gm dps` trước khi đo thì tin có id chiêu và bảng quy đúng.
  */
 export const CAST_DELAYED_MS = 300;
 /** Một lần ra chiêu gom tiếng và sát thương tối đa chừng này ms sau lúc vào thế (hoặc tới lần vào thế kế tiếp). */
@@ -94,7 +95,10 @@ export function castRows(marks: readonly CastMark[], sfx: readonly CastSfx[]): C
     const inWin = (t: number) => t >= w.at && t < end;
     const hit = marks.find((m) => m.kind === 'hit' && m.index === 0 && m.skill === w.skill && inWin(m.at));
     const ref = hit?.at ?? w.at;
-    const dmg = marks.find((m) => m.kind === 'dmg' && inWin(m.at));
+    // Tin sát thương có id chiêu (đang bật `/gm dps`): chỉ nhận tin của ĐÚNG chiêu này, bỏ sát thương theo thời gian và đòn của chiêu khác.
+    // Không có id (chơi thường): nhận tin đầu tiên trong cửa sổ, có thể lẫn khi đang có trận/độc/thú triệu hồi.
+    const tagged = marks.some((m) => m.kind === 'dmg' && m.skill !== '' && inWin(m.at));
+    const dmg = marks.find((m) => m.kind === 'dmg' && inWin(m.at) && (!tagged || m.skill === w.skill));
     // Tiếng vung được gọi ngay lúc vào thế (cùng khung, có thể sớm hơn mốc vài phần ms) nên nới đầu cửa sổ 5 ms.
     const mine = heard.filter((s) => s.at >= w.at - 5 && s.at < end);
     const sounds = mine.map((s) => ({ name: s.name, offMs: Math.round(audible(s) - ref) }));

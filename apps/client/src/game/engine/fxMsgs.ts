@@ -1066,7 +1066,8 @@ function markHurt(eng: Game, m: DmgMsg): void {
 export function onDmg(eng: Game, m: DmgMsg): void {
   if (eng.disposed) return;
   markHurt(eng, m);
-  if (m.src === eng.sid && !m.heal) castMark('dmg', '');
+  // `sk` chỉ có khi mình bật `/gm dps`: id chiêu gây sát thương ('(dot)' cho sát thương theo thời gian), để bảng lệch quy đúng chiêu.
+  if (m.src === eng.sid && !m.heal) castMark('dmg', m.sk ?? '');
   // Đòn của một người chơi đang vung (đã vào thế, chưa tới `hitAt`): chờ khung `hit` của hoạt ảnh để tiếng, khựng, rung
   // rơi đúng lúc ra đòn (K-7). Quá hạn mà không có `hit` thì `frame` xả.
   if (m.src && eng.swinging.active(m.src, performance.now()) && !m.heal) {
