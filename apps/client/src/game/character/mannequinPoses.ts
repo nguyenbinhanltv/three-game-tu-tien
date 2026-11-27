@@ -82,6 +82,18 @@ export interface MqPose {
   lower: THREE.AnimationClip;
 }
 
+/** Mọi bank còn sống (tham chiếu yếu), cho nạp lại pose tức thì ở bản dev. */
+const BANKS = new Set<WeakRef<MannequinPoseBank>>();
+
+/** Nạp lại pose tức thì (chỉ bản dev): quên clip đã retarget của pose `id` ở mọi model Mannequin; lần ra đòn kế retarget lại. */
+export function forgetMannequinPose(id: string): void {
+  for (const ref of BANKS) {
+    const b = ref.deref();
+    if (!b) BANKS.delete(ref);
+    else b.forget(id);
+  }
+}
+
 export class MannequinPoseBank {
   private cache = new Map<string, MqPose | null>();
   private base = new Map<string, THREE.AnimationClip | null>();
@@ -90,7 +102,15 @@ export class MannequinPoseBank {
     private target: THREE.Object3D,
     /** Clip nền UAL (`Idle_Loop`) của template, để khớp độ dài xương chi (xem `matchLimbLengths`); có thể chưa có. */
     private limbRef: () => THREE.AnimationClip | undefined = () => undefined,
-  ) {}
+  ) {
+    BANKS.add(new WeakRef(this));
+  }
+
+  /** Quên clip đã retarget của pose `id` (dữ liệu pose vừa đổi, xem `forgetMannequinPose`). */
+  forget(id: string): void {
+    this.cache.delete(id);
+    this.base.delete(poseClipName(id));
+  }
 
   has(id: string): boolean {
     return this.src.lib.has(id);

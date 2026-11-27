@@ -13,6 +13,8 @@ import type { IncomingMessage, ServerResponse } from 'node:http';
 import type { Plugin, ViteDevServer } from 'vite';
 
 const HOT_RE = /^packages\/content\/data\/(fx\/[^/]+|lab\/scenes|i18n\/vi(\.ui)?)\.json$/;
+/** Pose: chỉ pose CHIÊU (có `hit`) nạp nóng được; pose nền đã nối vào bảng clip lúc dựng nhân vật nên để Vite tải lại trang. */
+const POSE_RE = /^packages\/content\/data\/poses\/[^/]+\.json$/;
 const LAYOUT = 'packages/shared/src/props.dienvo.layout.json';
 const MAX_BODY = 64 * 1024;
 
@@ -91,10 +93,13 @@ export function dtlHotData(repoRoot: string): Plugin {
     },
     async handleHotUpdate({ file, server, read }) {
       const rel = path.relative(repoRoot, file).replaceAll('\\', '/');
-      if (rel !== LAYOUT && !HOT_RE.test(rel)) return;
+      const pose = POSE_RE.test(rel);
+      if (rel !== LAYOUT && !pose && !HOT_RE.test(rel)) return;
       let data: { path: string; json?: unknown; error?: string };
       try {
-        data = { path: rel, json: JSON.parse(await read()) };
+        const json: unknown = JSON.parse(await read());
+        if (pose && !(json as { hit?: unknown[] } | null)?.hit?.length) return;
+        data = { path: rel, json };
       } catch (e) {
         // File đang ghi dở hoặc JSON hỏng: báo cho trang, giữ dữ liệu cũ, KHÔNG tải lại trang.
         data = { path: rel, error: String(e) };

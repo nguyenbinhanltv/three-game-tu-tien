@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { DIEN_VO_LAYOUT, dienVoSpawnAt } from '@dtl/shared';
-import { FX_TIMELINE, LAB_SCENES, t } from './index';
+import { FX_TIMELINE, LAB_SCENES, POSE, t } from './index';
 import { applyHotData, HOT_LAYOUT_PATH, hotKind } from './hot';
 
 const clone = <T>(v: T): T => JSON.parse(JSON.stringify(v)) as T;
@@ -9,10 +9,11 @@ describe('nạp lại dữ liệu tức thì (@dtl/content/hot)', () => {
   it('chỉ nhận đúng các loại file đã khai', () => {
     expect(hotKind('packages/content/data/fx/fx_blink.json')).toBe('fx');
     expect(hotKind('packages/content/data/lab/scenes.json')).toBe('lab');
+    expect(hotKind('packages/content/data/poses/kiem_thu.json')).toBe('pose');
     expect(hotKind('packages/content/data/i18n/vi.ui.json')).toBe('i18n');
     expect(hotKind(HOT_LAYOUT_PATH)).toBe('layout');
     // Dữ liệu luật chơi và phần thưởng KHÔNG nạp lại tức thì.
-    for (const f of ['poses/kiem_thu.json', 'loot.json', 'skills.json', 'monsters.json', 'items.json', 'levels/van_lam.json', 'fx/../loot.json', 'fx/a/b.json'])
+    for (const f of ['loot.json', 'skills.json', 'monsters.json', 'items.json', 'levels/van_lam.json', 'fx/../loot.json', 'fx/a/b.json'])
       expect(hotKind('packages/content/data/' + f), f).toBeNull();
     expect(hotKind('apps/server/src/config.ts')).toBeNull();
     expect(applyHotData('packages/content/data/loot.json', {}).ok).toBe(false);
@@ -55,6 +56,25 @@ describe('nạp lại dữ liệu tức thì (@dtl/content/hot)', () => {
       applyHotData('packages/content/data/lab/scenes.json', s0);
     }
     expect(clone(LAB_SCENES)).toEqual(s0);
+  });
+
+  it('pose: vá tại chỗ; pose sai luật hoặc chưa khai báo thì giữ bản cũ', () => {
+    const rel = 'packages/content/data/poses/kiem_khi_tram.json';
+    const pose = POSE.get('kiem_khi_tram')!;
+    const p0 = clone(pose) as { duration: number; hit?: number[] };
+    try {
+      expect(applyHotData(rel, { ...p0, hit: [0.3, 0.44] })).toMatchObject({ ok: true, kind: 'pose', id: 'kiem_khi_tram' });
+      expect(POSE.get('kiem_khi_tram')).toBe(pose);
+      expect((pose as { hit?: number[] }).hit).toEqual([0.3, 0.44]);
+      // Khung trúng nằm ngoài thời lượng: validatePose từ chối, dữ liệu đang chạy không đổi.
+      expect(applyHotData(rel, { ...p0, hit: [99] }).ok).toBe(false);
+      expect((pose as { hit?: number[] }).hit).toEqual([0.3, 0.44]);
+      expect(applyHotData(rel, { ...p0, id: 'chua_khai_bao' }).ok).toBe(false);
+      expect(applyHotData(rel, { id: 'kiem_khi_tram' }).ok).toBe(false);
+    } finally {
+      applyHotData(rel, p0);
+    }
+    expect(clone(pose)).toEqual(p0);
   });
 
   it('i18n và bố cục phòng', () => {

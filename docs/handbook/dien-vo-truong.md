@@ -106,22 +106,23 @@ Sửa rồi lưu một file "nóng" thì phòng nhận ngay, **không tải lạ
 | File | Client | Server dev |
 | --- | --- | --- |
 | `packages/content/data/fx/*.json` (timeline đã khai báo) | vá tại chỗ; đang ở phòng tập thì tự phát lại hiệu ứng vừa sửa | vá (server không dùng) |
+| `packages/content/data/poses/*.json` có `hit` (pose CHIÊU) | vá tại chỗ, quên clip đã nướng (`forgetPoseBake`, `forgetMannequinPose`); đòn kế dùng bản mới | vá (server không dùng) |
 | `packages/content/data/lab/scenes.json` | danh sách cảnh của tab Diễn Võ đổi ngay | `/gm scene` dùng bản mới |
 | `packages/content/data/i18n/vi.json`, `vi.ui.json` | chuỗi đổi ở lần vẽ kế của giao diện | chuỗi tin hệ thống đổi |
 | `packages/shared/src/props.dienvo.layout.json` (bố cục phòng) | dựng lại đạo cụ, quầng đèn, đèn điểm | điểm gọi quái đổi |
 
 - Đường đi: plugin Vite `apps/client/dtlHotData.ts` chặn việc tải lại trang cho các file trên và gửi nội dung mới qua sự kiện HMR `dtl:data`; `apps/client/src/game/editor/hotData.ts` nhận và gọi `applyHotData` (`packages/content/src/hot.ts`, đường import `@dtl/content/hot`). Server: `apps/server/src/devReload.ts` theo dõi cùng các file bằng `fs.watch` và gọi cùng hàm.
 - Cách vá: giữ nguyên danh tính đối tượng/mảng đã xuất (`FX_TIMELINE.get(id)`, `LAB_SCENES`, `DIEN_VO_PROPS`) và thay nội dung bên trong. JSON hỏng (đang ghi dở) hoặc sai luật thì giữ bản cũ và báo trong nhật ký của bảng Chỉnh phòng.
-- **Chưa nóng** (vẫn như trước): pose (`data/poses`, client nướng thành clip lúc nạp nên trang tự tải lại), timeline/chuỗi có **id mới** (phải khai báo import rồi tải lại), và mọi dữ liệu luật chơi hay phần thưởng (`skills.json`, `monsters.json`, `items.json`, `loot.json`, level…): client tải lại trang, server phải khởi động lại tay. Cố ý: không có đường nào đổi luật chơi của server đang chạy.
+- **Chưa nóng** (vẫn như trước): pose NỀN (không có `hit`: đứng, bay, niệm chú… đã nối vào bảng clip lúc dựng nhân vật nên trang tự tải lại), timeline/chuỗi có **id mới** (phải khai báo import rồi tải lại), và mọi dữ liệu luật chơi hay phần thưởng (`skills.json`, `monsters.json`, `items.json`, `loot.json`, level…): client tải lại trang, server phải khởi động lại tay. Cố ý: không có đường nào đổi luật chơi của server đang chạy.
 - `tsx watch` của server khởi động lại mỗi khi một file JSON nó nạp đổi, nên trước V3 sửa một timeline fx là rớt khỏi phòng ("Mất kết nối"). Script `dev` của `apps/server/package.json` nay loại các file nóng khỏi việc theo dõi (`--exclude`); `devReload` vá chúng tại chỗ. File dữ liệu khác vẫn làm server khởi động lại như cũ.
 
-Kiểm: `pnpm --filter @dtl/perf exec tsx src/roomedit.ts --out <thư mục> --query style=dahoa` (`tools/perf/src/scenarios/roomedit.ts`, 17 mục bằng chuột và nút thật: sửa fx không tải lại trang, JSON hỏng giữ bản cũ, kéo thả, lăn chuột xoay, thêm, hoàn tác, lưu, server đặt quái đúng điểm gọi, sửa tay file bố cục). Kịch bản sửa rồi trả lại `fx_blink.json` và file bố cục.
+Kiểm: `pnpm --filter @dtl/perf exec tsx src/roomedit.ts --out <thư mục> --query style=dahoa` (`tools/perf/src/scenarios/roomedit.ts`, 19 mục bằng chuột và nút thật: sửa fx và pose chiêu không tải lại trang, JSON hỏng giữ bản cũ, kéo thả có bản xem trước thật, lăn chuột xoay, thêm, hoàn tác, lưu, server đặt quái đúng điểm gọi, sửa tay file bố cục). Kịch bản sửa rồi trả lại `fx_blink.json`, `poses/kiem_khi_tram.json` và file bố cục.
 
 ### Chế độ chỉnh phòng
 
 Vào phòng (`/gm dvt`), bấm **F4** mở bảng "Chỉnh phòng" → "Bật chỉnh phòng". Mỗi đạo cụ có một vòng tròn trên sàn (lam: đạo cụ, vàng: đèn đá, vạch chỉ mặt trước); điểm gọi quái là vòng nhỏ có số (lục: sàn đấu, tím: hố boss).
 
-- **Kéo** vòng tròn để dời (bám lưới 0,25 m, giữ Alt để bỏ bám). **Lăn chuột**: xoay 15°; **Shift + lăn**: phóng 5%; **Delete**: xóa; **Ctrl+Z**: hoàn tác (50 bước); **Esc**: bỏ chọn. Bảng có nút tương ứng, cùng nút bật tắt va chạm.
+- **Kéo** vòng tròn để dời (bám lưới 0,25 m, giữ Alt để bỏ bám). **Lăn chuột**: xoay 15°; **Shift + lăn**: phóng 5%; **Delete**: xóa; **Ctrl+Z**: hoàn tác (50 bước); **Esc**: bỏ chọn. Bảng có nút tương ứng, cùng nút bật tắt va chạm. Trong lúc kéo, món đồ THẬT chạy theo chuột (dựng ở một lớp riêng chỉ chứa món đó), không chỉ vòng tay nắm.
 - **Thêm**: đạo cụ (chọn id trong danh sách), đèn đá, điểm gọi quái của sàn đấu / hố boss; món mới hiện cách nhân vật 2,5 m về phía trên màn hình.
 - **Đèn** của phòng chính là đạo cụ `prop_den_da`: dời đèn thì quầng sáng và đèn điểm đi theo.
 - **Điểm gọi quái**: quái thứ n của `/gm spawn` hay của cảnh mẫu đứng ở điểm thứ n của khu (`dienVoSpawnAt`); hết điểm thì xếp vòng quanh tâm khu như cũ. Không đặt điểm nào thì phòng y như trước V3.

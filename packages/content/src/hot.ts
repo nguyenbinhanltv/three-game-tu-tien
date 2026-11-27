@@ -4,8 +4,9 @@
 //
 // Cách vá: giữ nguyên DANH TÍNH của đối tượng/mảng đã xuất (`FX_TIMELINE.get(id)`, `LAB_SCENES`…) và thay nội dung bên
 // trong, nên mọi nơi đang giữ tham chiếu đều thấy bản mới ở lần đọc kế tiếp. Mục có id MỚI (file mới) không vá được: cần khai báo import
-// trong `fxRegistry.ts` và tải lại. Pose (`data/poses`) CHƯA nóng: client nướng pose thành AnimationClip lúc nạp nên vẫn tải lại trang.
-import { setDienVoLayout, type FxTimeline, type LabScene } from '@dtl/shared';
+// trong `fxRegistry.ts`/`index.ts` và tải lại. Pose: dữ liệu vá tại chỗ; client còn phải quên clip đã nướng (`forgetPoseBake`), và chỉ pose CHIÊU
+// (có `hit`) mới thấy ngay — pose nền đã nối vào bảng clip lúc dựng nhân vật nên plugin Vite vẫn cho tải lại trang.
+import { setDienVoLayout, validatePose, type FxTimeline, type LabScene, type PoseDef } from '@dtl/shared';
 import {
   CO_FX_TIMELINES,
   FX_TIMELINES,
@@ -14,19 +15,20 @@ import {
   KC_FX_TIMELINES,
   LAB_SCENES,
   MON_FX_TIMELINES,
+  POSES,
   SUY_FX_TIMELINES,
   TRAN_FX_TIMELINES,
   hotStrings,
 } from './index';
 
-export type HotKind = 'fx' | 'lab' | 'i18n' | 'layout';
+export type HotKind = 'fx' | 'pose' | 'lab' | 'i18n' | 'layout';
 
 export interface HotResult {
   ok: boolean;
   kind: HotKind | null;
   /** Đường dẫn tương đối gốc repo của file vừa đổi. */
   path: string;
-  /** id của mục đã vá (timeline) nếu có. */
+  /** id của mục đã vá (timeline, pose) nếu có. */
   id?: string;
   /** Lý do không vá được, hoặc ghi chú (số mục đã đổi). */
   note?: string;
@@ -42,6 +44,7 @@ export function hotKind(rel: string): HotKind | null {
   if (!rel.startsWith(DATA) || !rel.endsWith('.json')) return null;
   const sub = rel.slice(DATA.length);
   if (/^fx\/[^/]+\.json$/.test(sub)) return 'fx';
+  if (/^poses\/[^/]+\.json$/.test(sub)) return 'pose';
   if (sub === 'lab/scenes.json') return 'lab';
   if (sub === 'i18n/vi.json' || sub === 'i18n/vi.ui.json') return 'i18n';
   return null;
@@ -81,6 +84,15 @@ export function applyHotData(rel: string, json: unknown): HotResult {
             n++;
           }
       return n ? res(true, { id: json.skill }) : res(false, { id: json.skill, note: 'timeline mới: khai báo trong fxRegistry.ts rồi tải lại' });
+    }
+    case 'pose': {
+      if (!isObj(json) || typeof json.id !== 'string' || !Array.isArray(json.keys)) return res(false, { note: 'thiếu id/keys' });
+      const cur = (POSES as { id: string }[]).find((p) => p.id === json.id);
+      if (!cur) return res(false, { id: json.id, note: 'pose mới: khai báo trong index.ts rồi tải lại' });
+      const errs = validatePose(json as unknown as PoseDef);
+      if (errs.length) return res(false, { id: json.id, note: errs.slice(0, 2).join('; ') });
+      replaceIn(cur, json);
+      return res(true, { id: json.id });
     }
     case 'lab': {
       if (!Array.isArray(json) || json.some((s) => !isObj(s) || typeof s.id !== 'string' || !Array.isArray(s.mons)))

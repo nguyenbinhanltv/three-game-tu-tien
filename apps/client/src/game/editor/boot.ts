@@ -1,8 +1,11 @@
 // Điểm vào của bộ công cụ chỉnh phòng tập (Diễn Võ Trường V3). CHỈ nạp ở bản dev (`main.tsx` nạp động sau `import.meta.env.DEV`),
 // nên bản build không có mã này. Việc ở đây: bật nhận dữ liệu nóng, nối dữ liệu nóng với phòng (phát lại hiệu ứng vừa sửa, dựng lại
 // đạo cụ khi file bố cục đổi), giữ một `RoomEditor` cho Game đang chạy, và mở bảng Chỉnh phòng bằng F4.
+import { POSE } from '@dtl/content';
 import { PRACTICE_LEVEL } from '@dtl/shared';
 import { levelId } from '../../base/levelCtx';
+import { forgetMannequinPose } from '../character/mannequinPoses';
+import { forgetPoseBake } from '../character/poseLib';
 import type { Game } from '../engine';
 import { hotEntries, installHotData, onHotData } from './hotData';
 import { forgetProps } from '../world/propScatter';
@@ -40,6 +43,11 @@ export function bootLabEditor(): void {
     if (!e.ok) return;
     // Bố cục đổi lúc đang ở bản đồ khác: chỉ cần quên danh sách đã nhớ, lần vào phòng kế sẽ dựng theo file mới.
     if (e.kind === 'layout') forgetProps(PRACTICE_LEVEL);
+    if (e.kind === 'pose' && e.id) {
+      const def = POSE.get(e.id);
+      if (def) forgetPoseBake(def);
+      forgetMannequinPose(e.id);
+    }
     const g = game();
     if (!g || g.disposed || levelId() !== PRACTICE_LEVEL) return;
     if (e.kind === 'layout') roomEditor()?.onFileChanged();

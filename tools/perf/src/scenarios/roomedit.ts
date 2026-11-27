@@ -1,6 +1,6 @@
 // Diễn Võ Trường V3: kiểm NẠP LẠI DỮ LIỆU TỨC THÌ và CHẾ ĐỘ CHỈNH PHÒNG bằng chuột và nút thật.
 //   pnpm --filter @dtl/perf exec tsx src/roomedit.ts --out <thư mục> [--query style=dahoa]
-// Kịch bản SỬA rồi TRẢ LẠI nguyên văn hai file trong repo (`data/fx/fx_blink.json`, `props.dienvo.layout.json`); dừng giữa chừng thì
+// Kịch bản SỬA rồi TRẢ LẠI nguyên văn ba file trong repo (`data/fx/fx_blink.json`, `data/poses/kiem_khi_tram.json`, `props.dienvo.layout.json`); dừng giữa chừng thì
 // kiểm `git status` hai file đó. Giữ khóa trình duyệt khi chạy.
 import fs from 'node:fs';
 import path from 'node:path';
@@ -15,6 +15,7 @@ import { snap, writeJson } from '../lib/shot';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../..');
 const FX = path.join(ROOT, 'packages/content/data/fx/fx_blink.json');
 const LAYOUT = path.join(ROOT, 'packages/shared/src/props.dienvo.layout.json');
+const POSE = path.join(ROOT, 'packages/content/data/poses/kiem_khi_tram.json');
 
 interface Layout {
   props: { id: string; x: number; z: number; yaw: number; s: number; r?: number }[];
@@ -33,6 +34,7 @@ interface Ed {
   layout(): Layout;
   select(s: unknown): void;
   moveSel(x: number, z: number): boolean;
+  ghostInfo(): { dx: number; dz: number; ready: number } | null;
 }
 interface HotEntry {
   ok: boolean;
@@ -83,6 +85,7 @@ export default {
   async run(r) {
     const fx0 = fs.readFileSync(FX, 'utf8');
     const layout0 = fs.readFileSync(LAYOUT, 'utf8');
+    const pose0 = fs.readFileSync(POSE, 'utf8');
     const checks: { name: string; ok: boolean; note?: string }[] = [];
     const check = (name: string, ok: boolean, note?: string) => {
       checks.push({ name, ok, note });
@@ -122,6 +125,15 @@ export default {
       const n0 = (await hot(pg)).length;
       await waitFor('fx trả lại', async () => (await hot(pg)).length > n0 && (await hot(pg))[0]!.ok);
 
+      // Pose chiêu (có `hit`): vá tại chỗ, client quên clip đã nướng, server không khởi động lại (các bước sau vẫn gửi được lệnh GM).
+      const pose = JSON.parse(pose0) as { hit: number[] };
+      fs.writeFileSync(POSE, JSON.stringify({ ...pose, hit: [pose.hit[0]! + 0.02, ...pose.hit.slice(1)] }, null, 2));
+      const gotPose = await waitFor('pose nóng', async () => (await hot(pg)).some((e) => e.kind === 'pose' && e.id === 'kiem_khi_tram' && e.ok));
+      check('sửa pose chiêu kiem_khi_tram.json: vá tại chỗ, không tải lại trang', gotPose && (await alive()), JSON.stringify((await hot(pg))[0] ?? null));
+      const n9 = (await hot(pg)).length;
+      fs.writeFileSync(POSE, pose0);
+      await waitFor('pose trả lại', async () => (await hot(pg)).length > n9);
+
       // ---- 2. Chế độ chỉnh phòng ----
       await pg.keyboard.press('F4');
       await pg.waitForSelector('.lab-edit-float [data-act="toggle"]', { timeout: 8000 });
@@ -145,12 +157,23 @@ export default {
       await pg.mouse.down();
       await pg.mouse.move((a.x + b.x) / 2, (a.y + b.y) / 2, { steps: 4 });
       await pg.mouse.move(b.x, b.y, { steps: 4 });
+      // Đang giữ chuột: đạo cụ THẬT (lớp xem trước) phải chạy theo, không chỉ vòng tay nắm.
+      await waitFor('bản xem trước nạp', async () => ((await ed(pg, (e) => e.ghostInfo()))?.ready ?? 0) > 0, 5000);
+      const gh = await ed(pg, (e) => e.ghostInfo());
+      // Bản xem trước phải nằm ĐÚNG chỗ đạo cụ đang kéo trong bản làm việc (phép chiếu chuột → sàn của kịch bản chỉ gần đúng, nên so với bố cục).
+      const mid = (await ed(pg, (e) => e.layout())).props[idx]!;
+      check(
+        'đang kéo: bản xem trước thật chạy theo chuột',
+        !!gh && gh.ready > 0 && Math.abs(gh.dx - (mid.x - from.x)) < 0.01 && Math.abs(gh.dz - (mid.z - from.z)) < 0.01 && Math.abs(gh.dx) > 2,
+        JSON.stringify(gh),
+      );
+      await snap(pg, r.out, 'edit-2a-dang-keo.png');
       await pg.mouse.up();
       await sleep(900);
       const moved = (await ed(pg, (e) => e.layout())).props[idx];
       check(
         'kéo thả đạo cụ bằng chuột (bám lưới 0,25 m)',
-        !!moved && Math.abs(moved.x - to.x) <= 0.26 && Math.abs(moved.z - to.z) <= 0.26,
+        !!moved && Math.abs(moved.x - to.x) <= 0.6 && Math.abs(moved.z - to.z) <= 0.6 && moved.x % 0.25 === 0 && moved.z % 0.25 === 0,
         JSON.stringify(moved),
       );
       const st1 = await ed(pg, (e) => e.state());
@@ -225,6 +248,7 @@ export default {
       // Luôn trả nguyên văn hai file của repo.
       if (fs.readFileSync(FX, 'utf8') !== fx0) fs.writeFileSync(FX, fx0);
       if (fs.readFileSync(LAYOUT, 'utf8') !== layout0) fs.writeFileSync(LAYOUT, layout0);
+      if (fs.readFileSync(POSE, 'utf8') !== pose0) fs.writeFileSync(POSE, pose0);
       writeJson(r.out, 'roomedit.json', { checks, pass: checks.filter((c) => c.ok).length, total: checks.length });
       console.log(`[roomedit] ${checks.filter((c) => c.ok).length}/${checks.length} mục đạt`);
       if (checks.some((c) => !c.ok)) process.exitCode = 1;

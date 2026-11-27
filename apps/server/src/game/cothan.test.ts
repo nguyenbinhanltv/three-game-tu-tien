@@ -217,16 +217,24 @@ describe('thang sao', () => {
 
 describe('chiêu và Cổ huyết', () => {
   it('chiêu đòi sao bị chặn khi chưa đủ sao, dùng được khi đủ', () => {
+    const { join, fresh, use } = setup();
+    const p = join(CT, 32, 0);
+    fresh(p);
+    // Hóa Hình cần Nhất Tinh.
+    use(p, 'skl_hoa_hinh');
+    expect(p.mth.stance?.id).not.toBe('skl_hoa_hinh');
+    const q = join(CT, 32, 1);
+    fresh(q);
+    use(q, 'skl_hoa_hinh');
+    expect(q.mth.stance?.id).toBe('skl_hoa_hinh');
+  });
+  it('Tinh Bạo (nhánh Huyết Trận, mốc 16) không đòi sao: dùng được ngay từ cấp 16', () => {
     const { join, mon, fresh, use } = setup();
     const m = mon();
-    const p = join(CT, 32, 0);
+    const p = join(CT, 16, 0);
     fresh(p);
     const hp = m.s.hp;
     use(p, 'skl_tinh_bao', m.id);
-    expect(m.s.hp).toBe(hp);
-    const q = join(CT, 32, 3);
-    fresh(q);
-    use(q, 'skl_tinh_bao', m.id);
     expect(m.s.hp).toBeLessThan(hp);
   });
   it('Thái Cổ Quyền tích 8 Cổ huyết mỗi nhát; chịu đòn cũng tích, không vượt 100', () => {

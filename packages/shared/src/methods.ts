@@ -62,6 +62,16 @@ export interface MethodDef {
   resource: ResourceDef;
   /** Nhánh công pháp (VS-2d): mỗi mốc 16/20/24/28 chọn một. Luật ở `branch.ts`. */
   branches: BranchDef[];
+  /**
+   * Cân bằng cấp cao (28/11): từ cảnh giới `level` trở lên, đòn đánh trực tiếp lên quái nhân `dmgMul` (< 1 = giảm).
+   * Dùng cho hướng công vượt xa trung vị ở chặng sau (đo bằng `fight:check --dps`); chặng đầu không đổi.
+   */
+  late?: { level: number; dmgMul: number };
+}
+
+/** Hệ số sát thương cấp cao của công pháp ở cảnh giới `level` (1 khi không khai hoặc chưa tới mốc). */
+export function methodLateMul(def: Pick<MethodDef, 'late'> | undefined, level: number): number {
+  return def?.late && level >= def.late.level ? def.late.dmgMul : 1;
 }
 
 /**
