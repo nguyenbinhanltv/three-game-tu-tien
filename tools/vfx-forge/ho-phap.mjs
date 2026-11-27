@@ -147,12 +147,12 @@ const SPEC = {
   skl_tran_son_an: () => [
     ...[gather('hp_seal', { size: 3.2, off: [0, 4.2, 0] })],
     pullIn('target', [0, 3.6, 0], -0.26),
-    strike('hp_seal', { size: 5, off: [0, 3.6, 0], dur: 0.5, erodeFrom: 0.3, move: { to: 'target', offset: [0, 1.4, 0], ease: 'in' } }),
+    strike('hp_seal', { size: 5, off: [0, 6.2, 0], dur: 0.3, erodeFrom: 0.2, move: { to: 'target', offset: [0, 4.4, 0], ease: 'in' } }),
     zoneEdge('target', 12),
-    strike('hp_fieldcracks', { size: 11, off: [0, 0.4, 0], t: 0.06, dur: 1.2, erodeFrom: 0.4 }),
-    flash('target', [0, 1.2, 0], 2.4, 0.04, { dur: 0.14 }),
+    strike('hp_fieldcracks', { size: 11, off: [0, 0.4, 0], t: 0.06, dur: 1.0, alpha: 0.25, erodeFrom: 0.2 }),
+    flash('target', [0, 2.0, 0], 2.0, 0.04, { dur: 0.12 }),
     scorch('target', [0, 0.02, 0], 3.4, 0.03, 2),
-    after('target', [0, 1.3, 0], 3.6, 0.2, 1.3),
+    after('target', [0, 3.6, 0], 3.6, 0.2, 1.3),
     sparks('target', [0, 1.2, 0], 12, 0.02),
   ],
   // Kim Cương Bất Hoại (chiêu cuối): vỏ tinh thể vàng nhiều mặt nhọn bao quanh thân như hốc geode, ánh sáng xuyên mặt, mảnh vỡ rơi.
