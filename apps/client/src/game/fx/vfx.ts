@@ -1303,6 +1303,35 @@ export const STACK_AGE = 0.7;
 export const STACK_PX = 22;
 /** Lớp số được gom: số thường, và số thường khắc chế (gom riêng với nhau, giữ chữ báo). */
 const MERGEABLE = new Set(['hit', 'hit ke']);
+/** Đời một số (giây), quãng bay lên trong cả đời (px) và số hàng tối đa của một mục tiêu. */
+export const DMG_LIFE = 0.95;
+export const DMG_RISE = 60;
+/** Chiều cao chiếm chỗ của một số theo lớp CSS (px): chí mạng và đòn nặng chữ to hơn số thường. */
+export function dmgHeight(cls: string): number {
+  return cls.includes('crit') ? 34 : cls.includes('hv') ? 28 : STACK_PX;
+}
+
+/** Số hàng mỗi làn và các làn ngang (đơn vị `DMG_LANE_PX`, làn giữa trước rồi tỏa dần sang hai bên). */
+export const DMG_LANE_ROWS = 4;
+export const DMG_LANE_PX = 78;
+export const DMG_LANES = [0, 1, -1, 2, -2] as const;
+
+/**
+ * Chọn chỗ (làn ngang, hàng dọc) cho một số mới trên cùng mục tiêu: làn GẦN GIỮA nhất và hàng THẤP nhất mà ở thời điểm này không số đang bay nào
+ * cùng làn (tuổi `t`, hàng `row`, cao `h`) nằm chồng lên. Số ở hàng r, tuổi t nằm cao hơn gốc `r * STACK_PX + (t / DMG_LIFE) * DMG_RISE` px;
+ * mọi số bay cùng tốc độ nên đã không chồng lúc sinh thì không bao giờ chồng. Một cột dọc không đủ chỗ khi bắn dày (số bay lên ~63 px/giây,
+ * 12 số/giây cần ~275 px/giây), nên hết hàng thì tràn sang làn bên. (Trước 27/11: hàng = SỐ LƯỢNG số đang bay, bắn dày thì mọi số mới rơi vào cùng một hàng.)
+ */
+export function pickDmgSlot(live: readonly { row: number; lane: number; t: number; h: number }[], h: number): { row: number; lane: number } {
+  for (const lane of DMG_LANES) {
+    const same = live.filter((o) => o.lane === lane);
+    for (let r = 0; r < DMG_LANE_ROWS; r++) {
+      const y = r * STACK_PX;
+      if (same.every((o) => Math.abs(o.row * STACK_PX + (o.t / DMG_LIFE) * DMG_RISE - y) >= (o.h + h) / 2)) return { row: r, lane };
+    }
+  }
+  return { row: DMG_LANE_ROWS - 1, lane: 0 };
+}
 
 export class DamageNumbers {
   items: {
@@ -1315,6 +1344,7 @@ export class DamageNumbers {
     sum?: number;
     cls?: string;
     row?: number;
+    lane?: number;
   }[] = [];
   pool: HTMLDivElement[] = [];
   constructor(private layer: HTMLElement) {}
@@ -1338,15 +1368,22 @@ export class DamageNumbers {
     el.className = 'dmg ' + cls;
     el.textContent = text;
     this.layer.appendChild(el);
-    const row = key ? this.items.filter((o) => o.key === key && o.t < STACK_AGE).length : 0;
-    this.items.push({ el, pos: pos.clone(), t: 0, dx: (Math.random() - 0.5) * 40, lift: null, key, sum: merge ? n : undefined, cls, row });
+    const slot = key
+      ? pickDmgSlot(
+          this.items.filter((o) => o.key === key).map((o) => ({ row: o.row ?? 0, lane: o.lane ?? 0, t: o.t, h: dmgHeight(o.cls ?? '') })),
+          dmgHeight(cls),
+        )
+      : { row: 0, lane: 0 };
+    const row = slot.row;
+    // Lệch ngang ngẫu nhiên nhỏ hơn khi đã chia làn (±12 px), để hai làn kề nhau không trôi vào nhau.
+    this.items.push({ el, pos: pos.clone(), t: 0, dx: (Math.random() - 0.5) * 24, lift: null, key, sum: merge ? n : undefined, cls, row, lane: slot.lane });
   }
 
   update(dt: number, camera: THREE.Camera, w: number, h: number, avoid: readonly Box[] = []): void {
     for (let i = this.items.length - 1; i >= 0; i--) {
       const it = this.items[i]!;
       it.t += dt;
-      const k = it.t / 0.95;
+      const k = it.t / DMG_LIFE;
       if (k >= 1) {
         it.el.remove();
         this.pool.push(it.el);
@@ -1358,7 +1395,7 @@ export class DamageNumbers {
         it.el.style.opacity = '0';
         continue;
       }
-      const x = (_a.x * 0.5 + 0.5) * w + it.dx * k;
+      const x = (_a.x * 0.5 + 0.5) * w + it.dx * k + (it.lane ?? 0) * DMG_LANE_PX;
       const y0 = (-_a.y * 0.5 + 0.5) * h;
       // Số mới sinh nằm trong hộp tên thì nhấc lên trên hộp đó một lần (không nhảy lúc đang bay).
       if (it.lift === null) {
@@ -1367,7 +1404,7 @@ export class DamageNumbers {
           if (Math.abs(x - b.x) < b.hw + 26 && Math.abs(y0 - b.y) < b.hh + 14) it.lift = Math.max(it.lift, y0 - (b.y - b.hh - 16));
         }
       }
-      const y = y0 - it.lift - k * 60 - (it.row ?? 0) * STACK_PX;
+      const y = y0 - it.lift - k * DMG_RISE - (it.row ?? 0) * STACK_PX;
       it.el.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px) translate(-50%, -50%) scale(${(1.25 - k * 0.3).toFixed(2)})`;
       it.el.style.opacity = String(k < 0.6 ? 1 : 1 - (k - 0.6) / 0.4);
     }
