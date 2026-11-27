@@ -228,6 +228,10 @@ export const themeU = {
   groundFlat: uniform(0),
   nightFlat: uniform(0),
   nightTint: uniform(new THREE.Vector3(0.3, 0.46, 0.88)),
+  /** Phòng thử (khu Phong cách): hệ số nhân độ sáng đêm Họa Cảnh; 1 = như level quy định. Không phải giá trị của level, không đổi khi đổi level. */
+  nightGain: uniform(1),
+  /** Phòng thử: hệ số nhân sương thấp (`mistK`); 1 = như level quy định. */
+  mistGain: uniform(1),
   groundMix: uniform(1),
   groundSat: uniform(1),
   dryMix: uniform(0),
