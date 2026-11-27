@@ -3,7 +3,7 @@
 // Có `--base <thư mục bộ trước>` thì so từng cảnh bằng SSIM/ΔE (tools/painted-compare/compare.mjs) và dựng trang trước/sau `index.html`.
 //   pnpm shots dienvo --out <thư mục> [--view 720p|1080p] [--query style=dahoa] [--base <thư mục>] [--ssim 0.9] [--only id1,id2]
 //                     [--quality high|medium|low] [--renderer webgl2] [--diag 1] [--layersoff 2,3] [--fx id1,id2] [--panel 1]
-//                     [--ping 150] [--swings 1 --window 4000]
+//                     [--ping 150] [--swings 1 --window 4000] [--crowd 8,20,50]
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -13,6 +13,7 @@ import { cam, gm, perfSample, skipCutscene, waitLevel } from '../lib/game';
 import type { Scenario } from '../lib/scenario';
 import sharp from 'sharp';
 import { sleep } from '../lib/devserver';
+import { Bots } from '../lib/bots';
 import { snap, writeJson } from '../lib/shot';
 
 interface Row {
@@ -136,6 +137,41 @@ export default {
         const s = (window as unknown as { __fxLayerOff?: Set<number> }).__fxLayerOff;
         ix.forEach((i) => s?.add(i));
       }, layersOff);
+    // `--crowd 8,20,50`: đo đám đông — client và N bot vào CHUNG một phòng tập bằng `/gm dvt <khóa>`; bot đi lại quanh võ đài. Mỗi mức in số người thấy,
+    // draw call, ms/khung và chụp một ảnh. Không chụp các cảnh mẫu.
+    const crowd = opt('--crowd', '')
+      .split(',')
+      .filter(Boolean)
+      .map(Number);
+    if (crowd.length) {
+      const out: unknown[] = [];
+      for (const n of crowd) {
+        const key = 'crowd' + n;
+        await gm(pg, 'dvt ' + key);
+        await waitLevel(pg, 'dien_vo');
+        const bots = new Bots(r.port);
+        try {
+          const joined = await bots.start(n, 'dv' + n + 'b', ['--gm', 'dvt ' + key, '--crowd', '1300,985,7']);
+          const others = () => pg.evaluate(() => (window.__game as unknown as { room: { state: { players: { size: number } } } }).room.state.players.size);
+          const until = Date.now() + 60_000;
+          while (Date.now() < until && (await others()) < n + 1) await sleep(500);
+          await sleep(4000);
+          const seen = await others();
+          const perf = await perfSample(pg);
+          const file = `${view}/crowd-${n}.png`;
+          await snap(pg, r.out, file, { wait: 300 });
+          console.log(`  đám đông ${n}: ${joined} bot vào game, client thấy ${seen} người trong phòng; ${JSON.stringify(perf)}`);
+          out.push({ bots: n, joined, seen, perf, file });
+        } finally {
+          await bots.stop();
+        }
+        await gm(pg, 'dvt');
+        await waitLevel(pg, 'van_lam');
+        await sleep(1500);
+      }
+      writeJson(r.out, `dienvo-crowd-${view}.json`, { view, query, crowd: out });
+      return;
+    }
     await gm(pg, 'dvt');
     await waitLevel(pg, 'dien_vo');
     // `--ping N`: bật ping giả N ms (khứ hồi) cho cả lượt chụp; `--swings 1`: cảnh đang đánh chỉ ĐẾM số đòn thường ra trong `--window` ms (mặc định 4000)
@@ -260,6 +296,46 @@ export default {
           await pg.evaluate(() => void (window.__game!.timeScale = 0));
           await pg.evaluate(() => new Promise<void>((res) => requestAnimationFrame(() => requestAnimationFrame(() => res()))));
           await snap(pg, r.out, `${view}/fx/${id}+${ms}ms.png`, { wait: 0 });
+          if (opt('--diag', '') && ms === 150) {
+            // Các lô lưới hiệu ứng đang vẽ ở mốc +150 ms: tên lô, số instance, và vị trí + cỡ của từng instance (so với mục tiêu). Để biết một lớp có được
+            // DỰNG không, nằm ở đâu và to bao nhiêu, khi trên ảnh không thấy gì.
+            const dump = await pg.evaluate(`(() => {
+              var g = window.__game, V = g.camera.position.constructor, c = new V(), out = [];
+              g.ents.chestOf(g.targetId, c);
+              g.vfx.group.traverse(function (o) {
+                if (!o.isMesh || !o.visible) return;
+                var row = { n: o.name || '?', inst: o.isInstancedMesh ? o.count : -1, items: [] };
+                if (o.isInstancedMesh && o.count > 0 && o.instanceMatrix) {
+                  var e = o.instanceMatrix.array;
+                  for (var i = 0; i < Math.min(o.count, 30); i++) {
+                    var k = i * 16;
+                    var sx = Math.hypot(e[k], e[k + 1], e[k + 2]), sy = Math.hypot(e[k + 4], e[k + 5], e[k + 6]), sz = Math.hypot(e[k + 8], e[k + 9], e[k + 10]);
+                    row.items.push([+(e[k + 12] - c.x).toFixed(1), +(e[k + 13] - c.y).toFixed(1), +(e[k + 14] - c.z).toFixed(1), +sx.toFixed(2), +sy.toFixed(2), +sz.toFixed(2)]);
+                  }
+                }
+                if (o.isInstancedMesh && o.count > 1) {
+                  // Thuộc tính theo instance của lô (độ đục, tiến độ quét/tan, màu): 2 instance đầu.
+                  row.attrs = {};
+                  var at = o.geometry.attributes;
+                  Object.keys(at).forEach(function (k) {
+                    var A = at[k];
+                    if (!A.isInstancedBufferAttribute) return;
+                    row.attrs[k] = Array.prototype.slice.call(A.array, 0, A.itemSize * 2).map(function (v) { return +(+v).toFixed(3); });
+                  });
+                  row.mat = { type: o.material.type, transparent: o.material.transparent, depthTest: o.material.depthTest, side: o.material.side, vis: o.material.visible, ro: o.renderOrder, layers: o.layers.mask };
+                  row.pos = [+o.position.x.toFixed(1), +o.position.y.toFixed(1), +o.position.z.toFixed(1)];
+                  var mw = o.matrixWorld.elements;
+                  row.world = [+mw[12].toFixed(1), +mw[13].toFixed(1), +mw[14].toFixed(1)];
+                  row.auto = [o.matrixAutoUpdate, o.matrixWorldAutoUpdate, o.frustumCulled];
+                  row.geoVerts = o.geometry.attributes.position.count;
+                  row.bs = o.boundingSphere ? [+o.boundingSphere.center.x.toFixed(1), +o.boundingSphere.center.y.toFixed(1), +o.boundingSphere.center.z.toFixed(1), +o.boundingSphere.radius.toFixed(1)] : null;
+                }
+                if (row.inst !== 0) out.push(row);
+              });
+              return out;
+            })()`);
+            console.log('[fxdiag] ' + id + ' ' + JSON.stringify(dump));
+          }
           await pg.evaluate(() => void (window.__game!.timeScale = 1));
         }
         await sleep(1500);

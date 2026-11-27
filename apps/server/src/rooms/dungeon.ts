@@ -16,6 +16,9 @@ import { tickets } from '../transfer';
 import { practiceBegin, practiceEnd, practiceOrigin } from '../game/practice';
 import { GameRoom, today, type JoinAuth } from './base';
 
+/** Số người tối đa của một phòng tập chung. */
+export const PRACTICE_MAX_CLIENTS = 60;
+
 export class DungeonRoom extends GameRoom {
   static levelId: string = 'kiem_trung';
   protected wave = 0;
@@ -41,7 +44,8 @@ export class DungeonRoom extends GameRoom {
 
   override onCreate(options: unknown): void {
     super.onCreate(options);
-    this.maxClients = 5;
+    // Phòng tập chung (`/gm dvt <khóa>`) chứa được cả đám bot đo đám đông; phó bản thường tối đa một tổ đội.
+    this.maxClients = this.def.practice ? PRACTICE_MAX_CLIENTS : 5;
     this.nextWaveAt = Date.now() + (this.def.waves[0]?.delay ?? 8) * 1000;
     this.clock.setInterval(() => this.director(), 500);
     this.clock.setInterval(() => this.seals?.tick(), 250);
