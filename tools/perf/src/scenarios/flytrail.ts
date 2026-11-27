@@ -1,5 +1,5 @@
 // V-P10 đợt 3b: vệt phi kiếm hai tông (lõi mực + thân lam ngọc cộng sáng). Bay ngang ở sân tông môn Lạc Kiếm Tông (nền đá sáng) giữ phím tiến, chụp liên tiếp
-// ở 1080p và 720p, ngày hoặc đêm; `--noink` = bản cũ (`?trailink=0`) để so trước/sau. Camera chéo khóa góc mặc định của game.
+// ở 1080p và 720p, ngày hoặc đêm. Camera chéo khóa góc mặc định của game.
 import { flag, opt } from '../lib/env';
 import { sleep } from '../lib/devserver';
 import { gm } from '../lib/game';
@@ -9,7 +9,7 @@ import { snap } from '../lib/shot';
 export default {
   name: 'flytrail',
   desc: 'Vệt phi kiếm khi ngự kiếm bay ngang sân tông môn (ngày/đêm, 1080p + 720p, trước/sau lớp mực)',
-  usage: '--out <thư mục> [--mood night] [--noink] [--other] [--frames 4]',
+  usage: '--out <thư mục> [--mood night] [--other] [--frames 4]',
   async run(r) {
     const mood = opt('--mood', '');
     const { ctx, page } = await r.open({
@@ -17,7 +17,7 @@ export default {
       viewport: [1920, 1080],
       seenIntro: true,
       look: { g: 'm' },
-      query: { realm: 'nk12', god: 1, chr: 'v3', quiet: 1, ...(mood ? { mood } : {}), ...(flag('--noink') ? { trailink: 0 } : {}) },
+      query: { realm: 'nk12', god: 1, chr: 'v3', quiet: 1, ...(mood ? { mood } : {}) },
       hide: 'hud',
     });
     await page.waitForFunction(() => !!window.__game, undefined, { timeout: 120_000 });

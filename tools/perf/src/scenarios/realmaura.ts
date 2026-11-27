@@ -111,7 +111,7 @@ export default {
   name: 'realmaura',
   desc: 'Hào quang cảnh giới trên nhân vật: 4 cảnh giới × 3 đạo (1080p + 720p), dãy khung pháp tướng, video, đo hiệu năng trước/sau',
   usage:
-    '[--daos kiem,ho,dan] [--realms kd,na,hn,ab] [--fxq high] [--mood day|night] [--mode off|min|std|full] [--run] [--video] [--body: hào quang kiểu cũ quanh người] [--perf] [--budget] [--cmp] [--settings] [--others N] [--only stills|phantom]',
+    '[--daos kiem,ho,dan] [--realms kd,na,hn,ab] [--fxq high] [--mood day|night] [--mode off|min|std|full] [--run] [--video] [--perf] [--budget] [--cmp] [--settings] [--others N] [--only stills|phantom]',
   async run(r) {
     const daos = list('--daos', 'kiem,ho,dan');
     const realms = list('--realms', 'kd,na,hn,ab');
@@ -123,7 +123,7 @@ export default {
     const mood = opt('--mood', '');
     /** Chế độ Hào quang khi chụp (mặc định Chuẩn, như người chơi); `--mode full` để so bản cũ. */
     const mode = opt('--mode', 'std');
-    const query = { fxq, ...(mood ? { mood } : {}), ...(flag('--off') ? { aura: 0 } : {}), ...(flag('--body') ? { auraground: 0 } : {}) };
+    const query = { fxq, ...(mood ? { mood } : {}), ...(flag('--off') ? { aura: 0 } : {}) };
 
     if (flag('--party5')) {
       await party5(r, realms, quality, fxq, mode);
@@ -293,7 +293,7 @@ async function party5(r: Parameters<Scenario['run']>[0], realms: string[], quali
       viewport: [1920, 1080],
       dpr: 1,
       quality,
-      query: { fxq, ...(opt('--mood', '') ? { mood: opt('--mood', '') } : {}), ...(flag('--body') ? { auraground: 0 } : {}) },
+      query: { fxq, ...(opt('--mood', '') ? { mood: opt('--mood', '') } : {}) },
       hide: 'hud',
       warnings: /models/,
     });

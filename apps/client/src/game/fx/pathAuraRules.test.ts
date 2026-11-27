@@ -39,13 +39,12 @@ describe('hào quang riêng của Đao tu / Cổ tu / Cấm chế sư', () => {
     ])
       expect(pathAuraOf(mt), String(mt)).toBeNull();
   });
-  it('lớp hướng thay hào quang cảnh giới (không vẽ chồng hai hệ); cờ ?pathaura=0 trả về như cũ; hướng khác không đổi', () => {
+  it('lớp hướng thay hào quang cảnh giới (không vẽ chồng hai hệ); hướng khác không đổi', () => {
     for (const mt of [DAO, CO, CAM]) {
-      expect(realmSuppressed(mt, true), mt).toBe(true);
-      expect(realmSuppressed(mt, false), mt).toBe(false);
+      expect(realmSuppressed(mt), mt).toBe(true);
     }
-    expect(realmSuppressed('lac_kiem_quyet', true)).toBe(false);
-    expect(realmSuppressed(undefined, true)).toBe(false);
+    expect(realmSuppressed('lac_kiem_quyet')).toBe(false);
+    expect(realmSuppressed(undefined)).toBe(false);
   });
   it('màu lấy từ bảng màu hướng tu trong paths.json', () => {
     for (const [mt, id] of [

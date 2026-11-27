@@ -58,7 +58,6 @@ import envreal from './scenarios/envreal';
 import tpmove from './scenarios/tpmove';
 import vfxlab from './scenarios/vfxlab';
 import vfxmon from './scenarios/vfxmon';
-import pathaura from './scenarios/pathaura';
 import camche from './scenarios/camche';
 import rigstretch from './scenarios/rigstretch';
 import neck from './scenarios/neck';
@@ -135,7 +134,6 @@ const SCENARIOS: Scenario[] = [
   tpmove,
   vfxlab,
   vfxmon,
-  pathaura,
   camche,
   cothan,
   cothanvfx,

@@ -5,7 +5,6 @@ import { groundAt } from '../../base/levelCtx';
 import { shapeGeometry } from './fxShapes';
 import { spriteCell, useSpriteGroup } from './art';
 import { FX_PALETTE } from './palette';
-import { FLAGS } from '../../base/flags';
 import { vnoise, type FxUniforms } from './common';
 import type { Particles } from './particles';
 import type { FxKind, FxMesh } from '../materials/vfx';
@@ -530,12 +529,10 @@ export class Trails {
       r.reset(x, y, z);
       r.mesh = this.src.fx(r.geo, C_SWORD, 0, 'trail');
       r.mesh.fxA.z = Math.random() * 40;
-      if (FLAGS.trailInk) {
-        r.ink = this.src.fx(r.geo, C_INK, 0, 'trailInk');
-        r.ink.fxA.z = r.mesh.fxA.z;
-        // Mực vẽ TRƯỚC lớp sáng (lõi trắng cộng sáng nằm trên mực).
-        r.ink.renderOrder = r.mesh.renderOrder - 1;
-      }
+      r.ink = this.src.fx(r.geo, C_INK, 0, 'trailInk');
+      r.ink.fxA.z = r.mesh.fxA.z;
+      // Mực vẽ TRƯỚC lớp sáng (lõi trắng cộng sáng nằm trên mực).
+      r.ink.renderOrder = r.mesh.renderOrder - 1;
     }
     r.mine = mine;
     r.fast += (fast - r.fast) * Math.min(1, dt * 4);
