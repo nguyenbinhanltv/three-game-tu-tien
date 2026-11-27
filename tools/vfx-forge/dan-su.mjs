@@ -376,7 +376,6 @@ const SPEC = {
     // Hào quang quanh mình (27/11): lò đan treo cao sau lưng, dòng đan dịch và sen thu nhỏ; bật ĐẦY 0,16 s rồi bóng mờ.
     strike('dan_cauldron_big', { size: 3.4, at: 'self', off: [0, 4.2, -1.7], dur: 0.16, erodeFrom: 0.6 }),
     { ...sprite('dan_cauldron_big', { t: 0.13, dur: 1.47, at: 'self', off: [0, 4.2, -1.7], size: 3.4, erodeFrom: 0.5 }), alpha: 0.45 },
-    sprite('dan_smoke_bud', { t: 0.0, dur: 1.3, at: 'self', off: [0, 5.2, -1.7], size: 3, alpha: 0.35, erodeFrom: 0.4 }),
     sprite('dan_pour', { t: 0.04, dur: 1.1, at: 'self', off: [0, 2.4, -1.7], size: 3, alpha: 0.85, erodeFrom: 0.45 }),
     strike('dan_lotus_big', { size: 2.8, t: 0.1, at: 'self', off: [0, 0.8, -1.7], dur: 0.16, erodeFrom: 0.6, alpha: 0.8 }),
     { ...sprite('dan_lotus_big', { t: 0.26, dur: 1.34, at: 'self', off: [0, 0.8, -1.7], size: 2.8, erodeFrom: 0.55 }), alpha: 0.45 },
@@ -386,20 +385,22 @@ const SPEC = {
   ],
   // Thiên Đan Pháp Giới (chiêu cuối): vườn đan dược 14 m: viên đan khổng lồ bóng ngọc lơ lửng xoay quanh, linh thảo mọc quanh mép vùng, sương vàng nhạt; ngọn lửa thuốc vàng chanh trên đỉnh.
   skl_thien_dan_phap_gioi: () => [
-    gather('dan_herb_ring', { size: 8, off: [0, 0.6, 0], rest: { at: 'self' } }),
-    pullIn('self', [0, 1, 0], -0.4),
-    scorch('self', [0, 0.02, 0], 5, -0.3, 2.4),
-    strike('dan_herb_ring', { size: 13, at: 'self', off: [0, 0.4, 0], dur: 2.0, erodeFrom: 0.65 }),
+    gather('dan_herb_ring', { size: 3, off: [0, 1.4, -2.4], rest: { at: 'self' } }),
+    pullIn('self', [0, 1, -1.2], -0.4),
+    scorch('self', [0, 0.02, 0], 4, -0.3, 2.4),
+    // Hào quang quanh mình (27/11): vườn đan thu nhỏ, bật ĐẦY 0,16 s rồi ở lại dạng bóng mờ sau lưng.
+    strike('dan_herb_ring', { size: 4.6, at: 'self', off: [0, 1.8, -2.4], dur: 0.16, erodeFrom: 0.6 }),
+    { ...sprite('dan_herb_ring', { t: 0.13, dur: 1.87, at: 'self', off: [0, 1.8, -2.4], size: 4.6, erodeFrom: 0.65 }), alpha: 0.75 },
     ...[
-      [-4.6, 2.2, -2.6, 0.04],
-      [4.8, 2.6, -1.8, 0.1],
-      [0.4, 2.4, 4.6, 0.16],
-    ].map(([x, y, z, dt]) => sprite('dan_pills3', { t: dt, dur: 1.8, at: 'self', off: [x, y, z], size: 3.4, alpha: 0.85, erodeFrom: 0.6 })),
-    sprite('dan_flame', { t: 0.05, dur: 1.6, at: 'self', off: [0, 4.4, 0], size: 3.2, alpha: 0.85, erodeFrom: 0.5 }),
-    sprite('dan_smoke_bud', { t: 0.0, dur: 1.8, at: 'self', off: [0, 1.6, 0], size: 4.4, alpha: 0.4, erodeFrom: 0.5 }),
-    flash('self', [0, 1.4, 0], 4.2, 0.03, { dur: 0.22 }),
-    after('self', [0, 1.6, 0], 3.8, 0.24, 1.6),
-    leaves('self', [0, 1.2, 0], 16, 0.05, { spread: 5, speed: 0.7, life: 1.4 }),
+      [-2.6, 2.6, -2.8, 0.04],
+      [2.6, 2.8, -2.4, 0.1],
+      [0, 3.2, -3.2, 0.16],
+    ].map(([x, y, z, dt]) => sprite('dan_pills3', { t: dt, dur: 1.8, at: 'self', off: [x, y, z], size: 2.2, alpha: 0.9, erodeFrom: 0.6 })),
+    sprite('dan_flame', { t: 0.05, dur: 1.6, at: 'self', off: [0, 3.6, -2.4], size: 2.4, alpha: 0.95, erodeFrom: 0.5 }),
+    flash('self', [0, 1.4, -0.5], 2.4, 0.03, { dur: 0.22 }),
+    { ...after('self', [0, 1.6, -2.4], 2.2, 0.24, 0.8), alpha: 0.3 },
+    sparks('self', [0, 1.8, -2], 24, 0.05),
+    flash('self', [0, 2.4, -2.4], 3, 0.06, { dur: 0.3 }),
   ],
 };
 
