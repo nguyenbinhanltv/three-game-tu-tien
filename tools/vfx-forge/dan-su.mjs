@@ -308,12 +308,14 @@ const SPEC = {
     sprite('dan_leaf_vortex', { t: -0.2, dur: 0.4, at: 'origin', off: [0, 1.2, 0], size: 3.6, alpha: 0.85, erodeFrom: 0.4 }),
     pullIn('origin', [0, 1, 0], -0.2),
     scorch('origin', [0, 0.02, 0], 1.6, -0.2, 1),
-    strike('dan_lotus_bud', { size: 3.6, at: 'self', off: [0, 1.4, 0], dur: 0.8, erodeFrom: 0.3, alpha: 0.9 }),
-    sprite('dan_leaf_vortex', { t: 0.04, dur: 0.7, at: 'self', off: [0, 1.2, 0], size: 4.6, alpha: 0.8, erodeFrom: 0.3 }),
-    scorch('self', [0, 0.02, 0], 2, 0.02),
-    flash('self', [0, 1.3, 0], 2.6, 0.02),
-    after('self', [0, 1.4, 0], 2.8, 0.2, 1.3),
-    leaves('self', [0, 1.2, 0], 10, 0.04, { speed: 1.8 }),
+    // Hào quang quanh mình (27/11): búp sen bật ĐẦY 0,16 s rồi ở lại dạng bóng mờ sau lưng; xoáy lá thu nhỏ.
+    strike('dan_lotus_bud', { size: 2.5, at: 'self', off: [0, 1.4, -1.7], dur: 0.16, erodeFrom: 0.6, alpha: 0.9 }),
+    { ...sprite('dan_lotus_bud', { t: 0.13, dur: 0.67, at: 'self', off: [0, 1.4, -1.7], size: 2.5, erodeFrom: 0.3 }), alpha: 0.3 },
+    sprite('dan_leaf_vortex', { t: 0.04, dur: 0.7, at: 'self', off: [0, 1.2, -1.7], size: 2.8, alpha: 0.5, erodeFrom: 0.3 }),
+    scorch('self', [0, 0.02, 0], 1.8, 0.02),
+    flash('self', [0, 1.3, -0.5], 1.8, 0.02),
+    { ...after('self', [0, 1.4, -1.7], 1.8, 0.2, 0.8), alpha: 0.3 },
+    leaves('self', [0, 1.2, -0.8], 10, 0.04, { speed: 1.8 }),
   ],
   // Anh Dược Hóa Thân: hạc kết bằng lá thuốc và ánh ngọc bay vút tới đồng đội để lại dải lá và sương, đáp xuống thành sóng ngọc nhẹ rồi tan.
   skl_anh_duoc_hoa_than: () => [

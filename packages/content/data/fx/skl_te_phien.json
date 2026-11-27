@@ -32,12 +32,12 @@
    "sprite": "hon_banner",
    "billboard": true,
    "offset": [
-    0.8,
+    0.6,
     1.6,
-    0
+    -1.8
    ],
-   "scale": 2.16,
-   "scaleTo": 3.11
+   "scale": 1.32,
+   "scaleTo": 1.9
   },
   {
    "type": "particles",
@@ -50,9 +50,9 @@
    "size": 0.07,
    "at": "self",
    "offset": [
-    0.8,
     0.6,
-    0
+    0.6,
+    -0.8
    ],
    "tone": "rim",
    "tier": 1,
@@ -61,10 +61,10 @@
   {
    "type": "mesh",
    "t": 0,
-   "dur": 0.95,
+   "dur": 0.16,
    "at": "self",
    "sweep": 0,
-   "erodeFrom": 0.1,
+   "erodeFrom": 0.6,
    "ragged": 0.5,
    "tone": "body",
    "alpha": 0.92,
@@ -74,12 +74,12 @@
    "sprite": "hon_banner",
    "billboard": true,
    "offset": [
-    0.8,
-    2,
-    0
+    0.6,
+    1.8,
+    -1.8
    ],
-   "scale": 3.46,
-   "scaleTo": 4.32
+   "scale": 2.5,
+   "scaleTo": 3.12
   },
   {
    "type": "mesh",
@@ -97,12 +97,35 @@
    "sprite": "hon_banner",
    "billboard": true,
    "offset": [
-    0.8,
-    2,
-    0
+    0.6,
+    1.8,
+    -1.8
    ],
-   "scale": 4.41,
-   "scaleTo": 4.75
+   "scale": 3.18,
+   "scaleTo": 3.43
+  },
+  {
+   "type": "mesh",
+   "t": 0.13,
+   "dur": 0.82,
+   "at": "self",
+   "sweep": 0,
+   "erodeFrom": 0.1,
+   "ragged": 0.5,
+   "tone": "body",
+   "alpha": 0.3,
+   "tier": 0,
+   "seed": 1003,
+   "shape": "sprite",
+   "sprite": "hon_banner",
+   "billboard": true,
+   "offset": [
+    0.6,
+    1.8,
+    -1.8
+   ],
+   "scale": 3.12,
+   "scaleTo": 3.12
   },
   {
    "type": "mesh",
@@ -115,15 +138,15 @@
    "tone": "shadow",
    "alpha": 0.45,
    "tier": 0,
-   "seed": 1003,
+   "seed": 1004,
    "shape": "flip",
    "flip": "ink_smoke",
    "offset": [
-    0.8,
+    0.6,
     0.3,
-    0
+    -1.4
    ],
-   "scale": 1.6,
+   "scale": 1.2,
    "billboard": true
   },
   {
@@ -135,25 +158,25 @@
    "erodeFrom": 0.25,
    "ragged": 0.5,
    "tone": "body",
-   "alpha": 0.6,
+   "alpha": 0.3,
    "tier": 0,
-   "seed": 1004,
+   "seed": 1005,
    "shape": "sprite",
    "sprite": "hon_wisps",
    "billboard": true,
    "offset": [
     0.4,
     0.9,
-    0.3
+    -1.2
    ],
-   "scale": 2.4,
-   "scaleTo": 2.4,
+   "scale": 1.92,
+   "scaleTo": 1.92,
    "move": {
     "to": "self",
     "offset": [
      0.4,
-     2.3,
-     0.3
+     1.7000000000000002,
+     -1.2
     ],
     "ease": "out"
    }
@@ -169,9 +192,9 @@
    "size": 0.07,
    "at": "self",
    "offset": [
-    0.8,
-    3.4,
-    0
+    0.6,
+    3,
+    -1.8
    ],
    "tone": "rim",
    "tier": 1

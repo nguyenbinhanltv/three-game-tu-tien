@@ -180,16 +180,18 @@ const SPEC = {
   ],
   // Huyết Cự Hộ: bia đá cổ khắc phù văn đứng sau lưng, rễ hóa thạch ôm thân, phù văn hổ phách chạy dọc thân bia.
   skl_huyet_cu_ho: () => [
-    ...[gather('cth_stele', { size: 2.4, off: [0, 1.6, -0.8], rest: { at: 'self' } })],
-    pullIn('self', [0, 1.2, 0], -0.24),
-    shade('self', [0, 0.25, -0.4], 4.4, 0),
-    strike('cth_stele', { size: 4.4, at: 'self', off: [0, 2.2, -0.9], dur: 1.7, erodeFrom: 0.55 }),
-    strike('cth_roots', { size: 3.4, at: 'self', off: [0, 1.2, 0], t: 0.03, dur: 1.7, erodeFrom: 0.55 }),
-    sprite('cth_dust', { t: 0.05, dur: 1, at: 'self', off: [0, 0.8, 0], size: 3.4, alpha: 0.5, erodeFrom: 0.3 }),
-    flash('self', [0, 1.4, 0], 1.4, 0.03, { dur: 0.1 }),
-    scorch('self', [0, -1.05, 0], 3, -0.1, 2.4),
-    scorch('self', [0, -1.05, 0], 2.2, 0, 2.4),
-    after('self', [0, 1.3, 0], 2.6, 0.25, 1.1),
+    ...[gather('cth_stele', { size: 2.0, off: [0, 1.5, -2.2], rest: { at: 'self' } })],
+    pullIn('self', [0, 1.2, -1.2], -0.24),
+    shade('self', [0, 0.25, -1.2], 2.4, 0),
+    // Hào quang quanh mình (27/11): bia đá và rễ bật ĐẦY 0,16 s rồi ở lại dạng bóng mờ sau lưng.
+    strike('cth_stele', { size: 2.6, at: 'self', off: [0, 1.6, -2.2], dur: 0.16, erodeFrom: 0.6 }),
+    { ...sprite('cth_stele', { t: 0.13, dur: 1.57, at: 'self', off: [0, 1.6, -2.2], size: 2.6, erodeFrom: 0.55 }), alpha: 0.3 },
+    strike('cth_roots', { size: 2.2, at: 'self', off: [0, 1.0, -1.6], t: 0.03, dur: 0.16, erodeFrom: 0.6 }),
+    sprite('cth_dust', { t: 0.05, dur: 1, at: 'self', off: [0, 0.8, -2.2], size: 2, alpha: 0.3, erodeFrom: 0.3 }),
+    flash('self', [0, 1.4, -0.5], 1.4, 0.03, { dur: 0.1 }),
+    scorch('self', [0, -1.05, -0.7], 2.4, -0.1, 2.4),
+    scorch('self', [0, -1.05, -0.7], 2, 0, 2.4),
+    { ...after('self', [0, 1.3, -2.2], 1.8, 0.25, 0.8), alpha: 0.3 },
   ],
 };
 
