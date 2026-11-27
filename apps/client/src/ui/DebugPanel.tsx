@@ -1,6 +1,7 @@
-import { Fragment, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import { C, MAX_LEVEL, PF_TRIBULATION } from '@dtl/shared';
 import {
+  FX_TIMELINE,
   ITEMS,
   LAB_SCENES,
   itemName,
@@ -17,6 +18,7 @@ import {
   t,
 } from '@dtl/content';
 import { Game } from '../game/engine';
+import { FX_LAYER_OFF } from '../game/fx/fxTimeline';
 import { Button } from './u2/win';
 import { type DebugPerf, useUI } from './store';
 
@@ -74,6 +76,79 @@ const GM_GROUP_IDS: GmGroup[] = ['lab', 'char', 'skill', 'gear', 'outfit', 'weap
 const LAB_STATES = ['weak', 'break', 'stun', 'chant', 'clear'] as const;
 const LAB_PHASES = [0, 1, 2, 3];
 const LAB_SPEEDS = [100, 50, 25, 10];
+const FX_IDS = [...FX_TIMELINE.keys()].sort();
+/** Số lớp tối đa hiện nút bật tắt (bảng F3 không cuộn được; timeline dài hơn thì soi phần còn lại bằng `pnpm shots dienvo --layersoff`). */
+const FX_LAYER_BTNS = 48;
+
+/**
+ * Xưởng VFX trên tab Diễn Võ: chọn một timeline, phát lên mục tiêu đang chọn (hoặc trước mặt), phát lặp, và bật tắt TỪNG LỚP để biết lớp nào vẽ gì.
+ * Chỉ là lớp hình ở máy mình: không gửi lệnh nào lên server.
+ */
+function FxLab() {
+  const [find, setFind] = useState('');
+  const [fx, setFx] = useState(FX_IDS[0] ?? '');
+  const [loop, setLoop] = useState(false);
+  const [off, setOff] = useState<number[]>([]);
+  const q = find.trim().toLowerCase();
+  const found = q ? FX_IDS.filter((id) => id.includes(q)) : FX_IDS;
+  const cur = found.includes(fx) ? fx : (found[0] ?? '');
+  const events = FX_TIMELINE.get(cur)?.events ?? [];
+  const shown = events.slice(0, FX_LAYER_BTNS);
+  // Tập lớp tắt là trạng thái chung của bộ phát (áp cho mọi timeline phát sau đó): đồng bộ mỗi lần đổi, và trả về "bật hết" khi rời tab.
+  useEffect(() => {
+    FX_LAYER_OFF.clear();
+    for (const i of off) FX_LAYER_OFF.add(i);
+  }, [off]);
+  useEffect(() => () => FX_LAYER_OFF.clear(), []);
+  useEffect(() => {
+    if (!loop || !cur) return;
+    const id = window.setInterval(() => Game.current?.labFx(cur), 1600);
+    return () => window.clearInterval(id);
+  }, [loop, cur]);
+  const pick = (id: string) => {
+    setFx(id);
+    setOff([]);
+  };
+  return (
+    <>
+      <div className="debug-row wrap">
+        <label>
+          <span>{t('ui.gm.lab.fx_find')}</span>
+          <input value={find} onChange={(e) => setFind(e.target.value)} onKeyDown={(e) => e.stopPropagation()} />
+        </label>
+        <Pick label={t('ui.gm.lab.fx')} value={cur} onChange={pick} options={found.slice(0, 200).map((id) => ({ value: id, label: id }))} />
+        <Button size="s" variant="primary" disabled={!cur} onClick={() => Game.current?.labFx(cur)}>
+          {t('ui.gm.lab.fx_play')}
+        </Button>
+        <Button size="s" pressed={loop} disabled={!cur} onClick={() => setLoop(!loop)}>
+          {t('ui.gm.lab.fx_loop')}
+        </Button>
+      </div>
+      {shown.length > 0 && (
+        <div className="debug-row wrap">
+          <span>{t('ui.gm.lab.fx_layers', { on: shown.length - off.filter((i) => i < shown.length).length, n: events.length })}</span>
+          {shown.map((ev, i) => (
+            <Button
+              key={i}
+              size="s"
+              pressed={!off.includes(i)}
+              title={`${i}: ${ev.type}${'shape' in ev && ev.shape ? ' ' + ev.shape : ''}`}
+              onClick={() => setOff(off.includes(i) ? off.filter((x) => x !== i) : [...off, i])}
+            >
+              {String(i)}
+            </Button>
+          ))}
+          <Button size="s" onClick={() => setOff([])}>
+            {t('ui.gm.lab.fx_all')}
+          </Button>
+          <Button size="s" onClick={() => setOff(shown.map((_, i) => i))}>
+            {t('ui.gm.lab.fx_none')}
+          </Button>
+        </div>
+      )}
+    </>
+  );
+}
 const LAB_LEVELS = [10, 16, 20, 24, 28, 30, 36, 44];
 const TIERS = [1, 2, 3, 4];
 const BRANCHES = ['kiem', 'hophap', 'dansu'] as const;
@@ -268,6 +343,7 @@ function Tools() {
               {t('ui.debug.set')}
             </Button>
           </div>
+          <FxLab />
           <div className="debug-row wrap">
             <span>{t('ui.gm.lab.time')}</span>
             {LAB_SPEEDS.map((n) => (

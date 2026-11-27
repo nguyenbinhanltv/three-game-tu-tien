@@ -2,7 +2,7 @@
 // dữ liệu ở packages/content/data/lab/scenes.json), chụp mỗi cảnh một ảnh cùng góc + số đo, rồi ra và kiểm nhân vật về nguyên trạng.
 // Có `--base <thư mục bộ trước>` thì so từng cảnh bằng SSIM/ΔE (tools/painted-compare/compare.mjs) và dựng trang trước/sau `index.html`.
 //   pnpm shots dienvo --out <thư mục> [--view 720p|1080p] [--query style=dahoa] [--base <thư mục>] [--ssim 0.9] [--only id1,id2]
-//                     [--quality high|medium|low] [--renderer webgl2] [--diag 1]
+//                     [--quality high|medium|low] [--renderer webgl2] [--diag 1] [--layersoff 2,3] [--fx id1,id2]
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -137,6 +137,52 @@ export default {
     await gm(pg, 'dvt');
     await waitLevel(pg, 'dien_vo');
     const rows: Row[] = [];
+    // Xưởng VFX: `--fx id1,id2` phát từng timeline lên con sói gần nhất của cảnh `soi_thuong` (đã đóng băng) và chụp ở +30/+150/+400 ms
+    // (dừng lớp hình đúng mốc). Bỏ qua bộ cảnh mẫu.
+    const fxIds = opt('--fx', '')
+      .split(',')
+      .filter(Boolean);
+    if (fxIds.length) {
+      await gm(pg, 'scene soi_thuong', 3500);
+      await pg.evaluate(() => {
+        const g = window.__game!;
+        const me = g.info();
+        let best = '';
+        let bd = 1e9;
+        g.view.monsters.forEach((m, id) => {
+          const d = Math.hypot(m.x - me.x, m.z - me.z);
+          if (m.st !== 4 && d < bd) {
+            bd = d;
+            best = id;
+          }
+        });
+        g.targetId = best;
+      });
+      const fxRows: { id: string; ok: boolean }[] = [];
+      for (const id of fxIds) {
+        const ok = await pg.evaluate((k) => window.__game!.labFx(k), id);
+        fxRows.push({ id, ok });
+        if (!ok) {
+          console.log(`[shots:dienvo] không có timeline ${id}`);
+          continue;
+        }
+        let last = 0;
+        for (const ms of [30, 150, 400]) {
+          await sleep(ms - last);
+          last = ms;
+          await pg.evaluate(() => void (window.__game!.timeScale = 0));
+          await pg.evaluate(() => new Promise<void>((res) => requestAnimationFrame(() => requestAnimationFrame(() => res()))));
+          await snap(pg, r.out, `${view}/fx/${id}+${ms}ms.png`, { wait: 0 });
+          await pg.evaluate(() => void (window.__game!.timeScale = 1));
+        }
+        await sleep(1500);
+      }
+      await gm(pg, 'labreset', 1500);
+      await gm(pg, 'dvt');
+      await waitLevel(pg, 'van_lam');
+      writeJson(r.out, `dienvo-fx-${view}.json`, { view, query, fx: fxRows });
+      return;
+    }
     const dflt = await pg.evaluate(() => ({ pitch: window.__game!.camPitch, dist: window.__game!.camDist }));
     for (const sc of scenes) {
       await gm(pg, `scene ${sc.id}`, 3500);

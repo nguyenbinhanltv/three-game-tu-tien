@@ -72,6 +72,7 @@ Mọi cải thiện Dạ Họa (VFX, animation, nhân vật, đạo cụ, ánh s
 - **Hiệu ứng trúng đòn theo cỡ thân (`hitScaleOf`, `game/fx/hitFx.ts`):** chặn dưới 0,8 → 0,35, nên quái nhỏ nhận vết va nhỏ theo thân (trước đây sói nhận vết va cỡ người). Ở Dạ Họa, đòn NHẸ (đòn chuỗi thường) thu thêm ×0,6 (`LIGHT_HIT_SCALE`), không văng mảnh vụn, và bỏ dấu chém chéo cũ trùng lớp ở điểm tới.
 - Pháp trận phẳng (`Vfx.sigil`) nằm sát đất được nâng trên điểm cao nhất quanh nó (`sigilGroundY`), không còn chìm nửa tấm trên nền dốc nhẹ.
 - **Xưởng VFX, bước đầu (V2b):** `FX_LAYER_OFF` (`game/fx/fxTimeline.ts`, cũng là `window.__fxLayerOff` ở bản dev) tắt các lớp theo chỉ số trong `events` của mọi timeline phát ra; `pnpm shots dienvo ... --layersoff 2,3` dùng nó để soi lớp nào vẽ gì. Cảnh đang đánh ghi tên chiêu của ô (`rows[].act.skill`).
+- **Xưởng VFX trên tab Diễn Võ:** khu "Hiệu ứng" (`FxLab` trong `apps/client/src/ui/DebugPanel.tsx`): tìm và chọn một timeline của `FX_TIMELINE`, Phát (lên mục tiêu đang chọn, không có thì trước mặt 4 m; `Game.labFx`), Phát lặp mỗi 1,6 s, và một nút cho từng lớp (48 lớp đầu) để bật tắt; rời tab thì tự bật lại hết. Chỉ là lớp hình ở máy mình. Kịch bản chụp: `pnpm shots dienvo ... --fx id1,id2` phát từng timeline lên con sói gần nhất của cảnh `soi_thuong` và chụp ở +30/+150/+400 ms (ảnh ở `<view>/fx/`).
 
 Chưa có: nội dung riêng cho bục nhân vật, buồng ánh sáng và tường hiệu ứng (mới có ranh, biển và vài đạo cụ); số MB texture trên bảng F3.
 
@@ -88,6 +89,7 @@ Chưa có: nội dung riêng cho bục nhân vật, buồng ánh sáng và tư�
 - Cảnh `nhan_vat_can` không nhìn cận được: camera chéo khóa khoảng cách nên tham số `cam` của cảnh mẫu bị bỏ qua. Bục nhân vật cần một chế độ nhìn cận riêng của phòng.
 - ~~Hiệu ứng che quái~~ **ĐÃ SỬA phần chung (27/11):** xem mục số đo che quái ở trên. Đòn thường còn sát ngưỡng (lớn nhất 47%): nét cọ `fx_hit_cut` vẫn xẻ qua thân theo thiết kế; nếu cần giảm nữa thì dời nét về phía camera ở Xưởng VFX (V2b).
 - ~~Vòng pháp trận vàng khuyết một múi~~ **ĐÃ SỬA (27/11).** Đó là decal phù văn bán kính 6,3 m của Thiên Kiếm Vũ (`skl_thien_kiem_vu`, lớp 3), đặt phẳng ở độ cao người ra chiêu nên phần phía đất cao chìm dưới sàn. Runner có HAI đường vẽ tấm nằm đất: lưới kiểu `decal` (hàm `place`) và sự kiện `decal` (hàm `decal`); lần sửa đầu chỉ chạm đường thứ nhất nên tưởng giả thuyết sai. Cả hai giờ dùng `sigilGroundY` (`apps/client/src/game/fx/groundLift.ts`). Tìm ra nhờ công tắc tắt lớp `--layersoff` và việc ghi tên chiêu của ô đang chụp.
+- **Thiên Kiếm Vũ (`skl_thien_kiem_vu`), thấy khi phát bằng `--fx` (chưa sửa):** ở +400 ms không thấy thanh kiếm cắm nào dù timeline có 23 lớp `blade_stuck` sống 0,9 s; và có một mảng khói lam bị cắt phẳng mép dưới ở góc trên trái (tấm `flip` đứng bị sàn cắt). Soi bằng nút bật tắt lớp.
 - Còn lại: hào quang cảnh giới (mây lam quanh nhân vật cấp cao) bị bút Kuwahara làm nhòe thành vệt; cảnh bầy 12 sói chỉ 9 con có viền (trần 10 thể).
 
 ## Lộ trình
