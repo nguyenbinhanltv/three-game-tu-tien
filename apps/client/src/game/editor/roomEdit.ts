@@ -70,15 +70,18 @@ function mat(color: number): THREE.MeshBasicMaterial {
   return m;
 }
 
-/** Dựng lại lớp đạo cụ, quầng đèn và đèn điểm của phòng từ `DIEN_VO_PROPS` hiện tại (sau khi bố cục đổi). Chỉ gọi khi đang ở phòng tập. */
-export function rebuildRoomProps(eng: Game): void {
+/**
+ * Dựng lại lớp đạo cụ, quầng đèn và đèn điểm của phòng từ `DIEN_VO_PROPS` hiện tại (sau khi bố cục đổi). Chỉ gọi khi đang ở phòng tập.
+ * `skip`: chỉ số đạo cụ KHÔNG dựng (đang được kéo, hiện bằng lớp xem trước riêng của trình chỉnh).
+ */
+export function rebuildRoomProps(eng: Game, skip = -1): void {
   // Lần vào phòng kế tiếp (dựng level từ đầu) phải đọc lại bố cục, không dùng danh sách đã nhớ.
   forgetProps(PRACTICE_LEVEL);
   if (levelId() !== PRACTICE_LEVEL || eng.disposed) return;
   const old = eng.props;
   const layer = new PropLayer(
     undefined,
-    DIEN_VO_PROPS.map((h) => ({ id: h.id, x: h.x, y: heightAt(h.x, h.z), z: h.z, yaw: h.yaw, s: h.s })),
+    DIEN_VO_PROPS.filter((_, i) => i !== skip).map((h) => ({ id: h.id, x: h.x, y: heightAt(h.x, h.z), z: h.z, yaw: h.yaw, s: h.s })),
   );
   const q = QUALITY[get().quality];
   layer.setQuality(get().quality, !!q?.shadows);
@@ -128,6 +131,8 @@ export class RoomEditor {
   private mats = new Map<number, THREE.MeshBasicMaterial>();
   private labels = new Map<string, THREE.SpriteMaterial>();
   private drag: { dx: number; dz: number; moved: boolean; before: string } | null = null;
+  /** Bản xem trước THẬT của đạo cụ đang kéo: một lớp đạo cụ riêng chỉ chứa món đó, dời bằng vị trí của nhóm. */
+  private ghost: { layer: PropLayer; x0: number; z0: number; y0: number; raf: number; last: number } | null = null;
   private off: (() => void)[] = [];
   private rebuildTimer: ReturnType<typeof setTimeout> | null = null;
   private watch: ReturnType<typeof setInterval> | null = null;
@@ -220,6 +225,7 @@ export class RoomEditor {
     this.on = false;
     this.drag = null;
     this.sel = null;
+    this.endGhost(0);
     for (const f of this.off.splice(0)) f();
     if (this.watch) clearInterval(this.watch);
     this.watch = null;
@@ -345,6 +351,14 @@ export class RoomEditor {
     rebuildRoomProps(this.eng);
     this.emit();
     return true;
+  }
+
+  /** Lớp xem trước lúc kéo (cho kịch bản kiểm): độ lệch so với chỗ cũ và số mẫu đã nạp; không kéo thì null. */
+  ghostInfo(): { dx: number; dz: number; ready: number } | null {
+    const g = this.ghost;
+    if (!g) return null;
+    const st = Object.values(g.layer.stats().templates);
+    return { dx: g.layer.group.position.x, dz: g.layer.group.position.z, ready: st.filter((v) => v === 'ready').length };
   }
 
   /** Bản làm việc hiện tại (bản sao), cho kịch bản kiểm. */
@@ -506,6 +520,51 @@ export class RoomEditor {
       });
   }
 
+
+  // ---- bản xem trước lúc kéo ----
+
+  /** Bắt đầu kéo đạo cụ `i`: dựng lại lớp chính KHÔNG có nó (theo bố cục trước khi kéo) và dựng nó ở một lớp riêng chạy theo chuột. */
+  private startGhost(i: number, before: string): void {
+    this.endGhost(0);
+    const p0 = (JSON.parse(before) as DienVoLayout).props[i];
+    if (!p0) return;
+    rebuildRoomProps(this.eng, i);
+    const y0 = heightAt(p0.x, p0.z);
+    const layer = new PropLayer(undefined, [{ id: p0.id, x: p0.x, y: y0, z: p0.z, yaw: p0.yaw, s: p0.s }]);
+    layer.setQuality(get().quality, !!QUALITY[get().quality]?.shadows);
+    this.eng.scene.add(layer.group);
+    const g = { layer, x0: p0.x, z0: p0.z, y0, raf: 0, last: performance.now() };
+    // Lớp chính được vòng khung hình của game cập nhật (nạp mẫu, chọn LOD); lớp xem trước thì tự cập nhật ở đây.
+    const tick = () => {
+      if (this.ghost !== g) return;
+      const now = performance.now();
+      const cam = this.eng.camera;
+      layer.update((now - g.last) / 1000, cam.position.x, cam.position.z, cam);
+      g.last = now;
+      g.raf = requestAnimationFrame(tick);
+    };
+    this.ghost = g;
+    g.raf = requestAnimationFrame(tick);
+  }
+
+  private moveGhost(): void {
+    const g = this.ghost;
+    const p = this.sel?.kind === 'prop' ? this.work.props[this.sel.i] : undefined;
+    if (!g || !p) return;
+    g.layer.group.position.set(p.x - g.x0, heightAt(p.x, p.z) - g.y0, p.z - g.z0);
+  }
+
+  /** Thả: bỏ lớp xem trước sau khi lớp chính (đã dựng lại với vị trí mới) kịp nạp, để món đồ không chớp mất. */
+  private endGhost(delay = 450): void {
+    const g = this.ghost;
+    if (!g) return;
+    this.ghost = null;
+    cancelAnimationFrame(g.raf);
+    const drop = () => g.layer.dispose();
+    if (delay > 0) setTimeout(drop, delay);
+    else drop();
+  }
+
   // ---- chuột và phím ----
 
   /** Điểm trên sàn dưới con trỏ (giao tia nhìn với mặt đất, lặp hai lần vì sàn gần phẳng). */
@@ -555,8 +614,9 @@ export class RoomEditor {
     if (!g) return;
     // Giữ Alt: không bám lưới.
     if (moveItem(this.work, this.sel, g.x + d.dx, g.z + d.dz, e.altKey ? 0 : SNAP)) {
+      if (!d.moved && this.sel.kind === 'prop') this.startGhost(this.sel.i, d.before);
       d.moved = true;
-      // Trong lúc kéo chỉ tay nắm chạy theo; đạo cụ thật dựng lại khi thả.
+      this.moveGhost();
       this.buildHandles();
       this.emit();
     }
@@ -570,6 +630,7 @@ export class RoomEditor {
     if (!d.moved) return;
     this.pushUndo(d.before);
     this.commit();
+    this.endGhost();
   };
 
   private onWheel = (e: WheelEvent): void => {

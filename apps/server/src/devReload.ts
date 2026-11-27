@@ -16,6 +16,7 @@ const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..
 /** Thư mục chứa file nóng (tương đối gốc repo). `hotKind` lọc tiếp từng file. */
 const WATCH_DIRS = [
   'packages/content/data/fx',
+  'packages/content/data/poses',
   'packages/content/data/lab',
   'packages/content/data/i18n',
   'packages/shared/src',

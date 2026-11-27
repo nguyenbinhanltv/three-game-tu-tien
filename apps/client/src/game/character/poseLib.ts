@@ -31,6 +31,24 @@ export function bakePoseLibrary(root: THREE.Object3D, poses: readonly PoseDef[])
   return new LazyPoseLibrary(rig, poses);
 }
 
+/** Mọi thư viện pose còn sống (tham chiếu yếu): để nạp lại tức thì ở bản dev tìm được chỗ quên clip cũ. */
+const LIBS = new Set<WeakRef<LazyPoseLibrary>>();
+
+/**
+ * Nạp lại pose tức thì (Diễn Võ Trường V3, chỉ bản dev): dữ liệu của pose `def.id` vừa đổi tại chỗ, quên clip đã nướng ở mọi thư viện.
+ * Chỉ có tác dụng với pose CHIÊU (lấy clip qua `get` mỗi lần ra đòn); pose nền đã nối vào bảng clip lúc dựng nhân vật thì phải tải lại trang.
+ * Trả số thư viện đã quên.
+ */
+export function forgetPoseBake(def: PoseDef): number {
+  let n = 0;
+  for (const ref of LIBS) {
+    const lib = ref.deref();
+    if (!lib) LIBS.delete(ref);
+    else if (lib.forget(def)) n++;
+  }
+  return n;
+}
+
 /**
  * Thư viện pose nướng lười: pose nền/phụ (không có khung vung) nướng ngay vì được nối vào bảng clip; pose chiêu (có `hit`,
  * ~30 pose sau K-5, mỗi pose ba clip dày khung) chỉ nướng lần đầu `get`. Nướng hết lúc nạp làm tăng bộ nhớ ngoài heap và
@@ -44,6 +62,7 @@ class LazyPoseLibrary extends Map<string, PoseClips> {
     poses: readonly PoseDef[],
   ) {
     super();
+    LIBS.add(new WeakRef(this));
     for (const def of poses) {
       if (def.hit) this.pending.set(def.id, def);
       else this.bake(def);
@@ -62,6 +81,13 @@ class LazyPoseLibrary extends Map<string, PoseClips> {
     if (c) return c;
     const def = this.pending.get(id);
     return def ? this.bake(def) : undefined;
+  }
+  /** Quên clip đã nướng của pose `def.id` (dữ liệu pose vừa đổi): lần `get` kế nướng lại từ `def`. Trả true nếu thư viện có pose này. */
+  forget(def: PoseDef): boolean {
+    if (!this.has(def.id)) return false;
+    super.delete(def.id);
+    this.pending.set(def.id, def);
+    return true;
   }
   /** Số pose có trong thư viện (cả pose chưa nướng). */
   override get size(): number {
