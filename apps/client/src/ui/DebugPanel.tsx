@@ -2,6 +2,7 @@ import { Fragment, useState } from 'react';
 import { C, MAX_LEVEL, PF_TRIBULATION } from '@dtl/shared';
 import {
   ITEMS,
+  LAB_SCENES,
   itemName,
   itemTier,
   METHODS,
@@ -139,6 +140,7 @@ function Tools() {
   const [find, setFind] = useState('');
   const [labLevel, setLabLevel] = useState(30);
   const [phase, setPhase] = useState(1);
+  const [scene, setScene] = useState(LAB_SCENES[0]?.id ?? '');
   const want = realm || level;
   // Tìm quái theo tên hiển thị hoặc id (không dấu cách thừa); rỗng thì hiện tất cả.
   const q = find.trim().toLowerCase();
@@ -166,6 +168,17 @@ function Tools() {
             </Button>
             <Button size="s" onClick={() => gm('labreset')}>
               {t('ui.gm.lab.reset')}
+            </Button>
+          </div>
+          <div className="debug-row wrap">
+            <Pick
+              label={t('ui.gm.lab.scene')}
+              value={scene}
+              onChange={setScene}
+              options={LAB_SCENES.map((s) => ({ value: s.id, label: t('lab.scene.' + s.id) }))}
+            />
+            <Button size="s" variant="primary" disabled={!scene} onClick={() => gm('scene ' + scene)}>
+              {t('ui.gm.lab.scene_btn')}
             </Button>
           </div>
           <div className="debug-row wrap">

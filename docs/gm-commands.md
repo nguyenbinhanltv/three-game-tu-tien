@@ -85,6 +85,7 @@ Playtest luôn tắt tiếng: mở game với `?mute=1` (ví dụ `?mute=1&debug
 | `state` | `/gm state <weak|break|stun|chant|phase N|clear> [giây]` — ép trạng thái lên quái quanh mình. | `/gm state break 10` |
 | `free` | `/gm free [on|off]` — chiêu không hồi, linh lực luôn đầy. |  |
 | `build` | `/gm build <công pháp> [cấp]` — dựng nhân vật thử một nút (cấp, công pháp, chiêu cấp tối đa, chiêu không hồi). | `/gm build lac_kiem_quyet 30` |
+| `scene` | `/gm scene <id>` — nạp cảnh mẫu của Diễn Võ Trường. | `/gm scene soi_vo_the` |
 | `labreset` | `/gm labreset` — trả phòng thử về như mới. |  |
 | `hurt` | `/gm hurt <pct>` — hạ máu quái quanh mình về pct%. | `/gm hurt 30` |
 | `dvt` | `/gm dvt` — vào Diễn Võ Trường (phòng tập riêng); gõ lại trong phòng để ra. Ra khỏi phòng, nhân vật trở về nguyên trạng. |  |

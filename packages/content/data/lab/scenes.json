@@ -1,0 +1,105 @@
+[
+  {
+    "id": "soi_thuong",
+    "at": "arena",
+    "method": "lac_kiem_quyet",
+    "level": 30,
+    "mons": [
+      {
+        "id": "mon_soi_xam",
+        "n": 3
+      }
+    ]
+  },
+  {
+    "id": "soi_vo_the",
+    "at": "arena",
+    "method": "lac_kiem_quyet",
+    "level": 30,
+    "mons": [
+      {
+        "id": "mon_soi_xam",
+        "n": 3
+      }
+    ],
+    "state": "break"
+  },
+  {
+    "id": "soi_yeu_diem",
+    "at": "arena",
+    "method": "lac_kiem_quyet",
+    "level": 30,
+    "mons": [
+      {
+        "id": "mon_soi_xam",
+        "n": 3
+      }
+    ],
+    "state": "weak"
+  },
+  {
+    "id": "tinh_anh",
+    "at": "arena",
+    "method": "lac_kiem_quyet",
+    "level": 30,
+    "mons": [
+      {
+        "id": "elite_huyet_nha_lang",
+        "n": 1
+      },
+      {
+        "id": "mon_soi_xam",
+        "n": 2
+      }
+    ]
+  },
+  {
+    "id": "bay_dong",
+    "at": "arena",
+    "method": "lac_kiem_quyet",
+    "level": 30,
+    "mons": [
+      {
+        "id": "mon_soi_xam",
+        "n": 12
+      }
+    ]
+  },
+  {
+    "id": "boss",
+    "at": "boss",
+    "method": "lac_kiem_quyet",
+    "level": 30,
+    "mons": [
+      {
+        "id": "boss_huyet_lang_vuong",
+        "n": 1
+      }
+    ]
+  },
+  {
+    "id": "nhan_vat_can",
+    "at": "stage",
+    "method": "lac_kiem_quyet",
+    "level": 30,
+    "mons": [],
+    "cam": {
+      "pitch": 0.9,
+      "dist": 9
+    }
+  },
+  {
+    "id": "dao_cu",
+    "at": "props",
+    "method": "lac_kiem_quyet",
+    "level": 30,
+    "mons": []
+  },
+  {
+    "id": "anh_sang",
+    "at": "light",
+    "method": "lac_kiem_quyet",
+    "level": 30,
+    "mons": []
+  }
+]

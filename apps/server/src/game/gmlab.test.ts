@@ -21,9 +21,9 @@ const X = 2040;
 const Z = 2040;
 let nextAcc = 93000;
 
-function setup(dev = true) {
+function setup(dev = true, levelId = 'van_lam') {
   const sim: Sim = new GameSim(new WorldState(), { broadcast: () => {} } as never, {
-    levelId: 'van_lam',
+    levelId,
     roomName: 'test',
     spawn: { x: X, z: Z },
     respawn: { x: X, z: Z },
@@ -118,6 +118,32 @@ describe('lệnh GM phòng thử', () => {
     p.cds.set('skl_x', Date.now() + 60_000);
     run(100);
     expect(p.cds.size).toBe(1);
+  });
+
+  it('scene: chỉ nạp trong phòng tập; mọi cảnh mẫu dựng đủ quái, đúng khu, đúng trạng thái', async () => {
+    const { LAB_SCENES } = await import('@dtl/content');
+    const { dienVoZone, dienVoStandAt } = await import('@dtl/shared');
+    const out = setup();
+    const n0 = out.sim.monsters.length;
+    out.gm('scene soi_thuong');
+    expect(out.sim.monsters.length).toBe(n0);
+
+    const { sim, p, gm } = setup(true, 'dien_vo');
+    for (const sc of LAB_SCENES) {
+      gm('scene ' + sc.id);
+      const live = sim.monsters.filter((m) => m.state !== MS_DEAD);
+      expect(live.length, sc.id).toBe(sc.mons.reduce((n, g) => n + g.n, 0));
+      for (const m of live) {
+        const z = dienVoZone(m.def.boss ? 'boss' : 'arena');
+        expect(Math.hypot(m.s.x - z.x, m.s.z - z.z), sc.id).toBeLessThanOrEqual(z.r!);
+        if (sc.state === 'break') expect(m.s.mf & MF_BROKEN, sc.id).toBe(MF_BROKEN);
+        if (sc.state === 'weak') expect(m.s.mf & MF_WEAK, sc.id).toBe(MF_WEAK);
+      }
+      const at = dienVoStandAt(sc.at);
+      expect(Math.hypot(p.move.x - at.x, p.move.z - at.z), sc.id).toBeLessThan(0.5);
+      expect(p.char.level).toBe(sc.level);
+      expect(p.char.meta.method).toBe(sc.method);
+    }
   });
 
   it('tài khoản thường gõ lệnh không có tác dụng', () => {

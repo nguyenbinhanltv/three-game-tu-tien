@@ -17,7 +17,7 @@
     "lake": false,
     "clouds": true,
     "grass": false,
-    "trees": "none",
+    "trees": "scatter",
     "beacons": false,
     "vegetation": false
   }
