@@ -135,5 +135,7 @@ export async function runCombo(): Promise<void> {
     g.room.send(C.SKILL, bad as never);
   await W(400);
   check('chuỗi đòn: server vẫn sống sau lệnh rác', await health());
+  // Dọn con tinh anh đã gọi: để lại thì nó đánh nhân vật của bài kế tiếp đứng gần đó (bài tâm ma bị server từ chối vì đang giao chiến).
+  await gm('spawn clear');
   g.room.leave();
 }
