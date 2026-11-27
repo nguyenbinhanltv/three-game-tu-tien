@@ -67,7 +67,7 @@ import {
   type GmBranch,
 } from './tools';
 import { grantPathOf, methodOf, picksOf, resourceOf, setSkillLevel, skillLevelOf } from '../method';
-import type { LevelDef, MonsterDef } from '@dtl/shared';
+import { dienVoSpawnAt, type LevelDef, type MonsterDef } from '@dtl/shared';
 import type { MonEnt, PlayerEnt } from '../entities';
 
 /** Phần GameSim mà lệnh GM cần (giao diện hẹp, tránh import vòng lớp GameSim). */
@@ -575,6 +575,14 @@ export class GmSystem {
         if (!def) return say(t('gm.msg.no_mon', { id: a[1] ?? '' }));
         const n = Math.max(1, Math.min(GM_SPAWN_MAX, Math.floor(Number(a[2]) || 1)));
         const fwd = p.s.yaw;
+        // Phòng tập: quái thường xếp vòng trong sàn đấu, boss vào hố boss (luôn nằm trong khung camera, không phụ thuộc hướng người gọi).
+        if (this.c.level().dungeon?.practice) {
+          for (let i = 0; i < n; i++) {
+            const at = dienVoSpawnAt(i, n, !!def.boss);
+            this.spawned.add(this.c.spawnMonster(def, Math.max(1, p.char.level - 1), at.x, at.z, null));
+          }
+          return say(`gọi ${n} ${def.id}`);
+        }
         for (let i = 0; i < n; i++) {
           // Quạt rộng 150° phía trước, cách 8 m (xếp hai hàng khi đông).
           const ang = fwd + (n === 1 ? 0 : ((i / (n - 1) - 0.5) * (Math.PI * 5)) / 6);
