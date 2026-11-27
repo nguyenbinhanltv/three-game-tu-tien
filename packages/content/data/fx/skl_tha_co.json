@@ -54,7 +54,7 @@
     "ease": "in",
     "offset": [
      0,
-     1.0,
+     2.3,
      0
     ]
    }
@@ -81,7 +81,7 @@
     "ease": "in",
     "offset": [
      0,
-     1.0,
+     2.3,
      0
     ]
    }
@@ -102,10 +102,11 @@
    "at": "target",
    "offset": [
     0,
-    1.0,
+    2.4,
     0
    ],
    "scale": 2.0,
+   "camFade": true,
    "billboard": true,
    "sweep": 0,
    "tone": "body",
@@ -116,16 +117,17 @@
    "type": "mesh",
    "shape": "flip",
    "t": 0.0,
-   "dur": 0.34,
+   "dur": 0.22,
    "flip": "spark_burst",
    "scale": 2.4,
    "billboard": true,
    "at": "target",
    "offset": [
     0,
-    1.0,
+    2.5,
     0
    ],
+   "camFade": true,
    "alpha": 0.85,
    "tone": "rim",
    "tier": 0
@@ -134,15 +136,15 @@
    "type": "particles",
    "kind": "dust",
    "t": 0.0,
-   "n": 40,
+   "n": 20,
    "speed": 3.5,
    "spread": 1,
-   "life": 0.7,
-   "size": 0.2,
+   "life": 0.4,
+   "size": 0.13,
    "at": "target",
    "offset": [
     0,
-    0.9,
+    2.2,
     0
    ],
    "tone": "body",
@@ -161,7 +163,7 @@
    "at": "target",
    "offset": [
     0,
-    1.0,
+    2.3,
     0
    ],
    "tone": "rim",
@@ -206,15 +208,15 @@
    "t": 0.03,
    "dur": 0.9,
    "flip": "ink_smoke",
-   "scale": 2.4,
+   "scale": 2.0,
    "billboard": true,
    "at": "ground",
    "offset": [
     0,
-    0.5,
+    1.9,
     0
    ],
-   "alpha": 0.4,
+   "alpha": 0.3,
    "tone": "body",
    "tier": 1
   },
