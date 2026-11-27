@@ -1262,6 +1262,8 @@
   "ui.gm.lab.time": "Thời gian (chỉ hình ở máy mình)",
   "ui.gm.lab.time_v": "{n}%",
   "ui.gm.lab.pause": "Dừng",
+  "ui.gm.lab.ping": "Ping giả (lệnh gửi và tin nhận)",
+  "ui.gm.lab.ping_v": "{n} ms",
   "ui.gm.lab.step": "Bước 1 khung",
   "ui.gm.lab.step5": "Bước 5 khung",
   "ui.gm.lab.tab.scene": "Cảnh và nhân vật",

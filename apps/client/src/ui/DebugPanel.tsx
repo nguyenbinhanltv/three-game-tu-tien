@@ -76,6 +76,7 @@ const GM_GROUP_IDS: GmGroup[] = ['lab', 'char', 'skill', 'gear', 'outfit', 'weap
 const LAB_STATES = ['weak', 'break', 'stun', 'chant', 'clear'] as const;
 const LAB_PHASES = [0, 1, 2, 3];
 const LAB_SPEEDS = [100, 50, 25, 10];
+const LAB_PINGS = [0, 50, 150, 300];
 /** Nhóm con của tab Diễn Võ: bảng F3 không cuộn được nên mỗi lúc chỉ hiện một nhóm cho vừa màn 720p. */
 const LAB_TABS = ['scene', 'mon', 'fx', 'time'] as const;
 const FX_IDS = [...FX_TIMELINE.keys()].sort();
@@ -222,6 +223,11 @@ function Tools() {
   const [labTab, setLabTab] = useState<(typeof LAB_TABS)[number]>('scene');
   // Tốc độ lớp hình (phần trăm; 0 = dừng). Chỉ đổi cách máy mình vẽ, không gửi gì lên server.
   const [speed, setSpeed] = useState(() => Math.round((Game.current?.timeScale ?? 1) * 100));
+  const [ping, setPing] = useState(() => Game.current?.fakePing ?? 0);
+  const setLabPing = (n: number) => {
+    setPing(n);
+    if (Game.current) Game.current.fakePing = n;
+  };
   const setLabSpeed = (n: number) => {
     setSpeed(n);
     if (Game.current) Game.current.timeScale = n / 100;
@@ -363,23 +369,33 @@ function Tools() {
           )}
           {labTab === 'fx' && <FxLab />}
           {labTab === 'time' && (
-            <div className="debug-row wrap">
-              <span>{t('ui.gm.lab.time')}</span>
-              {LAB_SPEEDS.map((n) => (
-                <Button key={n} size="s" pressed={speed === n} onClick={() => setLabSpeed(n)}>
-                  {t('ui.gm.lab.time_v', { n })}
+            <>
+              <div className="debug-row wrap">
+                <span>{t('ui.gm.lab.time')}</span>
+                {LAB_SPEEDS.map((n) => (
+                  <Button key={n} size="s" pressed={speed === n} onClick={() => setLabSpeed(n)}>
+                    {t('ui.gm.lab.time_v', { n })}
+                  </Button>
+                ))}
+                <Button size="s" pressed={speed === 0} onClick={() => setLabSpeed(0)}>
+                  {t('ui.gm.lab.pause')}
                 </Button>
-              ))}
-              <Button size="s" pressed={speed === 0} onClick={() => setLabSpeed(0)}>
-                {t('ui.gm.lab.pause')}
-              </Button>
-              <Button size="s" disabled={speed !== 0} onClick={() => Game.current && (Game.current.stepLeft += 1)}>
-                {t('ui.gm.lab.step')}
-              </Button>
-              <Button size="s" disabled={speed !== 0} onClick={() => Game.current && (Game.current.stepLeft += 5)}>
-                {t('ui.gm.lab.step5')}
-              </Button>
-            </div>
+                <Button size="s" disabled={speed !== 0} onClick={() => Game.current && (Game.current.stepLeft += 1)}>
+                  {t('ui.gm.lab.step')}
+                </Button>
+                <Button size="s" disabled={speed !== 0} onClick={() => Game.current && (Game.current.stepLeft += 5)}>
+                  {t('ui.gm.lab.step5')}
+                </Button>
+              </div>
+              <div className="debug-row wrap">
+                <span>{t('ui.gm.lab.ping')}</span>
+                {LAB_PINGS.map((n) => (
+                  <Button key={n} size="s" pressed={ping === n} onClick={() => setLabPing(n)}>
+                    {t('ui.gm.lab.ping_v', { n })}
+                  </Button>
+                ))}
+              </div>
+            </>
           )}
           <div className="debug-note">{t('ui.gm.lab.note')}</div>
         </>

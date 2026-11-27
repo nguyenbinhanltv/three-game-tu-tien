@@ -139,6 +139,8 @@ export interface GameDebug {
   targetId: string;
   /** Phòng thử: tỉ lệ thời gian lớp hình (0 = dừng) và số khung còn bước. */
   timeScale: number;
+  /** Phòng thử: ping giả (ms khứ hồi). */
+  fakePing: number;
   /** Xưởng VFX: phát timeline theo id lên mục tiêu đang chọn (chỉ hình). */
   labFx(key: string): boolean;
   stepLeft: number;
