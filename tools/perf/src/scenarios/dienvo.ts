@@ -3,7 +3,7 @@
 // Có `--base <thư mục bộ trước>` thì so từng cảnh bằng SSIM/ΔE (tools/painted-compare/compare.mjs) và dựng trang trước/sau `index.html`.
 //   pnpm shots dienvo --out <thư mục> [--view 720p|1080p] [--query style=dahoa] [--base <thư mục>] [--ssim 0.9] [--only id1,id2]
 //                     [--quality high|medium|low] [--renderer webgl2] [--diag 1] [--layersoff 2,3] [--fx id1,id2] [--panel 1]
-//                     [--ping 150] [--swings 1 --window 4000] [--crowd 8,20,50] [--fx 'skl_kiem*' --gate 1 [--far 8] [--keepbare 1]] [--silhouette 1] [--floor light|grass|snow] [--styles 1]
+//                     [--ping 150] [--swings 1 --window 4000] [--crowd 8,20,50] [--fx 'skl_kiem*' --gate 1 [--far 8] [--keepbare 1] [--repeat 3]] [--silhouette 1] [--floor light|grass|snow] [--styles 1]
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -702,7 +702,9 @@ export default {
       type Gate = { pop: number; selfOnly?: boolean; coverMax?: number; solid?: number; cover: number | null; glare: number; spread: number; live: number; dur: number | null; fail: string[] };
       const fxRows: { id: string; ok: boolean; gate?: Gate }[] = [];
       const frames2 = () => pg.evaluate(() => new Promise<void>((res) => requestAnimationFrame(() => requestAnimationFrame(() => res()))));
-      for (const id of fxIds) {
+      // `--repeat N`: chấm mỗi chiêu N lượt rồi lấy TRUNG VỊ (cổng đo che dao động giữa các lượt vì vị trí/nhịp quái trong phòng khác nhau).
+      const repeat = Math.max(1, num('--repeat', 1));
+      for (const id of fxIds.flatMap((i) => Array.from({ length: repeat }, () => i))) {
         // Cổng duyệt: DỪNG lớp hình trước khi phát rồi bước đúng số khung 1/60 s tới từng mốc (không chờ theo ms thật), để hai lượt chạy dừng ở cùng
         // một khung của timeline (trước đây chờ theo ms: số che lệch 10–20 điểm giữa hai lượt).
         if (gate) await pg.evaluate(() => void (window.__game!.timeScale = 0));
@@ -838,6 +840,37 @@ export default {
           while (Date.now() < until && (await pg.evaluate(() => (window.__game as unknown as { vfx: { pool: { live: number } } }).vfx.pool.live)) > 0) await sleep(250);
           await sleep(400);
         } else await sleep(1500);
+      }
+      if (gate && repeat > 1) {
+        // Gộp N lượt của mỗi chiêu: trung vị che/nổi/đặc/phủ/lóa, đạt hay hỏng tính lại trên số trung vị; in dải min–max của che để thấy độ dao động.
+        const med = (a: number[]) => [...a].sort((x, y) => x - y)[Math.floor(a.length / 2)]!;
+        const merged: typeof fxRows = [];
+        for (const id of [...new Set(fxRows.map((x) => x.id))]) {
+          const runs = fxRows.filter((x) => x.id === id && x.gate);
+          if (!runs.length) {
+            merged.push(fxRows.find((x) => x.id === id)!);
+            continue;
+          }
+          const gs = runs.map((x) => x.gate!);
+          const g: Gate = { ...gs[0]!, fail: [] };
+          const covs = gs.map((x) => x.cover).filter((x): x is number => x !== null);
+          g.cover = covs.length ? med(covs) : null;
+          g.pop = med(gs.map((x) => x.pop));
+          g.glare = med(gs.map((x) => x.glare));
+          g.spread = med(gs.map((x) => x.spread));
+          g.solid = med(gs.map((x) => x.solid ?? 0));
+          g.coverMax = covs.length ? Math.max(...covs) : undefined;
+          if ((g.cover ?? 0) > FX_GATE.cover) g.fail.push('che thân');
+          if (g.glare > FX_GATE.glare) g.fail.push('lóa');
+          if (g.pop < FX_GATE.pop) g.fail.push('chìm vào nền');
+          if (g.spread > FX_GATE.spread) g.fail.push('phủ màn hình');
+          if (g.live > FX_GATE.live) g.fail.push('nhiều lưới');
+          if ((g.dur ?? 0) > FX_GATE.dur) g.fail.push('quá dài');
+          merged.push({ id, ok: true, gate: g });
+          const pc = (x: number) => String(Math.round(x * 100)).padStart(3) + '%';
+          console.log(`  [trung vị ${runs.length} lượt] ${g.fail.length ? 'HỎNG' : 'ĐẠT '} ${id.padEnd(30)} che ${pc(g.cover ?? 0)} (dải ${pc(Math.min(...covs))}–${pc(Math.max(...covs))})  nổi ${pc(g.pop)}${g.fail.length ? '  ← ' + g.fail.join(', ') : ''}`);
+        }
+        fxRows.splice(0, fxRows.length, ...merged);
       }
       await gm(pg, 'labreset', 1500);
       await gm(pg, 'dvt');

@@ -137,11 +137,11 @@
    "billboard": true,
    "offset": [
     0,
-    0.6,
+    4.6,
     0
    ],
-   "scale": 1.42,
-   "scaleTo": 2.05
+   "scale": 0.95,
+   "scaleTo": 1.37
   },
   {
    "type": "particles",

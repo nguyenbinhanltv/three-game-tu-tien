@@ -207,7 +207,7 @@ const SPEC = {
   ],
   // Liệt Địa Trảm: hai khe nứt thép bắt chéo chữ X rạch nền, đá tảng văng lên bốn góc.
   skl_liet_dia_tram: () => [
-    ...[gather('dao_xcrack', { size: 3, off: [0, 0.6, 0] })],
+    ...[gather('dao_xcrack', { size: 2, off: [0, 4.6, 0] })],
     pullIn('target', [0, 0.8, 0], -0.24),
     zoneEdge('target', 5.2, 0.05),
     shade('target', [0, 0.25, 0], 3.6, 0.02, { dur: 0.16, alpha: 0.5 }),
