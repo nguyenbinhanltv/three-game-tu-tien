@@ -8,6 +8,8 @@
 // - windows: dựng nhân vật đủ đồ rồi mở TỪNG cửa sổ ở năm cỡ màn hình; báo cửa sổ tràn khỏi khung nhìn và dòng chữ bị cắt (tràn ngang trong ô ẩn phần thừa).
 // - sound: xưởng âm thanh — bấm nút thật (đầu dò tiếng, ép nhạc boss), in bảng lệch tiếng so với mốc trúng của mọi chiêu `skl_*` (đo từ dữ liệu).
 // - anim: xưởng animation — diễn một pose, dừng hình ở đỉnh đòn và đối chiếu đồng hồ pose với mốc.
+// - panel: soát MỌI nhóm con của tab Diễn Võ (kể cả công cụ của worker khác gắn vào): nút nằm trong khung 720p, bấm vào không sinh lỗi console;
+//   bấm nút thật các lệnh cân bằng / sân boss (hình nộm, gọi boss, pha, tua máu).
 // - motion: bật "Giảm chuyển động", gọi mọi khoảnh khắc rồi đếm animation CSS còn chạy trong HUD (phải bằng 0, trừ danh sách cho phép).
 import { num, opt } from '../lib/env';
 import { gm, skipCutscene, waitLevel } from '../lib/game';
@@ -43,7 +45,7 @@ export const contrast = (a: number, b: number): number => (Math.max(a, b) + 0.05
 export default {
   name: 'labui',
   desc: 'Diễn Võ Trường, khu Giao diện: bấm nút công cụ mới, đo tương phản chữ HUD trên nền thật, kiểm giảm chuyển động',
-  usage: '[--query style=dahoa] [--only tools,contrast,motion,windows,sound,anim] [--win char,wardrobe] [--winwait 900]',
+  usage: '[--query style=dahoa] [--only tools,contrast,motion,windows,sound,anim,panel] [--win char,wardrobe] [--winwait 900]',
   env: { RATE_LIMIT_EXEMPT: 'loopback' },
   async run(r) {
     const query = opt('--query', '');
@@ -455,6 +457,51 @@ export default {
       check('nút "Đỉnh đòn" dừng hình đúng mốc', st.ts === 0 && st.left === 0 && !!st.c && Math.abs(st.c.t - peak) <= 0.04, st.c ? `đồng hồ pose ${st.c.t.toFixed(3)} s, mốc ${peak.toFixed(3)} s` : 'không có đồng hồ pose');
       await snap(pg, r.out, 'anim-1-dinh-don.png', { wait: 200 });
       await pg.evaluate(() => void (window.__game!.timeScale = 1));
+      await pg.keyboard.press('F3');
+      await sleep(300);
+    }
+
+    if (want('panel')) {
+      await pg.keyboard.press('F3');
+      await sleep(500);
+      const tabs = (await pg.evaluate(`(() => {
+        var rows = [...document.querySelectorAll('.debug-tools .debug-row')];
+        // Hàng nhóm con = hàng thứ ba của nhóm Diễn Võ (sau hàng nhóm GM và hàng vào/rời phòng).
+        return rows[2] ? [...rows[2].querySelectorAll('button')].map((b) => (b.textContent || '').trim()) : [];
+      })()`)) as string[];
+      check('tab Diễn Võ có đủ nhóm con', tabs.length >= 11, tabs.join(' | '));
+      for (const name of tabs) {
+        const e0 = r.errors.length;
+        await pg.locator('.debug-tools .debug-row').nth(2).locator('button', { hasText: new RegExp('^' + name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$') }).click();
+        await sleep(450);
+        const out = await pg.evaluate(() => {
+          const lim = Math.min(innerHeight, document.querySelector('.debug-panel')!.getBoundingClientRect().bottom) + 1;
+          const all = [...document.querySelectorAll('.debug-panel button, .debug-panel select, .debug-panel input')];
+          return { n: all.length, out: all.filter((b) => b.getBoundingClientRect().bottom > lim).length };
+        });
+        check(`nhóm "${name}": mọi nút/ô nằm trong khung 720p, mở không lỗi console`, out.out === 0 && r.errors.length === e0, `${out.n} nút/ô, ${out.out} ngoài khung, ${r.errors.length - e0} lỗi console`);
+        await snap(pg, r.out, `panel/${tabs.indexOf(name)}.png`, { wait: 0 });
+      }
+      // Cân bằng / sân boss: bấm nút thật, đối chiếu quái trong phòng.
+      const mons = () => pg.evaluate(() => [...window.__game!.view.monsters.values()].filter((m) => m.st !== 4).map((m) => ({ t: m.t, hp: m.hp / m.mhp })));
+      await btn(/^Cân bằng$/).click();
+      await sleep(300);
+      await btn('Đặt hình nộm').click();
+      await sleep(2500);
+      const d1 = await mons();
+      check('nút "Đặt hình nộm" để lại đúng một quái', d1.length === 1, d1.map((m) => m.t).join(', '));
+      await btn('Gọi vào hố boss').click();
+      await sleep(3000);
+      const b1 = await mons();
+      check('nút "Gọi vào hố boss" gọi một boss/tinh anh', b1.length === 1 && b1[0]!.t !== d1[0]?.t, b1.map((m) => m.t).join(', '));
+      await btn(/^25%$/).click();
+      await sleep(1800);
+      const b2 = await mons();
+      check('nút tua máu "25%" đưa máu quái về 25%', b2.length === 1 && Math.abs(b2[0]!.hp - 0.25) < 0.03, b2.map((m) => Math.round(m.hp * 100) + '%').join(', '));
+      await snap(pg, r.out, 'panel/can-bang.png', { wait: 200 });
+      await btn('Bỏ hình nộm').click();
+      await sleep(1200);
+      await gm(pg, 'labreset', 1500);
       await pg.keyboard.press('F3');
       await sleep(300);
     }
