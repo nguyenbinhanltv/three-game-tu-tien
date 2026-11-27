@@ -147,13 +147,13 @@
   {
    "type": "mesh",
    "t": 0,
-   "dur": 0.9,
+   "dur": 0.36,
    "at": "target",
    "sweep": 0,
    "erodeFrom": 0.4,
    "ragged": 0.5,
    "tone": "body",
-   "alpha": 0.7,
+   "alpha": 0.4,
    "tier": 0,
    "seed": 1001,
    "shape": "sprite",
@@ -170,13 +170,13 @@
   {
    "type": "mesh",
    "t": 0.04,
-   "dur": 0.9,
+   "dur": 0.36,
    "at": "target",
    "sweep": 0,
    "erodeFrom": 0.4,
    "ragged": 0.5,
    "tone": "body",
-   "alpha": 0.7,
+   "alpha": 0.4,
    "tier": 0,
    "seed": 1002,
    "shape": "sprite",
@@ -193,10 +193,10 @@
   {
    "type": "mesh",
    "t": 0,
-   "dur": 0.6,
+   "dur": 0.4,
    "at": "target",
    "sweep": 0,
-   "erodeFrom": 0.35,
+   "erodeFrom": 0.25,
    "ragged": 0.5,
    "tone": "body",
    "alpha": 0.95,
@@ -207,7 +207,7 @@
    "billboard": true,
    "offset": [
     0,
-    1.6,
+    2.7,
     0
    ],
    "scale": 3.94,
@@ -216,13 +216,13 @@
   {
    "type": "mesh",
    "t": 0.06,
-   "dur": 0.6,
+   "dur": 0.36,
    "at": "target",
    "sweep": 0,
-   "erodeFrom": 0.3,
+   "erodeFrom": 0.2,
    "ragged": 0.5,
    "tone": "body",
-   "alpha": 0.8,
+   "alpha": 0.5,
    "tier": 0,
    "seed": 1004,
    "shape": "sprite",
@@ -230,7 +230,7 @@
    "billboard": true,
    "offset": [
     0,
-    1.3,
+    2.3,
     0
    ],
    "scale": 2.8,
@@ -310,7 +310,7 @@
    "billboard": true,
    "offset": [
     0,
-    1.3,
+    2.5,
     0
    ],
    "scale": 2.4,
@@ -319,7 +319,7 @@
     "to": "target",
     "offset": [
      0,
-     2.5,
+     3.7,
      0
     ],
     "ease": "out"
