@@ -188,6 +188,14 @@
    ],
    "tone": "rim",
    "tier": 1
+  },
+  {
+   "type": "soundAt",
+   "t": -0.28,
+   "id": "loi_cast",
+   "gain": 0.35,
+   "rate": 0.9,
+   "jitter": 0.05
   }
  ]
 }

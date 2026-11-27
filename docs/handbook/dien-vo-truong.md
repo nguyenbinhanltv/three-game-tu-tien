@@ -46,6 +46,8 @@ Hai nhóm con mới của tab Diễn Võ. Chơi thử tự động luôn tắt t
 
 **Phòng đã chỉ ra (dữ liệu 104 timeline `skl_*`, 28/11):** 82 chiêu có tiếng khớp mốc trúng (không chiêu nào lệch quá 60 ms). **17 chiêu KHÔNG có sự kiện tiếng nào trong timeline**: `cu_bo_xung`, `hoi_nguyen_thuat`, `kiem_anh_bo`, `kiem_dan_ban_menh`, `kiem_vu_tam_diep`, `linh_khi_ho_the`, `loi_chich`, `loi_giap`, `loi_lien`, `loi_the`, `nghich_kiem_chuyen_phong`, `pha_phong_tien`, `phan_anh_kiem_anh`, `phi_kiem`, `thiem_loi_bo`, `thuan_di_tram`, `tran_kiem` (có thể vẫn có tiếng chung lúc ra chiêu từ đường khác; cần người nghe xác nhận). 5 chiêu không có mốc trúng (không khựng hình, không khung va chạm): `kim_thien_co`, `luu_huong_bo`, `ngu_kiem_tran`, `thai_hu_ho_tran`, `u_anh_bo` (đều là chiêu trận/bộ pháp, có thể cố ý). Sửa dữ liệu timeline là việc của tuyến VFX.
 
+**Đã sửa (28/11, chỉ thêm sự kiện tiếng, không đổi lớp hình):** 15 trong 17 chiêu câm có `soundAt` bằng id tiếng sẵn có. Bộ pháp (`cu_bo_xung`, `kiem_anh_bo`, `pha_phong_tien`, `thiem_loi_bo`, `nghich_kiem_chuyen_phong`): một tiếng vút lúc lao. `kiem_vu_tam_diep`, `thuan_di_tram`: vút ở mốc gồng + tiếng trúng đúng mốc khựng (lệch 0 ms). `kiem_dan_ban_menh`, `phan_anh_kiem_anh`, `loi_the`: tiếng niệm ở mốc gồng. Năm chiêu mà loại fx đã có tiếng chung lúc ra chiêu (`playFxSound` ở `apps/client/src/game/engine/fxMsgs.ts`: heal, shield, rain, sword) — `hoi_nguyen_thuat`, `linh_khi_ho_the`, `loi_giap`, `loi_lien`, `loi_chich` — chỉ thêm tiếng báo trước ở mốc gồng để không chồng hai tiếng ở t = 0. Bảng sau khi sửa: 84 khớp, 18 có tiếng nhưng không có mốc trúng, 2 câm. **Cố ý để nguyên:** `phi_kiem`, `tran_kiem` (đòn thường: tiếng vung đặt lịch từ sự kiện `windup`, tiếng trúng do sát thương thật phát; thêm vào timeline sẽ kêu cả khi đánh trượt và chồng tiếng), và KHÔNG thêm mốc trúng cho năm chiêu trận/bộ pháp/thế thủ: `hitstop`/`impact` là khựng hình và khung va chạm thật, đặt vào chiêu không đánh trúng ai sẽ làm sai cảm giác; với các loại này 'không có mốc trúng' là đúng.
+
 ## Tab Diễn Võ: mười một nhóm con (28/11)
 
 Cảnh và nhân vật, Quái trong phòng, Hiệu ứng, Nền và màu, Phong cách, Giao diện, Nhịp và HUD, Âm thanh, Động tác, Cân bằng, Thời gian. `apps/client/src/ui/DebugPanel.tsx` là nơi DUY NHẤT gắn nhóm con; công cụ của tuyến khác viết thành component riêng rồi gắn vào đây:
@@ -134,3 +136,50 @@ Mã: `apps/client/src/game/editor/` (`roomLayout.ts` phép sửa thuần có tes
 - Cổng ghi file chỉ tồn tại trong `vite dev`, chỉ nhận từ loopback, cần header `x-dtl-lab` + `content-type: application/json`, chỉ ghi đúng một file sau khi qua `checkDienVoLayout`, thân tối đa 64 KB.
 - Server không có tin nhắn hay lệnh GM nào kích nạp lại; nguồn duy nhất là file trên đĩa của máy chạy server, và danh sách file nóng (`hotKind`) không gồm dữ liệu luật chơi hay phần thưởng (có test).
 - `setDienVoLayout` từ chối bố cục sai và giữ bản đang dùng.
+
+## Xưởng âm thanh + xưởng animation, phần ĐO lúc chạy (V2d, đợt hai 28/11)
+
+Bổ sung cho hai nhóm con "Âm thanh" và "Động tác" ở trên (phát từng tiếng, bảng lệch từ dữ liệu, diễn pose). Phần này đo trên game đang chạy. Mã: `apps/client/src/game/debug/sfxCast.ts`, `apps/client/src/game/debug/animWorkshop.ts`, `apps/client/src/game/debug/footSlide.ts`, `apps/client/src/game/debug/blendLog.ts`, nút + lớp phủ số đo ở `apps/client/src/ui/lab/WorkshopLab.tsx`, kịch bản `pnpm shots xuong` (`tools/perf/src/scenarios/xuong.ts`).
+
+### Lệch tiếng so với khung trúng, theo từng chiêu
+
+- Nút **Lệch theo chiêu**: engine đánh mốc cho chiêu của MÌNH (vào thế, khung trúng của hoạt ảnh, sát thương server về; `castMark` gọi từ `apps/client/src/game/engine/fxMsgs.ts`, không làm gì khi nút tắt) và ghép với nhật ký lời gọi phát tiếng (`sfxProbe`). Lớp phủ cạnh bảng F3 hiện mỗi chiêu một dòng (đòn thường tách từng đòn của chuỗi):
+  - *Khung trúng − dữ liệu*: hoạt ảnh ra đòn sớm/muộn bao nhiêu so với `hitAt` của chiêu.
+  - *Sát thương về*: tin sát thương của server tới so với khung trúng. Âm = về trước, được giữ chờ khung trúng nên tiếng rơi đúng khung; dương = về muộn, tiếng trúng, khựng hình và số sát thương cùng muộn chừng đó.
+  - *Tiếng vung*, *Tiếng trúng* (trung vị) và *Xấu nhất*; quá ±60 ms (`CAST_TOL_MS`) thì tô vàng.
+- Nhật ký tiếng ghi cả khi `?mute=1` (kèm độ trễ đặt lịch của tiếng vung và luật giãn 45 ms), nên số đo khi tắt tiếng giống hệt khi bật. Mọi mốc là `performance.now()`: đo ở tốc độ lớp hình 100%.
+- Dòng đầu ghi **độ trễ ra loa của máy** (`audioLatencyMs`): tiếng tới tai muộn hơn mọi số trong bảng chừng đó (tai nghe Bluetooth có thể trên 150 ms); game không bù được phần này.
+
+### Đồng hồ từng bus
+
+- `busMeter(true)` / `busMeterRead()` (`apps/client/src/game/audio/audio.ts`): đỉnh, trung bình, đỉnh giữ và số lần chạm trần 0 dBFS của bốn bus và của `sum` (tổng bốn bus, tức thứ ra loa khi âm lượng tổng 100%). Đo SAU mức bus, TRƯỚC âm lượng tổng, nên **đo được cả khi tắt tiếng**: lúc đồng hồ bật, SFX vẫn chạy qua bus, âm lượng tổng vẫn bằng 0 nên loa im.
+- `labBusMix(bus, mức | null)`: đổi mức trộn một bus TRONG PHIÊN để thử cân âm; mặc định vẫn là `apps/client/src/game/audio/audioMix.json`, muốn đổi thật thì sửa file đó rồi `pnpm audio:levels`.
+
+### Xưởng animation
+
+- Nhóm nút **Soi** (Mình / Mục tiêu): làm việc qua cổng `labAnim()` của model (`MannequinCharacter`, `SkinnedCharacter` và lớp con, tức nhân vật v3, quái, boss có xương).
+- **Ép clip** + thanh kéo + ◀ ▶ (mỗi bấm 1/30 giây) + **Phát lặp** + **Thả**: ép model đứng ở một mốc của BẤT KỲ clip nào nó có (68 clip với nhân vật v3; quái có idle, run, attack, hit, death…). Xưởng dùng action riêng trên bản sao clip và tạm tắt action của game ngay trước `mixer.update`, nên thả ra là game điều khiển lại, không phải dựng lại gì. Lớp phụ sau mixer (thở, chân bám đất, nhìn mục tiêu) vẫn chạy: đó là thứ người chơi thấy.
+- **Đo chân và chuyển clip** (lớp phủ):
+  - *Trượt chân* theo clip nền đang trội: chân đang trụ (xương mũi bàn chân `ball_l`/`ball_r`, cao không quá 3 cm so với đáy của 1,2 giây gần nhất và lên xuống dưới 1 m/s) mà vẫn dịch ngang thì là trượt. Báo cm trượt trên mỗi mét đi (tô vàng khi trên 12), cm/s lúc trụ, đỉnh. Dịch chuyển tức thời (trên 8 m/s) không tính. Quái bốn chân của bộ Tripo đặt tên xương `leg_fl_2`… nên chưa đo được chân (báo "không tìm thấy xương bàn chân").
+  - *Chuyển clip*: mỗi lần clip TRỘI đổi (clip cũ tắt hẳn hoặc clip mới chiếm gần hết; các clip đi/chạy đổi trọng số qua lại theo tốc độ thì không tính) ghi thời gian clip mới lên, bước nhảy trọng số lớn nhất trong một khung (từ 0,5 = đổi cứng), tốc độ xoay khớp lớn nhất lúc đó (từ 900°/s tô vàng) và TÊN xương xoay nhanh nhất.
+- Lưu ý khi đọc: clip đi/chạy của nhân vật v3 chạy với `timeScale = 0` (pha do model đồng bộ tay) nên KHÔNG dùng `action.isRunning()` để biết clip nào đang góp tư thế; xưởng dùng trọng số hiệu dụng.
+
+### `pnpm shots xuong`
+
+`pnpm shots xuong --out <thư mục> --query style=dahoa [--only cast,anim,loud] [--paths kiem_tu,the_tu] [--ping 150] [--bots 8]`
+
+- `cast`: từng lối tu, dựng nhân vật thử, ra từng ô chiêu lên một con sói khóa máu, in bảng lệch và ghi `xuong.json`.
+- `anim`: chạy tới / lùi / ngang / dừng / né bằng phím thật rồi in trượt chân và chuyển clip; ép clip cho mình và cho quái, chụp ảnh, thả, kiểm game điều khiển lại.
+- `stopfade`: thử A/B thời gian mờ vào của clip dừng (`PATCH_TUNE.stopFade` ở `apps/client/src/game/character/mannequin.ts`, chỉ đổi trong phiên).
+- `ui`: gắn hai nhóm nút vào trang rồi bấm nút thật (6 mục).
+- `loud`: mình đánh bầy sói, rồi thêm ĐÁM ĐÔNG TỔNG HỢP (tiếng đòn của 8 người đứng cách 3 đến 9 m, bắn qua đúng hàm `sfx` của game); in đỉnh giữ từng bus, mật độ lời gọi, và kiểm bộ chặn đỉnh bằng `OfflineAudioContext`. Bot thật (`--fight`) vào phòng nhưng client chưa thấy chúng (chưa rõ vì sao), nên số "8 người" hiện là tổng hợp.
+
+### Phòng đã chỉ ra (28/11, Dạ Họa 720p, máy dev)
+
+- **Đã sửa, vỡ tiếng:** chỉ MỘT người ra chiêu, bus SFX đã chạm +0,3 đến +0,8 dBFS (tiếng vung + tiếng trúng + lớp chồng rơi cùng lúc; 2 đến 3 cửa sổ đo chạm trần trong 12 giây), tức loa bị xén cứng ở âm lượng tổng 100%. Thêm **bộ chặn đỉnh mềm** sau âm lượng tổng (`softLimiter` ở `apps/client/src/game/audio/audio.ts`, đường cong ở `apps/client/src/game/audio/limiter.ts`): WaveShaper tĩnh, dưới −3 dBFS giữ nguyên từng mẫu, trên đó bo dần, không bao giờ vượt 0 dBFS; không trễ, không tự nâng âm lượng như máy nén. Kiểm trên WebAudio thật: sin 0,5 → 0,5; sin 1,5 → 0,997; sin 6 → 1,0. Đám đông tổng hợp 8 người + mình: đỉnh −0,5 dBFS, 47/490 tiếng bị luật giãn 45 ms bỏ; tức đỉnh là do chiêu của chính mình, không phải do đông người.
+- **Đã sửa, tiếng trúng đi sau nhát chém khi có ping:** động tác chiêu của mình bắt đầu ngay khi bấm (dự đoán), còn sát thương về sau đúng một vòng mạng; tiếng trúng, khựng hình, rung và số sát thương đều chờ sát thương. Đo: ping 0 thì chiêu thường muộn 5 đến 60 ms (trong dung sai); **ping giả 150 ms thì muộn 141 đến 222 ms** (9/26 dòng quá dung sai). Đòn nối chuỗi của đòn thường không bị, vì lệnh đã được gửi sớm theo ping (`attackLeadMs`). Sửa: nhịp vào thế của đòn dự đoán diễn chậm lại vừa đủ để khung trúng rơi đúng lúc sát thương về (`windupWarp` ở `apps/client/src/game/character/mannequin.ts`, độ bù `netLagOf` ở `apps/client/src/game/combat/skillPose.ts` = ping engine ước − 30 ms, trần 150 ms; chỉ chiêu thường và đòn mở đầu chuỗi). Sau sửa ở ping giả 150: −10 đến +81 ms (2/26 dòng, sát ngưỡng); ping 0: bù 28 ms, 0 dòng hỏng. Động tác vẫn bắt đầu ngay khi bấm; server không đổi gì.
+- **Chưa sửa, cần nhìn bằng mắt:** lúc DỪNG chạy, clip dừng (`PM_Sprint_To_Idle`, `PM_Run_To_Idle`) lên trong ~58 ms và đùi xoay tới 1700 đến 2700°/s (lúc chạy thường 500 đến 900). Thử mờ vào 0,06 / 0,10 / 0,14 / 0,18 giây: trung vị 1878 / 1889 / 998 / 1095°/s. Mức 0,14 giảm gần một nửa, nhưng clip nền bị hạ về 0 trong ~0,08 giây nên với mờ vào dài hơn tổng trọng số tụt dưới 1 và three trộn thêm tư thế gốc; chưa đổi mặc định (`PATCH_TUNE.stopFade` vẫn 0,06). Muốn sửa đúng thì cho clip nền tắt theo đúng nhịp clip dừng lên (trong `blendBases`).
+- **Đủ 9 lối tu ở ping 0 (sau các sửa trên):** 124 chiêu/đòn đã ra, 70 có tiếng trúng; trung vị của lệch xấu nhất 0 ms. Đòn thường thứ hai của vài lối có lần lẻ lệch 65 đến 107 ms (trung vị vẫn 0 đến 46). Chín chiêu của Hồn tu, Cổ tu, Cấm chế sư hiện "sát thương về" muộn 130 đến 1555 ms: đó là triệu hồi, trận, hút máu, độc (sát thương tới sau theo thiết kế), bảng xếp vào loại *sát thương tới sau* khi quá 300 ms (`CAST_DELAYED_MS`), không tính là lệch. **Giới hạn:** tin sát thương không mang id chiêu, nên khi đang có nguồn sát thương kéo dài (thú triệu hồi, trận, độc) thì cột "sát thương về" của chiêu ra sau bị lẫn; ba dòng 130 đến 237 ms (`skl_lac_thu_dai_tran`, `skl_co_bao`, `skl_pha_diet_cam`) rơi vào trường hợp này, muốn chắc thì đo từng chiêu sau `/gm labreset`.
+- **Đỉnh bus SFX theo lối tu (một người, trước bộ chặn đỉnh):** Thể tu +1,2 dBFS, Cổ tu +1,0, Lôi tu +0,8, Kiếm tu +0,6; năm lối còn lại −0,4 đến −1,6. Tức bốn lối đang vượt 0 dBFS khi đánh một mình.
+- **Trượt chân của nhân vật v3 trong ngưỡng:** chạy nhanh 2,8 cm/m, chạy 5,3 cm/m, nhịp dừng 5,5 cm/m (ngưỡng báo 12). Chân trụ mỗi bước chỉ ~90 ms ở tốc độ chạy nhanh.
+- **Bài học đo:** `action.isRunning()` trả false cho clip đi/chạy (xem trên); ở 120 khung/giây ngưỡng vận tốc dọc 0,35 m/s nhỏ hơn nhiễu; hàm mặt đất `walkableGround` thấp hơn sàn phòng tập 20 cm nên độ cao bàn chân tính theo mặt sàn nhân vật đang đứng.

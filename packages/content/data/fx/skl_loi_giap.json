@@ -183,6 +183,14 @@
     ],
     "ease": "out"
    }
+  },
+  {
+   "type": "soundAt",
+   "t": -0.28,
+   "id": "loi_cast",
+   "gain": 0.35,
+   "rate": 1.0,
+   "jitter": 0.05
   }
  ]
 }

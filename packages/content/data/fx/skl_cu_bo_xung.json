@@ -203,6 +203,14 @@
    ],
    "tone": "rim",
    "tier": 1
+  },
+  {
+   "type": "soundAt",
+   "t": 0,
+   "id": "slash",
+   "gain": 0.4,
+   "rate": 0.7,
+   "jitter": 0.05
   }
  ]
 }

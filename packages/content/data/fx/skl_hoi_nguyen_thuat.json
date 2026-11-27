@@ -221,6 +221,14 @@
    "alpha": 0.97,
    "seed": 4,
    "tier": 2
+  },
+  {
+   "type": "soundAt",
+   "t": -0.38,
+   "id": "cast",
+   "gain": 0.35,
+   "rate": 1.2,
+   "jitter": 0.05
   }
  ],
  "variants": {

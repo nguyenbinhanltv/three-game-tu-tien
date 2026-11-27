@@ -175,6 +175,14 @@
     ],
     "ease": "out"
    }
+  },
+  {
+   "type": "soundAt",
+   "t": -0.28,
+   "id": "cast",
+   "gain": 0.45,
+   "rate": 1.1,
+   "jitter": 0.05
   }
  ]
 }
