@@ -130,11 +130,17 @@ export default {
       await sleep(300);
       await snap(pg, r.out, 'edit-1-bat.png');
 
-      // Kéo bia đá của sàn đấu (1300, 995) sang phải 3 m, xuống 1 m bằng chuột thật.
+      // Thêm một đạo cụ bằng nút (hiện cách nhân vật 2,5 m về phía trên màn hình) rồi kéo nó sang phải 3 m, lên 1 m bằng chuột thật.
       const before = await ed(pg, (e) => e.layout());
-      const idx = before.props.findIndex((p) => p.x === 1300 && p.z === 995);
-      const a = await screenOf(pg, 1300, 995);
-      const b = await screenOf(pg, 1303, 996);
+      await pg.click('.lab-edit-float [data-act="addProp"]');
+      await sleep(600);
+      const added = await ed(pg, (e) => e.layout());
+      const idx = added.props.length - 1;
+      const from = added.props[idx]!;
+      check('thêm đạo cụ bằng nút', added.props.length === before.props.length + 1 && from.id === 'prop_da_dung', JSON.stringify(from));
+      const to = { x: from.x + 3, z: from.z - 1 };
+      const a = await screenOf(pg, from.x, from.z);
+      const b = await screenOf(pg, to.x, to.z);
       await pg.mouse.move(a.x, a.y);
       await pg.mouse.down();
       await pg.mouse.move((a.x + b.x) / 2, (a.y + b.y) / 2, { steps: 4 });
@@ -144,19 +150,18 @@ export default {
       const moved = (await ed(pg, (e) => e.layout())).props[idx];
       check(
         'kéo thả đạo cụ bằng chuột (bám lưới 0,25 m)',
-        !!moved && Math.abs(moved.x - 1303) <= 0.26 && Math.abs(moved.z - 996) <= 0.26,
+        !!moved && Math.abs(moved.x - to.x) <= 0.26 && Math.abs(moved.z - to.z) <= 0.26,
         JSON.stringify(moved),
       );
       const st1 = await ed(pg, (e) => e.state());
-      check('có thay đổi chưa lưu + một bước hoàn tác', st1.dirty && st1.undo === 1 && st1.sel?.i === idx);
+      check('có thay đổi chưa lưu + hai bước hoàn tác', st1.dirty && st1.undo === 2 && st1.sel?.i === idx);
       // Lăn chuột: xoay 15° mỗi nấc.
       await pg.mouse.wheel(0, 100);
       await pg.mouse.wheel(0, 100);
       await sleep(700);
       const yaw = (await ed(pg, (e) => e.layout())).props[idx]!.yaw;
-      check('lăn chuột xoay đạo cụ đang chọn 2 × 15°', Math.abs(yaw - (before.props[idx]!.yaw + Math.PI / 6)) < 0.01, `yaw ${yaw}`);
+      check('lăn chuột xoay đạo cụ đang chọn 2 × 15°', Math.abs(yaw - (from.yaw + Math.PI / 6)) < 0.01, `yaw ${yaw}`);
       await snap(pg, r.out, 'edit-2-keo-xoay.png');
-      // Game không coi cú kéo là bấm chọn mục tiêu / đi tới: nhân vật đứng yên.
       // Thêm đèn và điểm gọi quái bằng nút.
       await pg.click('.lab-edit-float [data-act="addLamp"]');
       await pg.click('.lab-edit-float [data-act="addArena"]');
@@ -165,7 +170,7 @@ export default {
       const l2 = await ed(pg, (e) => e.layout());
       check(
         'thêm đèn đá và điểm gọi quái bằng nút',
-        l2.props.length === before.props.length + 1 && l2.spawns.arena.length === 1 && l2.spawns.arena[0]!.x === 1296,
+        l2.props.length === before.props.length + 2 && l2.spawns.arena.length === 1 && l2.spawns.arena[0]!.x === 1296,
         JSON.stringify(l2.spawns),
       );
       await snap(pg, r.out, 'edit-3-them-den-diem-goi.png');
@@ -181,7 +186,7 @@ export default {
       await pg.click('.lab-edit-float [data-act="save"]');
       const saved = await waitFor('lưu', async () => (await ed(pg, (e) => e.state())).msg?.key === 'ui.gm.lab.edit.msg.saved');
       const disk = JSON.parse(fs.readFileSync(LAYOUT, 'utf8')) as Layout;
-      check('Lưu: file bố cục trên đĩa đổi đúng', saved && disk.spawns.arena[0]?.x === 1296 && disk.props.length === before.props.length + 1);
+      check('Lưu: file bố cục trên đĩa đổi đúng', saved && disk.spawns.arena[0]?.x === 1296 && disk.props.length === before.props.length + 2);
       await sleep(600);
       check('…bảng báo khớp với file, trang không tải lại', !(await ed(pg, (e) => e.state())).dirty && (await alive()));
       // Server (devReload) đã đọc lại file: quái gọi ra đứng đúng điểm gọi vừa đặt.
@@ -209,6 +214,8 @@ export default {
         back && JSON.stringify(l3) === JSON.stringify(JSON.parse(layout0)) && (await alive()),
       );
       await gm(pg, 'labreset', 1500);
+      // `labreset` bỏ đóng băng: bật lại, không thì quái chạy tới đánh trước khi kịp đo chỗ đứng.
+      await gm(pg, 'freeze', 900);
       await gm(pg, 'spawn mon_soi_xam 1', 1800);
       const at2 = (await monsters(pg))[0] as unknown as { x: number; z: number } | undefined;
       check('server về lại chỗ gọi mặc định (tâm sàn đấu)', !!at2 && Math.hypot(at2.x - 1300, at2.z - 985) < 0.6);
