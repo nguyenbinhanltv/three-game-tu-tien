@@ -638,6 +638,11 @@ function spriteNodesImpl(U: FxUniforms, group: SpriteGroup): { color: N; opacity
   const cAmber = vec3(0.86, 0.58, 0.12);
   const cT = smoothstep(0.1, 0.78, spLum.sqrt());
   const cRamp = mix(mix(mix(cCore, cBody, smoothstep(0.05, 0.5, cT)), cRim, smoothstep(0.5, 0.84, cT)), cAmber, smoothstep(0.9, 1.0, cT));
+  // Kiểu 15 (`spriteStyle: 15`, 28/11): như 11 nhưng thân sáng hơn và dải VIỀN SÁNG rộng, rộng hơn nữa phần hổ phách; cho chiêu Cổ Thần bị cổng báo "chìm vào nền"
+  // (đá nâu sẫm trên sàn đêm). Cùng bảng màu nguyên tố (nâu đất + hổ phách), không đổi dáng, các chiêu khác dùng kiểu 11 giữ nguyên.
+  const cBody2 = vec3(0.46, 0.25, 0.09);
+  const cRim2 = vec3(0.95, 0.74, 0.42);
+  const cRamp2 = mix(mix(mix(cCore, cBody2, smoothstep(0.04, 0.4, cT)), cRim2, smoothstep(0.32, 0.68, cT)), cAmber, smoothstep(0.78, 0.96, cT));
   // Kiểu vẽ tay của tinh anh A3 (`fxA.x` = 6 xương `cot_`, 7 đất-đá-độc `tho_`/`doc_`, 8 sét tím `tim_`). Bụi/đất nửa trong suốt trên nền chroma bị khử viền thành hồng, nên xương và đất
   // tô theo bảng độ sáng (ngà / nâu) thay vì lấy màu gốc; riêng phần ngả lục (ngọc, độc: g > r) giữ màu Codex vẽ. Sét tím giữ nguyên màu.
   const boneRamp = mix(
@@ -690,7 +695,7 @@ function spriteNodesImpl(U: FxUniforms, group: SpriteGroup): { color: N; opacity
   // Kiểu 14 (`spriteStyle: 14` của sự kiện): như 12 nhưng NÉT SÁNG của tranh giữ màu thân (chỉ điểm trắng nhất ánh nhẹ `rim`). Cho tranh toàn nét trắng
   // (lưới lục giác `chung_hexweb` của mặt Âm) cần ra đúng màu bảng thay vì trôi lên trắng như khiên.
   const pRamp3 = mix(mix(U.color.mul(0.15), U.color, smoothstep(0.08, 0.5, pT)), spRimIn, smoothstep(0.95, 1.0, pT).mul(0.3));
-  const spStyled3 = mix(mix(mix(mix(spStyled2, nHybrid, is(10)), pRamp, is(12)), pRamp2, is(13)), pRamp3, is(14));
+  const spStyled3 = mix(mix(mix(mix(mix(spStyled2, nHybrid, is(10)), pRamp, is(12)), pRamp2, is(13)), pRamp3, is(14)), cRamp2, is(15));
   // Tan như khói mỏng dần: nhiễu thấp tần + mép mỏng (tranh sáng/trong) tan trước, ngưỡng rộng nên không ra đường cắt răng cưa.
   const spE = vnoise(q.mul(vec2(5, 7)).add(U.a.z.mul(7)))
     .mul(0.55)

@@ -3,7 +3,7 @@
 // Có `--base <thư mục bộ trước>` thì so từng cảnh bằng SSIM/ΔE (tools/painted-compare/compare.mjs) và dựng trang trước/sau `index.html`.
 //   pnpm shots dienvo --out <thư mục> [--view 720p|1080p] [--query style=dahoa] [--base <thư mục>] [--ssim 0.9] [--only id1,id2]
 //                     [--quality high|medium|low] [--renderer webgl2] [--diag 1] [--layersoff 2,3] [--fx id1,id2] [--panel 1]
-//                     [--ping 150] [--swings 1 --window 4000] [--crowd 8,20,50] [--fx 'skl_kiem*' --gate 1 [--far 8] [--keepbare 1] [--repeat 3] [--ms 33,100,...]] [--silhouette 1] [--floor light|grass|snow] [--styles 1]
+//                     [--ping 150] [--swings 1 --window 4000] [--crowd 8,20,50] [--fx 'skl_kiem*' --gate 1 [--far 8] [--keepbare 1] [--repeat 3] [--ms 33,100,...] [--fxperf 1 --repeat 3]] [--silhouette 1] [--floor light|grass|snow] [--styles 1]
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -702,6 +702,71 @@ export default {
       type Gate = { pop: number; selfOnly?: boolean; coverMax?: number; solid?: number; cover: number | null; glare: number; spread: number; live: number; dur: number | null; fail: string[] };
       const fxRows: { id: string; ok: boolean; gate?: Gate }[] = [];
       const frames2 = () => pg.evaluate(() => new Promise<void>((res) => requestAnimationFrame(() => requestAnimationFrame(() => res()))));
+      // `--fxperf 1`: ĐO HIỆU NĂNG từng chiêu ở giờ thật (không dừng lớp hình): mỗi chiêu phát N lượt, trong 1,4 s ghi mọi khung — draw call đỉnh và
+      // trung bình, thời gian khung trung bình / p95 / lớn nhất (ms, đo CPU+nộp lệnh GPU, KHÔNG có thời gian GPU thuần) — rồi lấy TRUNG VỊ các lượt;
+      // kèm khung nền không hiệu ứng để trừ. Dùng so một bản thí điểm với bản hiện tại (`--fx a,a__pilot`).
+      if (opt('--fxperf', '')) {
+        const reps = Math.max(1, num('--repeat', 3));
+        const med = (a: number[]) => [...a].sort((x, y) => x - y)[Math.floor(a.length / 2)]!;
+        // Mã chạy TRONG trang viết dạng chuỗi (hàm lồng trong evaluate bị esbuild chèn `__name`, không có trong trang).
+        const sample = (play: string): Promise<{ drawMax: number; drawMean: number; frameMean: number; frameP95: number; frameMax: number }> =>
+          pg.evaluate(`(async () => {
+            const g = window.__game;
+            g.timeScale = 1;
+            const ms = [];
+            let drawMax = 0, drawSum = 0, n = 0;
+            if (${JSON.stringify(play)}) g.labFx(${JSON.stringify(play)});
+            let last = performance.now();
+            const end = last + 1400;
+            await new Promise((res) => {
+              const tick = () => {
+                const now = performance.now();
+                ms.push(now - last); last = now;
+                const d = g.info().drawCalls;
+                drawMax = Math.max(drawMax, d); drawSum += d; n++;
+                if (now < end) requestAnimationFrame(tick); else res();
+              };
+              requestAnimationFrame(tick);
+            });
+            ms.shift(); ms.sort((x, y) => x - y);
+            return { drawMax, drawMean: drawSum / Math.max(1, n), frameMean: ms.reduce((x, y) => x + y, 0) / Math.max(1, ms.length), frameP95: ms[Math.floor(ms.length * 0.95)] || 0, frameMax: ms[ms.length - 1] || 0 };
+          })()`) as Promise<{ drawMax: number; drawMean: number; frameMean: number; frameP95: number; frameMax: number }>;
+        const waitIdle = async () => {
+          const until = Date.now() + 9000;
+          while (Date.now() < until && (await pg.evaluate(() => (window.__game as unknown as { vfx: { pool: { live: number } } }).vfx.pool.live)) > 0) await sleep(250);
+          await sleep(400);
+        };
+        const rows: Record<string, unknown>[] = [];
+        const base: Awaited<ReturnType<typeof sample>>[] = [];
+        for (let i = 0; i < reps; i++) {
+          await waitIdle();
+          base.push(await sample(''));
+        }
+        const b = { drawMax: med(base.map((x) => x.drawMax)), frameMean: med(base.map((x) => x.frameMean)), frameP95: med(base.map((x) => x.frameP95)) };
+        console.log(`  [nền, không hiệu ứng] draw ${b.drawMax}, khung ${b.frameMean.toFixed(2)} ms (p95 ${b.frameP95.toFixed(2)})`);
+        for (const id of fxIds) {
+          const runs: Awaited<ReturnType<typeof sample>>[] = [];
+          for (let i = 0; i < reps; i++) {
+            await waitIdle();
+            runs.push(await sample(id));
+          }
+          const r = {
+            id,
+            drawMax: med(runs.map((x) => x.drawMax)),
+            drawPlus: med(runs.map((x) => x.drawMax)) - b.drawMax,
+            frameMean: +med(runs.map((x) => x.frameMean)).toFixed(2),
+            frameP95: +med(runs.map((x) => x.frameP95)).toFixed(2),
+            frameMax: +med(runs.map((x) => x.frameMax)).toFixed(2),
+          };
+          rows.push(r);
+          console.log(`  ${id.padEnd(34)} draw đỉnh ${String(r.drawMax).padStart(3)} (+${r.drawPlus})  khung TB ${r.frameMean} ms  p95 ${r.frameP95}  max ${r.frameMax}`);
+        }
+        await gm(pg, 'labreset', 1500);
+        await gm(pg, 'dvt');
+        await waitLevel(pg, 'van_lam');
+        writeJson(r.out, `dienvo-fxperf-${view}.json`, { view, query, base: b, rows });
+        return;
+      }
       // `--repeat N`: chấm mỗi chiêu N lượt rồi lấy TRUNG VỊ (cổng đo che dao động giữa các lượt vì vị trí/nhịp quái trong phòng khác nhau).
       const repeat = Math.max(1, num('--repeat', 1));
       // `--ms 0,50,100,...`: danh sách mốc (ms, tăng dần) của cổng thay cho năm mốc mặc định; dùng để chụp chuỗi khung dựng clip trước/sau.
