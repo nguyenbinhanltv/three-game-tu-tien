@@ -128,10 +128,10 @@
   {
    "type": "mesh",
    "t": -0.04,
-   "dur": 0.5,
+   "dur": 0.34,
    "at": "self",
    "sweep": 0,
-   "erodeFrom": 0.6,
+   "erodeFrom": 0.4,
    "ragged": 0.5,
    "tone": "body",
    "alpha": 0.95,
@@ -142,18 +142,18 @@
    "billboard": true,
    "offset": [
     0,
-    2.2,
-    0.8
+    1.2,
+    0.4
    ],
-   "scale": 4.32,
-   "scaleTo": 4.32,
+   "scale": 3.24,
+   "scaleTo": 3.24,
    "align": "aim",
    "move": {
     "to": "target",
     "offset": [
      0,
-     1.9,
-     0
+     4.6,
+     1
     ],
     "ease": "out"
    }
@@ -161,13 +161,13 @@
   {
    "type": "mesh",
    "t": 0,
-   "dur": 0.55,
+   "dur": 0.32,
    "at": "self",
    "sweep": 0,
-   "erodeFrom": 0.4,
+   "erodeFrom": 0.25,
    "ragged": 0.5,
    "tone": "body",
-   "alpha": 0.5,
+   "alpha": 0.35,
    "tier": 0,
    "seed": 1002,
    "shape": "sprite",
@@ -175,18 +175,18 @@
    "billboard": true,
    "offset": [
     0,
-    1.9,
+    1.1,
     0
    ],
-   "scale": 3.78,
-   "scaleTo": 3.78,
+   "scale": 2.88,
+   "scaleTo": 2.88,
    "align": "aim",
    "move": {
     "to": "target",
     "offset": [
      0,
-     1.7,
-     0
+     4.2,
+     0.6
     ],
     "ease": "out"
    }
@@ -211,10 +211,10 @@
   {
    "type": "mesh",
    "t": 0.05,
-   "dur": 0.6,
+   "dur": 0.3,
    "at": "target",
    "sweep": 0,
-   "erodeFrom": 0.25,
+   "erodeFrom": 0.2,
    "ragged": 0.5,
    "tone": "body",
    "alpha": 0.9,
@@ -225,7 +225,7 @@
    "billboard": true,
    "offset": [
     0,
-    1.1,
+    2.7,
     0
    ],
    "scale": 2.34,
@@ -234,7 +234,7 @@
   {
    "type": "mesh",
    "t": 0.03,
-   "dur": 0.18,
+   "dur": 0.12,
    "at": "target",
    "sweep": 0,
    "erodeFrom": 0.3,
@@ -248,11 +248,11 @@
    "billboard": true,
    "offset": [
     0,
-    1.4,
+    1.9,
     0
    ],
-   "scale": 2.34,
-   "scaleTo": 2.93
+   "scale": 1.98,
+   "scaleTo": 2.48
   },
   {
    "type": "mesh",
@@ -271,7 +271,7 @@
    "billboard": true,
    "offset": [
     0,
-    1.5,
+    2.8,
     0
    ],
    "scale": 2.52,
@@ -280,7 +280,7 @@
     "to": "target",
     "offset": [
      0,
-     2.8,
+     4.1,
      0
     ],
     "ease": "out"
@@ -298,7 +298,7 @@
    "at": "target",
    "offset": [
     0,
-    1.5,
+    2.5,
     0
    ],
    "tone": "rim",

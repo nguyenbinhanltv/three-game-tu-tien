@@ -173,7 +173,7 @@
     "to": "target",
     "offset": [
      0,
-     1,
+     2.6,
      0
     ],
     "ease": "in"
@@ -199,13 +199,13 @@
   {
    "type": "mesh",
    "t": 0,
-   "dur": 0.9,
+   "dur": 0.36,
    "at": "target",
    "sweep": 0,
-   "erodeFrom": 0.35,
+   "erodeFrom": 0.15,
    "ragged": 0.5,
    "tone": "body",
-   "alpha": 0.81,
+   "alpha": 0.3,
    "tier": 0,
    "seed": 1002,
    "shape": "sprite",
@@ -222,13 +222,13 @@
   {
    "type": "mesh",
    "t": 0.06,
-   "dur": 0.8,
+   "dur": 0.36,
    "at": "target",
    "sweep": 0,
-   "erodeFrom": 0.3,
+   "erodeFrom": 0.2,
    "ragged": 0.5,
    "tone": "body",
-   "alpha": 0.51,
+   "alpha": 0.38,
    "tier": 0,
    "seed": 1003,
    "shape": "sprite",
@@ -236,7 +236,7 @@
    "billboard": true,
    "offset": [
     0,
-    1.6,
+    3.1,
     0
    ],
    "scale": 2.24,
@@ -245,7 +245,7 @@
   {
    "type": "mesh",
    "t": 0.02,
-   "dur": 0.18,
+   "dur": 0.12,
    "at": "target",
    "sweep": 0,
    "erodeFrom": 0.3,
@@ -259,11 +259,11 @@
    "billboard": true,
    "offset": [
     0,
-    1.1,
+    1.9,
     0
    ],
-   "scale": 2.02,
-   "scaleTo": 2.52
+   "scale": 1.46,
+   "scaleTo": 1.82
   },
   {
    "type": "mesh",
@@ -282,7 +282,7 @@
    "billboard": true,
    "offset": [
     0,
-    1.5,
+    2.9,
     0
    ],
    "scale": 1.68,
@@ -291,7 +291,7 @@
     "to": "target",
     "offset": [
      0,
-     3,
+     4.4,
      0
     ],
     "ease": "out"
