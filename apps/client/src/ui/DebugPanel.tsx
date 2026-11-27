@@ -43,6 +43,7 @@ import { FX_LAYER_OFF } from '../game/fx/fxTimeline';
 import { sfxNames, sfxProbe } from '../game/audio/audio';
 import { fxAudioReport } from '../game/debug/fxAudio';
 import { Button } from './u2/win';
+import { CastControls, ClipControls } from './lab/WorkshopLab';
 import { type DebugPerf, set, useUI } from './store';
 
 /** Ngân sách desktop (CLAUDE.md, skill perf-budget): vượt thì tô đỏ, tới 80% thì tô vàng. */
@@ -128,7 +129,7 @@ const LAB_PHASES = [0, 1, 2, 3];
 const LAB_SPEEDS = [100, 50, 25, 10];
 const LAB_PINGS = [0, 50, 150, 300];
 /** Nhóm con của tab Diễn Võ: bảng F3 không cuộn được nên mỗi lúc chỉ hiện một nhóm cho vừa màn 720p. */
-const LAB_TABS = ['scene', 'mon', 'fx', 'look', 'style', 'ui', 'feel', 'snd', 'anim', 'time'] as const;
+const LAB_TABS = ['scene', 'mon', 'fx', 'look', 'style', 'ui', 'feel', 'snd', 'anim', 'bal', 'time'] as const;
 const LAB_STYLE_SLOTS = ['A', 'B'] as const;
 const FX_IDS = [...FX_TIMELINE.keys()].sort();
 /** Số lớp tối đa hiện nút bật tắt (bảng F3 không cuộn được; timeline dài hơn thì soi phần còn lại bằng `pnpm shots dienvo --layersoff`). */
@@ -232,6 +233,7 @@ function SoundLab() {
         ))}
         {st && <span data-testid="lab-snd-music">{t('ui.gm.lab.snd.music_now', { track: st.music.track ?? '—', level: st.music.level })}</span>}
       </div>
+      <CastControls />
     </>
   );
 }
@@ -276,6 +278,85 @@ function PoseLab() {
           </div>
         </>
       )}
+      <ClipControls />
+    </>
+  );
+}
+
+const BAL_BOSSES = MONSTERS.filter((m) => m.boss || m.elite);
+const BAL_HP = [100, 75, 50, 25, 5];
+const BAL_CASTS = ['chant', 'sweep', 'slam', 'caster', 'line', 'leap', 'charge', 'burrow', 'summon', 'reflect', 'reveal'] as const;
+
+/**
+ * Nhóm "Cân bằng / Sân boss" (V2e): nút cho các lệnh GM của bàn cân bằng (`/gm dps`, `/gm dummy`) và sân boss (`/gm boss`, `/gm phase`, `/gm hp`,
+ * `/gm cast`). Mỗi nút gửi MỘT lệnh; server quyết định và trả lời ở khung chat (server bỏ lệnh chat cách nhau dưới ~1 giây, bấm thong thả).
+ * Chi tiết lệnh ở docs/handbook/dien-vo-can-bang.md.
+ */
+function BalanceLab() {
+  const [dummy, setDummy] = useState(MONSTERS[0]?.id ?? '');
+  const [boss, setBoss] = useState(BAL_BOSSES[0]?.id ?? '');
+  const [lv, setLv] = useState(30);
+  const [cast, setCast] = useState<string>(BAL_CASTS[0]);
+  const levels = LAB_LEVELS.map((v) => ({ value: v, label: realmName(v) }));
+  return (
+    <>
+      <div className="debug-row wrap">
+        <span>{t('ui.gm.lab.bal.dps')}</span>
+        <Button size="s" variant="primary" onClick={() => gm('dps start')}>
+          {t('ui.gm.lab.bal.dps_start')}
+        </Button>
+        <Button size="s" onClick={() => gm('dps')}>
+          {t('ui.gm.lab.bal.dps_show')}
+        </Button>
+        <Button size="s" onClick={() => gm('dps stop')}>
+          {t('ui.gm.lab.bal.dps_stop')}
+        </Button>
+        <Pick label={t('ui.debug.realm')} value={lv} onChange={setLv} options={levels} />
+      </div>
+      <div className="debug-row wrap">
+        <Pick label={t('ui.gm.lab.bal.dummy')} value={dummy} onChange={setDummy} options={MONSTERS.map((m) => ({ value: m.id, label: monsterName(m.id) }))} />
+        <Button size="s" disabled={!dummy} onClick={() => gm(`dummy ${dummy} ${lv}`)}>
+          {t('ui.gm.lab.bal.dummy_set')}
+        </Button>
+        <Button size="s" onClick={() => gm('dummy off')}>
+          {t('ui.gm.lab.bal.dummy_off')}
+        </Button>
+      </div>
+      <div className="debug-row wrap">
+        <Pick label={t('ui.gm.lab.bal.boss')} value={boss} onChange={setBoss} options={BAL_BOSSES.map((m) => ({ value: m.id, label: monsterName(m.id) }))} />
+        <Button size="s" variant="primary" disabled={!boss} onClick={() => gm(`boss ${boss} ${lv}`)}>
+          {t('ui.gm.lab.bal.boss_call')}
+        </Button>
+        <span>{t('ui.gm.lab.phase')}</span>
+        {LAB_PHASES.map((n) => (
+          <Button key={n} size="s" onClick={() => gm('phase ' + n)}>
+            {String(n + 1)}
+          </Button>
+        ))}
+        <Button size="s" onClick={() => gm('phase off')}>
+          {t('ui.gm.lab.bal.phase_off')}
+        </Button>
+      </div>
+      <div className="debug-row wrap">
+        <span>{t('ui.gm.lab.bal.hp')}</span>
+        {BAL_HP.map((n) => (
+          <Button key={n} size="s" onClick={() => gm('hp ' + n)}>
+            {t('ui.gm.lab.uirate_v', { n })}
+          </Button>
+        ))}
+      </div>
+      <div className="debug-row wrap">
+        <Pick label={t('ui.gm.lab.bal.cast')} value={cast} onChange={setCast} options={BAL_CASTS.map((k) => ({ value: k, label: t('ui.gm.lab.bal.cast.' + k) }))} />
+        <Button size="s" onClick={() => gm('cast ' + cast)}>
+          {t('ui.gm.lab.bal.cast_once')}
+        </Button>
+        <Button size="s" onClick={() => gm(`cast ${cast} loop`)}>
+          {t('ui.gm.lab.bal.cast_loop')}
+        </Button>
+        <Button size="s" onClick={() => gm('cast off')}>
+          {t('ui.gm.lab.bal.cast_off')}
+        </Button>
+      </div>
     </>
   );
 }
@@ -840,6 +921,7 @@ function Tools({ compact, onCompact }: { compact: boolean; onCompact: (v: boolea
           {labTab === 'feel' && <FeelLab />}
           {labTab === 'snd' && <SoundLab />}
           {labTab === 'anim' && <PoseLab />}
+          {labTab === 'bal' && <BalanceLab />}
           {labTab === 'time' && (
             <>
               <div className="debug-row wrap">

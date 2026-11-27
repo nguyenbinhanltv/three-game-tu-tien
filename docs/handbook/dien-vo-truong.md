@@ -46,9 +46,18 @@ Hai nhóm con mới của tab Diễn Võ. Chơi thử tự động luôn tắt t
 
 **Phòng đã chỉ ra (dữ liệu 104 timeline `skl_*`, 28/11):** 82 chiêu có tiếng khớp mốc trúng (không chiêu nào lệch quá 60 ms). **17 chiêu KHÔNG có sự kiện tiếng nào trong timeline**: `cu_bo_xung`, `hoi_nguyen_thuat`, `kiem_anh_bo`, `kiem_dan_ban_menh`, `kiem_vu_tam_diep`, `linh_khi_ho_the`, `loi_chich`, `loi_giap`, `loi_lien`, `loi_the`, `nghich_kiem_chuyen_phong`, `pha_phong_tien`, `phan_anh_kiem_anh`, `phi_kiem`, `thiem_loi_bo`, `thuan_di_tram`, `tran_kiem` (có thể vẫn có tiếng chung lúc ra chiêu từ đường khác; cần người nghe xác nhận). 5 chiêu không có mốc trúng (không khựng hình, không khung va chạm): `kim_thien_co`, `luu_huong_bo`, `ngu_kiem_tran`, `thai_hu_ho_tran`, `u_anh_bo` (đều là chiêu trận/bộ pháp, có thể cố ý). Sửa dữ liệu timeline là việc của tuyến VFX.
 
+## Tab Diễn Võ: mười một nhóm con (28/11)
+
+Cảnh và nhân vật, Quái trong phòng, Hiệu ứng, Nền và màu, Phong cách, Giao diện, Nhịp và HUD, Âm thanh, Động tác, Cân bằng, Thời gian. `apps/client/src/ui/DebugPanel.tsx` là nơi DUY NHẤT gắn nhóm con; công cụ của tuyến khác viết thành component riêng rồi gắn vào đây:
+
+- Âm thanh và Động tác có thêm `CastControls` / `ClipControls` của xưởng đo lúc chạy (`apps/client/src/ui/lab/WorkshopLab.tsx`).
+- **Cân bằng** (`BalanceLab`): nút cho các lệnh của bàn cân bằng và sân boss (`/gm dps`, `/gm dummy`, `/gm boss`, `/gm phase`, `/gm hp`, `/gm cast`; chi tiết lệnh ở `docs/handbook/dien-vo-can-bang.md`). Mỗi nút gửi một lệnh; server bỏ lệnh chat cách nhau dưới khoảng một giây nên bấm thong thả.
+
+`pnpm shots labui --only panel` soát MỌI nhóm con (đọc danh sách từ chính bảng nên nhóm mới tự được soát): mọi nút/ô nằm trong khung 720p, mở không sinh lỗi console; rồi bấm nút thật Đặt hình nộm, Gọi vào hố boss, tua máu 25% và đối chiếu quái trong phòng (15/15). Chạy lại sau mỗi lần có công cụ mới gắn vào tab.
+
 ## `pnpm shots labui`
 
-`pnpm shots labui --out <thư mục> --query style=dahoa [--only tools,contrast,motion,windows,sound,anim] [--win char,wardrobe] [--winwait 900]`
+`pnpm shots labui --out <thư mục> --query style=dahoa [--only tools,contrast,motion,windows,sound,anim,panel] [--win char,wardrobe] [--winwait 900]`
 
 - `tools`: bấm nút thật các công cụ trên rồi đối chiếu trạng thái game (20 mục).
 - `contrast`: **tương phản chữ HUD trên nền thật** (WCAG AA). Dồn HUD nặng nhất, lấy hộp + màu của từng dòng chữ, chụp lại với chữ trong suốt để có nền ngay dưới chữ, tính tỉ lệ tương phản theo từng điểm ảnh; dòng có phân vị 10% dưới 4,5 (chữ lớn: 3) bị báo, kèm ảnh đánh dấu `contrast-1-danh-dau.png` (đỏ: không có bóng chữ; cam: có bóng chữ nên thực tế dễ đọc hơn con số). Chữ tô bằng nền cắt theo chữ (tên boss) không đo được, đếm riêng.
