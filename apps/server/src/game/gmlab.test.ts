@@ -193,6 +193,30 @@ describe('bàn cân bằng và sân boss (V2e)', () => {
     expect(labMeter.active(p)).toBe(false);
   });
 
+  it('tin sát thương mang id chiêu CHỈ khi người đánh đang bật đồng hồ', async () => {
+    const { S } = await import('@dtl/shared');
+    const { labMeter } = await import('./gm/meter');
+    const { sim, p, mon, gm } = setup();
+    const out: { sk?: string }[] = [];
+    const host = (sim as unknown as { host: { broadcast(t: string, m: unknown): void; broadcastExcept?: unknown } }).host;
+    host.broadcastExcept = undefined;
+    host.broadcast = (t, m) => {
+      if (t === S.DMG) out.push(m as { sk?: string });
+    };
+    const m = mon();
+    gm('lockhp on');
+    sim.damageMonster(m, 10, p);
+    expect(out.at(-1)).toBeDefined();
+    expect(out.at(-1)!.sk).toBeUndefined();
+    gm('dps');
+    labMeter.cast(p, 'skl_kiem_khi_tram');
+    sim.damageMonster(m, 10, p);
+    expect(out.at(-1)!.sk).toBe('skl_kiem_khi_tram');
+    gm('dps stop');
+    sim.damageMonster(m, 10, p);
+    expect(out.at(-1)!.sk).toBeUndefined();
+  });
+
   it('dummy: chỉ trong phòng tập; hình nộm đứng yên, cạn máu thì tính một lần hạ rồi hồi đầy', async () => {
     const { labMeter } = await import('./gm/meter');
     const out = setup();
