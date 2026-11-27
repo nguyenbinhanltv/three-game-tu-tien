@@ -235,10 +235,10 @@
    "offset": [
     0,
     1.25,
-    0
+    -1
    ],
-   "scale": 3.94,
-   "scaleTo": 4.8
+   "scale": 2.62,
+   "scaleTo": 3.2
   },
   {
    "type": "mesh",
@@ -249,7 +249,7 @@
    "erodeFrom": 0.45,
    "ragged": 0.5,
    "tone": "body",
-   "alpha": 0.16,
+   "alpha": 0.3,
    "tier": 0,
    "seed": 1002,
    "shape": "sprite",
@@ -258,10 +258,10 @@
    "offset": [
     0,
     1.25,
-    0
+    -1
    ],
-   "scale": 4.8,
-   "scaleTo": 4.8
+   "scale": 3.2,
+   "scaleTo": 3.2
   },
   {
    "type": "mesh",
@@ -281,10 +281,10 @@
    "offset": [
     0,
     1.4,
-    0
+    -1
    ],
-   "scale": 4.2,
-   "scaleTo": 4.2
+   "scale": 2.8,
+   "scaleTo": 2.8
   },
   {
    "type": "mesh",
@@ -304,10 +304,10 @@
    "offset": [
     0,
     1.3,
-    0
+    -0.5
    ],
-   "scale": 2.8,
-   "scaleTo": 3.5
+   "scale": 1.8,
+   "scaleTo": 2.25
   },
   {
    "type": "decal",
@@ -352,7 +352,7 @@
    "erodeFrom": 0.2,
    "ragged": 0.5,
    "tone": "body",
-   "alpha": 0.2,
+   "alpha": 0.3,
    "tier": 0,
    "seed": 1005,
    "shape": "sprite",
@@ -360,17 +360,17 @@
    "billboard": true,
    "offset": [
     0,
-    1.4,
-    0
+    1.6,
+    -1
    ],
-   "scale": 3,
-   "scaleTo": 3,
+   "scale": 2,
+   "scaleTo": 2,
    "move": {
     "to": "self",
     "offset": [
      0,
-     2.8,
-     0
+     3,
+     -1
     ],
     "ease": "out"
    }
