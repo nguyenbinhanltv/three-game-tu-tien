@@ -157,7 +157,12 @@ function useToastDodge(ref: RefObject<HTMLDivElement | null>, active: boolean): 
       let minY = 8;
       for (const f of document.querySelectorAll<HTMLElement>('.hud .target-frame, .hud .boss-bar')) minY = Math.max(minY, f.getBoundingClientRect().bottom + 6);
       const vw = window.innerWidth;
-      const o = dodgeOffset(box, avoid, { minY, minX: Math.min(330, vw * 0.26), maxX: vw - Math.min(210, vw * 0.17) });
+      // Mép phải được phép: sát cụm góc phải (nút bảng + bản đồ nhỏ) đang hiện; mép trái: sát cụm góc trái.
+      const tr = document.querySelector<HTMLElement>('.hud .u2h-tr')?.getBoundingClientRect();
+      const tl = document.querySelector<HTMLElement>('.hud .u2h-tl')?.getBoundingClientRect();
+      const maxX = tr && tr.width > 0 ? tr.left - 8 : vw - Math.min(210, vw * 0.17);
+      const minX = tl && tl.width > 0 ? tl.right + 8 : Math.min(330, vw * 0.26);
+      const o = dodgeOffset(box, avoid, { minY, minX, maxX });
       apply(Math.round(o.dx / zoom), Math.round(o.dy / zoom));
     };
     tick();
