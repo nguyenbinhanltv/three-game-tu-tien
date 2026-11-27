@@ -27,27 +27,19 @@ import bachoang from './scenarios/bachoang';
 import lvlchain from './scenarios/lvlchain';
 import vandinh from './scenarios/vandinh';
 import cuukieu from './scenarios/cuukieu';
-import isoquest from './scenarios/isoquest';
-import isoplay from './scenarios/isoplay';
 import kieu from './scenarios/kieu';
 import doanmach from './scenarios/doanmach';
 import vanhai from './scenarios/vanhai';
 import map from './scenarios/map';
 import mons from './scenarios/mons';
 import camiso from './scenarios/camiso';
-import densefly from './scenarios/densefly';
 import flytrail from './scenarios/flytrail';
-import flybench from './scenarios/flybench';
-import densep00 from './scenarios/densep00';
-import densefade from './scenarios/densefade';
-import vista from './scenarios/vista';
 import terrainflow from './scenarios/terrainflow';
 import points from './scenarios/points';
 import propstc from './scenarios/propstc';
 import huyenkiep from './scenarios/huyenkiep';
 import kiepch6 from './scenarios/kiepch6';
 import kiepsan from './scenarios/kiepsan';
-import ual from './scenarios/ual';
 import chrv3 from './scenarios/chrv3';
 import chrv3anim from './scenarios/chrv3anim';
 import chrv3feet from './scenarios/chrv3feet';
@@ -63,12 +55,9 @@ import cotu from './scenarios/cotu';
 import camchevfx from './scenarios/camchevfx';
 import animlab from './scenarios/animlab';
 import envreal from './scenarios/envreal';
-import hpl2ms from './scenarios/hpl2ms';
 import tpmove from './scenarios/tpmove';
-import tp2 from './scenarios/tp2';
 import vfxlab from './scenarios/vfxlab';
 import vfxmon from './scenarios/vfxmon';
-import path2428vfx from './scenarios/path2428vfx';
 import pathaura from './scenarios/pathaura';
 import camche from './scenarios/camche';
 import rigstretch from './scenarios/rigstretch';
@@ -81,7 +70,6 @@ import touch from './scenarios/touch';
 import ui from './scenarios/ui';
 import minimap from './scenarios/minimap';
 import vfx from './scenarios/vfx';
-import uichecks from './scenarios/uichecks';
 import vs2 from './scenarios/vs2';
 import hontu from './scenarios/hontu';
 import realmaura from './scenarios/realmaura';
@@ -94,12 +82,7 @@ import collscan from './scenarios/collscan';
 
 const SCENARIOS: Scenario[] = [
   camiso,
-  densefly,
   flytrail,
-  flybench,
-  densep00,
-  densefade,
-  vista,
   terrainflow,
   points,
   collscan,
@@ -115,8 +98,6 @@ const SCENARIOS: Scenario[] = [
   vandinh,
   cuukieu,
   kieu,
-  isoplay,
-  isoquest,
   doanmach,
   vanhai,
   map,
@@ -125,7 +106,6 @@ const SCENARIOS: Scenario[] = [
   dungeon,
   asset,
   vfx,
-  uichecks,
   vs2,
   hontu,
   ui,
@@ -137,7 +117,6 @@ const SCENARIOS: Scenario[] = [
   huyenkiep,
   kiepch6,
   kiepsan,
-  ual,
   chrv3,
   chrv3anim,
   chrv3feet,
@@ -153,12 +132,9 @@ const SCENARIOS: Scenario[] = [
   camchevfx,
   animlab,
   envreal,
-  hpl2ms,
   tpmove,
-  tp2,
   vfxlab,
   vfxmon,
-  path2428vfx,
   pathaura,
   camche,
   cothan,
