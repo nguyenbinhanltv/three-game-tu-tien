@@ -100,7 +100,7 @@ import {
   turnLagOf,
   xfade,
 } from './mannequinAnim';
-import { clipTimeAt, PATCH_TABLE, scaledTable } from './patchLoop';
+import { clipTimeAt, PATCH_TABLE } from './patchLoop';
 import { feetSlot, MqFeet } from './mannequinFeet';
 import { lodOf, mergeLodMeshes } from './mannequinLod';
 import { lowerBodyOf, upperBodyOf, MannequinPoseBank, type MqPose, PoseSource, POSE_SOURCE_ASSET, poseClipName } from './mannequinPoses';
@@ -116,16 +116,11 @@ const thienYLog = logger('thienY');
 
 /** Nhân vật Mannequin v3 là mặc định của người chơi (N-7); chỉ tắt khi `?chr=v1` (dự phòng một bản). */
 export const CHR_V3 = FLAGS.chr !== 'v1';
-/** `?v3anim=0` về hệ animation cũ (một clip chạy, crossfade 0,16 s, không lớp phụ) để so video trước/sau. */
-export const V3_ANIM = FLAGS.v3Anim;
 export const V3_LIB = 'anim_ual_native';
 /** Asset Lạc Kiếm theo giới tính: Lạc Kiếm Môn Phục v3 (N-3), model Tripo toàn thân đặt lên xương Mannequin (chr_v3.py). Bản v3/v3b cũ đã gỡ (A2). */
-/** Bản v3b2: cùng model v3b, vạt 12 chuỗi lò xo; cùng với cải tiến lò xo ở client (gấu cứng hơn, viên nang tay, vạt nằm lên đùi khi ngồi) là mặc định của `?chr=v3`; `?v3model=b2` chọn lại bản này để so. */
-export const V3_MODELS_B2 = { m: 'chr_v3b2_lac_kiem_nam', f: 'chr_v3b2_lac_kiem_nu' } as const;
-const V3_PICK = FLAGS.v3Model;
-/** Bản v3b3: v3b2 + chuỗi lò xo dải đai/ngọc bội (`tassel`, Thân Pháp T6); MẶC ĐỊNH cho bộ Lạc Kiếm và nhánh của nó (Hàn Giao, Trấn Khích, Vô Danh Kiếm). `?v3model=b2` về bản b2 (không tua) để so ảnh. */
+/** Bản v3b3: v3b2 + chuỗi lò xo dải đai/ngọc bội (`tassel`, Thân Pháp T6); MẶC ĐỊNH cho bộ Lạc Kiếm và nhánh của nó (Hàn Giao, Trấn Khích, Vô Danh Kiếm). (bản b2 và cờ `?v3model` đã gỡ ở V4; trước: không tua) để so ảnh. */
 export const V3_MODELS_B3 = { m: 'chr_v3b3_lac_kiem_nam', f: 'chr_v3b3_lac_kiem_nu' } as const;
-export const V3_MODELS = V3_PICK === 'b2' ? V3_MODELS_B2 : V3_MODELS_B3;
+export const V3_MODELS = V3_MODELS_B3;
 /** Asset dùng lò xo v2 (`chr_v3b2_*` và các bộ dựng hàng loạt `chr_v3_<bộ>_*`): hệ số cứng gấu vạt, viên nang tay, phình viên nang khi ngồi. */
 export const isSpring2 = (assetId: string | undefined): boolean =>
   !!assetId &&
@@ -446,7 +441,7 @@ export function mannequinTemplate(handle: AssetHandle, lib: AssetHandle, robe?: 
   const k = a && b && b.length() > 1e-6 ? a.length() / b.length() : 1;
   const clips = new Map<string, THREE.AnimationClip>();
   const over = new Map<string, THREE.AnimationClip>();
-  if (robe && KEEP_ORIGINAL_ASSETS.has(handle.id) && !FLAGS.noRobeAnim) for (const c of robe.animations) over.set(c.name, c);
+  if (robe && KEEP_ORIGINAL_ASSETS.has(handle.id)) for (const c of robe.animations) over.set(c.name, c);
   for (const c of lib.animations) {
     const cl = (over.get(c.name) ?? c).clone();
     for (const t of cl.tracks) {
@@ -978,7 +973,7 @@ export class MannequinCharacter implements CharacterView {
       this.mountBlade(false);
     }
     if (!shadow) this.gearBind = snapshotBind(this.rig);
-    if (V3_ANIM && !shadow && FLAGS.v3Feet) this.feet = MqFeet.from(this.rig, this.root, tpl.height);
+    if (!shadow && FLAGS.v3Feet) this.feet = MqFeet.from(this.rig, this.root, tpl.height);
     this.inner.add(this.rig);
     this.root.add(this.inner);
     this.mixer = new THREE.AnimationMixer(this.rig);
@@ -1224,11 +1219,11 @@ export class MannequinCharacter implements CharacterView {
     if (this.baseName === name) return;
     // Thân Pháp: vòng chạy bằng clip Patch (cần cả PM_Run và PM_Sprint trong template; thiếu thì giữ UAL).
     const patchLoop =
-      V3_ANIM && name === LOCO.jog.clip && ANIM_FX.patchLoop && this.tpl.clips.has('PM_Run') && this.tpl.clips.has('PM_Sprint');
-    const table: LocoTable = patchLoop ? scaledTable(FLAGS.pStride) : LOCO;
+      name === LOCO.jog.clip && ANIM_FX.patchLoop && this.tpl.clips.has('PM_Run') && this.tpl.clips.has('PM_Sprint');
+    const table: LocoTable = patchLoop ? PATCH_TABLE : LOCO;
     const next = this.action(patchLoop ? PATCH_TABLE.jog.clip : name);
     if (!next) return;
-    this.fadeDur = V3_ANIM ? xfade(this.baseName, name) : FADE;
+    this.fadeDur = xfade(this.baseName, name);
     // Chạy: kèm clip đi bộ + chạy nhanh, trộn theo tốc độ (companions chia trọng số nền với clip chạy).
     for (const c of this.companions) if (!this.companions.includes(next)) this.weights.set(c, this.weights.get(c) ?? 0);
     // Rời chạy: chốt hệ số trộn của từng action để lúc mờ dần vẫn nhân đúng (không nhảy tư thế ở khung chuyển).
@@ -1239,7 +1234,7 @@ export class MannequinCharacter implements CharacterView {
     }
     this.companions = [];
     this.locoKey.clear();
-    this.loco = V3_ANIM && name === LOCO.jog.clip;
+    this.loco = name === LOCO.jog.clip;
     this.locoTable = this.loco ? table : LOCO;
     if (this.loco) {
       this.locoKey.set(next, { band: 'jog', dir: 'f' });
@@ -1335,7 +1330,7 @@ export class MannequinCharacter implements CharacterView {
     let a = this.action(name);
     if (!a) return false;
     this.shotUpper = false;
-    if (upper && V3_ANIM && this.base) {
+    if (upper && this.base) {
       a = this.mixer.clipAction(upperBodyOf(this.tpl.clips.get(name)!));
       this.shotUpper = true;
     }
@@ -1372,7 +1367,7 @@ export class MannequinCharacter implements CharacterView {
       combo: o.combo ?? -1,
       kb: !!o.kb,
     };
-    const hitIn = V3_ANIM ? swingSeconds(0, h.hit, h.dur, this.swingBase) : h.hit / this.swingBase;
+    const hitIn = swingSeconds(0, h.hit, h.dur, this.swingBase);
     this.emitAtk('windup', 0, hitIn);
   }
 
@@ -1654,12 +1649,11 @@ export class MannequinCharacter implements CharacterView {
     this.hit.react(o);
     if (this.dead) return;
     if (o.dirX || o.dirZ) this.lastHit = { dx: o.dirX ?? 0, dz: o.dirZ ?? 0, at: this.clock };
-    if (V3_ANIM)
-      this.flinch = {
-        amp: flinchAmpOf(o.tier, !!o.crit, !!o.heavy),
-        age: -(o.delay ?? 0),
-        ...flinchDirOf(this.root.rotation.y, o.dirX ?? 0, o.dirZ ?? 0),
-      };
+    this.flinch = {
+      amp: flinchAmpOf(o.tier, !!o.crit, !!o.heavy),
+      age: -(o.delay ?? 0),
+      ...flinchDirOf(this.root.rotation.y, o.dirX ?? 0, o.dirZ ?? 0),
+    };
     if (ANIM_FX.ragdoll && this.lodLevel === 0)
       (this.rag ??= new RagRig(this.rig)).hit(this.root.rotation.y, o.dirX ?? 0, o.dirZ ?? 0, o.tier, !!o.heavy, !!o.crit);
     // Clip theo phía bị đánh (C3b): nặng ngã lùi; nhẹ chạm ngực (trước/bên) hoặc giật đầu (sau gáy).
@@ -1771,7 +1765,6 @@ export class MannequinCharacter implements CharacterView {
     else if (this.base) this.base.timeScale = 1;
     // Đòn UAL dự phòng: anticipation (kéo lại chậm rồi bung nhanh qua điểm trúng).
     if (
-      V3_ANIM &&
       this.shot &&
       this.swingBase > 0 &&
       SWING.some((n) => this.shot!.getClip().name === n || this.shot!.getClip().name === `${n}|upper`)
@@ -1798,7 +1791,7 @@ export class MannequinCharacter implements CharacterView {
       t.tw.quaternion.copy(t.restTw).multiply(_tq2.setFromAxisAngle(t.axis, TWIST_COUNTER * twistAngle(_tq, t.axis)));
     }
     if (this.parked) this.syncParked();
-    if (V3_ANIM && !V3_OFF.has('proc') && !this.shadow && this.lodLevel === 0 && this.inner.visible) this.procedural(this.acc, a);
+    if (!V3_OFF.has('proc') && !this.shadow && this.lodLevel === 0 && this.inner.visible) this.procedural(this.acc, a);
     if (this.feet && !V3_OFF.has('feet')) {
       if (this.lodLevel === 0 && this.inner.visible) {
         // Hết suất (đông người ở xa camera): `active: false` để IK mờ dần rồi tự nhả, được cấp lại thì hiện dần, không giật.

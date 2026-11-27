@@ -22,8 +22,7 @@ const QUERY: Record<string, Record<string, string>> = {
   v3new: { chr: 'v3', thanphap: '0' },
   v3nok5: { chr: 'v3', thanphap: '0', k5: '0' },
   v3raw: { chr: 'v3', thanphap: '0', v3pal: '0' },
-  // Thân Pháp: vòng chạy UAL (cũ, `?ploop=0`) so với clip Patch PM_Run/PM_Sprint (mới); cùng bắt đầu/dừng/thở dốc của Patch.
-  v3tpold: { chr: 'v3', thanphap: '1', ploop: '0' },
+  // Thân Pháp (bản so `v3tpold` = `?ploop=0` đã gỡ cùng cờ ở V4 28/11).
   v3tpnew: { chr: 'v3', thanphap: '1' },
 };
 const FFMPEG = process.env.FFMPEG ?? 'ffmpeg';
@@ -103,7 +102,7 @@ export function contactSlide(
 export default {
   name: 'chrv3',
   desc: 'Video so nhân vật hiện tại (v1/v2) với v3 (Lạc Kiếm trên Mannequin + UAL trực tiếp) cùng chuỗi hành động, nam/nữ',
-  usage: '[--genders m,f] [--variants v1,v2,v3,v3raw,v3tpold,v3tpnew] [--size 960x600] [--slide | --runstop]',
+  usage: '[--genders m,f] [--variants v1,v2,v3,v3raw,v3tpnew] [--size 960x600] [--slide | --runstop]',
   async run(r) {
     const viewport = size('960x600');
     for (const g of list('--genders', 'm,f')) {
@@ -195,7 +194,6 @@ export default {
             query: {
               ...(QUERY[v] ?? {}),
               ...(process.env.JOG ? { jog: process.env.JOG } : {}),
-              ...(process.env.PSTRIDE ? { pstride: process.env.PSTRIDE } : {}),
             },
             hide: 'hud',
             warnings: /models|chr_v3|clip/,
@@ -267,7 +265,7 @@ export default {
           console.log(`[shots:chrv3] slide ${tag}: ${JSON.stringify(res)}`);
           await ctx.close();
         };
-        // Chạy–dừng–chạy (Thân Pháp, `v3tpold` so `v3tpnew`): giữ W 1,6 s, thả 1,5 s, giữ W 1,6 s; chụp khung liên tục, tên có mốc ms để dựng dải khung.
+        // Chạy–dừng–chạy (Thân Pháp, `v3tpnew`): giữ W 1,6 s, thả 1,5 s, giữ W 1,6 s; chụp khung liên tục, tên có mốc ms để dựng dải khung.
         // Ảnh `rs-<tag>-<NNN>-<ms>.png` ở thư mục ra (cắt quanh nhân vật khi xử lý hậu kỳ).
         const runstop = async () => {
           const { page, ctx } = await r.open({

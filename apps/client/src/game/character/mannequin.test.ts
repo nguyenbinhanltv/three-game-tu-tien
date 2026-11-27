@@ -204,7 +204,7 @@ describe('mergeLodMeshes (N-7: một draw call mỗi mức LOD xa)', () => {
 });
 
 describe('Lạc Kiếm mặc định = v3b3 (tua/dải đai lò xo)', () => {
-  it('bộ Lạc Kiếm và các bộ nhánh dùng chr_v3b3 khi không đặt ?v3model', () => {
+  it('bộ Lạc Kiếm và các bộ nhánh dùng chr_v3b3', () => {
     for (const set of ['set_lac_kiem', 'set_han_giao', 'set_tran_khich', 'set_vo_danh_kiem']) {
       expect(v3AssetOf('f', undefined, set)).toBe('chr_v3b3_lac_kiem_nu');
       expect(v3AssetOf('m', undefined, set)).toBe('chr_v3b3_lac_kiem_nam');

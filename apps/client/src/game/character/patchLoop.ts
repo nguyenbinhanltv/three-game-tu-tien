@@ -35,7 +35,7 @@ export const PATCH_TABLE: LocoTable = {
   sprint: { ...PATCH_LOCO.sprint, stride: PATCH_LOCO.sprint.stride * STRIDE_SCALE },
 };
 
-/** Bảng Patch với độ dài chu kỳ nhân thêm `k` (thử/quét trượt chân: `?pstride=<k>`, so với bảng đã hiệu chỉnh); k = 1 trả về `PATCH_TABLE`. */
+/** Bảng Patch với độ dài chu kỳ nhân thêm `k` (thử/quét trượt chân trong test, so với bảng đã hiệu chỉnh); k = 1 trả về `PATCH_TABLE`. */
 export function scaledTable(k: number): LocoTable {
   if (k === 1 || !(k > 0)) return PATCH_TABLE;
   return {

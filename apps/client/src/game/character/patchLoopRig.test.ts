@@ -66,7 +66,7 @@ describe('MannequinCharacter: vòng chạy bằng clip Patch', () => {
     });
   });
 
-  it('tắt patchLoop (?ploop=0) hoặc thiếu clip Patch: giữ vòng UAL', () => {
+  it('tắt patchLoop hoặc thiếu clip Patch: giữ vòng UAL', () => {
     withFlags(true, false, () => {
       const m = fake([...UAL, ...PM]);
       run(m, anim({ speed: 5.4 }), 0.5);

@@ -198,3 +198,42 @@ Bổ sung cho hai nhóm con "Âm thanh" và "Động tác" ở trên (phát từ
 - **Phép đo đã chỉnh:** tốc độ xoay khớp chia theo khoảng thời gian thật giữa hai lần xương đổi (trước đây chia theo một khung vẽ, thổi phồng 2 đến 4 lần với model cập nhật xương thưa). Bàn chân của quái dựng thủ tục nhận theo chuỗi `leg_<chân>_<số>`.
 - **Chưa kết luận được, trượt chân của quái:** bộ đo nhận chân trụ theo độ nhấc (3 cm), mà clip chạy của quái bốn chân nhấc chân thấp hơn thế nên chân nào cũng bị coi là trụ và số trượt ra bằng tốc độ thân (27 đến 55 cm/m lúc chạy). Cần đổi sang nhận chân trụ theo vận tốc so với thân rồi mới biết clip nào trượt thật. Rết và giao long không có chân.
 - **Chưa sửa, nhân vật v3 dừng chạy:** vẫn như ghi ở trên (đang chờ đợt gỡ cờ ở `mannequin.ts` xong).
+
+## Ngân sách hiệu năng của phòng (Dạ Họa, đo 28/11)
+
+`pnpm --filter @dtl/perf exec tsx src/roomperf.ts --out <thư mục> --query style=dahoa [--seconds 3] [--bots 8] [--only id1,crowd] [--quality high]` (`tools/perf/src/scenarios/roomperf.ts`): nạp từng cảnh mẫu của `lab/scenes.json` (cảnh có `act` thì đo TRONG LÚC đánh) và một cảnh đông (client + 8 bot chung phòng: lúc đứng, rồi lúc mình đánh bầy 8 sói không chết), mỗi cảnh ghi 3 giây (cảnh đông đang đánh 5 giây). CPU = thời gian `Game.frame()`; GPU = timestamp query (`?gputime=1`); texture = ước tính từ kích thước, định dạng, mip, gồm cả render target (cùng cách với `pnpm bench:client`). Kết quả ra `roomperf.md` + `roomperf.json`.
+
+Điều kiện đo: Chrome headless 1280×720, dpr 1, WebGPU, preset Cao, Vite dev, một lượt, máy đang có worker khác chạy (CPU/GPU chỉ để so tương đối; draw call, tam giác, texture thì lặp lại được). Ngân sách: dưới 300 draw call, tối đa 2 triệu tam giác, 512 MB texture, CPU dưới 8 ms.
+
+| Cảnh | Loại | Draw call (lớn nhất) | Tam giác | CPU ms (tb / p95) | GPU ms | Texture MB | fps | Ngân sách |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `soi_thuong` | tĩnh | 40 | 266 nghìn | 1.76 / 2.20 | 1.42 | 278 | 120 | đạt |
+| `soi_vo_the` | tĩnh | 40 | 268 nghìn | 1.73 / 2.30 | 1.44 | 278 | 120 | đạt |
+| `soi_yeu_diem` | tĩnh | 46 | 270 nghìn | 1.76 / 2.30 | 1.46 | 288.7 | 120 | đạt |
+| `tinh_anh` | tĩnh | 40 | 273 nghìn | 1.74 / 2.20 | 1.48 | 293.5 | 120 | đạt |
+| `bay_dong` | tĩnh | 59 | 354 nghìn | 1.90 / 2.50 | 1.5 | 293.5 | 120 | đạt |
+| `boss` | tĩnh | 49 | 290 nghìn | 1.76 / 2.20 | 1.49 | 322 | 120 | đạt |
+| `nhan_vat_can` | tĩnh | 33 | 219 nghìn | 1.55 / 2.00 | 1.83 | 322 | 120 | đạt |
+| `can_bat_dong_kim_than` | tĩnh | 34 | 217 nghìn | 1.53 / 1.90 | 1.79 | 322 | 120 | đạt |
+| `can_thanh_moc_dan_kinh` | tĩnh | 33 | 217 nghìn | 1.45 / 1.90 | 1.45 | 322 | 120 | đạt |
+| `can_dan_hon_kinh` | tĩnh | 33 | 218 nghìn | 1.50 / 2.00 | 1.52 | 322 | 120 | đạt |
+| `can_liet_nhan_dao_kinh` | tĩnh | 28 | 215 nghìn | 1.75 / 2.30 | 1.59 | 322 | 120 | đạt |
+| `can_co_than_quyet` | tĩnh | 29 | 214 nghìn | 1.79 / 2.20 | 0.87 | 322 | 120 | đạt |
+| `can_duong_co_kinh` | tĩnh | 29 | 218 nghìn | 1.49 / 1.90 | 1.84 | 322 | 120 | đạt |
+| `can_cuu_tieu_loi_kinh` | tĩnh | 29 | 218 nghìn | 1.43 / 1.90 | 1.67 | 322 | 120 | đạt |
+| `can_cam_che_kinh` | tĩnh | 29 | 216 nghìn | 1.50 / 1.90 | 1.79 | 322 | 120 | đạt |
+| `dao_cu` | tĩnh | 51 | 285 nghìn | 1.74 / 2.20 | 1.37 | 327.5 | 120 | đạt |
+| `anh_sang` | tĩnh | 39 | 268 nghìn | 1.60 / 2.10 | 1.27 | 334.2 | 120 | đạt |
+| `kiem_chem_quet` | đang đánh | 66 | 297 nghìn | 2.29 / 3.10 | 1.02 | 334.2 | 112 | đạt |
+| `kiem_ap_sat` | đang đánh | 66 | 377 nghìn | 2.02 / 2.60 | 1.43 | 334.2 | 113 | đạt |
+| `kiem_chieu_1` | đang đánh | 54 | 283 nghìn | 1.96 / 2.60 | 1.08 | 334.2 | 119 | đạt |
+| `kiem_chieu_2` | đang đánh | 47 | 281 nghìn | 1.88 / 2.40 | 0.57 | 334.2 | 119 | đạt |
+| `kiem_chieu_3` | đang đánh | 60 | 294 nghìn | 2.03 / 2.50 | 1.12 | 334.2 | 120 | đạt |
+| `kiem_chieu_4` | đang đánh | 48 | 281 nghìn | 1.90 / 2.40 | 1.29 | 334.2 | 120 | đạt |
+| `crowd_8_dung` | đông | 49 | 560 nghìn | 1.93 / 2.50 | 1.47 | 310.4 | 120 | đạt |
+| `crowd_8_danh` | đông | 101 | 752 nghìn | 3.12 / 4.30 | 1.03 | 322.7 | 118 | đạt |
+
+- **Cả 25 cảnh đạt.** Nặng nhất là cảnh đông đang đánh: 101 draw call (34% ngân sách), 752 nghìn tam giác (38%), CPU 3,1 ms trung bình / 4,3 ms p95 (39% / 54%).
+- **Texture là chỉ số sát nhất: 278 → 334 MB (54–65% của 512 MB)**, và chỉ tăng dần theo số cảnh đã nạp trong một phiên (quái, boss, bộ nhân vật của 9 lối tu nạp vào rồi ở lại). Lớn nhất: một mảng texture 1024² nhiều lớp 42,7 MB, các texture 2048² đủ mip 21,3 MB mỗi cái (trong đó có normal của bộ áo v3), bóng đổ 2048² 16 MB. Chưa vượt nên chưa sửa; nếu phòng thêm nhiều bộ nhân vật/boss trong một phiên thì đây là chỗ chạm trần trước.
+- Cảnh cận nhân vật có GPU cao nhất (1,5–1,8 ms) dù ít draw call nhất: nhân vật chiếm nhiều điểm ảnh.
+- Chưa đo: preset Vừa/Thấp, WebGL2, 1080p, và máy mục tiêu (GPU tích hợp). Số trên là của máy dev có GPU rời.
