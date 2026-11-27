@@ -195,9 +195,10 @@ export function syncHud(eng: Game, me: PState | undefined): void {
   set({
     ...(sameNearby ? {} : { nearby }),
     debug: st.debugOpen ? debugInfo(eng, me, Math.round(st.fps ? st.fps * 0.6 + fps * 0.4 : fps)) : null,
-    hp: me.hp,
+    // Phòng thử: máu/linh lực giả chỉ đổi số HUD đọc (`labVitalsSet`), state của server giữ nguyên.
+    hp: typeof eng.labVitals?.hp === 'number' ? Math.round(me.mhp * eng.labVitals.hp) : me.hp,
     mhp: me.mhp,
-    mp: me.mp,
+    mp: typeof eng.labVitals?.mp === 'number' ? Math.round(me.mmp * eng.labVitals.mp) : me.mp,
     mmp: me.mmp,
     flags: me.fl,
     target,

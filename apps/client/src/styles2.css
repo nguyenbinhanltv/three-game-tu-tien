@@ -251,6 +251,10 @@
 :root[data-reduce-motion='true'] .chapter-title {
   animation: none;
 }
+/* Hai dải letterbox của thẻ chương: mờ dần thay cho kéo dãn. */
+:root[data-reduce-motion='true'] .chapter-card .lb {
+  animation-name: chapter-fade;
+}
 
 /* Cảnh mở đầu (P2-B1): ẩn HUD (trừ lớp .cine), letterbox dày, câu thoại hiện ở ~1/3 cảnh rồi mờ trước khi cảnh hết. */
 .hud > :not(.cine) {

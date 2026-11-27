@@ -18,10 +18,11 @@ import {
   t,
 } from '@dtl/content';
 import { Game, LAB_STYLE } from '../game/engine';
+import { LAB_PRESETS, labPreset, labRendererUrl, labVitalsSet } from '../game/engine/lab';
 import { FX_PALETTE } from '../render/vfx/palette';
 import { FX_LAYER_OFF } from '../game/fx/fxTimeline';
 import { Button } from './u2/win';
-import { type DebugPerf, useUI } from './store';
+import { type DebugPerf, set, useUI } from './store';
 
 /** Ngân sách desktop (CLAUDE.md, skill perf-budget): vượt thì tô đỏ, tới 80% thì tô vàng. */
 const BUDGET = { cpuMs: 8, drawCalls: 300, triangles: 2_000_000 };
@@ -35,6 +36,33 @@ const LEVELS = Array.from({ length: MAX_LEVEL }, (_, i) => i + 1);
 /** Gửi lệnh GM qua chat: server kiểm quyền (chỉ tài khoản thử khi bật AUTH_DEV_BYPASS) rồi mới làm; client không tự đổi state. */
 function gm(cmd: string): void {
   Game.current?.send(C.CHAT, { m: '/gm ' + cmd });
+}
+
+/** Số đo GỌN: chỉ FPS, thời gian khung, draw call, tam giác, VFX. Bảng F3 không cuộn được bằng chuột nên bản đủ đẩy nút thử nhanh khỏi màn 720p. */
+function PerfCompact({ p }: { p: DebugPerf }) {
+  return (
+    <dl>
+      <dt>{t('ui.debug.fps')}</dt>
+      <dd className={p.fps < 55 ? 'warn' : ''}>{t('ui.debug.fps_v', { n: p.fps, backend: p.backend })}</dd>
+      <dt>{t('ui.debug.frame')}</dt>
+      <dd className={tone(p.cpuMs, BUDGET.cpuMs)}>{t('ui.debug.frame_v', { avg: p.cpuMs.toFixed(1), max: p.cpuMaxMs.toFixed(1) })}</dd>
+      <dt>{t('ui.debug.draw')}</dt>
+      <dd className={tone(p.drawCalls, BUDGET.drawCalls)}>
+        {t('ui.debug.draw_v', { n: p.drawCalls })} · {t('ui.debug.tri_v', { n: Math.round(p.triangles / 1000) })}
+      </dd>
+      <dt>{t('ui.debug.vfx')}</dt>
+      <dd>{t('ui.debug.vfx_v', { fx: p.fxMeshes, n: p.particles, limit: p.particleLimit })}</dd>
+    </dl>
+  );
+}
+
+const COMPACT_KEY = 'dtl.debugCompact';
+function compactStored(): boolean {
+  try {
+    return localStorage.getItem(COMPACT_KEY) !== '0';
+  } catch {
+    return true;
+  }
 }
 
 function PerfRows({ p }: { p: DebugPerf }) {
@@ -93,12 +121,25 @@ const LAB_FLOORS = ['dark', 'light', 'grass', 'snow'] as const;
 const LAB_SEEKS = [33, 100, 200, 400, 800, 1500];
 const LAB_NUM_KINDS = ['hit', 'hv', 'crit', 'ke', 'heal', 'hurt', 'immune', 'mix'] as const;
 const LAB_NUM_COUNTS = [1, 5, 20];
-const LAB_MOMENTS = ['toast', 'log', 'chapter', 'ascend', 'bossline', 'loot'] as const;
+const LAB_MOMENTS = ['toast', 'log', 'chapter', 'ascend', 'bossline', 'loot', 'recap', 'invite', 'ult'] as const;
+/** Máu/linh lực giả trên HUD: [khóa i18n, kênh, phần của tối đa (null = số thật)]. */
+const LAB_VITALS: [string, 'hp' | 'mp', number | null][] = [
+  ['hp50', 'hp', 0.5],
+  ['hp25', 'hp', 0.25],
+  ['hp10', 'hp', 0.1],
+  ['mp5', 'mp', 0.05],
+];
+const LAB_RENDERERS = ['webgl2', 'webgpu'] as const;
 const LAB_NUM_GAPS = [0, 80, 250];
-/** Khu Giao diện của phòng thử: máy bắn số sát thương (chỉ hình ở client). */
+/** Khu Giao diện của phòng thử: máy bắn số sát thương, gọi khoảnh khắc, máu/linh lực giả, nhật ký điều khiển (chỉ hình ở client). */
 function UiLab() {
   const [count, setCount] = useState(5);
   const [gap, setGap] = useState(80);
+  const traceOn = useUI((s) => s.labTraceOn);
+  const vitals = (what: 'hp' | 'mp', frac: number | null) => {
+    const g = Game.current;
+    if (g) labVitalsSet(g, what, frac);
+  };
   return (
     <>
       <div className="debug-row wrap">
@@ -130,6 +171,26 @@ function UiLab() {
             {t('ui.gm.lab.num_gap_v', { n })}
           </Button>
         ))}
+      </div>
+      <div className="debug-row wrap">
+        <span>{t('ui.gm.lab.vitals')}</span>
+        <Button
+          size="s"
+          onClick={() => {
+            vitals('hp', null);
+            vitals('mp', null);
+          }}
+        >
+          {t('ui.gm.lab.vitals.real')}
+        </Button>
+        {LAB_VITALS.map(([k, what, frac]) => (
+          <Button key={k} size="s" onClick={() => vitals(what, frac)}>
+            {t('ui.gm.lab.vitals.' + k)}
+          </Button>
+        ))}
+        <Button size="s" pressed={traceOn} onClick={() => set({ labTraceOn: !traceOn })}>
+          {t('ui.gm.lab.trace')}
+        </Button>
       </div>
     </>
   );
@@ -220,6 +281,8 @@ function StyleLab() {
 function LookLab() {
   const [floor, setFloor] = useState<string>('dark');
   const [pal, setPal] = useState<string>(() => Game.current?.labPalette ?? '');
+  const quality = useUI((s) => s.quality);
+  const backend = useUI((s) => s.debug?.perf.backend ?? '');
   return (
     <>
       <div className="debug-row wrap">
@@ -247,6 +310,25 @@ function LookLab() {
           }}
           options={LAB_PALETTES.map((id) => ({ value: id, label: id || t('ui.gm.lab.palette.auto') }))}
         />
+      </div>
+      {/* Kiểm máy yếu: preset đổi ngay (và khóa, không tự nâng/hạ); đường lùi WebGL2 phải tải lại trang. */}
+      <div className="debug-row wrap">
+        <span>{t('ui.gm.lab.weak', { backend })}</span>
+        {LAB_PRESETS.map((q) => (
+          <Button key={q} size="s" pressed={quality === q} onClick={() => Game.current && labPreset(Game.current, q)}>
+            {t('ui.gm.lab.weak.' + q)}
+          </Button>
+        ))}
+        {LAB_RENDERERS.map((r) => {
+          const href = labRendererUrl(window.location.href, r);
+          return (
+            <span key={r} data-lab-renderer={r} data-href={href}>
+              <Button size="s" onClick={() => window.location.assign(href)}>
+                {t('ui.gm.lab.weak.' + r)}
+              </Button>
+            </span>
+          );
+        })}
       </div>
     </>
   );
@@ -371,7 +453,7 @@ const GENDERS = (['m', 'f'] as const).map((v) => ({ value: v, label: t('ui.gm.ge
  * Nút thử nhanh theo nhóm (GM-TEST). Mỗi nút là một lệnh `/gm`; riêng khung va chạm là lớp hiển thị ở client.
  * Danh sách bộ, kiếm, chiêu, địa điểm, quái lấy từ dữ liệu game; server vẫn kiểm quyền và đi qua tx + sổ cái.
  */
-function Tools() {
+function Tools({ compact, onCompact }: { compact: boolean; onCompact: (v: boolean) => void }) {
   const level = useUI((s) => s.char?.level ?? 1);
   const inTrib = useUI((s) => (s.flags & PF_TRIBULATION) !== 0);
   const colliders = useUI((s) => s.debugColliders);
@@ -421,6 +503,9 @@ function Tools() {
         ))}
         <Button size="s" onClick={() => gm('help')}>
           {t('ui.gm.help')}
+        </Button>
+        <Button size="s" pressed={!compact} onClick={() => onCompact(!compact)}>
+          {t('ui.debug.full')}
         </Button>
       </div>
       {group === 'lab' && (
@@ -786,6 +871,16 @@ export function DebugPanel() {
   const d = useUI((s) => s.debug);
   const dev = useUI((s) => s.dev);
   const queued = useUI((s) => s.queuedSkill);
+  // Số đo gọn là mặc định (nhớ ở localStorage); bản không có nút GM thì luôn hiện đủ vì không có chỗ bấm để mở lại.
+  const [compact, setCompact] = useState(compactStored);
+  const onCompact = (v: boolean) => {
+    setCompact(v);
+    try {
+      localStorage.setItem(COMPACT_KEY, v ? '1' : '0');
+    } catch {
+      /* không lưu được: chỉ áp cho phiên này */
+    }
+  };
   if (!open || !allowed || !d) return null;
   const none = t('ui.debug.none');
   const yn = (v: boolean): string => t(v ? 'ui.debug.yes' : 'ui.debug.no');
@@ -795,9 +890,9 @@ export function DebugPanel() {
     <div className="debug-panel">
       <div className="debug-title">{t('ui.debug.title')}</div>
       <div className="debug-sub">{t('ui.debug.perf')}</div>
-      <PerfRows p={d.perf} />
+      {dev && compact ? <PerfCompact p={d.perf} /> : <PerfRows p={d.perf} />}
       {/* Nút thử nhanh đặt ngay dưới số đo: bảng không nhận chuột để cuộn, nên phần cần bấm phải nằm trong khung nhìn ở 720p. */}
-      {dev ? <Tools /> : <div className="debug-note">{t('ui.debug.no_gm')}</div>}
+      {dev ? <Tools compact={compact} onCompact={onCompact} /> : <div className="debug-note">{t('ui.debug.no_gm')}</div>}
       <div className="debug-sub">{t('ui.debug.input')}</div>
       <dl>
         <dt>{t('ui.debug.keys')}</dt>

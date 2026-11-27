@@ -151,6 +151,8 @@ import { RealmAuraFx, type RealmAuraEnv } from './fx/realmAura';
 import { PathAuraFx } from './fx/pathAura';
 import { type FxQuality } from '@dtl/shared';
 import { type SkillEvent } from './character/view';
+import { labMomentExtra, type LabVitals } from './engine/lab';
+import type { LabTrace } from './debug/labTrace';
 import { HitQueue, SwingGuard, type HitSoundLog } from './combat/hitjuice';
 import { debugAllowed, readTestParams } from './core/testParams';
 import { CharPreview } from './camera/charPreview';
@@ -1024,9 +1026,14 @@ export class Game {
         return icons.length > 0;
       }
       default:
-        return false;
+        return labMomentExtra(this, kind);
     }
   }
+
+  /** Phòng thử: nhật ký điều khiển (phím → gửi → server trả lời → trúng); null = tắt. Lớp phủ `LabTraceView` gắn và gỡ. */
+  labTrace: LabTrace | null = null;
+  /** Phòng thử: máu/linh lực GIẢ trên HUD của mình (xem `labVitalsSet`); null = số thật. */
+  labVitals: LabVitals | null = null;
 
   /** Phòng thử: thanh boss giả đang ép lên HUD (xem `labHudLoad`); null = HUD theo trận thật. */
   labHudBoss: BossInfo | null = null;
@@ -1371,6 +1378,7 @@ export class Game {
 
   send(type: string, msg?: unknown): void {
     if (this.leaving) return;
+    this.labTrace?.send(type, msg, performance.now());
     // Phòng thử: ping giả trễ nửa chiều đi (nửa còn lại ở chiều về, xem `bindRoom`). Tin bị giữ mà phòng đã đổi/đang rời thì bỏ.
     const lag = this.debugOk ? this.fakePing / 2 : 0;
     if (lag <= 0) return void this.room.send(type, msg);

@@ -385,6 +385,8 @@ interface UIState {
   debugAllowed: boolean;
   /** Đang vẽ khung va chạm (chỉ hiển thị ở client). */
   debugColliders: boolean;
+  /** Phòng thử: lớp phủ nhật ký điều khiển đang bật (`LabTraceView`). */
+  labTraceOn: boolean;
 }
 
 export const useUI = create<UIState>(() => ({
@@ -485,6 +487,7 @@ export const useUI = create<UIState>(() => ({
   debug: null,
   debugAllowed: false,
   debugColliders: false,
+  labTraceOn: false,
 }));
 
 let nextId = 1;

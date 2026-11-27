@@ -151,6 +151,8 @@ export interface GameDebug {
   labCamSet(dist: number, pitchDeg?: number): boolean;
   labCam: { dist: number; pitch: number } | null;
   labMoment(kind: string): boolean;
+  /** Phòng thử: nhật ký điều khiển (null = tắt); mốc thời gian theo `performance.now()`. */
+  labTrace: { rows: { type: string; label: string; key: string | null; keyAt: number | null; sendAt: number; ackAt: number | null; hitAt: number | null }[]; clear(): void } | null;
   labNumbers(kind: string, count: number, gapMs: number): number;
   labPalette: string;
   labSeek(key: string, ms: number): boolean;
