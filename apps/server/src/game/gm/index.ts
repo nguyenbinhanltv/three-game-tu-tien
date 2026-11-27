@@ -800,6 +800,32 @@ export class GmSystem {
         return say('free ' + (p.gmFree ? 'on' : 'off'));
       case 'state':
         return say(this.forceState(p, a[1], a[2]));
+      case 'build': {
+        // /gm build <công pháp> [cấp]: dựng nhân vật thử một nút: đặt cấp (mặc định 30), theo công pháp, mọi chiêu cấp tối đa, chiêu không hồi, hồi đầy.
+        if (!METHOD.has(a[1] ?? '')) return say('build ' + [...METHOD.keys()].join(' | ') + ' [cấp]');
+        this.setLevel(p, a[2] ? Number(a[2]) | 0 : 30);
+        this.run(p, ['method', a[1]!, String(MAX_SKILL_LEVEL)]);
+        p.gmFree = true;
+        p.cds.clear();
+        p.gcdAt = 0;
+        this.c.sendCd(p);
+        this.c.heal(p);
+        return say(`build ${a[1]} cấp ${c.level}, free on`);
+      }
+      case 'labreset': {
+        // /gm labreset: trả phòng thử về như mới: dọn mọi quái gọi bằng lệnh, tắt freeze/lockhp/free/god, xóa hồi chiêu, hồi đầy.
+        const lab = this.c.lab();
+        for (const m of [...this.spawned]) this.c.removeMonster(m);
+        lab.gmFreeze = false;
+        lab.gmLockHp = false;
+        p.gmFree = false;
+        p.god = false;
+        p.cds.clear();
+        p.gcdAt = 0;
+        this.c.sendCd(p);
+        this.c.heal(p);
+        return say('phòng thử đã về như mới');
+      }
       case 'dvt':
         // /gm dvt: vào Diễn Võ Trường (phòng tập riêng); gõ lại trong phòng để ra. Nhân vật được trả về nguyên trạng khi ra.
         return this.c.practice(p) ? undefined : say(t('gm.msg.dvt_no'));

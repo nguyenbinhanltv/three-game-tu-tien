@@ -1830,6 +1830,8 @@
   "gm.cmd.freeze": "/gm freeze [on|off] — quái trong room đứng yên, giữ nguyên trạng thái (soi viền, hiệu ứng).",
   "gm.cmd.lockhp": "/gm lockhp [on|off] — quái không tụt dưới 1 máu (đánh mãi không chết).",
   "gm.cmd.state": "/gm state <weak|break|stun|chant|phase N|clear> [giây] — ép trạng thái lên quái quanh mình. VD: /gm state break 10",
+  "gm.cmd.build": "/gm build <công pháp> [cấp] — dựng nhân vật thử một nút: cấp (mặc định 30), công pháp, chiêu cấp tối đa, chiêu không hồi. VD: /gm build lac_kiem_quyet 30",
+  "gm.cmd.labreset": "/gm labreset — trả phòng thử về như mới: dọn quái gọi, tắt freeze/lockhp/free/god, hồi đầy.",
   "gm.cmd.free": "/gm free [on|off] — chiêu không hồi, linh lực luôn đầy.",
   "gm.cmd.hurt": "/gm hurt <pct> — hạ máu quái quanh mình về pct%. VD: /gm hurt 30",
   "gm.cmd.dvt": "/gm dvt — vào Diễn Võ Trường (phòng tập riêng); gõ lại trong phòng để ra. Ra khỏi phòng, nhân vật trở về nguyên trạng.",
