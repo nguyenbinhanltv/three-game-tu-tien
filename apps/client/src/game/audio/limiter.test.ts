@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { LIMIT_KNEE, LIMIT_RANGE, limitCurve, limitTable } from './limiter';
+import { HEADROOM, LIMIT_KNEE, LIMIT_RANGE, limitCurve, limitTable } from './limiter';
 
 describe('limitCurve (chặn đỉnh mềm ở đầu ra âm thanh)', () => {
   it('dưới điểm gãy thì giữ nguyên tín hiệu', () => {
@@ -18,6 +18,13 @@ describe('limitCurve (chặn đỉnh mềm ở đầu ra âm thanh)', () => {
     // Hai tiếng 0,6 chồng nhau (1,2, tức +1,6 dBFS, trước đây bị xén cứng ở 1) ra khoảng 0,98: đỉnh được bo tròn thay vì cắt phẳng.
     expect(limitCurve(1.2)).toBeGreaterThan(0.95);
     expect(limitCurve(1.2)).toBeLessThan(0.99);
+  });
+
+  it('khoảng trống 3 dB: đỉnh +1,2 dBFS đo được (1,15) sau khi hạ còn dưới 0,82 và ra loa không quá 0,81', () => {
+    expect(20 * Math.log10(HEADROOM)).toBeCloseTo(-3, 1);
+    expect(limitCurve(1.15 * HEADROOM)).toBeLessThan(0.82);
+    // Đỉnh −1,6 dBFS (0,83) sau khi hạ nằm dưới điểm gãy: đi qua nguyên vẹn.
+    expect(limitCurve(0.83 * HEADROOM)).toBe(0.83 * HEADROOM);
   });
 
   it('độ dốc liên tục tại điểm gãy (không gãy khúc nghe thành méo)', () => {

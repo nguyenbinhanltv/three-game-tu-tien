@@ -33,7 +33,7 @@
 // thái trong music.ts (MUSIC_TRACKS); thêm `title` (màn tiêu đề, App.tsx) và `sting_*` (playSting, engine.ts).
 
 import { bellPartials } from './lootBell';
-import { LIMIT_RANGE, limitTable } from './limiter';
+import { HEADROOM, LIMIT_RANGE, limitTable } from './limiter';
 import type { SfxRow } from '../debug/sfxStats';
 import { gongPartials } from '../camera/chapter';
 import MIX from './audioMix.json';
@@ -379,7 +379,7 @@ function decodeEntry(name: string): void {
  */
 function softLimiter(c: AudioContext): { input: AudioNode; output: AudioNode } {
   const pre = c.createGain();
-  pre.gain.value = 1 / LIMIT_RANGE;
+  pre.gain.value = HEADROOM / LIMIT_RANGE;
   const shaper = c.createWaveShaper();
   shaper.curve = limitTable();
   pre.connect(shaper);
