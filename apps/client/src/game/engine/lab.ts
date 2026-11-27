@@ -2,11 +2,11 @@
 // Mọi thứ ở đây CHỈ là hình ở máy mình: không gửi gì lên server, không đổi dữ liệu nhân vật, không đổi mặc định của game.
 import { buildRecap } from '@dtl/shared';
 import { METHOD_SKILLS } from '@dtl/content';
-import { get, set } from '../../ui/store';
+import { closePanel, get, openPanel, type Panel, set } from '../../ui/store';
 import type { Game } from '../engine';
 
-/** Tên giả dài nhất thường gặp, dùng cho các khoảnh khắc có tên người chơi khác. */
-const LAB_NAMES = ['Vạn Kiếm Quy Tông Chân Nhân', 'Thanh Mộc Đan Sư', 'Hộ Pháp Kim Cương', 'Cửu Tiêu Lôi Quân'];
+/** Tên giả cho dữ liệu thử có người chơi khác: dài đúng mức tối đa server cho đặt (`NAME_MAX` = 14 ký tự), không dài hơn (tên dài hơn không tồn tại trong game). */
+export const LAB_NAMES = ['VạnKiếmQuyTông', 'ThanhMộcĐanSư', 'HộPhápKimCương', 'CửuTiêuLôiQuân'];
 
 /**
  * Khoảnh khắc giao diện bổ sung của khu Giao diện (đợt hai): bảng tổng kết trận, lời mời tổ đội + tỉ thí, thẻ chiêu tối thượng.
@@ -95,4 +95,73 @@ export function labRendererUrl(href: string, renderer: 'webgl2' | 'webgpu'): str
   const u = new URL(href);
   u.searchParams.set('renderer', renderer);
   return u.toString();
+}
+
+// ---------- nhịp hiệu ứng giao diện ----------
+
+/** Token thời lượng của bộ giao diện Ngọc Giản chỉnh được trong phòng thử (khai ở `ui/u2/tokens.css`). */
+export const LAB_UI_TOKENS = ['--u-dur-fast', '--u-dur', '--u-dur-open', '--u-dur-ink'] as const;
+
+/** Giá trị hiện tại (ms) của một token thời lượng. */
+export function labUiTokenGet(name: string): number {
+  const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  const n = parseFloat(v);
+  return Number.isFinite(n) ? Math.round(v.endsWith('ms') ? n : n * 1000) : 0;
+}
+
+/** Đặt một token thời lượng (ms) cho PHIÊN này; null = bỏ ghi đè, về giá trị của tokens.css. Không lưu, không đổi mặc định của game. */
+export function labUiToken(name: string, ms: number | null): boolean {
+  if (!(LAB_UI_TOKENS as readonly string[]).includes(name)) return false;
+  const st = document.documentElement.style;
+  if (ms === null || !Number.isFinite(ms)) st.removeProperty(name);
+  else st.setProperty(name, Math.round(Math.min(2000, Math.max(0, ms))) + 'ms');
+  return true;
+}
+
+let uiRate = 1;
+let uiRateRaf = 0;
+function uiRateTick(): void {
+  for (const a of document.getAnimations()) if (a.playbackRate !== uiRate) a.playbackRate = uiRate;
+  uiRateRaf = uiRate === 1 ? 0 : requestAnimationFrame(uiRateTick);
+}
+
+/**
+ * Tốc độ phát của MỌI animation và transition CSS của giao diện (1 = thường; 0,1 = chậm mười lần) để soi nhịp bật bảng, thông báo, thẻ chương.
+ * Áp cho cả animation sinh ra sau đó (lặp theo khung hình) tới khi đặt lại 1. Không đụng lớp 3D (xem nhóm Thời gian).
+ */
+export function labUiRate(rate: number): number {
+  uiRate = Number.isFinite(rate) ? Math.min(1, Math.max(0.05, rate)) : 1;
+  if (uiRateRaf) cancelAnimationFrame(uiRateRaf);
+  uiRateTick();
+  return uiRate;
+}
+
+export function labUiRateGet(): number {
+  return uiRate;
+}
+
+// ---------- cửa sổ ----------
+
+export const LAB_WINDOWS: readonly Panel[] = ['char', 'bag', 'method', 'quests', 'map', 'party', 'wardrobe', 'settings', 'help'];
+
+/** Đóng mọi cửa sổ rồi mở đúng một cái (`id` rỗng = chỉ đóng), để chụp từng cửa sổ một mình ở mọi cỡ màn. */
+export function labWindow(id: string): boolean {
+  for (const w of get().windows) closePanel(w.id);
+  if (!id) return true;
+  if (!(LAB_WINDOWS as readonly string[]).includes(id)) return false;
+  openPanel(id as Panel);
+  return true;
+}
+
+/** Cổng gọi công cụ phòng thử từ console / Playwright (`__game.labx.*`), để thêm công cụ mới không phải sửa lớp Game. */
+export function makeLabX(eng: Game) {
+  return {
+    window: labWindow,
+    uiRate: labUiRate,
+    uiRateGet: labUiRateGet,
+    uiToken: labUiToken,
+    uiTokenGet: labUiTokenGet,
+    vitals: (what: 'hp' | 'mp', frac: number | null) => labVitalsSet(eng, what, frac),
+    preset: (q: string) => labPreset(eng, q),
+  };
 }

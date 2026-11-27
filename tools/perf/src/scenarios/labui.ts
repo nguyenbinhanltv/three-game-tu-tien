@@ -1,11 +1,12 @@
 // Diễn Võ Trường, khu Giao diện (V2c): kiểm CÔNG CỤ giao diện của phòng thử bằng bấm nút thật + hai phép đo tự động.
-//   pnpm shots labui --out <thư mục> [--query style=dahoa] [--only tools,contrast,motion]
+//   pnpm shots labui --out <thư mục> [--query style=dahoa] [--only tools,contrast,motion,windows]
 // - tools: bấm các nút mới của tab Diễn Võ (nhật ký điều khiển, khoảnh khắc đợt hai, máu/linh lực giả, kiểm máy yếu) rồi đối chiếu trạng thái game.
 // - contrast: TƯƠNG PHẢN CHỮ của HUD trên nền game thật (WCAG): chụp HUD với chữ trong suốt để lấy nền ngay dưới từng dòng chữ, tính tỉ lệ tương phản
 //   của màu chữ với từng điểm ảnh nền; báo dòng có phân vị 10% dưới 4,5 (chữ thường) hoặc 3 (chữ lớn ≥ 24 px, hoặc ≥ 18,7 px đậm).
 //   Giới hạn: WCAG không tính bóng chữ/viền chữ, nên chữ có bóng đậm đọc được hơn con số ở đây.
+// - windows: dựng nhân vật đủ đồ rồi mở TỪNG cửa sổ ở năm cỡ màn hình; báo cửa sổ tràn khỏi khung nhìn và dòng chữ bị cắt (tràn ngang trong ô ẩn phần thừa).
 // - motion: bật "Giảm chuyển động", gọi mọi khoảnh khắc rồi đếm animation CSS còn chạy trong HUD (phải bằng 0, trừ danh sách cho phép).
-import { opt } from '../lib/env';
+import { num, opt } from '../lib/env';
 import { gm, skipCutscene, waitLevel } from '../lib/game';
 import type { Scenario } from '../lib/scenario';
 import sharp from 'sharp';
@@ -37,7 +38,7 @@ export const contrast = (a: number, b: number): number => (Math.max(a, b) + 0.05
 export default {
   name: 'labui',
   desc: 'Diễn Võ Trường, khu Giao diện: bấm nút công cụ mới, đo tương phản chữ HUD trên nền thật, kiểm giảm chuyển động',
-  usage: '[--query style=dahoa] [--only tools,contrast,motion]',
+  usage: '[--query style=dahoa] [--only tools,contrast,motion,windows] [--win char,wardrobe] [--winwait 900]',
   env: { RATE_LIMIT_EXEMPT: 'loopback' },
   async run(r) {
     const query = opt('--query', '');
@@ -80,6 +81,33 @@ export default {
       });
       check('mọi nút của nhóm Giao diện nằm trong khung 720p', outside === 0, `${outside} nút ngoài khung`);
       await snap(pg, r.out, 'tools-0-nhom.png', { wait: 200 });
+
+      await btn(/^Nhịp và HUD$/).click();
+      await sleep(250);
+      const outside2 = await pg.evaluate(() => {
+        const lim = Math.min(innerHeight, document.querySelector('.debug-panel')!.getBoundingClientRect().bottom) + 1;
+        return [...document.querySelectorAll('.debug-panel button')].filter((b) => b.getBoundingClientRect().bottom > lim).length;
+      });
+      check('mọi nút của nhóm Nhịp và HUD nằm trong khung 720p', outside2 === 0, `${outside2} nút ngoài khung`);
+      // Tốc độ hiệu ứng giao diện: 10% thì thông báo nổi vừa gọi phải đang phát ở tốc độ 0,1; token thời lượng chỉnh được và trả về được.
+      await btn(/^10%$/).click();
+      await pg.evaluate(() => void window.__game!.labMoment('toast'));
+      await sleep(300);
+      const rates = await pg.evaluate(() => document.getAnimations().map((a) => a.playbackRate));
+      check('nút "10%" làm chậm mọi animation giao diện', rates.length > 0 && rates.every((x) => Math.abs(x - 0.1) < 1e-6), `${rates.length} animation, tốc độ ${[...new Set(rates)].join(', ')}`);
+      await btn(/^100%$/).click();
+      await sleep(200);
+      const rates1 = await pg.evaluate(() => document.getAnimations().map((a) => a.playbackRate));
+      check('nút "100%" trả tốc độ animation về 1', rates1.every((x) => x === 1), `${rates1.length} animation`);
+      const tk0 = await pg.evaluate(() => window.__game!.labx.uiTokenGet('--u-dur-open'));
+      await pg.locator('.debug-panel [data-k="--u-dur-open"] button', { hasText: '+' }).click();
+      await sleep(150);
+      const tk1 = await pg.evaluate(() => window.__game!.labx.uiTokenGet('--u-dur-open'));
+      await btn('Về mặc định').click();
+      await sleep(150);
+      const tk2 = await pg.evaluate(() => window.__game!.labx.uiTokenGet('--u-dur-open'));
+      check('token "Mở bảng": nút + tăng 20 ms, "Về mặc định" trả lại', tk1 === tk0 + 20 && tk2 === tk0, `${tk0} → ${tk1} → ${tk2} ms`);
+      await snap(pg, r.out, 'tools-0b-nhip.png', { wait: 200 });
 
       // Nhật ký điều khiển: bật, ra một chiêu bằng phím, đọc dòng ghi được; rồi bật ping giả 150 ms và so khứ hồi.
       await btn('Nhật ký điều khiển').click();
@@ -125,9 +153,30 @@ export default {
       check('nút "Số thật" trả HUD về máu thật', !!back && !!real && back[0] === real[0], `${back?.join('/')}`);
 
       // Khoảnh khắc đợt hai.
+      await btn(/^Giao diện$/).click();
+      await sleep(250);
       await btn('Lời mời').click();
       await sleep(500);
       check('nút "Lời mời" hiện hai thẻ mời', (await pg.locator('.pty-invite').count()) === 2);
+      // Lời mời không được đè khung mục tiêu / khối thanh boss (HUD nặng có thanh boss giả).
+      await pg.evaluate(() => void window.__game!.labHudLoad(true));
+      await sleep(900);
+      const inv = await pg.evaluate(() => {
+        const b = document.querySelector('.pty-invites')?.getBoundingClientRect();
+        if (!b) return null;
+        let over = 0;
+        for (const f of document.querySelectorAll('.hud .target-frame, .hud [class^="u2h-boss"]')) {
+          const r = f.getBoundingClientRect();
+          const w = Math.min(r.right, b.right) - Math.max(r.left, b.left);
+          const h = Math.min(r.bottom, b.bottom) - Math.max(r.top, b.top);
+          if (r.width > 0 && w > 1 && h > 1) over += w * h;
+        }
+        return { top: Math.round(b.top), over: Math.round(over) };
+      });
+      check('chồng lời mời không đè khung mục tiêu và thanh boss', !!inv && inv.over === 0, inv ? `mép trên ${inv.top} px, đè ${inv.over} px²` : 'không thấy chồng lời mời');
+      await snap(pg, r.out, 'tools-3b-loi-moi-boss.png', { wait: 0 });
+      await pg.evaluate(() => void window.__game!.labHudLoad(false));
+      await sleep(300);
       await btn('Thẻ chiêu cuối').click();
       await sleep(200);
       check('nút "Thẻ chiêu cuối" hiện thẻ', (await pg.locator('.ult-card').count()) >= 1);
@@ -235,6 +284,80 @@ export default {
         .toFile(`${r.out}/contrast-1-danh-dau.png`);
       writeJson(r.out, 'labui-contrast.json', { query, total: rows.length, bad: bad.length, skipped, rows });
       await pg.evaluate(() => void window.__game!.labHudLoad(false));
+    }
+
+    if (want('windows')) {
+      // Dữ liệu nặng: ba bộ đồ đủ món (túi nhiều ô), đủ chiêu, HUD nặng (tổ đội bốn người, sáu nhiệm vụ).
+      await gm(pg, 'kit 4 kiem +10 m', 1500);
+      await gm(pg, 'kit 3 hophap +7 m', 1500);
+      await gm(pg, 'kit 2 dansu m', 1500);
+      await gm(pg, 'skills all', 1200);
+      await pg.evaluate(() => {
+        window.__game!.labMoment('clear');
+        window.__game!.labHudLoad(true);
+      });
+      // Chờ bốn thông báo nổi của HUD nặng tan hết (3,2 s) để chúng không đè lên cửa sổ trong ảnh.
+      await sleep(3600);
+      // `--win a,b`: chỉ các cửa sổ đó; `--winwait ms`: chờ sau khi mở (mặc định 900; tăng lên để soi khung xem trước 3D đã dựng xong).
+      const pickWin = opt('--win', '').split(',').filter(Boolean);
+      const winWait = num('--winwait', 900);
+      const wins = ['char', 'bag', 'method', 'quests', 'map', 'party', 'wardrobe', 'settings', 'help'].filter((k) => !pickWin.length || pickWin.includes(k));
+      const errAt: Record<string, number> = {};
+      const sizes: [number, number][] = [
+        [1280, 720],
+        [1366, 768],
+        [1600, 900],
+        [1920, 1080],
+        [2560, 1440],
+      ];
+      const report: unknown[] = [];
+      let badWin = 0;
+      let cut = 0;
+      for (const [w, h] of sizes) {
+        await pg.setViewportSize({ width: w, height: h });
+        await sleep(600);
+        for (const id of wins) {
+          const e0 = r.errors.length;
+          const opened = await pg.evaluate((k) => window.__game!.labx.window(k), id);
+          await sleep(winWait);
+          if (r.errors.length > e0) errAt[id] = (errAt[id] ?? 0) + r.errors.length - e0;
+          const m = (await pg.evaluate(`(() => {
+            var win = document.querySelector('.u2-win'); if (!win) return null;
+            var vw = innerWidth, vh = innerHeight, r = win.getBoundingClientRect();
+            var out = Math.max(0, -r.left, -r.top, r.right - vw, r.bottom - vh);
+            var clipped = [];
+            for (const e of win.querySelectorAll('*')) {
+              if (!e.childNodes.length || ![...e.childNodes].some((n) => n.nodeType === 3 && (n.textContent || '').trim())) continue;
+              var cs = getComputedStyle(e);
+              if (cs.display === 'inline' || cs.visibility === 'hidden') continue;
+              var hide = cs.overflowX === 'hidden' || cs.overflowX === 'clip';
+              if (hide && e.scrollWidth > e.clientWidth + 1) clipped.push((e.textContent || '').trim().slice(0, 32) + ' [' + ((typeof e.className === 'string' ? e.className : '').trim().split(' ')[0] || e.tagName.toLowerCase()) + ']');
+            }
+            return { x: Math.round(r.left), y: Math.round(r.top), w: Math.round(r.width), h: Math.round(r.height), out: Math.round(out), clipped: clipped };
+          })()`)) as { x: number; y: number; w: number; h: number; out: number; clipped: string[] } | null;
+          const file = `win/${id}-${w}x${h}.png`;
+          await snap(pg, r.out, file, { wait: 0 });
+          if (!opened || !m) {
+            badWin++;
+            console.log(`  HỎNG ${w}×${h} ${id}: cửa sổ không mở`);
+          } else {
+            if (m.out > 1) badWin++;
+            cut += m.clipped.length;
+            if (m.out > 1 || m.clipped.length) console.log(`  ${m.out > 1 ? 'HỎNG' : 'CẮT '} ${w}×${h} ${id}: ${m.w}×${m.h} px${m.out > 1 ? ', tràn ' + m.out + ' px' : ''}${m.clipped.length ? '; chữ bị cắt: ' + m.clipped.slice(0, 4).join(' | ') + (m.clipped.length > 4 ? ` (+${m.clipped.length - 4})` : '') : ''}`);
+          }
+          report.push({ w, h, id, file, ...m });
+        }
+      }
+      await pg.evaluate(() => {
+        window.__game!.labx.window('');
+        window.__game!.labHudLoad(false);
+      });
+      await pg.setViewportSize({ width: 1280, height: 720 });
+      await sleep(500);
+      check('mọi cửa sổ mở được và nằm trọn trong khung nhìn ở năm cỡ màn', badWin === 0, `${badWin} lượt hỏng trên ${wins.length * sizes.length}`);
+      console.log(`[shots:labui] cửa sổ: ${wins.length} cửa sổ × ${sizes.length} cỡ màn, ${badWin} tràn/không mở, ${cut} dòng chữ bị cắt`);
+      check('mở các cửa sổ không sinh lỗi console', Object.keys(errAt).length === 0, Object.entries(errAt).map(([k, n]) => `${k}: ${n} lỗi`).join(', ') || 'không lỗi');
+      writeJson(r.out, 'labui-windows.json', { query, badWin, cut, errAt, rows: report });
     }
 
     if (want('motion')) {

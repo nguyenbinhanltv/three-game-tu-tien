@@ -151,6 +151,16 @@ export interface GameDebug {
   labCamSet(dist: number, pitchDeg?: number): boolean;
   labCam: { dist: number; pitch: number } | null;
   labMoment(kind: string): boolean;
+  /** Phòng thử: cổng công cụ ở `apps/client/src/game/engine/lab.ts`. */
+  labx: {
+    window(id: string): boolean;
+    uiRate(rate: number): number;
+    uiRateGet(): number;
+    uiToken(name: string, ms: number | null): boolean;
+    uiTokenGet(name: string): number;
+    vitals(what: 'hp' | 'mp', frac: number | null): boolean;
+    preset(q: string): boolean;
+  };
   /** Phòng thử: nhật ký điều khiển (null = tắt); mốc thời gian theo `performance.now()`. */
   labTrace: { rows: { type: string; label: string; key: string | null; keyAt: number | null; sendAt: number; ackAt: number | null; hitAt: number | null }[]; clear(): void } | null;
   labNumbers(kind: string, count: number, gapMs: number): number;
