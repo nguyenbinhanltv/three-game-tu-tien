@@ -133,5 +133,69 @@
       "slot": 0,
       "waitMs": 4000
     }
+  },
+  {
+    "id": "kiem_chieu_1",
+    "at": "arena",
+    "method": "lac_kiem_quyet",
+    "level": 30,
+    "mons": [
+      {
+        "id": "mon_soi_xam",
+        "n": 3
+      }
+    ],
+    "act": {
+      "slot": 1,
+      "waitMs": 700
+    }
+  },
+  {
+    "id": "kiem_chieu_2",
+    "at": "arena",
+    "method": "lac_kiem_quyet",
+    "level": 30,
+    "mons": [
+      {
+        "id": "mon_soi_xam",
+        "n": 3
+      }
+    ],
+    "act": {
+      "slot": 2,
+      "waitMs": 700
+    }
+  },
+  {
+    "id": "kiem_chieu_3",
+    "at": "arena",
+    "method": "lac_kiem_quyet",
+    "level": 30,
+    "mons": [
+      {
+        "id": "mon_soi_xam",
+        "n": 3
+      }
+    ],
+    "act": {
+      "slot": 3,
+      "waitMs": 700
+    }
+  },
+  {
+    "id": "kiem_chieu_4",
+    "at": "arena",
+    "method": "lac_kiem_quyet",
+    "level": 30,
+    "mons": [
+      {
+        "id": "mon_soi_xam",
+        "n": 3
+      }
+    ],
+    "act": {
+      "slot": 4,
+      "waitMs": 700
+    }
   }
 ]

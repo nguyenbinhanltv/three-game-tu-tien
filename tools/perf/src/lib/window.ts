@@ -137,6 +137,9 @@ export interface GameDebug {
   frames: number;
   sid: string;
   targetId: string;
+  /** Phòng thử: tỉ lệ thời gian lớp hình (0 = dừng) và số khung còn bước. */
+  timeScale: number;
+  stepLeft: number;
   camYaw: number;
   camPitch: number;
   camDist: number;

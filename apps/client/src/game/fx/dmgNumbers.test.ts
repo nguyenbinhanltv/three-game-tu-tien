@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import * as THREE from 'three/webgpu';
-import { DamageNumbers, MERGE_WINDOW, STACK_AGE } from './vfx';
+import { DamageNumbers, MERGE_WINDOW, sigilGroundY, STACK_AGE } from './vfx';
 
 // Không có DOM trong test: giả đủ phần `DamageNumbers.spawn` dùng.
 (globalThis as { document?: unknown }).document = {
@@ -61,5 +61,17 @@ describe('số sát thương: gom số nhỏ', () => {
     d.items[1]!.t = STACK_AGE + 0.1;
     d.spawn('8', p, 'hit', 'm1', 8);
     expect(d.items[3]!.row).toBe(0);
+  });
+});
+
+describe('sigilGroundY (pháp trận không chìm dưới nền dốc)', () => {
+  it('nền phẳng: cao hơn mặt đất 0,12 m', () => {
+    expect(sigilGroundY(0, 0, 8, () => 5)).toBeCloseTo(5.12, 6);
+  });
+  it('nền dốc: nằm trên điểm cao nhất trong bán kính, không phải trên điểm giữa', () => {
+    const slope = (x: number) => 10 + x * 0.05;
+    const y = sigilGroundY(0, 0, 8, slope);
+    expect(y).toBeCloseTo(10 + 8 * 0.05 + 0.12, 6);
+    expect(y).toBeGreaterThan(slope(0) + 0.12);
   });
 });

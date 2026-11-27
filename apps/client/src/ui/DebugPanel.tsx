@@ -73,6 +73,7 @@ type GmGroup = 'lab' | 'char' | 'skill' | 'gear' | 'outfit' | 'weapon' | 'map' |
 const GM_GROUP_IDS: GmGroup[] = ['lab', 'char', 'skill', 'gear', 'outfit', 'weapon', 'map', 'mon'];
 const LAB_STATES = ['weak', 'break', 'stun', 'chant', 'clear'] as const;
 const LAB_PHASES = [0, 1, 2, 3];
+const LAB_SPEEDS = [100, 50, 25, 10];
 const LAB_LEVELS = [10, 16, 20, 24, 28, 30, 36, 44];
 const TIERS = [1, 2, 3, 4];
 const BRANCHES = ['kiem', 'hophap', 'dansu'] as const;
@@ -141,6 +142,12 @@ function Tools() {
   const [labLevel, setLabLevel] = useState(30);
   const [phase, setPhase] = useState(1);
   const [scene, setScene] = useState(LAB_SCENES[0]?.id ?? '');
+  // Tốc độ lớp hình (phần trăm; 0 = dừng). Chỉ đổi cách máy mình vẽ, không gửi gì lên server.
+  const [speed, setSpeed] = useState(() => Math.round((Game.current?.timeScale ?? 1) * 100));
+  const setLabSpeed = (n: number) => {
+    setSpeed(n);
+    if (Game.current) Game.current.timeScale = n / 100;
+  };
   const want = realm || level;
   // Tìm quái theo tên hiển thị hoặc id (không dấu cách thừa); rỗng thì hiện tất cả.
   const q = find.trim().toLowerCase();
@@ -259,6 +266,23 @@ function Tools() {
             />
             <Button size="s" onClick={() => gm('state phase ' + phase)}>
               {t('ui.debug.set')}
+            </Button>
+          </div>
+          <div className="debug-row wrap">
+            <span>{t('ui.gm.lab.time')}</span>
+            {LAB_SPEEDS.map((n) => (
+              <Button key={n} size="s" pressed={speed === n} onClick={() => setLabSpeed(n)}>
+                {t('ui.gm.lab.time_v', { n })}
+              </Button>
+            ))}
+            <Button size="s" pressed={speed === 0} onClick={() => setLabSpeed(0)}>
+              {t('ui.gm.lab.pause')}
+            </Button>
+            <Button size="s" disabled={speed !== 0} onClick={() => Game.current && (Game.current.stepLeft += 1)}>
+              {t('ui.gm.lab.step')}
+            </Button>
+            <Button size="s" disabled={speed !== 0} onClick={() => Game.current && (Game.current.stepLeft += 5)}>
+              {t('ui.gm.lab.step5')}
             </Button>
           </div>
           <div className="debug-note">{t('ui.gm.lab.note')}</div>
