@@ -124,6 +124,16 @@ export default {
       hide: 'hud',
     });
     await skipCutscene(pg, 20);
+    // Xưởng VFX: `--layersoff 0,3` tắt các lớp có chỉ số đó trong `events` của mọi timeline phát ra (soi lớp nào vẽ gì).
+    const layersOff = opt('--layersoff', '')
+      .split(',')
+      .filter(Boolean)
+      .map(Number);
+    if (layersOff.length)
+      await pg.evaluate((ix) => {
+        const s = (window as unknown as { __fxLayerOff?: Set<number> }).__fxLayerOff;
+        ix.forEach((i) => s?.add(i));
+      }, layersOff);
     await gm(pg, 'dvt');
     await waitLevel(pg, 'dien_vo');
     const rows: Row[] = [];
@@ -148,7 +158,7 @@ export default {
           });
           g.targetId = best;
           g.useSkill(slot);
-          return bd;
+          return { d: bd, skill: g.bar()[slot]?.id ?? '' };
         }, sc.act.slot);
         // Đo hiệu ứng che thân mục tiêu ở BỐN mốc liên tiếp (cách nhau ~110 ms thật): mỗi mốc dừng lớp hình rồi chụp HAI lần cùng khung, có hiệu ứng
         // và ẩn nhóm VFX; chênh giữa hai ảnh trong ô quanh thân mục tiêu = phần thân bị che (không lẫn tư thế; số sát thương là DOM nên cũng không lẫn).
@@ -198,7 +208,8 @@ export default {
           const m = g.view.monsters.get(g.targetId);
           return m ? { d: Math.hypot(m.x - me.x, m.z - me.z), hp: m.hp, mhp: m.mhp } : null;
         });
-        rows.push({ id: sc.id, file, perf: await perfSample(pg), act: { distBefore: d0, after: d1 }, cover: cover ?? undefined, coverAvg: coverAvg ?? undefined });
+        rows.push({ id: sc.id, file, perf: await perfSample(pg), act: { skill: d0.skill, distBefore: d0.d, after: d1 }, cover: cover ?? undefined, coverAvg: coverAvg ?? undefined });
+        console.log(`  ${sc.id}: chiêu ${d0.skill}`);
         if (cover !== null) console.log(`  ${sc.id}: hiệu ứng che thân mục tiêu lớn nhất ${Math.round(cover * 100)}%, trung bình ${Math.round((coverAvg ?? 0) * 100)}% (4 mốc)`);
         continue;
       }
