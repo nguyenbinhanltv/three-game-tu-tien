@@ -1,6 +1,6 @@
 // Nhuộm kênh 2 (viền/lót/đai) và kênh 3 (tua/kim loại) của nhân vật v3: ảnh trước/sau ở 1080p và 720p.
 // Mỗi bộ × giới: ảnh gốc (`0-goc`, chưa nhuộm, mốc so), ba kênh cùng một màu (`1-ba-kenh-cung-mau`: viền và kim loại cũng đỏ) rồi vài phối màu khác nhau (tin `lkd`). Mốc "chỉ kênh 1 như trước PR" cần build main. Cùng góc 3/4 trước mặt.
-//   pnpm shots dye23 --out <thư mục> [--sets set_dan_tam,set_huyen_giap,...] [--genders m,f] [--quality high] [--query chr=v1]
+//   pnpm shots dye23 --out <thư mục> [--sets set_dan_tam,set_huyen_giap,...] [--genders m,f] [--quality high] [--query a=b]
 import path from 'node:path';
 import type { Page } from 'playwright';
 import { sleep } from '../lib/devserver';
@@ -48,7 +48,7 @@ async function waitModel(page: Page, timeout: number): Promise<void> {
 export default {
   name: 'dye23',
   desc: 'Nhuộm kênh 2/3 nhân vật v3: trước/sau, 4 bộ × nam/nữ × vài phối màu, 1080p + 720p',
-  usage: '[--sets set_a,set_b] [--genders m,f] [--quality high] [--query chr=v1]',
+  usage: '[--sets set_a,set_b] [--genders m,f] [--quality high] [--query a=b]',
   env: { RATE_LIMIT_EXEMPT: 'loopback' },
   async run(r) {
     const sets = list('--sets', SETS.join(','));
