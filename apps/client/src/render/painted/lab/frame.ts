@@ -1,6 +1,5 @@
 import * as THREE from 'three/webgpu';
 import { pass } from 'three/tsl';
-import { FLAGS } from '../../../base/flags';
 import { createPaintedWide, paintedOutput } from '../frame';
 
 /**
@@ -18,8 +17,8 @@ export function createFrame(renderer: THREE.WebGPURenderer, scene: THREE.Scene, 
   const post = new THREE.PostProcessing(renderer);
   post.outputColorTransform = false;
   const scenePass = pass(scene, camera, { samples: o.samples });
-  // Bút rộng ở pass riêng như game (B6); `?painthalf=0` giữ bản dịch từng dòng (25 lần lấy mẫu mỗi điểm ảnh) để đo khớp với painted-valley.
-  const wide = o.paint >= 1.5 && FLAGS.paintHalf ? createPaintedWide(scenePass) : null;
+  // Bút rộng ở pass riêng như game (B6).
+  const wide = o.paint >= 1.5 ? createPaintedWide(scenePass) : null;
   post.outputNode = paintedOutput(scenePass, wide ? { ...o, wide: (uv) => wide.sample(uv) } : o);
   return {
     render(): void {

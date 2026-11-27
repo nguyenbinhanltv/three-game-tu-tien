@@ -14,7 +14,7 @@ Gói hình/âm cho phó bản DV-3D (#227), theo mẫu Bắc Hoang (`docs/dv-3i-
 | Không có điểm nhấn | **Ánh sáng điểm nhấn**: 4 điểm — bia giữ (than hồng, mạnh) và ba khe mạch của boss cuối (ngọc lam, đối màu). `LanternLights` nhận màu/cường độ riêng từng điểm, chỉ WebGPU (preset có đèn); quầng giả `createLanternHalos` ở mọi backend | `render/lanternLights.ts`, `engine.ts` (`buildXich`) |
 | Dùng nhạc `dungeon`/`dungeon_boss` của Kiếm Trủng | Hai bài tự soạn: **`dungeon_rift`** (đàn ống pedal, hợp xướng hẹp, timpani nhịp tim, thang E F A B C, 52 BPM, 2:28) và **`dungeon_rift_boss`** (ostinato 3-3-2, đồng thau, taiko, 108 BPM, 1:29). Chọn theo level ở `regionTrack` và đợt boss | `tools/audio/compose/dungeon_rift*.mjs`, `music.json`, `musicDirector.ts`, `music.ts` (bảng dự phòng tổng hợp) |
 
-Cờ so ảnh: `?xichart=0` tắt vết nứt + đèn nhấn (địa hình và mood vẫn là mới; so với bản cũ dùng ảnh trước/sau của artifacts).
+Cờ so ảnh `?xichart=0` đã gỡ ở V4 nhóm D (28/11/2026); so với bản cũ dùng ảnh trước/sau của artifacts.
 
 ## Ngân sách (`pnpm shots xichkhe --perf 1`, WebGPU, Vừa, 1280×720; 6 điểm, đã dọn quái)
 

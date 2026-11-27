@@ -306,7 +306,7 @@ export class PostPipeline {
       const maskAt = (uv: Node): Node => auxTex.sample(uv).a;
       const paint = FLAGS.paint ?? 3;
       // Bút rộng (bán kính 2) + nới mặt nạ chạy ở một pass riêng cỡ ~độ phân giải màn hình (nửa cỡ cảnh ở Cao): 16 + 5 lần lấy mẫu thay cho 25 + 15.
-      if (paint >= 1.5 && FLAGS.paintHalf) {
+      if (paint >= 1.5) {
         this.paintWide = createPaintedWide(scenePass, { mask: maskAt });
         this.paintWide.resize(renderer);
       }

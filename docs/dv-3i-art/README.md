@@ -15,7 +15,7 @@ Gói mỹ thuật cho bản đồ DV-1 (#213), theo mẫu E4-I (`docs/e4i-art/`)
 | Cả level phát nhạc `wild` | Hai bài tự soạn: **`wild_ash`** (bên này: tiêu, đàn tranh thưa, dây trầm, 52 BPM, 2:46) và **`wild_rift`** (bên kia: đàn ống, hợp xướng tối, đồng thau, timpani, thang E F A B C, 60 BPM, 2:24), chọn theo nửa bản đồ | `tools/audio/compose/wild_ash|wild_rift.mjs`, `music.json`, `musicDirector.ts` (`regionTrack(…, rift)`), `music.ts`, manifest, `LICENSES.md` |
 | Quái chương 4 đứng tạm ở vùng cấp 28 | **Liệt Hỏa Ma Ngưu và U Ảnh Cốt Lộc (DV-2, #212)** thay chiến mã/Dạ Minh Lộc ở mọi vùng. Cốt Vệ Kiếm Thú vẫn đứng chỗ Giác Kiếm Trọng Binh, tinh anh vẫn tạm (DV3-B). Bộ sinh dùng cùng dãy số ngẫu nhiên nên **vị trí cụm không đổi**: mật độ 132 quái/km², độ phủ p95 61,2 m / max 82,3 m (chuẩn level ĐẠT), 0 chỗ kẹt | `tools/maps/gen-bac-hoang.mjs` (`MIX`), `levels/bac_hoang.json` |
 
-Cờ so ảnh: `?bhart=0` tắt vệt nứt + cây chết + mood theo vị trí (về mood `ash_dawn` cố định).
+Cờ so ảnh `?bhart=0` đã gỡ ở V4 nhóm D (28/11/2026); so với bản cũ dùng ảnh trước/sau đã lưu.
 
 ## Ngân sách (`pnpm shots points --level bac_hoang --perf`, WebGPU, Vừa, 1280×720)
 

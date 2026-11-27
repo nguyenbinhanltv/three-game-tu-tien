@@ -102,10 +102,6 @@ interface Flags {
   ambient: string | null;
   /** `?cine=0` tắt cảnh mở đầu và cảnh boss/chuyển pha (công cụ đo bench/crowd/load/compat dùng để camera đo không bị cảnh điện ảnh chiếm). */
   cinematics: boolean;
-  /** `?xichart=0` tắt vết nứt/đèn nhấn riêng của Xích Tẫn Khích (so ảnh). */
-  xichArt: boolean;
-  /** `?bhart=0` tắt lớp mỹ thuật riêng Bắc Hoang (so ảnh, chương 5). */
-  bhArt: boolean;
   /** `?tc=0` ẩn bộ prop "Thiên Công Khai Vật" (PROP-1; so ảnh trước/sau, đo hiệu năng). Chỉ ẩn hình, va chạm vẫn còn. */
   tcProps: boolean;
   /** `?bf=0` tắt bướm trang trí (so ảnh, đo). */
@@ -140,8 +136,6 @@ interface Flags {
   da: boolean;
   /** `?paint=0..3` mức lớp Kuwahara của Họa Cảnh (0 tắt; không có cờ: 3 = bút rộng bán kính 2). */
   paint: number | null;
-  /** `?painthalf=0` (cùng `?style=painted`): bút rộng Kuwahara tính tại chỗ ở mọi điểm ảnh như trước B6 (so ảnh/số đo); mặc định pass riêng cỡ ~màn hình. */
-  paintHalf: boolean;
   /** `?far=1|0` (cùng `?style=painted`): ép bật/tắt vùng xa nướng một lần (FarBackdrop). Không có cờ: theo bảng level (`render/painted/theme.ts` `far`; Vân Lam tắt vì thung lũng kín). */
   far: boolean | null;
   /** `?vistafly=<độ>`: ghi đè pitch camera vista khi ngự kiếm (chỉ với ?far=1; để so mức). */
@@ -164,10 +158,6 @@ export const FLAG_DOCS: Readonly<Record<string, { scope: 'user' | 'diag' | 'test
   },
   paintdbg: { scope: 'diag', doc: '=dry|vc: gỡ lỗi mảng đất trần của Họa Cảnh (xuất mặt nạ ra đất; xem render/painted/theme.ts dryMix)' },
   paint: { scope: 'diag', doc: '0..3: mức Kuwahara của ?style=painted (0 tắt, mặc định 3)' },
-  painthalf: {
-    scope: 'diag',
-    doc: '=0: bút rộng Kuwahara của ?style=painted tính tại chỗ ở mọi điểm ảnh (trước B6); mặc định pass riêng cỡ ~màn hình',
-  },
   vista: { scope: 'diag', doc: '0: tắt camera mở tầm nhìn (hạ thấp khi ngự kiếm và ở điểm ngắm cảnh)' },
   paintedlab: {
     scope: 'test',
@@ -229,8 +219,6 @@ export const FLAG_DOCS: Readonly<Record<string, { scope: 'user' | 'diag' | 'test
   music: { scope: 'diag', doc: 'id bài nhạc thử (dev)' },
   ambient: { scope: 'diag', doc: 'id âm môi trường thử (dev)' },
   cine: { scope: 'diag', doc: '=0 tắt cảnh mở đầu/boss (công cụ đo dùng)' },
-  xichart: { scope: 'diag', doc: '=0 tắt mỹ thuật riêng Xích Tẫn Khích' },
-  bhart: { scope: 'diag', doc: '=0 tắt mỹ thuật riêng Bắc Hoang' },
   tc: { scope: 'diag', doc: '=0 ẩn bộ prop Thiên Công Khai Vật (PROP-1, so ảnh/đo)' },
   bf: { scope: 'diag', doc: '=0 tắt bướm trang trí' },
   birds: { scope: 'diag', doc: '=0 tắt đàn chim lượn trên Lạc Kiếm (Chân Cảnh M4)' },
@@ -280,7 +268,6 @@ export function readFlags(search: string): Flags {
     paintDbg: q.get('paintdbg') === 'dry' ? 'dry' : q.get('paintdbg') === 'vc' ? 'vc' : null,
     vistaFlyPitch: Number.isFinite(Number(q.get('vistafly') ?? NaN)) && q.has('vistafly') ? Number(q.get('vistafly')) : null,
     paint: /^[0-3]$/.test(q.get('paint') ?? '') ? Number(q.get('paint')) : null,
-    paintHalf: !off(q.get('painthalf')),
     isoFxCompress: q.get('isofx') !== '0',
     vista: q.get('vista') !== '0',
     isoYaw: q.get('isoyaw') === null || Number.isNaN(Number(q.get('isoyaw'))) ? null : (Number(q.get('isoyaw')) * Math.PI) / 180,
@@ -330,8 +317,6 @@ export function readFlags(search: string): Flags {
     night: q.get('night'),
     music: q.get('music'),
     ambient: q.get('ambient'),
-    bhArt: !off(q.get('bhart')),
-    xichArt: !off(q.get('xichart')),
     cinematics: !off(q.get('cine')),
     tcProps: !off(q.get('tc')),
     butterflies: !off(q.get('bf')),

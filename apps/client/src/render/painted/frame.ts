@@ -236,7 +236,7 @@ export function paintedOutput(scenePass: N, o: PaintedOutputOpts): N {
     const rWide = Math.min(Math.round(o.paint), 2);
     const useOne: N = away.lessThan(16).or(away.greaterThan(140));
     const one: N = kuwahara(hdr, texel, uv, 1);
-    // bút rộng: đọc từ pass riêng nếu có (B6), không thì tính tại chỗ (bản dịch từng dòng, `?painthalf=0`)
+    // bút rộng: đọc từ pass riêng nếu có (B6), không thì tính tại chỗ (bản dịch từng dòng; mức bút không có pass riêng)
     const half: N | null = o.wide && rWide >= 2 ? o.wide(uv) : null;
     const wide: N = half ? half.rgb : rWide >= 2 ? kuwahara(hdr, texel, uv, 2) : one;
     const painted: N = select(done, c0.rgb, select(useOne, one, wide));
