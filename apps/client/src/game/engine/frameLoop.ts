@@ -486,7 +486,10 @@ function updateCamera(eng: Game, dt: number): void {
     const spot = combat ? null : spotAt(levelId(), rp.x, rp.z);
     const vv = vistaView(eng.vista.update(dt, flying, spot, FLAGS.vista && !eng.cine.active, combat), flying ? 'fly' : 'spot');
     if (eng.vista.hint(spot) && FLAGS.vista) pushToast(t('ui.vista_hint'));
-    const wantD = isoDistFor(levelId()) * (flying ? 1.35 : 1) * vv.distMul * (1 + pull);
+    // Phòng thử: máy quay cận (`Game.labCamSet`) thay khoảng cách và góc nghiêng, CHỈ trong Diễn Võ Trường.
+    const labCam = levelId() === 'dien_vo' ? eng.labCam : null;
+    if (labCam) vv.pitch = labCam.pitch;
+    const wantD = labCam ? labCam.dist : isoDistFor(levelId()) * (flying ? 1.35 : 1) * vv.distMul * (1 + pull);
     iso.distCur += (wantD - iso.distCur) * Math.min(1, dt * 6);
     tx = rp.x + iso.lead.x;
     ty = rp.y + 1.0 + vv.lift;

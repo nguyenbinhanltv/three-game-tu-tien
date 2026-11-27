@@ -148,6 +148,8 @@ export interface GameDebug {
   labStyle(key: string, value: number): boolean;
   labStyleGet(): Record<string, number>;
   labStyleReset(): boolean;
+  labCamSet(dist: number, pitchDeg?: number): boolean;
+  labCam: { dist: number; pitch: number } | null;
   labMoment(kind: string): boolean;
   labNumbers(kind: string, count: number, gapMs: number): number;
   labPalette: string;
