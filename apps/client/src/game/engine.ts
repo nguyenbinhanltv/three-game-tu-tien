@@ -93,6 +93,7 @@ import type { ThienKhuyetSkyScene } from './world/thienKhuyetSky';
 import type { VanHaiWow } from './world/vanHaiWow';
 import type { VanHaiGarden } from './world/vanHaiGarden';
 import { PostPipeline, postParams } from '../render/post';
+import { INK_TUNE } from './character/inkHull';
 import { patchDefaultTextureDestroy } from '../render/defaultTexFix';
 import { patchNodeCacheKey } from '../render/nodeCacheFix';
 import { createWorldMaterial } from '../render/materials/world';
@@ -184,6 +185,22 @@ const gpuLog = logger('gpu');
 export { reqId } from './engine/common';
 
 const _labelRectV = new THREE.Vector3();
+
+/**
+ * Tham số PHONG CÁCH chỉnh được lúc chạy ở phòng thử (khu Phong cách): khóa, nhỏ nhất, lớn nhất, bước. Chỉ đổi trong phiên để người xem so và chốt;
+ * giá trị mặc định của game nằm ở `render/grading.ts` (theo level) và `game/character/inkHull.ts`, không bị đụng tới.
+ */
+export const LAB_STYLE = [
+  ['exposure', 0.4, 2, 0.05],
+  ['contrast', 0.8, 1.6, 0.02],
+  ['saturation', 0, 1.8, 0.05],
+  ['bloom', 0, 2.5, 0.1],
+  ['vignette', 0, 1, 0.05],
+  ['ao', 0, 1, 0.1],
+  ['grain', 0, 0.2, 0.01],
+  ['ink', 0, 3, 0.25],
+] as const;
+export type LabStyleKey = (typeof LAB_STYLE)[number][0];
 
 export class Game {
   static current: Game | null = null;
@@ -1068,6 +1085,66 @@ export class Game {
       : null;
     for (let i = 0; i < 4; i++) pushToast(t('sys.welcome', { name: names[i]! }) + ' ' + '·'.repeat(i + 1), i % 2 ? 'bad' : 'good');
     for (let i = 0; i < 12; i++) pushLog(t('sys.welcome', { name: names[i % 4]! + ' ' + names[(i + 1) % 4]! }) + ' #' + (i + 1), i % 3 ? 'info' : 'good');
+    return true;
+  }
+
+  /** Phòng thử: giá trị gốc của các tham số phong cách (chụp ở lần chỉnh đầu) để nút "về mặc định" trả lại đúng. */
+  private labStyleBase: Record<string, number> | null = null;
+
+  /** Phòng thử (khu Phong cách): đọc giá trị hiện tại của mọi tham số trong `LAB_STYLE`. */
+  labStyleGet(): Record<LabStyleKey, number> {
+    return {
+      exposure: postParams.exposure.value,
+      contrast: postParams.contrast.value,
+      saturation: postParams.saturation.value,
+      bloom: postParams.bloomStrength.value,
+      vignette: postParams.vignette.value,
+      ao: postParams.aoStrength.value,
+      grain: postParams.grain.value,
+      ink: INK_TUNE.width,
+    };
+  }
+
+  /** Phòng thử (khu Phong cách): đặt một tham số (kẹp trong khoảng của `LAB_STYLE`). Chỉ là lớp hình ở máy mình, mất khi tải lại trang. */
+  labStyle(key: string, value: number): boolean {
+    const def = LAB_STYLE.find((d) => d[0] === key);
+    if (!def || !Number.isFinite(value)) return false;
+    if (!this.labStyleBase) this.labStyleBase = { ...this.labStyleGet() };
+    const v = Math.round(Math.min(def[2], Math.max(def[1], value)) * 1000) / 1000;
+    switch (def[0]) {
+      case 'exposure':
+        postParams.exposure.value = v;
+        break;
+      case 'contrast':
+        postParams.contrast.value = v;
+        break;
+      case 'saturation':
+        postParams.saturation.value = v;
+        break;
+      case 'bloom':
+        postParams.bloomStrength.value = v;
+        break;
+      case 'vignette':
+        postParams.vignette.value = v;
+        break;
+      case 'ao':
+        postParams.aoStrength.value = v;
+        break;
+      case 'grain':
+        postParams.grain.value = v;
+        break;
+      case 'ink':
+        INK_TUNE.width = v;
+        break;
+    }
+    return true;
+  }
+
+  /** Phòng thử (khu Phong cách): trả mọi tham số về giá trị lúc chưa chỉnh. */
+  labStyleReset(): boolean {
+    const b = this.labStyleBase;
+    if (!b) return true;
+    for (const k of Object.keys(b)) this.labStyle(k, b[k]!);
     return true;
   }
 

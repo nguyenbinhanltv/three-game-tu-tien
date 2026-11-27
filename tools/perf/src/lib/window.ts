@@ -145,6 +145,9 @@ export interface GameDebug {
   labFx(key: string): boolean;
   labFloor(id: string): boolean;
   labHudLoad(on: boolean): boolean;
+  labStyle(key: string, value: number): boolean;
+  labStyleGet(): Record<string, number>;
+  labStyleReset(): boolean;
   labMoment(kind: string): boolean;
   labNumbers(kind: string, count: number, gapMs: number): number;
   labPalette: string;
