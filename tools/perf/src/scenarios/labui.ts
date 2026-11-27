@@ -483,6 +483,22 @@ export default {
         check(`nhóm "${name}": mọi nút/ô nằm trong khung 720p, mở không lỗi console`, out.out === 0 && r.errors.length === e0, `${out.n} nút/ô, ${out.out} ngoài khung, ${r.errors.length - e0} lỗi console`);
         await snap(pg, r.out, `panel/${tabs.indexOf(name)}.png`, { wait: 0 });
       }
+      // Lớp vùng trúng thật (nằm trong nhóm Chỉnh phòng): bấm bật rồi tắt, nút phải đổi trạng thái và không sinh lỗi console.
+      if (tabs.includes('Chỉnh phòng')) {
+        await btn(/^Chỉnh phòng$/).click();
+        await sleep(600);
+        const zb = pg.locator('.debug-panel [data-act="zones"]').first();
+        const eZ = r.errors.length;
+        const p0 = await zb.getAttribute('data-pressed');
+        await zb.click();
+        await sleep(700);
+        const p1 = await zb.getAttribute('data-pressed');
+        await snap(pg, r.out, 'panel/vung-trung.png', { wait: 200 });
+        await zb.click();
+        await sleep(400);
+        const p2 = await zb.getAttribute('data-pressed');
+        check('nút "Vùng trúng thật" bật rồi tắt được, không lỗi console', p0 !== p1 && p2 === p0 && r.errors.length === eZ, `data-pressed ${p0} → ${p1} → ${p2}, ${r.errors.length - eZ} lỗi console`);
+      }
       // Cân bằng / sân boss: bấm nút thật, đối chiếu quái trong phòng.
       const mons = () => pg.evaluate(() => [...window.__game!.view.monsters.values()].filter((m) => m.st !== 4).map((m) => ({ t: m.t, hp: m.hp / m.mhp })));
       await btn(/^Cân bằng$/).click();
