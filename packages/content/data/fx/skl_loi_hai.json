@@ -224,11 +224,11 @@
    "billboard": true,
    "offset": [
     0,
-    1.6,
+    3.8,
     0
    ],
-   "scale": 1.5,
-   "scaleTo": 2.16
+   "scale": 1.2,
+   "scaleTo": 1.73
   },
   {
    "type": "particles",
@@ -252,7 +252,7 @@
   {
    "type": "mesh",
    "t": 0,
-   "dur": 0.6,
+   "dur": 0.28,
    "at": "target",
    "sweep": 0,
    "erodeFrom": 0.12,
@@ -265,8 +265,8 @@
    "sprite": "loi_wave",
    "billboard": true,
    "offset": [
-    -3,
-    1.7,
+    -4.4,
+    3.2,
     0.8
    ],
    "scale": 2.46,
@@ -275,7 +275,7 @@
   {
    "type": "mesh",
    "t": 0.04,
-   "dur": 0.6,
+   "dur": 0.28,
    "at": "target",
    "sweep": 0,
    "erodeFrom": 0.12,
@@ -288,8 +288,8 @@
    "sprite": "loi_wave",
    "billboard": true,
    "offset": [
-    3,
-    1.7,
+    4.4,
+    3.2,
     0.8
    ],
    "scale": 2.46,
@@ -298,13 +298,13 @@
   {
    "type": "mesh",
    "t": 0,
-   "dur": 0.5,
+   "dur": 0.34,
    "at": "target",
    "sweep": 0,
    "erodeFrom": 0.15,
    "ragged": 0.5,
    "tone": "body",
-   "alpha": 0.28,
+   "alpha": 0.21,
    "tier": 0,
    "seed": 1003,
    "shape": "sprite",
@@ -335,11 +335,11 @@
    "billboard": true,
    "offset": [
     0,
-    1.2,
+    2,
     0
    ],
-   "scale": 1.56,
-   "scaleTo": 1.95
+   "scale": 1.32,
+   "scaleTo": 1.65
   },
   {
    "type": "mesh",
@@ -358,7 +358,7 @@
    "billboard": true,
    "offset": [
     0,
-    2.6,
+    3.6,
     0
    ],
    "scale": 2.04,
@@ -367,7 +367,7 @@
     "to": "target",
     "offset": [
      0,
-     4.2,
+     5.2,
      0
     ],
     "ease": "out"
