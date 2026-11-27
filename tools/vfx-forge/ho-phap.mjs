@@ -134,13 +134,13 @@ const SPEC = {
   // Thiết Bích Xung (lướt, mọi mốc ≥ 0): mũi giáp vàng hình nêm lao ngang, hai rãnh đất cày bốc bụi phía sau, tới nơi bật cú va nhọn.
   skl_thiet_bich_xung: () => [
     flash('self', [0, 1.0, 0], 1, 0, { dur: 0.08 }),
-    strike('hp_wedge', { size: 5.6, at: 'ahead', off: [0, 1.1, 2.8], dur: 0.5, align: 'aim', erodeFrom: 0.3 }),
-    sprite('hp_furrows', { t: 0.02, dur: 0.7, at: 'ahead', off: [0, 0.5, 3.2], size: 7, alpha: 0.8, align: 'aim', erodeFrom: 0.4 }),
+    strike('hp_wedge', { size: 5.6, at: 'ahead', off: [0, 1.1, 2.8], dur: 0.28, align: 'aim', erodeFrom: 0.15 }),
+    sprite('hp_furrows', { t: 0.02, dur: 0.34, at: 'ahead', off: [0, 0.15, 3.2], size: 7, alpha: 0.35, align: 'aim', erodeFrom: 0.15 }),
     flash('ahead', [0, 1.1, 6.2], 1, 0.03, { dur: 0.08 }),
     scorch('ahead', [0, 0.02, 2.2], 3.2, 0, 1.4),
     scorch('ahead', [0, 0.02, 2.2], 2.72, 0, 1.4),
     scorch('ahead', [0, 0.02, 5], 3.4, 0.03, 1.4),
-    after('ahead', [0, 1.1, 5], 3, 0.2, 1),
+    after('ahead', [0, 2.2, 5], 3, 0.2, 1),
     sparks('ahead', [0, 1.1, 5], 8, 0.04),
   ],
   // Trấn Sơn Ấn: con dấu vuông khắc núi từ trên ép xuống, đất nứt thành ô vuông chữ điền với bốn cột đá ở góc.
@@ -171,14 +171,14 @@ const SPEC = {
   skl_thiet_quyen_chan_dia: () => [
     ...[gather('hp_fist', { size: 2.8, off: [0, 4.4, 0] })],
     pullIn('target', [0, 3, 0], -0.26),
-    strike('hp_fist', { size: 4.6, off: [0, 4, 0], dur: 0.45, erodeFrom: 0.35, move: { to: 'target', offset: [0, 1.5, 0], ease: 'in' } }),
+    strike('hp_fist', { size: 4.6, off: [0, 4.6, 0], dur: 0.34, erodeFrom: 0.35, move: { to: 'target', offset: [0, 2.8, 0], ease: 'in' } }),
     zoneEdge('target', 6, 0.06),
-    strike('hp_cracks', { size: 8, off: [0, 0.4, 0], t: 0.06, dur: 1.1, erodeFrom: 0.4 }),
-    sprite('hp_rubble', { t: 0.08, dur: 0.8, off: [0, 1.6, 0], size: 5, alpha: 0.85, erodeFrom: 0.3 }),
-    flash('target', [0, 1.2, 0], 2.4, 0.04, { dur: 0.14 }),
+    strike('hp_cracks', { size: 8, off: [0, 0.15, 0], t: 0.06, dur: 0.32, alpha: 0.3, erodeFrom: 0.15 }),
+    sprite('hp_rubble', { t: 0.08, dur: 0.34, off: [0, 0.6, 0], size: 3.4, alpha: 0.45, erodeFrom: 0.15 }),
+    flash('target', [0, 1.2, 0], 1.8, 0.04, { dur: 0.12 }),
     scorch('target', [0, 0.02, 0], 3, 0.04, 2),
     scorch('target', [0, 0.02, 0], 3.4, 0.05, 2),
-    after('target', [0, 1.4, 0], 3.4, 0.22, 1.4),
+    after('target', [0, 2.5, 0], 3.4, 0.22, 1.4),
     sparks('target', [0, 1.3, 0], 12, 0.02),
   ],
   // Kim Chung Trấn: quả chuông đồng vàng lớn úp xuống che thân, sóng âm dọc, bụi tỏa chân chuông.
@@ -211,14 +211,14 @@ const SPEC = {
   // Dịch Sơn Xung (lướt, mọi mốc ≥ 0): sóng đất đá hình tường nghiêng hất ra xa, tảng đá lăn theo hướng húc.
   skl_dich_son_xung: () => [
     flash('self', [0, 1.0, 0], 0.9, 0, { dur: 0.08 }),
-    strike('hp_earthwave', { size: 7, at: 'ahead', off: [0, 1.2, 3.8], dur: 0.6, align: 'aim', erodeFrom: 0.3, unless: 'pull' }),
-    sprite('hp_rubble', { t: 0.04, dur: 0.6, at: 'ahead', off: [0, 1.4, 5], size: 4.6, alpha: 0.85, align: 'aim', erodeFrom: 0.3 }),
+    strike('hp_earthwave', { size: 7, at: 'ahead', off: [0, 1.2, 3.8], dur: 0.3, align: 'aim', erodeFrom: 0.15, unless: 'pull' }),
+    sprite('hp_rubble', { t: 0.04, dur: 0.36, at: 'ahead', off: [0, 1.4, 5], size: 4.6, alpha: 0.55, align: 'aim', erodeFrom: 0.2 }),
     flash('ahead', [0, 1.2, 7], 1, 0.03, { dur: 0.08 }),
     scorch('ahead', [0, 0.02, 3], 3.4, 0, 1.4),
     scorch('ahead', [0, 0.02, 3], 2.89, 0, 1.4),
     scorch('ahead', [0, 0.02, 6], 3.6, 0.03, 1.4),
     scorch('ahead', [0, 0.02, 4.5], 4.2, 0.02, 1.4),
-    after('ahead', [0, 1.1, 6], 3, 0.22, 1),
+    after('ahead', [0, 2.2, 6], 3, 0.22, 1),
   ],
   // Anh Thiết Thân: bóng giáp trụ cổ phong trong suốt đứng che sau lưng, mắt xích vàng nối tới đồng đội.
   skl_anh_thiet_than: () => [
