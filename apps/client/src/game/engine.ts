@@ -919,6 +919,9 @@ export class Game {
   vdWonders: { group: THREE.Group; dispose(): void } | null = null;
   /** Điểm đến hiện tại do tự áp sát của đòn cận chiến đặt (để chỉ hủy điểm đến của chính nó khi đã vào tầm). */
   approaching = false;
+  /** Phòng thử: tỉ lệ thời gian của lớp hình (1 = thường, 0 = dừng) và số khung còn phải bước khi đang dừng. Chỉ đổi qua bảng F3 / `__game`. */
+  timeScale = 1;
+  stepLeft = 0;
   aurora: Aurora | null = null;
   riftMood = false;
   riftMoodT = -1;
