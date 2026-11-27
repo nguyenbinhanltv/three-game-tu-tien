@@ -41,6 +41,18 @@ Số đo viền mực (27/11, `pnpm shots herolight --bots 8 --view 1080p`, mộ
 
 Rung camera: khi `?style=da`, `CameraShake.trauma` bật (`game/camera/shake.ts`): các cú rung cộng dồn vào mức trauma (trần `TRAUMA_MAX`), biên độ = trauma², tắt dần `TRAUMA_DECAY`/giây, có lăn nhẹ `TRAUMA_ROLL`; một cú lẻ giữ đúng biên độ cũ.
 
+## Diễn Võ Trường (phòng tập GM, người dùng duyệt 27/11)
+
+Mọi cải thiện Dạ Họa (VFX, animation, nhân vật, đạo cụ, ánh sáng, giao diện, âm thanh, cân bằng) làm và duyệt ở phòng tập TRƯỚC, đạt rồi mới đem ra bản đồ. Lộ trình V0 → V4 và danh sách xưởng nằm ở bản giải pháp của phiên (ngoài repo).
+
+Đã có (V0, phần server):
+
+- Level `dien_vo`: bí cảnh `practice` riêng từng người, mượn bãi phẳng Thiên Lộ Giới; không đợt quái, không kết thúc, không tính lượt hay nhiệm vụ.
+- Vào và ra bằng `/gm dvt` (chỉ tài khoản thử). Ra thì về đúng bản đồ và chỗ đứng cũ.
+- **Hàng rào** (`apps/server/src/game/practice.ts`): lúc vào chụp nguyên trạng nhân vật trong DB (bảng `practice_snap`); lúc ra, hoặc ở lần vào room kế tiếp nếu server chết giữa chừng, trả lại y nguyên trong một giao dịch. Sổ cái không bị xóa: dòng ghi trong phòng được gắn `practice:`, bỏ khóa chống trùng, và có dòng bù để tổng vẫn khớp túi.
+
+Chưa có: sáu khu trong phòng, tab Diễn Võ ở bảng F3, đóng băng và ép trạng thái quái, cảnh mẫu lưu lại, bộ ảnh chuẩn.
+
 ## Lộ trình
 
 D0 mood đêm và trang thử → D1 lát cắt (Lạc Kiếm Tông đêm, Kiếm tu, một tinh anh, boss Kiếm Trủng: viền mực, rim theo trạng thái, lớp tối quanh trận, vệt chém theo vùng trúng, rung, số sát thương, đòn thường cận chiến) → D2 chuỗi đòn cho 8 lối tu còn lại → D3 mood mọi bản đồ → D4 UI và âm thanh → D5 thành mặc định.
