@@ -18,11 +18,11 @@
    "billboard": true,
    "offset": [
     0,
-    1,
-    0
+    1.1,
+    -1.7
    ],
-   "scale": 1.53,
-   "scaleTo": 2.2
+   "scale": 0.99,
+   "scaleTo": 1.43
   },
   {
    "type": "decal",
@@ -54,7 +54,7 @@
    "offset": [
     0,
     1,
-    0
+    -0.8
    ],
    "tone": "rim",
    "tier": 1,
@@ -63,10 +63,10 @@
   {
    "type": "mesh",
    "t": 0,
-   "dur": 0.9,
+   "dur": 0.16,
    "at": "self",
    "sweep": 0,
-   "erodeFrom": 0.3,
+   "erodeFrom": 0.6,
    "ragged": 0.5,
    "tone": "body",
    "alpha": 0.48,
@@ -77,11 +77,34 @@
    "billboard": true,
    "offset": [
     0,
-    1.05,
-    0
+    1.1,
+    -1.7
    ],
-   "scale": 2.51,
-   "scaleTo": 3.06
+   "scale": 1.77,
+   "scaleTo": 2.16
+  },
+  {
+   "type": "mesh",
+   "t": 0.13,
+   "dur": 0.77,
+   "at": "self",
+   "sweep": 0,
+   "erodeFrom": 0.3,
+   "ragged": 0.5,
+   "tone": "body",
+   "alpha": 0.3,
+   "tier": 0,
+   "seed": 1002,
+   "shape": "sprite",
+   "sprite": "loi_scales",
+   "billboard": true,
+   "offset": [
+    0,
+    1.1,
+    -1.7
+   ],
+   "scale": 2.16,
+   "scaleTo": 2.16
   },
   {
    "type": "mesh",
@@ -94,17 +117,17 @@
    "tone": "body",
    "alpha": 0.9,
    "tier": 0,
-   "seed": 1002,
+   "seed": 1003,
    "shape": "sprite",
    "sprite": "loi_flash",
    "billboard": true,
    "offset": [
     0,
     1.1,
-    0
+    -0.5
    ],
-   "scale": 1.98,
-   "scaleTo": 2.48
+   "scale": 1.44,
+   "scaleTo": 1.8
   },
   {
    "type": "mesh",
@@ -115,19 +138,19 @@
    "erodeFrom": 0.25,
    "ragged": 0.5,
    "tone": "body",
-   "alpha": 0.4,
+   "alpha": 0.3,
    "tier": 0,
-   "seed": 1003,
+   "seed": 1004,
    "shape": "sprite",
    "sprite": "loi_arcs_pair",
    "billboard": true,
    "offset": [
     0,
     1.4,
-    0.2
+    -1.2
    ],
-   "scale": 1.44,
-   "scaleTo": 1.44
+   "scale": 1.26,
+   "scaleTo": 1.26
   },
   {
    "type": "mesh",
@@ -138,25 +161,25 @@
    "erodeFrom": 0.2,
    "ragged": 0.5,
    "tone": "body",
-   "alpha": 0.38,
+   "alpha": 0.3,
    "tier": 0,
-   "seed": 1004,
+   "seed": 1005,
    "shape": "sprite",
    "sprite": "loi_sparks",
    "billboard": true,
    "offset": [
     0,
     1.2,
-    0
+    -1.7
    ],
-   "scale": 2.16,
-   "scaleTo": 2.16,
+   "scale": 1.44,
+   "scaleTo": 1.44,
    "move": {
     "to": "self",
     "offset": [
      0,
-     2.4,
-     0
+     2,
+     -1.7
     ],
     "ease": "out"
    }

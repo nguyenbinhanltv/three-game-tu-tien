@@ -156,10 +156,10 @@
    "offset": [
     0,
     1.4,
-    -0.4
+    -1.8
    ],
-   "scale": 1.2,
-   "scaleTo": 1.72
+   "scale": 1.01,
+   "scaleTo": 1.46
   },
   {
    "type": "particles",
@@ -174,7 +174,7 @@
    "offset": [
     0,
     0.8,
-    0
+    -0.8
    ],
    "tone": "rim",
    "tier": 1,
@@ -183,10 +183,10 @@
   {
    "type": "mesh",
    "t": 0,
-   "dur": 1.6,
+   "dur": 0.16,
    "at": "self",
    "sweep": 0,
-   "erodeFrom": 0.5,
+   "erodeFrom": 0.6,
    "ragged": 0.5,
    "tone": "body",
    "alpha": 0.95,
@@ -197,11 +197,34 @@
    "billboard": true,
    "offset": [
     0,
-    2.4,
-    -0.6
+    1.5,
+    -1.8
    ],
-   "scale": 4.07,
-   "scaleTo": 4.97
+   "scale": 1.89,
+   "scaleTo": 2.3
+  },
+  {
+   "type": "mesh",
+   "t": 0.13,
+   "dur": 1.47,
+   "at": "self",
+   "sweep": 0,
+   "erodeFrom": 0.5,
+   "ragged": 0.5,
+   "tone": "body",
+   "alpha": 0.3,
+   "tier": 0,
+   "seed": 1002,
+   "shape": "sprite",
+   "sprite": "hp_peaks",
+   "billboard": true,
+   "offset": [
+    0,
+    1.5,
+    -1.8
+   ],
+   "scale": 2.3,
+   "scaleTo": 2.3
   },
   {
    "type": "mesh",
@@ -212,19 +235,19 @@
    "erodeFrom": 0.3,
    "ragged": 0.5,
    "tone": "body",
-   "alpha": 0.7,
+   "alpha": 0.4,
    "tier": 0,
-   "seed": 1002,
+   "seed": 1003,
    "shape": "sprite",
    "sprite": "hp_dust",
    "billboard": true,
    "offset": [
     0,
     0.8,
-    0
+    -1.8
    ],
-   "scale": 4.23,
-   "scaleTo": 4.23
+   "scale": 2.21,
+   "scaleTo": 2.21
   },
   {
    "type": "mesh",
@@ -237,23 +260,23 @@
    "tone": "body",
    "alpha": 0.9,
    "tier": 0,
-   "seed": 1003,
+   "seed": 1004,
    "shape": "sprite",
    "sprite": "hp_flash",
    "billboard": true,
    "offset": [
     0,
     1.4,
-    0
+    -0.5
    ],
-   "scale": 2.02,
-   "scaleTo": 2.53
+   "scale": 1.66,
+   "scaleTo": 2.07
   },
   {
    "type": "decal",
    "tex": "scorch",
    "t": -0.1,
-   "r": 2.6,
+   "r": 2.4,
    "dur": 2.4,
    "at": "self",
    "offset": [
@@ -275,25 +298,25 @@
    "erodeFrom": 0.2,
    "ragged": 0.5,
    "tone": "body",
-   "alpha": 0.75,
+   "alpha": 0.3,
    "tier": 0,
-   "seed": 1004,
+   "seed": 1005,
    "shape": "sprite",
    "sprite": "hp_dust",
    "billboard": true,
    "offset": [
     0,
     1.2,
-    0
+    -1.8
    ],
-   "scale": 2.76,
-   "scaleTo": 2.76,
+   "scale": 1.66,
+   "scaleTo": 1.66,
    "move": {
     "to": "self",
     "offset": [
      0,
-     2.4,
-     0
+     2,
+     -1.8
     ],
     "ease": "out"
    }
@@ -369,7 +392,7 @@
     "tone": "body",
     "alpha": 0.6,
     "tier": 0,
-    "seed": 1005,
+    "seed": 1006,
     "shape": "sprite",
     "sprite": "hp_dust",
     "billboard": true,
@@ -394,7 +417,7 @@
     "tone": "body",
     "alpha": 0.7,
     "tier": 0,
-    "seed": 1006,
+    "seed": 1007,
     "shape": "sprite",
     "sprite": "hp_cracks",
     "billboard": true,
