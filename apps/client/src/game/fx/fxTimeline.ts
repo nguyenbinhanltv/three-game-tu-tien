@@ -230,6 +230,12 @@ const sstep = (a: number, b: number, x: number) => {
 /** Số decal sống tối đa cùng lúc (mỗi decal một lưới; chiêu của người khác chỉ khi còn chỗ). */
 const DECAL_MAX = 6;
 
+/**
+ * Xưởng VFX (Diễn Võ Trường V2b): chỉ số các LỚP (vị trí trong `events` của timeline) đang bị tắt để soi từng lớp. Rỗng = phát đủ. Chỉ công cụ dev
+ * đổi tập này (`window.__fxLayerOff`, `pnpm shots dienvo --layersoff 0,3`); áp cho mọi timeline phát sau đó.
+ */
+export const FX_LAYER_OFF = new Set<number>();
+
 /** Mốc (giây từ bấm) của từng sự kiện trong một đòn: mỗi mốc trúng một bản cho sự kiện neo `hit`. */
 export function scheduleEvents(
   events: readonly FxEvent[],
@@ -237,8 +243,10 @@ export function scheduleEvents(
   tier: 0 | 1 | 2,
 ): { at: number; ev: FxEvent; hit: number }[] {
   const out: { at: number; ev: FxEvent; hit: number }[] = [];
-  for (const ev of events) {
+  for (let idx = 0; idx < events.length; idx++) {
+    const ev = events[idx]!;
     if ((ev.tier ?? 0) > tier) continue;
+    if (FX_LAYER_OFF.size && FX_LAYER_OFF.has(idx)) continue;
     if (ev.from === 'start') out.push({ at: ev.t, ev, hit: 0 });
     else {
       const only = ev.hit === undefined ? null : Array.isArray(ev.hit) ? ev.hit : [ev.hit];
@@ -909,6 +917,9 @@ export class FxRunner {
     const gnd = ev.at === 'target' || ev.at === 'ground' ? tgt : null;
     const at = this.anchor(c, ev.at ?? 'target', ev.offset, yaw, tgt, new THREE.Vector3());
     at.y = (gnd ? gnd.y : c.actor.y) + 0.14 + Math.min(0.5, Math.max(0, ev.lift ?? 0));
+    // Decal lớn trên nền dốc nhẹ: tấm phẳng ở độ cao người ra chiêu thì phần phía đất cao bị chìm (Diễn Võ Trường: vòng phù văn 6,3 m của Thiên Kiếm Vũ
+    // khuyết một múi). Nâng lên trên điểm cao nhất quanh nó.
+    if (ev.r * c.mul > 1.5) at.y = Math.max(at.y, sigilGroundY(at.x, at.z, ev.r * c.mul));
     const kind =
       ev.tex === 'crack'
         ? ev.ink

@@ -119,7 +119,7 @@ import { HitFx } from './fx/hitFx';
 import { EnvFx, type EnvGate } from './fx/envFx';
 import { StatusFx, monStatusOf, playerStatusOf, type StatusEnt } from './fx/statusFx';
 import { monScale } from './fx/monFx';
-import { variantFor } from './fx/fxTimeline';
+import { FX_LAYER_OFF, variantFor } from './fx/fxTimeline';
 import {
   auraCombatOf,
   auraModeOf,
@@ -237,6 +237,7 @@ export class Game {
           Game.current = g;
           // Để tiện gỡ lỗi từ console của trình duyệt.
           (window as unknown as { __game?: Game }).__game = g;
+          (window as unknown as { __fxLayerOff?: Set<number> }).__fxLayerOff = FX_LAYER_OFF;
           if (VFX_LAB) installVfxLab(g, onHazard);
           if (ANIM_LAB) installAnimLab(g);
           g.start().catch((err) => {
