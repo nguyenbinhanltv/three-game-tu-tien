@@ -146,11 +146,11 @@
    "billboard": true,
    "offset": [
     0,
-    5.2,
-    0
+    4.4,
+    -1.7
    ],
-   "scale": 1.61,
-   "scaleTo": 2.32
+   "scale": 1.05,
+   "scaleTo": 1.51
   },
   {
    "type": "particles",
@@ -164,8 +164,8 @@
    "at": "self",
    "offset": [
     0,
-    4.6,
-    0
+    3.6,
+    -0.8
    ],
    "tone": "rim",
    "tier": 1,
@@ -191,10 +191,10 @@
   {
    "type": "mesh",
    "t": 0,
-   "dur": 1.6,
+   "dur": 0.16,
    "at": "self",
    "sweep": 0,
-   "erodeFrom": 0.5,
+   "erodeFrom": 0.6,
    "ragged": 0.5,
    "tone": "body",
    "alpha": 0.81,
@@ -205,11 +205,34 @@
    "billboard": true,
    "offset": [
     0,
-    5.4,
-    0
+    4.2,
+    -1.7
    ],
-   "scale": 3.79,
-   "scaleTo": 4.62
+   "scale": 1.95,
+   "scaleTo": 2.38
+  },
+  {
+   "type": "mesh",
+   "t": 0.13,
+   "dur": 1.47,
+   "at": "self",
+   "sweep": 0,
+   "erodeFrom": 0.5,
+   "ragged": 0.5,
+   "tone": "body",
+   "alpha": 0.45,
+   "tier": 0,
+   "seed": 1002,
+   "shape": "sprite",
+   "sprite": "dan_cauldron_big",
+   "billboard": true,
+   "offset": [
+    0,
+    4.2,
+    -1.7
+   ],
+   "scale": 2.38,
+   "scaleTo": 2.38
   },
   {
    "type": "mesh",
@@ -220,19 +243,19 @@
    "erodeFrom": 0.4,
    "ragged": 0.5,
    "tone": "body",
-   "alpha": 0.47,
+   "alpha": 0.3,
    "tier": 0,
-   "seed": 1002,
+   "seed": 1003,
    "shape": "sprite",
    "sprite": "dan_smoke_bud",
    "billboard": true,
    "offset": [
     0,
-    6.2,
-    0
+    5.2,
+    -1.7
    ],
-   "scale": 3.5,
-   "scaleTo": 3.5
+   "scale": 2.1,
+   "scaleTo": 2.1
   },
   {
    "type": "mesh",
@@ -243,42 +266,65 @@
    "erodeFrom": 0.45,
    "ragged": 0.5,
    "tone": "body",
-   "alpha": 0.77,
+   "alpha": 0.72,
    "tier": 0,
-   "seed": 1003,
+   "seed": 1004,
    "shape": "sprite",
    "sprite": "dan_pour",
    "billboard": true,
    "offset": [
     0,
-    2.7,
-    0.2
+    2.4,
+    -1.7
    ],
-   "scale": 3.92,
-   "scaleTo": 3.92
+   "scale": 2.1,
+   "scaleTo": 2.1
   },
   {
    "type": "mesh",
    "t": 0.1,
-   "dur": 1.6,
+   "dur": 0.16,
    "at": "self",
    "sweep": 0,
-   "erodeFrom": 0.55,
+   "erodeFrom": 0.6,
    "ragged": 0.5,
    "tone": "body",
-   "alpha": 0.77,
+   "alpha": 0.68,
    "tier": 0,
-   "seed": 1004,
+   "seed": 1005,
    "shape": "sprite",
    "sprite": "dan_lotus_big",
    "billboard": true,
    "offset": [
     0,
-    1.6558,
-    0
+    0.8,
+    -1.7
    ],
-   "scale": 4.25,
-   "scaleTo": 5.18
+   "scale": 1.61,
+   "scaleTo": 1.96
+  },
+  {
+   "type": "mesh",
+   "t": 0.26,
+   "dur": 1.34,
+   "at": "self",
+   "sweep": 0,
+   "erodeFrom": 0.55,
+   "ragged": 0.5,
+   "tone": "body",
+   "alpha": 0.45,
+   "tier": 0,
+   "seed": 1006,
+   "shape": "sprite",
+   "sprite": "dan_lotus_big",
+   "billboard": true,
+   "offset": [
+    0,
+    0.8,
+    -1.7
+   ],
+   "scale": 1.96,
+   "scaleTo": 1.96
   },
   {
    "type": "mesh",
@@ -291,17 +337,17 @@
    "tone": "body",
    "alpha": 0.9,
    "tier": 0,
-   "seed": 1005,
+   "seed": 1007,
    "shape": "sprite",
    "sprite": "dan_sparks",
    "billboard": true,
    "offset": [
     0,
     1.3,
-    0
+    -0.5
    ],
-   "scale": 3.08,
-   "scaleTo": 3.85
+   "scale": 1.54,
+   "scaleTo": 1.92
   },
   {
    "type": "mesh",
@@ -312,25 +358,25 @@
    "erodeFrom": 0.2,
    "ragged": 0.5,
    "tone": "body",
-   "alpha": 0.7,
+   "alpha": 0.3,
    "tier": 0,
-   "seed": 1006,
+   "seed": 1008,
    "shape": "sprite",
    "sprite": "dan_sparks",
    "billboard": true,
    "offset": [
     0,
     1.8,
-    0
+    -1.7
    ],
-   "scale": 2.52,
-   "scaleTo": 2.52,
+   "scale": 1.4,
+   "scaleTo": 1.4,
    "move": {
     "to": "self",
     "offset": [
      0,
-     3.6,
-     0
+     2.6,
+     -1.7
     ],
     "ease": "out"
    }

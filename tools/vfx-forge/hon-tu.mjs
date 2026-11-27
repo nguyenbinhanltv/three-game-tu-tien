@@ -184,13 +184,15 @@ const SPEC = {
   ],
   // Hồn Chướng: vòng màn khói hồn bao thân (giữa rỗng để thấy người), mặt hồn mờ lộ trong nếp khói.
   skl_hon_chuong: () => [
-    ...gather('hon_ring', { size: 3.4, off: [0, 0.9, 0], rest: { at: 'self' } }),
-    pullIn('self', [0, 1, 0], -0.24),
-    ...strike('hon_ring', { size: 3.4, at: 'self', off: [0, 0.95, 0], flash: true, dur: 1.0, erodeFrom: 0.1 }),
-    sprite('hon_veil', { t: 0.04, dur: 1.2, at: 'self', off: [0, 1.5, -0.4], size: 3.0, alpha: 0.55, erodeFrom: 0.35 }),
-    sprite('hon_face_pale', { t: 0.08, dur: 1.1, at: 'self', off: [0, 2.7, -0.2], size: 1.9, alpha: 0.85, erodeFrom: 0.4 }),
-    after('self', [0, 1.4, 0], 2.4, 0.2, 1.5),
-    sparks('self', [0, 1.6, 0], 8, 0.1),
+    ...gather('hon_ring', { size: 2.2, off: [0, 1.0, -1.7], rest: { at: 'self' } }),
+    pullIn('self', [0, 1, -0.8], -0.24),
+    // Hào quang quanh mình (27/11): vòng khói hồn bật ĐẦY 0,16 s rồi ở lại dạng bóng mờ sau lưng.
+    ...strike('hon_ring', { size: 2.4, at: 'self', off: [0, 1.0, -1.7], flash: true, dur: 0.16, erodeFrom: 0.6 }),
+    { ...sprite('hon_ring', { t: 0.13, dur: 0.87, at: 'self', off: [0, 1.0, -1.7], size: 2.4, erodeFrom: 0.3 }), alpha: 0.3 },
+    sprite('hon_veil', { t: 0.04, dur: 1.2, at: 'self', off: [0, 1.4, -1.7], size: 2.2, alpha: 0.3, erodeFrom: 0.35 }),
+    sprite('hon_face_pale', { t: 0.08, dur: 1.1, at: 'self', off: [0, 2.2, -1.7], size: 1.4, alpha: 0.5, erodeFrom: 0.4 }),
+    { ...after('self', [0, 1.4, -1.7], 1.6, 0.2, 0.8), alpha: 0.3 },
+    sparks('self', [0, 1.6, -0.8], 8, 0.1),
   ],
   // Sưu Hồn Thuật: sợi hồn chữ S rút từ mục tiêu về người ra chiêu, đầu mũi là quả cầu hồn sáng.
   skl_suu_hon_thuat: () => [
