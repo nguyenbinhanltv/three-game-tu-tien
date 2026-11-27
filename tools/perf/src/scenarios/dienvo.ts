@@ -75,6 +75,39 @@ async function coverIn(
   return body >= 40 ? hid / body : null;
 }
 
+/** Phần tương phản của thân còn lại (so với lúc không có hiệu ứng) dưới mức này thì coi điểm ảnh thân đó là MẤT HẲN (che đặc). */
+export const SOLID_KEEP = 0.35;
+
+/**
+ * Che ĐẶC: tỉ lệ thân mục tiêu mà hiệu ứng làm MẤT HẲN hình (khác `coverIn`, vốn đếm cả chỗ thân chỉ bị phủ một lớp trong suốt còn nhìn xuyên được).
+ * Cần thêm ảnh `veil` = có VFX nhưng ẩn mục tiêu. Tương phản gốc của thân = chênh(bare, empty); tương phản còn lại dưới hiệu ứng = chênh(shot, veil).
+ * Điểm ảnh thân tính là mất khi phần còn lại < `SOLID_KEEP` × gốc.
+ */
+async function solidIn(bare: Buffer, shot: Buffer, empty: Buffer, veil: Buffer, box: { cx: number; cy: number; half: number }): Promise<number | null> {
+  const meta = await sharp(shot).metadata();
+  const W = meta.width ?? 0;
+  const H = meta.height ?? 0;
+  const left = Math.max(0, Math.round(box.cx - box.half));
+  const top = Math.max(0, Math.round(box.cy - box.half));
+  const width = Math.min(W - left, Math.round(box.half * 2));
+  const height = Math.min(H - top, Math.round(box.half * 2));
+  if (width <= 0 || height <= 0) return 0;
+  const cut = (b: Buffer) => sharp(b).removeAlpha().extract({ left, top, width, height }).raw().toBuffer();
+  const [a, c, e, v] = await Promise.all([cut(bare), cut(shot), cut(empty), cut(veil)]);
+  const dist = (x: Buffer, y: Buffer, i: number) =>
+    Math.abs(x[i * 3]! - y[i * 3]!) + Math.abs(x[i * 3 + 1]! - y[i * 3 + 1]!) + Math.abs(x[i * 3 + 2]! - y[i * 3 + 2]!);
+  let body = 0;
+  let lost = 0;
+  const n = width * height;
+  for (let i = 0; i < n; i++) {
+    const d0 = dist(a, e, i);
+    if (d0 <= 45) continue;
+    body++;
+    if (dist(c, v, i) < SOLID_KEEP * d0) lost++;
+  }
+  return body >= 40 ? lost / body : null;
+}
+
 /**
  * Cổng duyệt VFX tự chấm (`--fx … --gate 1`). Ngưỡng TẠM (27/11), chỉnh khi đã chấm đủ nhiều chiêu:
  * che thân mục tiêu (như `COVER_WARN`), lóa = phần màn hình bị hiệu ứng đẩy lên gần trắng, phủ = phần màn hình hiệu ứng làm đổi rõ,
@@ -652,7 +685,7 @@ export default {
       // Cổng duyệt: tắt sự kiện màn hình/camera (chỉ số -1 = `FX_SCREEN_OFF`), nếu không camera đẩy và chớp vẫn chạy giữa ảnh có VFX và ảnh ẩn VFX,
       // thân mục tiêu lệch đi và bị tính nhầm là bị che (đo 27/11: Kiếm Khí Trảm 60% → xem số sau khi tắt).
       if (gate) await pg.evaluate(() => void (window as unknown as { __fxLayerOff?: Set<number> }).__fxLayerOff?.add(-1));
-      type Gate = { pop: number; selfOnly?: boolean; coverMax?: number; cover: number | null; glare: number; spread: number; live: number; dur: number | null; fail: string[] };
+      type Gate = { pop: number; selfOnly?: boolean; coverMax?: number; solid?: number; cover: number | null; glare: number; spread: number; live: number; dur: number | null; fail: string[] };
       const fxRows: { id: string; ok: boolean; gate?: Gate }[] = [];
       const frames2 = () => pg.evaluate(() => new Promise<void>((res) => requestAnimationFrame(() => requestAnimationFrame(() => res()))));
       for (const id of fxIds) {
@@ -666,6 +699,7 @@ export default {
           continue;
         }
         const covers: number[] = [];
+        const solids: number[] = [];
         const g: Gate = { pop: 0, cover: null, glare: 0, spread: 0, live: 0, dur: fxDuration(id), fail: [] };
         let last = 0;
         // Cổng duyệt chấm NĂM mốc (33 / 100 / 200 / 300 / 450 ms); chụp thường giữ ba mốc cũ.
@@ -701,10 +735,16 @@ export default {
             await pg.evaluate(`(() => { var m = window.__game.ents.monsters.get(window.__game.targetId); if (m) { m.model.root.userData.__s = m.model.root.scale.x; m.model.root.scale.setScalar(1e-4); } })()`);
             await frames2();
             const empty = await pg.screenshot();
+            // Ảnh thứ tư cùng khung: CÓ hiệu ứng nhưng vẫn ẩn mục tiêu, để đo che ĐẶC (thân còn nhìn xuyên được qua hiệu ứng hay mất hẳn).
+            await pg.evaluate(() => void ((window.__game as unknown as { vfx: { group: { visible: boolean } } }).vfx.group.visible = true));
+            await frames2();
+            const veil = await pg.screenshot();
             await pg.evaluate(`(() => { var g = window.__game, m = g.ents.monsters.get(g.targetId); if (m && m.model.root.userData.__s) m.model.root.scale.setScalar(m.model.root.userData.__s); g.vfx.group.visible = true; })()`);
             const gl = await glareOf(bare, shot);
             const cv = st.box ? await coverIn(bare, shot, st.box, empty) : null;
             if (cv !== null) covers.push(cv);
+            const sd = st.box ? await solidIn(bare, shot, empty, veil, st.box) : null;
+            if (sd !== null) solids.push(sd);
             g.glare = Math.max(g.glare, gl.glare);
             g.spread = Math.max(g.spread, gl.spread);
             g.pop = Math.max(g.pop, gl.pop);
@@ -763,6 +803,8 @@ export default {
             g.cover = so[Math.floor(so.length / 2)]!;
             g.coverMax = so[so.length - 1]!;
           }
+          // Che đặc: cùng cách lấy trung vị năm mốc. Hiện CHỈ in ra để đối chiếu, chưa dùng để chấm đạt/hỏng.
+          if (solids.length) g.solid = [...solids].sort((x, y) => x - y)[Math.floor(solids.length / 2)]!;
           if ((g.cover ?? 0) > FX_GATE.cover) g.fail.push('che thân');
           if (g.glare > FX_GATE.glare) g.fail.push('lóa');
           if (g.pop < FX_GATE.pop) g.fail.push('chìm vào nền');
@@ -772,7 +814,7 @@ export default {
           fxRows[fxRows.length - 1]!.gate = g;
           const pc = (x: number | null) => (x === null ? '  ?' : String(Math.round(x * 100)).padStart(3)) + '%';
           console.log(
-            `  ${g.fail.length ? 'HỎNG' : 'ĐẠT '} ${id.padEnd(30)} che ${pc(g.cover)} (đỉnh ${pc(g.coverMax ?? null)})  lóa ${pc(g.glare)}  phủ ${pc(g.spread)}  nổi ${pc(g.pop)}  lưới ${String(g.live).padStart(3)}  dài ${g.dur?.toFixed(2) ?? '?'} s${g.selfOnly ? '  [neo ở mình]' : ''}${g.fail.length ? '  ← ' + g.fail.join(', ') : ''}`,
+            `  ${g.fail.length ? 'HỎNG' : 'ĐẠT '} ${id.padEnd(30)} che ${pc(g.cover)} (đỉnh ${pc(g.coverMax ?? null)}, đặc ${pc(g.solid ?? null)})  lóa ${pc(g.glare)}  phủ ${pc(g.spread)}  nổi ${pc(g.pop)}  lưới ${String(g.live).padStart(3)}  dài ${g.dur?.toFixed(2) ?? '?'} s${g.selfOnly ? '  [neo ở mình]' : ''}${g.fail.length ? '  ← ' + g.fail.join(', ') : ''}`,
           );
         }
         // Chờ hiệu ứng của chiêu vừa chấm TAN HẾT (lưới sống về 0) rồi mới sang chiêu sau: vòng triện/vết cháy sống 2–4 s, nếu chỉ chờ 1,5 s thì dư ảnh của nó
