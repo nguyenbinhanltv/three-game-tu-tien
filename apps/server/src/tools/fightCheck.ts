@@ -11,6 +11,9 @@
 //   --elites: BẢNG TINH ANH (bàn cân bằng V2e): mọi tinh anh có điểm sinh, ở cấp cao nhất của bãi, đánh đơn với --god, cho cả 9 hướng tu;
 //     in thời gian hạ theo luật thật của server, đánh dấu `!` ô ngoài 18–40 s, và (chặng Ngưng Khí, nơi mô hình trang bị của sim khớp)
 //     dòng "sim" là số của `pnpm sim:progress` cho mục tiêu đơn. Kèm --strict thì thoát mã 1 khi có ô ngoài khoảng.
+//   --dps [giây]: BẢNG SÁT THƯƠNG MỖI GIÂY trên hình nộm (bàn cân bằng V2e): mỗi cấp × hướng tu đánh một quái thường hợp cấp bị khóa máu
+//     và hồi đầy mỗi nhịp trong chừng đó giây (mặc định 60), quái vẫn đánh lại (để hướng tích tài nguyên khi bị đánh có tài nguyên), bot bất tử.
+//     Số lấy từ đồng hồ `/gm dps` của server. In kèm tỉ lệ so với trung vị của cấp đó; "!" = lệch quá ±35%.
 //   Cấp thử từ 32 trở lên mặc bộ 7 ô bậc 5 phẩm Huyền theo ilvl = cấp; `--tier 6` mặc bộ bậc 6 (mốc mặc trọn; người chơi thật pha dần, xem `CH6_GEAR_FRAC` ở sim.ts). Ở cấp 43 với `--tier 6`: Kiếm tu 3,0 s, còn lại 3,1–5,8 s.
 process.env.DB_FILE = ':memory:';
 
@@ -48,6 +51,8 @@ const PULL = Number(arg('pull', '2'));
 const NOGEAR = process.argv.includes('--nogear');
 /** `--god`: người chơi không chết (hồi đầy máu mỗi nhịp), để đo thời gian hạ mục tiêu thuần theo sát thương (boss mà bot đứng yên bị đánh chết trước khi hạ được). */
 let GOD = process.argv.includes('--god');
+/** `--dps [giây]`: > 0 thì `fightOnce` đánh hình nộm khóa máu trong chừng đó giây và trả sát thương mỗi giây ở trường `ttk`. */
+let DUMMY_SECS = 0;
 /** `--nostance`: bot không vào tư thế (đo riêng phần đóng góp của tư thế, VS-2e). */
 const NOSTANCE = process.argv.includes('--nostance');
 
@@ -58,6 +63,7 @@ const { GameSim } = await import('../game/sim');
 const { WorldState } = await import('../state');
 const { Character } = await import('../game/character');
 const { grantPathOf } = await import('../game/method');
+const { labMeter } = await import('../game/gm/meter');
 const { ITEM, ITEMS, ITEM_SYS, LEVELS: LV, METHOD, MONSTER, SKILL, SKILLS, METHOD_SKILLS, METHODS, STARS } = await import('@dtl/content');
 const { MAX_LEVEL } = await import('@dtl/shared');
 for (const lv of LEVELS) if (!(lv >= 1 && lv <= MAX_LEVEL)) throw new Error(`--levels: cấp ${lv} ngoài 1–${MAX_LEVEL}`);
@@ -201,11 +207,18 @@ function fightOnce(level: number, method: string | undefined): Result {
   const skills = usable.filter((s) => s.kind !== 'stance' && !s.stanceOf);
   const hpAll = mons.reduce((n, m) => n + m.s.hp, 0);
   const t0 = fake;
+  const lead = party[0]!.p;
+  if (DUMMY_SECS) {
+    sim.gmSys.run(lead, ['lockhp', 'on']);
+    labMeter.start(lead, fake);
+  }
   const avgLost = () => party.reduce((n, a) => n + (a.hp0 - Math.max(0, a.char.hp)) / a.char.mhp, 0) / party.length;
   const MAX_STEPS = TARGET ? 6000 : 1200;
-  for (let step = 0; step < MAX_STEPS && mons.some((m) => m.state !== MS_DEAD); step++) {
+  for (let step = 0; step < (DUMMY_SECS ? DUMMY_SECS * 10 : MAX_STEPS) && mons.some((m) => m.state !== MS_DEAD); step++) {
     fake += 100;
     sim.tick(100);
+    // Hình nộm: hồi đầy mỗi nhịp (bot luôn thấy "trận còn dài" nên dùng cả tư thế).
+    if (DUMMY_SECS) for (const m of mons) m.s.hp = m.s.mhp;
     if (GOD) for (const a of party) a.char.hp = a.char.mhp;
     if (party.every((a) => a.char.hp <= 0)) return { ttk: (fake - t0) / 1000, lost: 1, dead: true };
     const target = mons.find((m) => m.state !== MS_DEAD);
@@ -243,6 +256,11 @@ function fightOnce(level: number, method: string | undefined): Result {
     }
   }
   void METHODS;
+  if (DUMMY_SECS) {
+    const total = labMeter.report(lead)?.total ?? 0;
+    labMeter.stop(lead);
+    return { ttk: total / DUMMY_SECS, lost: avgLost(), dead: false };
+  }
   return { ttk: (fake - t0) / 1000 / count, lost: avgLost() / count, dead: false };
 }
 
@@ -288,6 +306,40 @@ if (process.argv.includes('--elites')) {
     }
   }
   if (bad.length) console.log(`\nNgoài khoảng ${LO}–${HI} s (${bad.length} ô):\n  ` + bad.join('\n  '));
+  process.exit(STRICT && bad.length ? 1 : 0);
+}
+
+if (process.argv.includes('--dps')) {
+  const secs = Number(arg('dps', '60'));
+  DUMMY_SECS = Number.isFinite(secs) && secs >= 5 ? Math.min(600, secs) : 60;
+  GOD = true;
+  const levels = process.argv.includes('--levels') ? LEVELS : [10, 15, 19, 23, 27, 31, 36, 40, 44, 47];
+  const OFF = 0.35;
+  console.log(`Sát thương mỗi giây trên hình nộm (quái thường hợp cấp, khóa máu, ${DUMMY_SECS} s, ${RUNS} lần mỗi ô). Dòng hai: tỉ lệ so với trung vị của cấp; "!" = lệch quá ±${OFF * 100}%.`);
+  console.log('Cột: ' + METHODS.map((m, i) => `${i + 1}=${m.id}`).join('  '));
+  const bad: string[] = [];
+  for (const lv of levels) {
+    const { def, mlv } = pickMon(lv);
+    TARGET = `${def.id}:${mlv}`;
+    const dps = METHODS.map((m) => {
+      const rs = Array.from({ length: RUNS }, () => fightOnce(lv, lv >= METHOD_UNLOCK_LEVEL ? m.id : undefined));
+      return rs.reduce((n, x) => n + x.ttk, 0) / rs.length;
+    });
+    const sorted = [...dps].sort((a, b) => a - b);
+    const med = sorted[Math.floor(sorted.length / 2)]!;
+    console.log(`cấp ${String(lv).padStart(2)} ${(def.id + ' (' + mlv + ')').padEnd(30)} ${dps.map((x) => x.toFixed(0).padStart(7)).join('')}`);
+    console.log(
+      `${''.padEnd(37)} ${dps
+        .map((x, i) => {
+          const r = x / med;
+          const off = Math.abs(r - 1) > OFF;
+          if (off) bad.push(`cấp ${lv} ${METHODS[i]!.id}: ${r.toFixed(2)} lần trung vị`);
+          return (r.toFixed(2) + (off ? '!' : ' ')).padStart(7);
+        })
+        .join('')}`,
+    );
+  }
+  if (bad.length) console.log(`\nLệch quá ±${OFF * 100}% so với trung vị (${bad.length} ô):\n  ` + bad.join('\n  '));
   process.exit(STRICT && bad.length ? 1 : 0);
 }
 

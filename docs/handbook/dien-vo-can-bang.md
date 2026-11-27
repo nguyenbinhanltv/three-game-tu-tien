@@ -68,6 +68,34 @@ Phòng đã chỉ ra (CHƯA SỬA, là cân bằng của game thật nên chờ 
 - **Đan sư vượt 40 giây ở 7 tinh anh**: là hướng hỗ trợ nên chậm là có chủ ý, nhưng đi một mình thì tinh anh thành trận dài.
 - **Nhánh Huyết Trận (mốc cấp 16) của Cổ Thần cho chiêu Tinh Bạo cần 3 sao**, mà sao thứ ba chỉ rèn được từ cấp 32: người chọn nhánh này có một ô chiêu không bấm được suốt cấp 16–31.
 
+## Bảng sát thương mỗi giây trên hình nộm: `fight:check --dps`
+
+`pnpm --filter @dtl/server fight:check --dps [giây] [--levels 10,19,31] [--runs 2] [--strict]`
+
+Mỗi cấp × hướng tu đánh một quái thường hợp cấp bị khóa máu và hồi đầy mỗi nhịp trong 60 giây (mặc định); quái vẫn đánh lại để hướng tích tài nguyên khi bị đánh có tài nguyên, bot bất tử. Số lấy từ chính đồng hồ `/gm dps`. Dòng hai của mỗi cấp là tỉ lệ so với trung vị của cấp đó, `!` = lệch quá ±35%. Đây là sát thương MỘT mục tiêu (không có đòn quét, vùng nổ chỉ trúng một con).
+
+### Lượt đo 28/11 (2 lần mỗi ô; tỉ lệ so với trung vị của cấp)
+
+| Cấp | Kiếm | Thể | Đan | Hồn | Đao | Cổ Thần | Cổ | Lôi | Cấm chế | Trung vị (sát thương/giây) |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 10 | 1,01 | 0,90 | 0,85 | 1,00 | 1,14 | 0,91 | 1,10 | 1,06 | 0,94 | 98 |
+| 15 | 1,07 | 1,00 | 0,80 | 0,94 | 1,11 | 0,88 | 1,01 | 1,05 | 0,95 | 147 |
+| 19 | 1,36! | 0,96 | 0,76 | 0,99 | 1,21 | 0,83 | 1,00 | 1,12 | 1,10 | 505 |
+| 23 | 1,25 | 0,80 | 0,66 | 0,97 | 1,15 | 0,79 | 1,00 | 1,08 | 1,02 | 769 |
+| 27 | 1,26 | 0,87 | 0,67 | 1,00 | 1,20 | 0,74 | 1,00 | 1,06 | 1,02 | 1300 |
+| 31 | 1,48! | 0,84 | 0,61! | 0,98 | 1,19 | 0,75 | 1,04 | 1,06 | 1,00 | 2086 |
+| 36 | 1,51! | 0,81 | 0,68 | 0,97 | 1,31 | 0,88 | 1,04 | 1,14 | 1,00 | 6712 |
+| 40 | 1,42! | 0,83 | 0,62! | 0,91 | 1,19 | 0,96 | 1,23 | 1,05 | 1,00 | 9200 |
+| 44 | 1,47! | 0,84 | 0,61! | 0,93 | 1,28 | 1,00 | 1,14 | 1,13 | 1,00 | 13834 |
+| 47 | 1,49! | 0,76 | 0,65! | 0,91 | 1,20 | 1,00 | 0,98 | 1,01 | 1,04 | 12769 |
+
+Phòng đã chỉ ra (CHƯA SỬA, chờ người dùng quyết):
+
+- **Chặng Ngưng Khí cân:** cấp 10–15 cả 9 hướng nằm trong ±20% trung vị.
+- **Từ Trúc Cơ Kiếm tu tách hẳn:** 1,25–1,5 lần trung vị, tăng dần theo cấp (cấp 31 trở lên luôn trên 1,4). Đao tu ổn định ở 1,15–1,3. Đây là sát thương một mục tiêu, chưa tính đòn quét của hai hướng này.
+- **Đan sư 0,61–0,68 từ cấp 23**, Thể tu 0,76–0,87: hai hướng hỗ trợ/chống chịu thấp hơn là có chủ ý, nhưng khoảng cách với Kiếm tu là ~2,4 lần ở cấp 31–44.
+- Trung vị cấp 47 thấp hơn cấp 44 (quái cấp 47 phòng ngự cao hơn mà trang bị vẫn bậc 5): chỗ này cần đo lại với `--tier 6`.
+
 ## Mô hình `sim:progress` đã sửa (28/11)
 
 - Đòn quét của đòn thường cận chiến (`CLEAVE_EXTRA`): bản 27/11 sáng tính trọn một quái đứng cạnh cho MỌI phép tính thời gian hạ, kể cả tinh anh là mục tiêu đơn, nên Kiếm tu ra số nhanh giả (tinh anh Xích Diễm Hồ 19 giây trong sim). Nay: kéo `PULL` con thì bình quân (`PULL` − 1) / 2 con đứng cạnh (= `PULL_FACTOR` − 1), và các phép tính tinh anh truyền 0 (`playerDps(..., 'avg', 0)`).
