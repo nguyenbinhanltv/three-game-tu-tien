@@ -145,12 +145,14 @@ const SPEC = {
   },
   // Tế Phiên: phướn có cán + dải vải uốn chữ S dựng sau lưng.
   skl_te_phien: () => [
-    ...gather('hon_banner', { size: 3.6, off: [0.8, 1.6, 0], rest: { at: 'self' } }),
-    pullIn('self', [0.8, 0.6, 0]),
-    ...strike('hon_banner', { size: 3.6, at: 'self', off: [0.8, 2.0, 0], flash: true, dur: 0.95, erodeFrom: 0.1 }),
-    puff('self', [0.8, 0.3, 0], 1.6, 0, 0.45, 1),
-    after('self', [0.4, 0.9, 0.3], 2, 0.17, 1.4),
-    sparks('self', [0.8, 3.4, 0], 8, 0.25),
+    ...gather('hon_banner', { size: 2.2, off: [0.6, 1.6, -1.8], rest: { at: 'self' } }),
+    pullIn('self', [0.6, 0.6, -0.8]),
+    // Hào quang quanh mình (27/11): phướn bật ĐẦY 0,16 s rồi ở lại dạng bóng mờ sau lưng.
+    ...strike('hon_banner', { size: 2.6, at: 'self', off: [0.6, 1.8, -1.8], flash: true, dur: 0.16, erodeFrom: 0.6 }),
+    { ...sprite('hon_banner', { t: 0.13, dur: 0.82, at: 'self', off: [0.6, 1.8, -1.8], size: 2.6, erodeFrom: 0.1 }), alpha: 0.3 },
+    puff('self', [0.6, 0.3, -1.4], 1.2, 0, 0.45, 1),
+    { ...after('self', [0.4, 0.9, -1.2], 1.6, 0.17, 0.8), alpha: 0.3 },
+    sparks('self', [0.6, 3.0, -1.8], 8, 0.25),
   ],
   // Hồn Trảo: ba vệt vuốt khói cào chéo, bàn tay hồn mờ phía sau.
   skl_hon_trao: () => [

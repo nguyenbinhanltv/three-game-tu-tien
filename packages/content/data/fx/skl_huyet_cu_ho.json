@@ -16,8 +16,8 @@
    "type": "decal",
    "tex": "scorch",
    "t": -0.25,
-   "r": 3.6,
-   "dur": 5,
+   "r": 2.6,
+   "dur": 2.2,
    "at": "self",
    "offset": [
     0,
@@ -70,11 +70,11 @@
    "billboard": true,
    "offset": [
     0,
-    1.6,
-    -0.8
+    1.5,
+    -2.2
    ],
-   "scale": 1.02,
-   "scaleTo": 1.47
+   "scale": 0.85,
+   "scaleTo": 1.22
   },
   {
    "type": "particles",
@@ -89,7 +89,7 @@
    "offset": [
     0,
     1.2,
-    0
+    -1.2
    ],
    "tone": "rim",
    "tier": 1,
@@ -113,18 +113,18 @@
    "offset": [
     0,
     0.25,
-    -0.4
+    -1.2
    ],
-   "scale": 2.62,
-   "scaleTo": 2.62
+   "scale": 1.43,
+   "scaleTo": 1.43
   },
   {
    "type": "mesh",
    "t": 0,
-   "dur": 1.7,
+   "dur": 0.16,
    "at": "self",
    "sweep": 0,
-   "erodeFrom": 0.55,
+   "erodeFrom": 0.6,
    "ragged": 0.5,
    "tone": "body",
    "alpha": 0.95,
@@ -135,34 +135,57 @@
    "billboard": true,
    "offset": [
     0,
-    2.2,
-    -0.9
+    1.6,
+    -2.2
    ],
-   "scale": 3.07,
-   "scaleTo": 3.74
+   "scale": 1.81,
+   "scaleTo": 2.21
   },
   {
    "type": "mesh",
-   "t": 0.03,
-   "dur": 1.7,
+   "t": 0.13,
+   "dur": 1.57,
    "at": "self",
    "sweep": 0,
    "erodeFrom": 0.55,
    "ragged": 0.5,
    "tone": "body",
-   "alpha": 0.95,
+   "alpha": 0.3,
    "tier": 0,
    "seed": 1003,
+   "shape": "sprite",
+   "sprite": "cth_stele",
+   "billboard": true,
+   "offset": [
+    0,
+    1.6,
+    -2.2
+   ],
+   "scale": 2.21,
+   "scaleTo": 2.21
+  },
+  {
+   "type": "mesh",
+   "t": 0.03,
+   "dur": 0.16,
+   "at": "self",
+   "sweep": 0,
+   "erodeFrom": 0.6,
+   "ragged": 0.5,
+   "tone": "body",
+   "alpha": 0.95,
+   "tier": 0,
+   "seed": 1004,
    "shape": "sprite",
    "sprite": "cth_roots",
    "billboard": true,
    "offset": [
     0,
-    1.2,
-    0
+    1,
+    -1.6
    ],
-   "scale": 2.37,
-   "scaleTo": 2.89
+   "scale": 1.53,
+   "scaleTo": 1.87
   },
   {
    "type": "mesh",
@@ -173,19 +196,19 @@
    "erodeFrom": 0.3,
    "ragged": 0.5,
    "tone": "body",
-   "alpha": 0.5,
+   "alpha": 0.3,
    "tier": 0,
-   "seed": 1004,
+   "seed": 1005,
    "shape": "sprite",
    "sprite": "cth_dust",
    "billboard": true,
    "offset": [
     0,
     0.8,
-    0
+    -2.2
    ],
-   "scale": 2.89,
-   "scaleTo": 2.89
+   "scale": 1.7,
+   "scaleTo": 1.7
   },
   {
    "type": "mesh",
@@ -198,14 +221,14 @@
    "tone": "body",
    "alpha": 0.9,
    "tier": 0,
-   "seed": 1005,
+   "seed": 1006,
    "shape": "sprite",
    "sprite": "cth_spark",
    "billboard": true,
    "offset": [
     0,
     1.4,
-    0
+    -0.5
    ],
    "scale": 1.19,
    "scaleTo": 1.49
@@ -214,13 +237,13 @@
    "type": "decal",
    "tex": "scorch",
    "t": -0.1,
-   "r": 3,
+   "r": 2.4,
    "dur": 2.4,
    "at": "self",
    "offset": [
     0,
     -1.05,
-    0
+    -0.7
    ],
    "grow": 0.1,
    "tone": "shadow",
@@ -231,13 +254,13 @@
    "type": "decal",
    "tex": "scorch",
    "t": 0,
-   "r": 2.2,
+   "r": 2,
    "dur": 2.4,
    "at": "self",
    "offset": [
     0,
     -1.05,
-    0
+    -0.7
    ],
    "grow": 0.1,
    "tone": "shadow",
@@ -253,25 +276,25 @@
    "erodeFrom": 0.2,
    "ragged": 0.5,
    "tone": "body",
-   "alpha": 0.75,
+   "alpha": 0.3,
    "tier": 0,
-   "seed": 1006,
+   "seed": 1007,
    "shape": "sprite",
    "sprite": "cth_dust",
    "billboard": true,
    "offset": [
     0,
     1.3,
-    0
+    -2.2
    ],
-   "scale": 2.21,
-   "scaleTo": 2.21,
+   "scale": 1.53,
+   "scaleTo": 1.53,
    "move": {
     "to": "self",
     "offset": [
      0,
-     2.4000000000000004,
-     0
+     2.1,
+     -2.2
     ],
     "ease": "out"
    }
