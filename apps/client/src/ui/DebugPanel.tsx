@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useState } from 'react';
+import { Fragment, lazy, Suspense, useEffect, useState } from 'react';
 import { C, MAX_LEVEL, PF_TRIBULATION } from '@dtl/shared';
 import {
   FX_TIMELINE,
@@ -129,7 +129,13 @@ const LAB_PHASES = [0, 1, 2, 3];
 const LAB_SPEEDS = [100, 50, 25, 10];
 const LAB_PINGS = [0, 50, 150, 300];
 /** Nhóm con của tab Diễn Võ: bảng F3 không cuộn được nên mỗi lúc chỉ hiện một nhóm cho vừa màn 720p. */
-const LAB_TABS = ['scene', 'mon', 'fx', 'look', 'style', 'ui', 'feel', 'snd', 'anim', 'bal', 'time'] as const;
+/**
+ * Bảng Chỉnh phòng (V3, kéo thả đạo cụ/đèn/điểm gọi quái) chỉ có ở bản dev: nạp lười để mã trình chỉnh không vào bundle bản build.
+ * Phím F4 vẫn mở bản nổi của cùng component.
+ */
+const RoomEditPanel = import.meta.env.DEV ? lazy(() => import('./lab-editor/RoomEditPanel').then((m) => ({ default: m.RoomEditPanel }))) : null;
+const LAB_TABS_ALL = ['scene', 'mon', 'fx', 'look', 'style', 'ui', 'feel', 'snd', 'anim', 'bal', 'edit', 'time'] as const;
+const LAB_TABS = LAB_TABS_ALL.filter((k) => k !== 'edit' || RoomEditPanel !== null);
 const LAB_STYLE_SLOTS = ['A', 'B'] as const;
 const FX_IDS = [...FX_TIMELINE.keys()].sort();
 /** Số lớp tối đa hiện nút bật tắt (bảng F3 không cuộn được; timeline dài hơn thì soi phần còn lại bằng `pnpm shots dienvo --layersoff`). */
@@ -757,7 +763,7 @@ function Tools({ compact, onCompact }: { compact: boolean; onCompact: (v: boolea
   const [labLevel, setLabLevel] = useState(30);
   const [phase, setPhase] = useState(1);
   const [scene, setScene] = useState(LAB_SCENES[0]?.id ?? '');
-  const [labTab, setLabTab] = useState<(typeof LAB_TABS)[number]>('scene');
+  const [labTab, setLabTab] = useState<(typeof LAB_TABS_ALL)[number]>('scene');
   // Tốc độ lớp hình (phần trăm; 0 = dừng). Chỉ đổi cách máy mình vẽ, không gửi gì lên server.
   const [speed, setSpeed] = useState(() => Math.round((Game.current?.timeScale ?? 1) * 100));
   const [ping, setPing] = useState(() => Game.current?.fakePing ?? 0);
@@ -922,6 +928,11 @@ function Tools({ compact, onCompact }: { compact: boolean; onCompact: (v: boolea
           {labTab === 'snd' && <SoundLab />}
           {labTab === 'anim' && <PoseLab />}
           {labTab === 'bal' && <BalanceLab />}
+          {labTab === 'edit' && RoomEditPanel && (
+            <Suspense fallback={null}>
+              <RoomEditPanel />
+            </Suspense>
+          )}
           {labTab === 'time' && (
             <>
               <div className="debug-row wrap">

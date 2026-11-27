@@ -470,7 +470,7 @@ export default {
         // Hàng nhóm con = hàng thứ ba của nhóm Diễn Võ (sau hàng nhóm GM và hàng vào/rời phòng).
         return rows[2] ? [...rows[2].querySelectorAll('button')].map((b) => (b.textContent || '').trim()) : [];
       })()`)) as string[];
-      check('tab Diễn Võ có đủ nhóm con', tabs.length >= 11, tabs.join(' | '));
+      check('tab Diễn Võ có đủ nhóm con', tabs.length >= 12, tabs.join(' | '));
       for (const name of tabs) {
         const e0 = r.errors.length;
         await pg.locator('.debug-tools .debug-row').nth(2).locator('button', { hasText: new RegExp('^' + name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$') }).click();

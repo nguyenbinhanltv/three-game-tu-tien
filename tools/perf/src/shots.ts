@@ -16,6 +16,7 @@ import herolight from './scenarios/herolight';
 import dienvo from './scenarios/dienvo';
 import labui from './scenarios/labui';
 import xuong from './scenarios/xuong';
+import roomedit from './scenarios/roomedit';
 import bossfaces from './scenarios/bossfaces';
 import dungeon from './scenarios/dungeon';
 import lackiem from './scenarios/lackiem';
@@ -147,6 +148,7 @@ const SCENARIOS: Scenario[] = [
   dienvo,
   labui,
   xuong,
+  roomedit,
   xichkhe,
   dungeonart,
   realmaura,
