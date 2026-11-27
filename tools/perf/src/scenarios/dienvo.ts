@@ -323,6 +323,9 @@ export default {
         });
         g.targetId = best;
       });
+      // Cổng duyệt: tắt sự kiện màn hình/camera (chỉ số -1 = `FX_SCREEN_OFF`), nếu không camera đẩy và chớp vẫn chạy giữa ảnh có VFX và ảnh ẩn VFX,
+      // thân mục tiêu lệch đi và bị tính nhầm là bị che (đo 27/11: Kiếm Khí Trảm 60% → xem số sau khi tắt).
+      if (gate) await pg.evaluate(() => void (window as unknown as { __fxLayerOff?: Set<number> }).__fxLayerOff?.add(-1));
       type Gate = { coverMax?: number; cover: number | null; glare: number; spread: number; live: number; dur: number | null; fail: string[] };
       const fxRows: { id: string; ok: boolean; gate?: Gate }[] = [];
       const frames2 = () => pg.evaluate(() => new Promise<void>((res) => requestAnimationFrame(() => requestAnimationFrame(() => res()))));

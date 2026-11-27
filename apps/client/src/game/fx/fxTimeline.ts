@@ -235,6 +235,12 @@ const DECAL_MAX = 6;
  * đổi tập này (`window.__fxLayerOff`, `pnpm shots dienvo --layersoff 0,3`); áp cho mọi timeline phát sau đó.
  */
 export const FX_LAYER_OFF = new Set<number>();
+/**
+ * Chỉ số đặc biệt trong `FX_LAYER_OFF`: tắt mọi sự kiện tác động lên MÀN HÌNH/CAMERA/THỜI GIAN (đẩy camera, rung, chớp, tối viền, khung va chạm,
+ * hitstop, slowmo). Cổng duyệt VFX dùng để ảnh có VFX và ảnh ẩn VFX của cùng một khung không lệch nhau vì camera/chớp vẫn chạy theo giờ thật.
+ */
+export const FX_SCREEN_OFF = -1;
+const SCREEN_EVENTS: ReadonlySet<string> = new Set(['camera', 'shake', 'flash', 'vignette', 'impact', 'hitstop', 'slowmo']);
 
 /** Mốc (giây từ bấm) của từng sự kiện trong một đòn: mỗi mốc trúng một bản cho sự kiện neo `hit`. */
 export function scheduleEvents(
@@ -246,7 +252,7 @@ export function scheduleEvents(
   for (let idx = 0; idx < events.length; idx++) {
     const ev = events[idx]!;
     if ((ev.tier ?? 0) > tier) continue;
-    if (FX_LAYER_OFF.size && FX_LAYER_OFF.has(idx)) continue;
+    if (FX_LAYER_OFF.size && (FX_LAYER_OFF.has(idx) || (FX_LAYER_OFF.has(FX_SCREEN_OFF) && SCREEN_EVENTS.has(ev.type)))) continue;
     if (ev.from === 'start') out.push({ at: ev.t, ev, hit: 0 });
     else {
       const only = ev.hit === undefined ? null : Array.isArray(ev.hit) ? ev.hit : [ev.hit];
