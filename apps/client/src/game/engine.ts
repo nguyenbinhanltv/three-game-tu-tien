@@ -942,6 +942,9 @@ export class Game {
     return true;
   }
 
+  /** Phòng thử: ép MỌI hiệu ứng phát qua `labFx`/`labSeek` dùng bảng màu này (khóa của `FX_PALETTE`); rỗng = theo timeline/công pháp. */
+  labPalette = '';
+
   labFx(key: string): boolean {
     const hf = this.hitFx;
     const me = this.ents?.players.get(this.sid);
@@ -951,7 +954,7 @@ export class Game {
       ? { id: mon.id, x: mon.x, y: mon.y, z: mon.z, chest: mon.model.height * 0.55, scale: hitScaleOf(mon.model.height) }
       : { id: 'lab', x: me.x + Math.sin(me.yaw) * 4, y: me.y, z: me.z + Math.cos(me.yaw) * 4, chest: 1.15 };
     // Timeline tự khai bảng màu (chiêu Lôi, Hỏa...) thì dùng bảng đó; chỉ timeline không khai mới lấy bảng của công pháp mình đang tu.
-    return hf.labPlay(key, pt, me, FX_TIMELINE.get(key)?.palette ?? this.methodOfPlayer(this.sid) ?? 'hit_chung');
+    return hf.labPlay(key, pt, me, this.labPalette || (FX_TIMELINE.get(key)?.palette ?? this.methodOfPlayer(this.sid) ?? 'hit_chung'));
   }
 
   /** Phòng thử: tỉ lệ thời gian của lớp hình (1 = thường, 0 = dừng) và số khung còn phải bước khi đang dừng. Chỉ đổi qua bảng F3 / `__game`. */

@@ -18,6 +18,7 @@ import {
   t,
 } from '@dtl/content';
 import { Game } from '../game/engine';
+import { FX_PALETTE } from '../render/vfx/palette';
 import { FX_LAYER_OFF } from '../game/fx/fxTimeline';
 import { Button } from './u2/win';
 import { type DebugPerf, useUI } from './store';
@@ -78,7 +79,7 @@ const LAB_PHASES = [0, 1, 2, 3];
 const LAB_SPEEDS = [100, 50, 25, 10];
 const LAB_PINGS = [0, 50, 150, 300];
 /** Nhóm con của tab Diễn Võ: bảng F3 không cuộn được nên mỗi lúc chỉ hiện một nhóm cho vừa màn 720p. */
-const LAB_TABS = ['scene', 'mon', 'fx', 'time'] as const;
+const LAB_TABS = ['scene', 'mon', 'fx', 'look', 'time'] as const;
 const FX_IDS = [...FX_TIMELINE.keys()].sort();
 /** Số lớp tối đa hiện nút bật tắt (bảng F3 không cuộn được; timeline dài hơn thì soi phần còn lại bằng `pnpm shots dienvo --layersoff`). */
 const FX_LAYER_BTNS = 48;
@@ -89,8 +90,42 @@ const FX_LAYER_BTNS = 48;
  */
 const LAB_FLOORS = ['dark', 'light', 'grass', 'snow'] as const;
 const LAB_SEEKS = [33, 100, 200, 400, 800, 1500];
-function FxLab() {
+const LAB_PALETTES = ['', ...Object.keys(FX_PALETTE)];
+function LookLab() {
   const [floor, setFloor] = useState<string>('dark');
+  const [pal, setPal] = useState<string>(() => Game.current?.labPalette ?? '');
+  return (
+    <>
+      <div className="debug-row wrap">
+        <span>{t('ui.gm.lab.floor')}</span>
+        {LAB_FLOORS.map((f) => (
+          <Button
+            key={f}
+            size="s"
+            pressed={floor === f}
+            onClick={() => {
+              if (Game.current?.labFloor(f)) setFloor(f);
+            }}
+          >
+            {t('ui.gm.lab.floor.' + f)}
+          </Button>
+        ))}
+      </div>
+      <div className="debug-row wrap">
+        <Pick
+          label={t('ui.gm.lab.palette')}
+          value={pal}
+          onChange={(v) => {
+            setPal(v);
+            if (Game.current) Game.current.labPalette = v;
+          }}
+          options={LAB_PALETTES.map((id) => ({ value: id, label: id || t('ui.gm.lab.palette.auto') }))}
+        />
+      </div>
+    </>
+  );
+}
+function FxLab() {
   const [find, setFind] = useState('');
   const [fx, setFx] = useState(FX_IDS[0] ?? '');
   const [loop, setLoop] = useState(false);
@@ -135,21 +170,6 @@ function FxLab() {
         {LAB_SEEKS.map((n) => (
           <Button key={n} size="s" disabled={!cur} onClick={() => Game.current?.labSeek(cur, n)}>
             {t('ui.gm.lab.seek_v', { n })}
-          </Button>
-        ))}
-      </div>
-      <div className="debug-row wrap">
-        <span>{t('ui.gm.lab.floor')}</span>
-        {LAB_FLOORS.map((f) => (
-          <Button
-            key={f}
-            size="s"
-            pressed={floor === f}
-            onClick={() => {
-              if (Game.current?.labFloor(f)) setFloor(f);
-            }}
-          >
-            {t('ui.gm.lab.floor.' + f)}
           </Button>
         ))}
       </div>
@@ -394,6 +414,7 @@ function Tools() {
             </>
           )}
           {labTab === 'fx' && <FxLab />}
+          {labTab === 'look' && <LookLab />}
           {labTab === 'time' && (
             <>
               <div className="debug-row wrap">
