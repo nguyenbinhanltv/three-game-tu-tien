@@ -303,6 +303,8 @@ export default {
       await pg.evaluate(() => void (window.__game!.timeScale = 1));
       await sleep(1800);
       const floorOf = () => pg.evaluate(() => (window.__game as unknown as { vdWonders: { floor?: string } | null }).vdWonders?.floor);
+      await pg.locator('.debug-panel button', { hasText: /^N\u1ec1n v\u00e0 m\u00e0u$/ }).first().click();
+      await sleep(200);
       await btn('Nền tuyết').click();
       await sleep(300);
       check('nút "Nền tuyết" đổi nền thử', (await floorOf()) === 'snow');
@@ -310,6 +312,15 @@ export default {
       await btn('Nền tối').click();
       await sleep(300);
       check('nút "Nền tối" trả nền mặc định', (await floorOf()) === 'dark');
+      await pg.locator('.debug-panel select').last().selectOption('loi');
+      await sleep(200);
+      check('chọn bảng màu "loi" ép bảng màu phòng thử', (await pg.evaluate(() => window.__game!.labPalette)) === 'loi');
+      await snap(pg, r.out, `${view}/panel-nen-va-mau.png`, { wait: 200 });
+      await pg.locator('.debug-panel select').last().selectOption('');
+      await sleep(200);
+      check('chọn "(theo chiêu)" bỏ ép bảng màu', (await pg.evaluate(() => window.__game!.labPalette)) === '');
+      await btn('Hiệu ứng').click();
+      await sleep(200);
       await pg.locator('.debug-panel button', { hasText: /^0$/ }).first().click();
       await sleep(200);
       const off1 = await pg.evaluate(() => [...((window as unknown as { __fxLayerOff: Set<number> }).__fxLayerOff ?? [])]);
