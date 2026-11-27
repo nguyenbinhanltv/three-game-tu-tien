@@ -233,9 +233,14 @@ export function bindRoom(eng: Game, room: Room): void {
     onMessage<T>(type: string, fn: (m: T) => void): void {
       room.onMessage(type, (m: T) => {
         const lag = eng.debugOk ? eng.fakePing / 2 : 0;
-        if (lag <= 0) return fn(m);
+        if (lag <= 0) {
+          eng.labTrace?.recv(type, m, eng.sid, performance.now());
+          return fn(m);
+        }
         window.setTimeout(() => {
-          if (!eng.disposed && eng.room === room) fn(m);
+          if (eng.disposed || eng.room !== room) return;
+          eng.labTrace?.recv(type, m, eng.sid, performance.now());
+          fn(m);
         }, lag);
       });
     },

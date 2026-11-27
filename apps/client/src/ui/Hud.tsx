@@ -53,6 +53,7 @@ import { artifactLines } from './gear';
 import { Corners, RingSweep } from './u2/shell';
 import { Button, Divider, Header, Panel, PanelBody, ProgressBar, TipCard, Tooltip } from './u2/win';
 import { DebugPanel } from './DebugPanel';
+import { LabTraceView } from './LabTraceView';
 import { NpcDialog } from './NpcDialog';
 import { DuelBanner, InviteStack, PartyFrame } from './Party';
 import { Minimap } from './minimap/Minimap';
@@ -650,6 +651,7 @@ export function Hud() {
       {npc && <NpcDialog npcId={npc} />}
       <DeathOverlay />
       <DebugPanel />
+      <LabTraceView />
       <Corner />
     </div>
   );
