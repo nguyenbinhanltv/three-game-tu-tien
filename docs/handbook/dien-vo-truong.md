@@ -283,3 +283,13 @@ Dạ Họa 720p, WebGPU preset Cao; hai lượt đo cho số lệch nhau dưới
 - Phủ thấp nhưng đúng cỡ: Địa Mạch Long đập (pháp trận nét vàng, không tô, 44%), Hàn Giao niệm chú (54%), Thiên Khuyết Thủ Lĩnh đập (76%). Đọc được hình nhưng phần ruột vùng không được tô.
 - "Tràn" 5–37% phần lớn KHÔNG phải vạch báo to hơn thật: nó gồm quầng sáng quanh mép, hào quang và hiệu ứng khác của boss nằm chung nhóm VFX, và thân boss/người chơi. Chỉ dùng cột này để tìm chiêu tràn bất thường, không coi là số tuyệt đối.
 - **Chưa đo được:** `charge` và `leap` (boss chỉ ra khi người chơi đứng xa; kịch bản đứng gần), `caster` (đạn, không có vùng). Trong một phiên, các quái đo SAU Kim Dạ Ma Hậu không ra chiêu nữa (chưa rõ vì sao; đo riêng từng con thì được) nên ba dòng cuối bảng lấy từ lượt chạy riêng.
+
+### Quét nhân vật người chơi, 9 lối tu (28/11 sáng)
+
+`pnpm shots xuong --only player [--paths kiem_tu,...]`: mỗi lối tu chạy tới / dừng / chạy lùi, ra chiêu ô 2 và đòn thường khi đang chạy, ngự kiếm lên rồi xuống, bị sói đánh 4 giây. In sải chân theo clip (`StrideSlip`), chuyển clip đáng soi (bước nhảy trọng số từ 0,5 hoặc khớp xoay từ 2000°/s), clip đang góp trọng số 180 ms sau khi bấm chiêu, và độ lệch giữa tiếng bước chân (`step_*`) với lúc bàn chân chạm đất (`AnimWorkshop.plants`). Số đo giống nhau giữa 9 lối, tức là chuyện chung của nhân vật v3:
+
+- **Tốt:** chạy nhanh chân trụ trôi 0 đến 3%. Thứ tự ưu tiên clip đúng: đang chạy mà ra chiêu thì clip đòn nửa trên 0,5 + clip chạy nửa dưới 0,5, đồng hồ chiêu có ở cả 9 lối. Ngự kiếm lên/xuống gần như không có chuyển clip đáng soi (4 lối có đúng một lần ~2600°/s ở đùi lúc đòn thường còn dở mà đã bay).
+- **Chưa sửa, vừa chạy vừa đánh thì chân trôi:** chân trụ trôi 31 đến 47% tốc độ thân trong lúc clip đòn nửa trên còn phát (đủ 9 lối, 156 đến 482 mẫu mỗi lối). Mặt nạ nửa dưới đã gồm hông và pha clip chạy đã được đồng bộ (`clipTimeAt`), nên nguyên nhân chưa rõ từ mã: có thể do thân lao tới của đòn (`reach`) không nằm trong vị trí gốc mà phép đo dùng, hoặc do hông bị clip đòn kéo. Cần vết từng khung trước khi sửa.
+- **Chưa sửa, chạy lại khi clip dừng còn phát:** bắp tay phải xoay 4200 đến 9400°/s trong một lần cập nhật, trọng số nhảy 0,25 đến 0,69 (đủ 9 lối). Cùng chỗ với lỗi dừng chạy ở trên (`stepPatch` / `blendBases` trong `apps/client/src/game/character/mannequin.ts`).
+- **Tiếng bước chân:** lệch trung vị so với lúc chân chạm đất từ −79 đến +66 ms tùy lượt (5/9 lối trong ±40 ms); 23 đến 24 tiếng trên 29 đến 37 lần chạm đất. Tiếng phát theo pha của clip chứ không theo bàn chân thật, nên lệch theo nhịp khởi động/dừng; chưa sửa.
+- **Chưa đo được:** phản ứng bị đánh (4 giây sói thả ra không tạo chuyển clip nào ở 8/9 lối: phản ứng là lớp thủ tục, hoặc sói chưa kịp đánh); boss theo từng pha.

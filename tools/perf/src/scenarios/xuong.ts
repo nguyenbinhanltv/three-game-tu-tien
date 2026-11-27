@@ -6,6 +6,8 @@
 //   cho mình và cho quái, chụp ảnh, thả ra và kiểm game điều khiển lại.
 // - loud: N bot cùng đánh một bầy sói trong phòng chung, mình đánh cùng; đồng hồ từng bus báo đỉnh (dBFS, đo trước âm lượng tổng nên đo được cả
 //   khi tắt tiếng) và số lần chạm trần 0 dBFS, kèm mật độ lời gọi phát tiếng.
+// - player: từng lối tu chạy / dừng / lùi, ra chiêu khi đang chạy, ngự kiếm, bị sói đánh; in sải chân theo clip, chuyển clip giật, clip đòn có đè
+//   được clip chạy không, tiếng bước chân lệch bao nhiêu so với lúc bàn chân chạm đất.
 // - mons: gọi từng quái/boss (`--mons`, mặc định 12 con đại diện mỗi kiểu xương), cho nó đuổi rồi đánh mình; in trượt chân theo clip và nhật ký chuyển clip.
 // - bossfade: thử A/B thời gian mờ vào của đòn lớn boss (`SKIN_TUNE.moveFade` ở skinned.ts): ép từng boss ra slam / sweep bằng `/gm cast`, in tốc độ
 //   xoay khớp lớn nhất lúc clip đòn lên.
@@ -113,7 +115,7 @@ const f = (v: number | null, unit = ''): string => (v === null ? '—' : `${v > 
 export default {
   name: 'xuong',
   desc: 'Diễn Võ Trường, xưởng âm thanh + animation: đo lệch tiếng so với khung trúng theo từng chiêu, trượt chân, chuyển clip, tua clip',
-  usage: '[--query style=dahoa] [--only cast,anim,mons,bossfade,stopfade,ui,loud] [--mons id1,id2] [--bosses id1,id2] [--paths kiem_tu,the_tu] [--ping 0] [--wait 2200] [--bots 8]',
+  usage: '[--query style=dahoa] [--only cast,player,anim,mons,bossfade,stopfade,ui,loud] [--mons id1,id2] [--bosses id1,id2] [--paths kiem_tu,the_tu] [--ping 0] [--wait 2200] [--bots 8]',
   env: { RATE_LIMIT_EXEMPT: 'loopback' },
   async run(r) {
     const query = opt('--query', '');
@@ -326,6 +328,93 @@ export default {
       await pg.evaluate(`window.__xuong.ws.stop()`);
       await pg.evaluate(`window.__xuong.ws.setSubject('me')`);
       report.anim = { slide: moved.slide, blends: moved.blends, clips: moved.clips, monClips: mon.clips, monBones, checks, trace, feetTrace };
+      save();
+    }
+
+    if (want('player')) {
+      const paths = PATHS.filter((p) => !pathIds.length || pathIds.includes(p.id));
+      const out: unknown[] = [];
+      const med = (xs: number[]) => {
+        const a = [...xs].sort((p, q) => p - q);
+        return a.length ? a[a.length >> 1]! : 0;
+      };
+      const key = async (k: string, ms: number) => {
+        await pg.keyboard.down(k);
+        await sleep(ms);
+        await pg.keyboard.up(k);
+      };
+      for (const p of paths) {
+        const method = p.methods[0]!;
+        await gm(pg, 'scene soi_thuong', 3500);
+        await gm(pg, `build ${method} 30`, 1600);
+        await gm(pg, 'lockhp on', 900);
+        const aim = await aimNearest(pg);
+        if (aim) await tp(pg, aim.x, aim.z - 4);
+        await sleep(500);
+        await aimNearest(pg);
+        await pg.evaluate(`(() => { const x = window.__xuong; x.ws.setSubject('me'); x.ws.start(); x.ws.resetStats(); x.probe.rows.length = 0; x.cast.castMarks.rows.length = 0; })()`);
+        // a) chạy tới, dừng, chạy lùi, dừng
+        await key('KeyW', 2200);
+        await sleep(1200);
+        await key('KeyS', 1600);
+        await sleep(1000);
+        // b) ra chiêu khi đang chạy: chiêu ô 2 rồi đòn thường; ghi clip đang góp trọng số 180 ms sau mỗi lần bấm
+        await pg.keyboard.down('KeyA');
+        await sleep(600);
+        const over: { slot: number; clock: string; active: string }[] = [];
+        for (const slot of [1, 0]) {
+          await pg.evaluate((i) => window.__game!.useSkill(i), slot);
+          await sleep(180);
+          const sn = await animSnap(pg);
+          over.push({ slot, clock: (sn as unknown as { clock: { skill: string } | null }).clock?.skill ?? '', active: sn.active.slice(0, 4).map((a) => `${a.name} ${a.w.toFixed(2)}`).join(' | ') });
+          await sleep(1100);
+        }
+        await pg.evaluate(() => void ((window.__game as unknown as { autoAttack: boolean }).autoAttack = false));
+        await pg.keyboard.up('KeyA');
+        await sleep(900);
+        const ground = await animSnap(pg);
+        const steps = (await pg.evaluate(`(() => {
+          const x = window.__xuong, plants = x.ws.plants, st = x.probe.rows.filter((r) => r.name.indexOf('step_') === 0);
+          const off = st.map((r) => { let best = 1e9; for (const t of plants) if (Math.abs(r.at - t) < Math.abs(best)) best = r.at - t; return Math.round(best); }).filter((v) => Math.abs(v) < 400);
+          return { steps: st.length, plants: plants.length, off };
+        })()`)) as { steps: number; plants: number; off: number[] };
+        // c) ngự kiếm: lên, bay tới, xuống
+        await pg.evaluate(`(() => { window.__xuong.ws.resetStats(); window.__game.toggleFly(); })()`);
+        await sleep(1800);
+        await key('KeyW', 1600);
+        await sleep(600);
+        await pg.evaluate(`window.__game.toggleFly()`);
+        await sleep(1800);
+        const fly = await animSnap(pg);
+        // d) bị đánh: thả sói, tắt bất tử 4 giây
+        await pg.evaluate(`window.__xuong.ws.resetStats()`);
+        await gm(pg, 'god off', 900);
+        await gm(pg, 'freeze off', 4200);
+        await gm(pg, 'freeze on', 900);
+        await gm(pg, 'god on', 900);
+        const hurt = await animSnap(pg);
+        const flag = (bl: AnimSnap['blends']) => bl.filter((b) => b.pop >= 0.5 || b.spin >= 2000).map((b) => `${b.from}→${b.to} ${b.ms} ms nhảy ${b.pop} ${b.spin}°/s ${b.bone ?? ''}`);
+        const row = {
+          path: p.id,
+          stride: ground.stride,
+          over,
+          steps: { n: steps.steps, plants: steps.plants, med: med(steps.off), worst: steps.off.reduce((w, v) => (Math.abs(v) > Math.abs(w) ? v : w), 0), off: steps.off },
+          ground: flag(ground.blends),
+          fly: { clips: [...new Set(fly.blends.map((b) => b.to))], bad: flag(fly.blends) },
+          hurt: { clips: [...new Set(hurt.blends.map((b) => b.to))], bad: flag(hurt.blends) },
+          blends: { ground: ground.blends, fly: fly.blends, hurt: hurt.blends },
+        };
+        out.push(row);
+        console.log(`\n  ${p.id} (${method})`);
+        for (const s of ground.stride ?? []) console.log(`    sải ${s.key.padEnd(18)} ${String(s.n).padStart(4)} mẫu · thân ${s.speed.toFixed(1)} m/s · chân trụ trôi ${(s.slip * 100).toFixed(0)}%${Math.abs(s.slip) > 0.25 ? ' (QUÁ NGƯỠNG)' : ''}`);
+        for (const o of over) console.log(`    đang chạy, bấm ô ${o.slot + 1}: đồng hồ chiêu "${o.clock || 'KHÔNG CÓ'}" · ${o.active}`);
+        console.log(`    bước chân: ${row.steps.n} tiếng / ${row.steps.plants} lần chân chạm đất · lệch trung vị ${row.steps.med} ms, xấu nhất ${row.steps.worst} ms`);
+        console.log(`    chuyển clip mặt đất: ${ground.blends.length} lần, đáng soi: ${row.ground.join(' ‖ ') || 'không'}`);
+        console.log(`    ngự kiếm: ${row.fly.clips.join(', ') || '—'}; đáng soi: ${row.fly.bad.join(' ‖ ') || 'không'}`);
+        console.log(`    bị đánh: ${row.hurt.clips.join(', ') || '—'}; đáng soi: ${row.hurt.bad.join(' ‖ ') || 'không'}`);
+      }
+      await pg.evaluate(`window.__xuong.ws.stop()`);
+      report.player = out;
       save();
     }
 

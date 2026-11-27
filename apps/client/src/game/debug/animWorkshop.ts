@@ -116,6 +116,8 @@ export class AnimWorkshop {
   private spins: { bone: THREE.Object3D; q: THREE.Quaternion; at: number }[] = [];
   private slide = new FootSlide();
   private stride = new StrideSlip();
+  /** `performance.now()` của các lần bàn chân vừa chạm đất gần đây. */
+  readonly plants: number[] = [];
   /** Mốc trước của từng bàn chân cho phép đo theo vận tốc: vị trí trong hệ cây xương (để biết xương có đổi không), vị trí thế giới, gốc nhân vật, thời điểm. */
   private strideRef: { lx: number; ly: number; lz: number; wx: number; wz: number; rx: number; rz: number; at: number }[] = [];
   /** Gốc nhân vật cao hơn mặt đất bao nhiêu (m) ở khung vừa đo: khác 0 nhiều là nhân vật đang lơ lửng hoặc hàm mặt đất không khớp level. */
@@ -159,6 +161,7 @@ export class AnimWorkshop {
 
   /** Xóa số đo trượt chân và nhật ký chuyển clip (giữ clip đang ép). */
   resetStats(): void {
+    this.plants.length = 0;
     this.slide.reset();
     this.stride.reset();
     this.strideRef = [];
@@ -252,7 +255,15 @@ export class AnimWorkshop {
       }
       return { x: _p.x, y: _p.y, z: _p.z, ground: ground(_p.x, _p.z) + floor };
     });
+    const was = this.slide.now.map((f) => f.planted);
     this.slide.push(dt, key, s.x, s.z, feet);
+    // Mốc bàn chân vừa chạm đất (nhấc → trụ): để so với tiếng bước chân.
+    this.slide.now.forEach((f, i) => {
+      if (f.planted && was[i] === false) {
+        this.plants.push(now);
+        if (this.plants.length > 300) this.plants.shift();
+      }
+    });
   }
 
   /** Danh sách clip của model đang soi (theo tên). */
