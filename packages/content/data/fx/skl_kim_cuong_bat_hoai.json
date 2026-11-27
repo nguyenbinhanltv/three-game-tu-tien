@@ -234,11 +234,11 @@
    "billboard": true,
    "offset": [
     0,
-    1.25,
-    -1
+    1.1,
+    -1.7
    ],
-   "scale": 2.62,
-   "scaleTo": 3.2
+   "scale": 1.97,
+   "scaleTo": 2.4
   },
   {
    "type": "mesh",
@@ -257,11 +257,11 @@
    "billboard": true,
    "offset": [
     0,
-    1.25,
-    -1
+    1.1,
+    -1.7
    ],
-   "scale": 3.2,
-   "scaleTo": 3.2
+   "scale": 2.4,
+   "scaleTo": 2.4
   },
   {
    "type": "mesh",
@@ -280,11 +280,11 @@
    "billboard": true,
    "offset": [
     0,
-    1.4,
-    -1
+    1.1,
+    -1.7
    ],
-   "scale": 2.8,
-   "scaleTo": 2.8
+   "scale": 2,
+   "scaleTo": 2
   },
   {
    "type": "mesh",
@@ -360,17 +360,17 @@
    "billboard": true,
    "offset": [
     0,
-    1.6,
-    -1
+    1.2,
+    -1.7
    ],
-   "scale": 2,
-   "scaleTo": 2,
+   "scale": 1.6,
+   "scaleTo": 1.6,
    "move": {
     "to": "self",
     "offset": [
      0,
-     3,
-     -1
+     2,
+     -1.7
     ],
     "ease": "out"
    }
