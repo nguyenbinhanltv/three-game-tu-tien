@@ -40,6 +40,8 @@ export function tickMonsterImpl(sys: MonsterSystem, m: MonEnt, dt: number): void
     }
     return;
   }
+  // `/gm freeze`: quái sống đứng yên, giữ nguyên trạng thái và cờ đang có (để soi viền, mood, hiệu ứng).
+  if (sys.gmFreeze) return;
   const def = m.def;
   syncDisplayFlags(sys, m);
   if (m.poison) {
