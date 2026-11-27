@@ -174,7 +174,7 @@
   {
    "type": "mesh",
    "t": 0,
-   "dur": 0.55,
+   "dur": 0.34,
    "at": "target",
    "sweep": 0,
    "erodeFrom": 0.12,
@@ -188,7 +188,7 @@
    "billboard": true,
    "offset": [
     0.2,
-    3.2,
+    4.3,
     0
    ],
    "scale": 4.18,
@@ -214,8 +214,8 @@
     1.2,
     0
    ],
-   "scale": 2.55,
-   "scaleTo": 3.19
+   "scale": 1.7,
+   "scaleTo": 2.13
   },
   {
    "type": "mesh",
@@ -234,11 +234,11 @@
    "billboard": true,
    "offset": [
     0,
-    1,
+    2.5,
     0
    ],
-   "scale": 2.21,
-   "scaleTo": 2.21
+   "scale": 1.7,
+   "scaleTo": 1.7
   },
   {
    "type": "mesh",
@@ -257,7 +257,7 @@
    "billboard": true,
    "offset": [
     0,
-    1.4,
+    2.2,
     0
    ],
    "scale": 2.21,
@@ -266,7 +266,7 @@
     "to": "target",
     "offset": [
      0,
-     2.9,
+     3.7,
      0
     ],
     "ease": "out"
