@@ -317,7 +317,7 @@ export function handleFx(eng: Game, m: FxMsg, held = false): void {
   if (m.t === 'sword') {
     const arc = pathBasicOf({ combo: true }, eng.methodOfPlayer(src))?.arc;
     if (arc && e.chestOf(src, _v) && e.chestOf(dst, _v2))
-      v.arcSlash(_v.x, _v.z, Math.atan2(_v2.x - _v.x, _v2.z - _v.z), arc.r, (arc.deg * Math.PI) / 360, tint(0xbfeaff));
+      v.arcSlash(_v.x, _v.z, Math.atan2(_v2.x - _v.x, _v2.z - _v.z), arc.r, (arc.deg * Math.PI) / 360, tint(0xe6f6ff));
   }
   // Timeline kích hoạt theo S.FX (lướt: không có động tác riêng) hoặc đã thay hình cũ của công pháp (chỉ khi model phát sự kiện chiêu).
   if (METHOD_FX.has(m.t)) {
