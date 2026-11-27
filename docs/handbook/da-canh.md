@@ -55,7 +55,9 @@ Mọi cải thiện Dạ Họa (VFX, animation, nhân vật, đạo cụ, ánh s
 - **Tab "Diễn Võ"** ở bảng F3 (`apps/client/src/ui/DebugPanel.tsx`): gom các nút trên, gọi quái có ô tìm theo tên.
 - **Kịch bản chụp** `pnpm shots dienvo --out <thư mục> --query style=dahoa`: vào phòng, dựng nhân vật, gọi quái, ép trạng thái, chụp 5 ảnh + số đo, rồi ra và kiểm nhân vật đã về nguyên trạng.
 
-Chưa có: sáu khu trong phòng (hiện là bãi phẳng trống, nền đất loang lổ), cảnh mẫu lưu lại, bộ ảnh chuẩn so trước/sau, đồng hồ hiệu năng trên tab.
+- **Sáu khu** (`packages/shared/src/props.dienvo.ts`, dùng chung client và server): sàn đấu, hố boss, bục nhân vật, hành lang đạo cụ, buồng ánh sáng, tường hiệu ứng. Client vẽ MỘT tấm sàn đá đều màu có ranh và tên khu (`apps/client/src/game/world/dienVoRoom.ts`, 1 draw call); camera phòng khóa 0° để chữ đọc thẳng. `/gm spawn` trong phòng xếp quái thường vào sàn đấu và boss vào hố boss (`dienVoSpawnAt`). Đo ở Dạ Họa, 3 sói: 34 draw call, 137 nghìn tam giác (720p và 1080p).
+
+Chưa có: nội dung riêng cho bục nhân vật, buồng ánh sáng và tường hiệu ứng (mới có ranh, biển và vài đạo cụ); cảnh mẫu lưu lại; bộ ảnh chuẩn so trước/sau; đồng hồ hiệu năng trên tab. Thấy ở ảnh đầu, sẽ sửa trong phòng: trạng thái vỡ thế/lộ yếu điểm của quái chưa đọc ra ở khoảng cách mặc định; ô lát sàn gần như không thấy.
 
 ## Lộ trình
 

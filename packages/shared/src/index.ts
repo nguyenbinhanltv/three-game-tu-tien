@@ -5,6 +5,7 @@ export * from './noise';
 export * from './level';
 export * from './props';
 export { KIEU_MOOD, KIEU_PROPS } from './props.kieu';
+export * from './props.dienvo';
 export * from './tieucanh';
 export * from './cautreo';
 export * from './walkslope';
