@@ -449,7 +449,11 @@ function Tools() {
                   onChange={setScene}
                   options={LAB_SCENES.map((s) => ({ value: s.id, label: t('lab.scene.' + s.id) }))}
                 />
-                <Button size="s" variant="primary" disabled={!scene} onClick={() => gm('scene ' + scene)}>
+                <Button size="s" variant="primary" disabled={!scene} onClick={() => {
+                    gm('scene ' + scene);
+                    // Cảnh có `cam` (nhìn cận nhân vật) thì bật máy quay cận, cảnh khác trả về camera thường.
+                    Game.current?.labCamSet(LAB_SCENES.find((s) => s.id === scene)?.cam ? 6 : 0, 24);
+                  }}>
                   {t('ui.gm.lab.scene_btn')}
                 </Button>
                 <Button size="s" onClick={() => gm('scene save')}>

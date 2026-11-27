@@ -89,6 +89,94 @@
     }
   },
   {
+    "id": "can_bat_dong_kim_than",
+    "at": "stage",
+    "method": "bat_dong_kim_than",
+    "level": 30,
+    "mons": [],
+    "cam": {
+      "pitch": 0.9,
+      "dist": 9
+    }
+  },
+  {
+    "id": "can_thanh_moc_dan_kinh",
+    "at": "stage",
+    "method": "thanh_moc_dan_kinh",
+    "level": 30,
+    "mons": [],
+    "cam": {
+      "pitch": 0.9,
+      "dist": 9
+    }
+  },
+  {
+    "id": "can_dan_hon_kinh",
+    "at": "stage",
+    "method": "dan_hon_kinh",
+    "level": 30,
+    "mons": [],
+    "cam": {
+      "pitch": 0.9,
+      "dist": 9
+    }
+  },
+  {
+    "id": "can_liet_nhan_dao_kinh",
+    "at": "stage",
+    "method": "liet_nhan_dao_kinh",
+    "level": 30,
+    "mons": [],
+    "cam": {
+      "pitch": 0.9,
+      "dist": 9
+    }
+  },
+  {
+    "id": "can_co_than_quyet",
+    "at": "stage",
+    "method": "co_than_quyet",
+    "level": 30,
+    "mons": [],
+    "cam": {
+      "pitch": 0.9,
+      "dist": 9
+    }
+  },
+  {
+    "id": "can_duong_co_kinh",
+    "at": "stage",
+    "method": "duong_co_kinh",
+    "level": 30,
+    "mons": [],
+    "cam": {
+      "pitch": 0.9,
+      "dist": 9
+    }
+  },
+  {
+    "id": "can_cuu_tieu_loi_kinh",
+    "at": "stage",
+    "method": "cuu_tieu_loi_kinh",
+    "level": 30,
+    "mons": [],
+    "cam": {
+      "pitch": 0.9,
+      "dist": 9
+    }
+  },
+  {
+    "id": "can_cam_che_kinh",
+    "at": "stage",
+    "method": "cam_che_kinh",
+    "level": 30,
+    "mons": [],
+    "cam": {
+      "pitch": 0.9,
+      "dist": 9
+    }
+  },
+  {
     "id": "dao_cu",
     "at": "props",
     "method": "lac_kiem_quyet",
