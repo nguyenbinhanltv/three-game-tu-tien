@@ -96,3 +96,15 @@ describe('HitFx mảnh vụn theo chất liệu (HPL2 B)', () => {
     }
   });
 });
+
+describe('hitScaleOf (cỡ hiệu ứng trúng đòn theo thân nạn nhân)', () => {
+  it('thân người giữ cỡ gốc; quái nhỏ co lại, boss to phóng lên, đều có chặn', async () => {
+    const { hitScaleOf, HIT_SCALE_MAX, HIT_SCALE_MIN } = await import('./hitFx');
+    expect(hitScaleOf(1.7)).toBeCloseTo(1, 6);
+    expect(hitScaleOf(1.0)).toBeCloseTo(1 / 1.7, 6);
+    expect(hitScaleOf(1.0)).toBeLessThan(0.8);
+    expect(hitScaleOf(0.2)).toBe(HIT_SCALE_MIN);
+    expect(hitScaleOf(9)).toBe(HIT_SCALE_MAX);
+    expect(hitScaleOf(NaN)).toBe(1);
+  });
+});
