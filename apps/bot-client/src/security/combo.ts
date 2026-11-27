@@ -96,6 +96,35 @@ export async function runCombo(): Promise<void> {
   await W(1200);
   check('chuỗi đòn: né xóa đòn đang đệm', swings.length <= 1, `${swings.length} đòn`);
 
+  // 5. Hướng cận chiến (Kiếm tu): đòn thường chỉ ra khi đã áp sát; client có tự áp sát hay không thì server vẫn tự kiểm tầm.
+  // Đóng băng quái để nó đứng yên trong lúc đo (cờ của cả room: tắt lại ngay sau bài).
+  await W(1500);
+  await gm('method lac_kiem_quyet 1');
+  await gm('freeze on');
+  try {
+    const tgt = mons().get(id);
+    if (!tgt) check('cận chiến: còn quái để thử', false, 'quái thử đã biến mất');
+    else {
+      await gm(`tp ${Math.round(tgt.x + 16)} ${Math.round(tgt.z)}`);
+      swings.length = 0;
+      sys.length = 0;
+      g.room.send(C.SKILL, { id: 'skl_phi_kiem', t: id });
+      await W(900);
+      check(
+        'cận chiến: đứng xa 16 m bấm đòn thường thì không ra đòn (server kiểm tầm theo hướng tu)',
+        swings.length === 0 && sys.includes('sys.out_of_range'),
+        `${swings.length} đòn, tin: ${[...new Set(sys)].join(', ') || 'không'}`,
+      );
+      await gm(`tp ${Math.round(tgt.x + 3)} ${Math.round(tgt.z)}`);
+      swings.length = 0;
+      g.room.send(C.SKILL, { id: 'skl_phi_kiem', t: id });
+      await W(900);
+      check('cận chiến: áp sát 3 m thì ra đòn', swings.length === 1, `${swings.length} đòn`);
+    }
+  } finally {
+    await gm('freeze off');
+  }
+
   // 4. Lệnh rác quanh chuỗi không làm sập.
   for (const bad of [
     { id: 'skl_phi_kiem', t: 123 },

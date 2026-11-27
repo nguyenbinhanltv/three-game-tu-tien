@@ -11,7 +11,7 @@ import {
   GCD,
   playerBaseStats,
 } from '@dtl/shared';
-import { ITEM, METHODS, MARK, METHOD_SKILLS, PATHS, SKILL, SKILLS, t } from '../index';
+import { ITEM, METHODS, MARK, METHOD_SKILLS, PATHS, pathBasicOf, SKILL, SKILLS, t } from '../index';
 
 import { at } from '@dtl/shared';
 /** Trang bị dự kiến ở mỗi cảnh giới (theo phần thưởng nhiệm vụ). */
@@ -59,6 +59,8 @@ export const PULL_FACTOR = (PULL + 1) / 2;
 export const SUSTAIN_EFF = 0.6;
 /** Mộc độc phủ trung bình bấy nhiêu quái trong cụm. */
 const POISON_MOBS = 2;
+/** Số quái KHÁC nằm trong cung chém quét của đòn thường cận chiến (ước lượng dè dặt cho cụm 3–4 con: trung bình một con đứng cạnh mục tiêu). */
+export const CLEAVE_EXTRA = 1;
 
 /** Chiêu công pháp dùng được ở cấp `level` và mô hình hóa: chiêu đặc trưng + lướt có sát thương (chiêu tối thượng không tính). */
 function methodSkills(level: number, id?: MethodId): SkillDef[] {
@@ -109,7 +111,9 @@ export function playerDps(level: number, atk: number, monDef: number, id?: Metho
     const hits = b.combo?.hits;
     if (!hits?.length) return one(b) / GCD;
     // Mỗi đòn chuỗi = (hệ số đòn / hệ số gốc) × một đòn gốc: phòng ngự nhân cùng tỉ lệ (`comboDefScale`), nên không mất sát thương vì chia nhỏ đòn.
-    const dmg = hits.reduce((n, h) => n + (h.power / Math.max(0.01, b.power)) * one(b), 0);
+    // Đòn quét của hướng cận chiến (`PathBasic.arc`): mỗi quái khác trong cung nhận `arc.mul` lần đòn chính.
+    const cleave = 1 + (pathBasicOf(b, id)?.arc?.mul ?? 0) * CLEAVE_EXTRA;
+    const dmg = hits.reduce((n, h) => n + (h.power / Math.max(0.01, b.power)) * one(b), 0) * cleave;
     const time = hits.reduce((n, _h, i) => n + skillLock(b, i), 0) - (pas?.gcdRefund ?? 0);
     return dmg / Math.max(0.1, time);
   };
