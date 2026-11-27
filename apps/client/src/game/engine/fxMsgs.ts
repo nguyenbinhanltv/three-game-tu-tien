@@ -28,6 +28,7 @@ import {
   strikeTier,
 } from '@dtl/shared';
 import { groundAt } from '../../base/levelCtx';
+import { FLAGS } from '../../base/flags';
 import { ITEM, METHOD_SKILLS, MONSTER, pathBasicOf, t } from '@dtl/content';
 import { MON_BURROW_DIRT, type MonFlagEdge } from '../entities/monFlags';
 import { fxColor, METHOD_FX, playMethodFx, playVariantExtras } from '../fx/methodFx';
@@ -46,8 +47,7 @@ import { SECT_LANTERNS } from '../world/sect';
 import { SoulVis, type SoulScout } from '../fx/soulVis';
 import { CloneVis } from '../fx/cloneVis';
 import { skipOthersFx } from '../fx/fxBudget';
-import { HEAL_BIG_FRAC, type HitPoint } from '../fx/hitFx';
-import { monScale } from '../fx/monFx';
+import { HEAL_BIG_FRAC, hitScaleOf, LIGHT_HIT_SCALE, type HitPoint } from '../fx/hitFx';
 import { SHAKE } from '../camera/shake';
 import { fxTriggered, replacedFx } from '../fx/skillFx';
 import { type SkillEvent } from '../character/view';
@@ -388,7 +388,8 @@ export function handleFx(eng: Game, m: FxMsg, held = false): void {
       if (!e.chestOf(src, _v)) break;
       if (m.t === 'sword') {
         // Phi kiếm: tới nơi để lại một dấu chém chéo nhỏ (không lớp mực, đòn thường đánh liên tục).
-        v.swordShot(_v, posDst, tint(0xbfeaff), 1, 0.2, (at) => v.slashMark(posDst, 0xcff3ff, 0.55, -0.55, 0.2, false, at.clone()));
+        // Dạ Họa: bỏ dấu chém chéo cũ ở điểm tới (vết va `fx_hit_cut` của HitFx đã vẽ đúng chỗ đó; hai lớp chồng nhau che thân quái).
+        v.swordShot(_v, posDst, tint(0xbfeaff), 1, 0.2, FLAGS.da ? undefined : (at) => v.slashMark(posDst, 0xcff3ff, 0.55, -0.55, 0.2, false, at.clone()));
       } else if (m.t === 'slash') v.slash(_v, posDst, tint(0x8fdcff));
       else if (e.chestOf(dst, _v2)) {
         v.swordShot(_v, posDst, tint(0xfff3b0), 1.8, 0.16);
@@ -1211,7 +1212,7 @@ const BITERS = new Set(['wolf', 'serpent', 'fox']);
 /** Điểm phát hình trúng đòn của một thực thể (quái hoặc người); null nếu không còn trong cảnh. */
 function hitPointOf(eng: Game, id: string): HitPoint | null {
   const mon = eng.ents.monsters.get(id);
-  if (mon) return { id, x: mon.x, y: mon.y, z: mon.z, chest: mon.model.height * 0.55, scale: monScale(mon.model.height) };
+  if (mon) return { id, x: mon.x, y: mon.y, z: mon.z, chest: mon.model.height * 0.55, scale: hitScaleOf(mon.model.height) };
   const pl = eng.ents.players.get(id);
   return pl ? { id, x: pl.x, y: pl.y, z: pl.z, chest: 1.15 } : null;
 }
@@ -1237,10 +1238,14 @@ function hitVisual(eng: Game, m: DmgMsg, mine: boolean, byMe: boolean): void {
   const sm = m.src && !sp ? eng.ents.monsters.get(m.src) : undefined;
   if (m.n === 0) return hf.block(v, sp ?? sm ?? null, involves);
   if (sp) {
-    if (m.tr !== undefined || victimIsPlayer) hf.hit(v, sp, eng.methodOfPlayer(m.src!), !!m.crit, involves);
+    // Dạ Họa: vết va của đòn NHẸ (đòn chuỗi thường) thu còn `LIGHT_HIT_SCALE` cỡ: nét cọ 2,5 m vẽ cho đòn đơn, dội 0,42 s/đòn thì trùm kín quái nhỏ.
+    const hv = FLAGS.da && m.tr === 0 ? { ...v, scale: (v.scale ?? 1) * LIGHT_HIT_SCALE } : v;
+    if (m.tr !== undefined || victimIsPlayer) hf.hit(hv, sp, eng.methodOfPlayer(m.src!), !!m.crit, involves);
     // Mảnh vụn theo chất liệu thân quái (HPL2 B): chỉ đòn của người chơi trúng QUÁI.
     const vm = victimIsPlayer ? undefined : eng.ents.monsters.get(m.dst);
-    if (vm && m.tr !== undefined) hf.debris(v, sp, materialOf(vm.model.def), involves);
+    // Dạ Họa: đòn NHẸ (đòn chuỗi thường, `tr` 0) không văng mảnh vụn: chuỗi đòn 0,42 s/đòn làm vết va + mảnh vụn phủ thân quái nhỏ gần như liên tục
+    // (Diễn Võ Trường đo 68–88% thân sói). Đòn vừa trở lên (đòn kết chuỗi, chiêu) vẫn văng.
+    if (vm && m.tr !== undefined && !(FLAGS.da && m.tr === 0)) hf.debris(v, sp, materialOf(vm.model.def), involves);
   } else if (sm && victimIsPlayer) {
     const def = MONSTER.get(sm.s.t);
     hf.monStrike(v, sm, def?.elem, BITERS.has(def?.model ?? ''), involves);

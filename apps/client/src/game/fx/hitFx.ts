@@ -34,6 +34,19 @@ export function monHitPalette(elem: string | undefined): string {
   return elem && FX_PALETTE['mon_' + elem] ? 'mon_' + elem : 'hit_dich';
 }
 
+/** Cỡ hiệu ứng trúng đòn so với cỡ gốc (vẽ cho thân người cao ~1,7 m): quái nhỏ co lại tới `HIT_SCALE_MIN`, boss to tới `HIT_SCALE_MAX`. */
+export const HIT_SCALE_MIN = 0.35;
+/** Dạ Họa: hệ số cỡ thêm cho vết va của đòn nhẹ (đòn chuỗi thường). */
+export const LIGHT_HIT_SCALE = 0.6;
+export const HIT_SCALE_MAX = 1.6;
+/**
+ * Hệ số cỡ của hiệu ứng trúng đòn theo chiều cao nạn nhân. Trước đây chặn dưới ở 0,8 nên sói (cao ~1 m) nhận vết va cỡ người và bị che gần hết
+ * (Diễn Võ Trường đo 61–89% ô thân). Hàm thuần.
+ */
+export function hitScaleOf(height: number): number {
+  return Number.isFinite(height) && height > 0 ? Math.min(HIT_SCALE_MAX, Math.max(HIT_SCALE_MIN, height / 1.7)) : 1;
+}
+
 export interface HitPoint {
   id: string;
   x: number;
@@ -90,7 +103,7 @@ export class HitFx {
       actor: { x: from?.x ?? v.x - Math.sin(yaw), y: v.y, z: from?.z ?? v.z - Math.cos(yaw), yaw, model: {} },
       palette,
       tgt,
-      mul: Math.min(1.6, Math.max(0.8, v.scale ?? 1)),
+      mul: Math.min(HIT_SCALE_MAX, Math.max(HIT_SCALE_MIN, v.scale ?? 1)),
       mine,
     });
     if (import.meta.env.DEV) {
