@@ -42,17 +42,18 @@ def tha_co():
     ev = [
         parts('spark', -0.3, 18, 1.3, 1, 0.26, 0.06, at='self', offset=[0.2, 0.2, 0.4], inward=True, tone='rim', tier=1),
         snd(-0.3, 'cast', 0.45, 1.15),
-        glob(-0.2, 0.2, [0.2, 0.9, 0.6], [0, 1.0, 0], scale=0.9, seed=3),
+        glob(-0.2, 0.2, [0.2, 0.9, 0.6], [0, 2.3, 0], scale=0.9, seed=3),
         mesh('spark_streak', -0.17, 0.2, at='ahead', offset=[0.1, 0.9, 0.4], scale=1.8, shadow=False, tone='rim', alpha=0.9, tier=1, seed=2,
-             move={'to': 'target', 'ease': 'in', 'offset': [0, 1.0, 0]}),
+             move={'to': 'target', 'ease': 'in', 'offset': [0, 2.3, 0]}),
         snd(-0.15, 'slash', 0.4, 1.2, 0.06),
-        mesh('burst', 0.0, 0.12, at='target', offset=[0, 1.0, 0], scale=2.0, billboard=True, sweep=0, tone='body', cross=True, tier=0),
-        flip('spark_burst', 0.0, 0.34, 2.4, at='target', offset=[0, 1.0, 0], alpha=0.85, tone='rim', tier=0),
-        parts('dust', 0.0, 40, 3.5, 1, 0.7, 0.2, at='target', offset=[0, 0.9, 0], tone='body', grav=-0.6, tier=0),
-        parts('spark', 0.0, 30, 6, 1, 0.4, 0.08, at='target', offset=[0, 1.0, 0], tone='rim', tier=1),
+        # Điểm nổ đặt trên đầu mục tiêu (2,4 m) và tắt nhanh để thân nó vẫn đọc được (cổng duyệt che thân).
+        mesh('burst', 0.0, 0.12, at='target', offset=[0, 2.4, 0], scale=2.0, camFade=True, billboard=True, sweep=0, tone='body', cross=True, tier=0),
+        flip('spark_burst', 0.0, 0.22, 2.4, at='target', offset=[0, 2.5, 0], camFade=True, alpha=0.85, tone='rim', tier=0),
+        parts('dust', 0.0, 20, 3.5, 1, 0.4, 0.13, at='target', offset=[0, 2.2, 0], tone='body', grav=-0.6, tier=0),
+        parts('spark', 0.0, 30, 6, 1, 0.4, 0.08, at='target', offset=[0, 2.3, 0], tone='rim', tier=1),
         decal('rune', 0.02, 2.6, 2.4, at='ground', grow=0.2, tone='body', alpha=0.9, tier=0),
         mesh('rune_ring2', 0.02, 1.2, at='ground', offset=[0, 0.1, 0], scale=0.4, scaleTo=0.55, sweep=0.2, erodeFrom=0.8, alpha=0.9, shadow=False, tone='rim', tier=0, seed=5),
-        smoke(0.03, 'ground', y=0.5, scale=2.4, tone='body', alpha=0.4),
+        smoke(0.03, 'ground', y=1.9, scale=2.0, tone='body', alpha=0.3),
         snd(0.0, 'impact', 0.5, 1.1),
     ]
     ev += feel(0.0, ms=70, sh=0.22, fl=0.1, vg=0.28, fov=1.6)
