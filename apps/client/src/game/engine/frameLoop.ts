@@ -701,7 +701,8 @@ function tickCombat(eng: Game, now: number, me: PState | undefined): void {
         }
       }
       // Tầm theo hướng tu: đòn thường của hướng cận chiến (Kiếm tu) chỉ tự đánh khi đã áp sát.
-      if (!dead && Date.now() >= st.gcdAt - 30 && dist < reach + 1) {
+      // Cộng bán kính thân mục tiêu như server (`inRange`: tầm + 1,5 + scale), giữ lề 0,5 m: quái to không còn bị coi là ngoài tầm khi đã đứng sát.
+      if (!dead && Date.now() >= st.gcdAt - 30 && dist < reach + 1 + (MONSTER.get(m.t)?.scale ?? 1)) {
         // Đòn thường của ô 1 ĐANG HIỆN (ở tư thế là chiêu thay thế): gửi đúng chiêu đã dự đoán hình, không phải luôn `SKILLS[0]`.
         const basic = eng.bar()[0] ?? SKILLS[0]!;
         predictSkill(eng, 0, basic, true);
