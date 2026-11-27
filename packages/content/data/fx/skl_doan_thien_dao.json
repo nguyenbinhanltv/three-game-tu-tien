@@ -194,29 +194,6 @@
   },
   {
    "type": "mesh",
-   "t": 0.04,
-   "dur": 0.4,
-   "at": "target",
-   "sweep": 0,
-   "erodeFrom": 0.4,
-   "ragged": 0.5,
-   "tone": "body",
-   "alpha": 0.35,
-   "tier": 0,
-   "seed": 1001,
-   "shape": "sprite",
-   "sprite": "dao_shadow",
-   "billboard": true,
-   "offset": [
-    0,
-    0.3,
-    0
-   ],
-   "scale": 3.15,
-   "scaleTo": 3.15
-  },
-  {
-   "type": "mesh",
    "t": 0,
    "dur": 0.3,
    "at": "target",
@@ -237,52 +214,6 @@
    ],
    "scale": 3.1,
    "scaleTo": 3.78
-  },
-  {
-   "type": "mesh",
-   "t": 0.08,
-   "dur": 0.36,
-   "at": "target",
-   "sweep": 0,
-   "erodeFrom": 0.15,
-   "ragged": 0.5,
-   "tone": "body",
-   "alpha": 0.35,
-   "tier": 0,
-   "seed": 1003,
-   "shape": "sprite",
-   "sprite": "dao_cleft",
-   "billboard": true,
-   "offset": [
-    0,
-    0.4,
-    0
-   ],
-   "scale": 3.32,
-   "scaleTo": 4.05
-  },
-  {
-   "type": "mesh",
-   "t": 0.1,
-   "dur": 0.36,
-   "at": "target",
-   "sweep": 0,
-   "erodeFrom": 0.2,
-   "ragged": 0.5,
-   "tone": "body",
-   "alpha": 0.4,
-   "tier": 0,
-   "seed": 1004,
-   "shape": "sprite",
-   "sprite": "dao_dust",
-   "billboard": true,
-   "offset": [
-    0,
-    0.9,
-    0
-   ],
-   "scale": 1.08,
-   "scaleTo": 1.08
   },
   {
    "type": "mesh",

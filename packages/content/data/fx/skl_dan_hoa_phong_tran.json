@@ -126,7 +126,8 @@
     0.8
    ],
    "scale": 0.56,
-   "scaleTo": 0.81
+   "scaleTo": 0.81,
+   "spriteStyle": 12
   },
   {
    "type": "particles",
@@ -177,7 +178,8 @@
      0
     ],
     "ease": "in"
-   }
+   },
+   "spriteStyle": 12
   },
   {
    "type": "decal",
@@ -195,52 +197,6 @@
    "tone": "shadow",
    "alpha": 0.78,
    "tier": 0
-  },
-  {
-   "type": "mesh",
-   "t": 0,
-   "dur": 0.36,
-   "at": "target",
-   "sweep": 0,
-   "erodeFrom": 0.15,
-   "ragged": 0.5,
-   "tone": "body",
-   "alpha": 0.3,
-   "tier": 0,
-   "seed": 1002,
-   "shape": "sprite",
-   "sprite": "dan_peony",
-   "billboard": true,
-   "offset": [
-    0,
-    1.4388,
-    0
-   ],
-   "scale": 3.67,
-   "scaleTo": 4.48
-  },
-  {
-   "type": "mesh",
-   "t": 0.06,
-   "dur": 0.36,
-   "at": "target",
-   "sweep": 0,
-   "erodeFrom": 0.2,
-   "ragged": 0.5,
-   "tone": "body",
-   "alpha": 0.38,
-   "tier": 0,
-   "seed": 1003,
-   "shape": "sprite",
-   "sprite": "dan_smoke_bud",
-   "billboard": true,
-   "offset": [
-    0,
-    3.1,
-    0
-   ],
-   "scale": 2.24,
-   "scaleTo": 2.24
   },
   {
    "type": "mesh",
@@ -263,7 +219,8 @@
     0
    ],
    "scale": 1.46,
-   "scaleTo": 1.82
+   "scaleTo": 1.82,
+   "spriteStyle": 12
   },
   {
    "type": "mesh",
@@ -295,7 +252,8 @@
      0
     ],
     "ease": "out"
-   }
+   },
+   "spriteStyle": 12
   },
   {
    "type": "particles",

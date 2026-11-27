@@ -36,7 +36,7 @@
    "tex": "rune",
    "t": -0.3,
    "r": 3.6,
-   "dur": 3.0,
+   "dur": 3,
    "at": "self",
    "offset": [
     0,
@@ -52,11 +52,11 @@
    "type": "mesh",
    "shape": "rune_ring2",
    "t": -0.3,
-   "dur": 3.0,
+   "dur": 3,
    "at": "self",
    "offset": [
     0,
-    -1.0,
+    -1,
     0
    ],
    "scale": 0.4,
@@ -94,7 +94,7 @@
   {
    "type": "mesh",
    "shape": "flip",
-   "t": 0.0,
+   "t": 0,
    "dur": 0.34,
    "flip": "spark_burst",
    "scale": 2.4,
@@ -112,7 +112,7 @@
   },
   {
    "type": "soundAt",
-   "t": 0.0,
+   "t": 0,
    "id": "block",
    "gain": 0.6,
    "rate": 0.85,
@@ -121,7 +121,7 @@
   {
    "type": "particles",
    "kind": "spark",
-   "t": 0.0,
+   "t": 0,
    "n": 36,
    "speed": 4,
    "spread": 1,
@@ -134,7 +134,7 @@
     0
    ],
    "tone": "accent",
-   "grav": 1.0,
+   "grav": 1,
    "tier": 1
   },
   {
@@ -164,7 +164,7 @@
    "offset": [
     2.2,
     -0.40000000000000013,
-    0.0
+    0
    ],
    "scale": 0.5,
    "sweep": 0,
@@ -251,7 +251,7 @@
    "offset": [
     -2.2,
     -0.40000000000000013,
-    0.0
+    0
    ],
    "scale": 0.5,
    "sweep": 0,
@@ -303,7 +303,7 @@
   {
    "type": "mesh",
    "shape": "pill_orb",
-   "t": 0.0,
+   "t": 0,
    "dur": 0.4,
    "at": "self",
    "offset": [
@@ -333,12 +333,12 @@
    "type": "mesh",
    "shape": "pill_orb",
    "t": 0.3,
-   "dur": 2.7,
+   "dur": 3.2,
    "at": "self",
    "offset": [
     1.05,
     -0.55,
-    0.0
+    0
    ],
    "rot": [
     0,
@@ -360,7 +360,7 @@
    "type": "mesh",
    "shape": "pill_orb",
    "t": 0.3,
-   "dur": 2.7,
+   "dur": 3.2,
    "at": "self",
    "offset": [
     0.53,
@@ -387,7 +387,7 @@
    "type": "mesh",
    "shape": "pill_orb",
    "t": 0.3,
-   "dur": 2.7,
+   "dur": 3.2,
    "at": "self",
    "offset": [
     -0.52,
@@ -414,12 +414,12 @@
    "type": "mesh",
    "shape": "pill_orb",
    "t": 0.3,
-   "dur": 2.7,
+   "dur": 3.2,
    "at": "self",
    "offset": [
     -1.05,
     -0.10000000000000003,
-    0.0
+    0
    ],
    "rot": [
     75,
@@ -441,7 +441,7 @@
    "type": "mesh",
    "shape": "pill_orb",
    "t": 0.3,
-   "dur": 2.7,
+   "dur": 3.2,
    "at": "self",
    "offset": [
     -0.53,
@@ -468,7 +468,7 @@
    "type": "mesh",
    "shape": "pill_orb",
    "t": 0.3,
-   "dur": 2.7,
+   "dur": 3.2,
    "at": "self",
    "offset": [
     0.53,
@@ -495,7 +495,7 @@
    "type": "mesh",
    "shape": "rune_ring2",
    "t": 0.3,
-   "dur": 2.7,
+   "dur": 3.2,
    "at": "self",
    "offset": [
     0,
@@ -517,213 +517,7 @@
    "type": "mesh",
    "shape": "rune_ring2",
    "t": 0.3,
-   "dur": 2.7,
-   "at": "self",
-   "offset": [
-    0,
-    -0.93,
-    0
-   ],
-   "scale": 1.05,
-   "scaleTo": 1.05,
-   "sweep": 0.08,
-   "erodeFrom": 0.95,
-   "alpha": 0.95,
-   "shadow": false,
-   "follow": true,
-   "tone": "accent",
-   "tier": 0,
-   "seed": 97
-  },
-  {
-   "type": "mesh",
-   "shape": "pill_orb",
-   "t": 3.0,
-   "dur": 4.0,
-   "at": "self",
-   "offset": [
-    1.05,
-    -0.55,
-    0.0
-   ],
-   "rot": [
-    0,
-    0,
-    15
-   ],
-   "scale": 0.62,
-   "sweep": 0,
-   "erodeFrom": 0.95,
-   "alpha": 1,
-   "spin": 120,
-   "follow": true,
-   "camFade": true,
-   "tone": "accent",
-   "tier": 0,
-   "seed": 90
-  },
-  {
-   "type": "mesh",
-   "shape": "pill_orb",
-   "t": 3.0,
-   "dur": 4.0,
-   "at": "self",
-   "offset": [
-    0.53,
-    -0.10000000000000003,
-    0.91
-   ],
-   "rot": [
-    25,
-    0,
-    15
-   ],
-   "scale": 0.62,
-   "sweep": 0,
-   "erodeFrom": 0.95,
-   "alpha": 1,
-   "spin": 120,
-   "follow": true,
-   "camFade": true,
-   "tone": "core",
-   "tier": 0,
-   "seed": 91
-  },
-  {
-   "type": "mesh",
-   "shape": "pill_orb",
-   "t": 3.0,
-   "dur": 4.0,
-   "at": "self",
-   "offset": [
-    -0.52,
-    -0.55,
-    0.91
-   ],
-   "rot": [
-    50,
-    0,
-    15
-   ],
-   "scale": 0.62,
-   "sweep": 0,
-   "erodeFrom": 0.95,
-   "alpha": 1,
-   "spin": 120,
-   "follow": true,
-   "camFade": true,
-   "tone": "accent",
-   "tier": 0,
-   "seed": 92
-  },
-  {
-   "type": "mesh",
-   "shape": "pill_orb",
-   "t": 3.0,
-   "dur": 4.0,
-   "at": "self",
-   "offset": [
-    -1.05,
-    -0.10000000000000003,
-    0.0
-   ],
-   "rot": [
-    75,
-    0,
-    15
-   ],
-   "scale": 0.62,
-   "sweep": 0,
-   "erodeFrom": 0.95,
-   "alpha": 1,
-   "spin": 120,
-   "follow": true,
-   "camFade": true,
-   "tone": "core",
-   "tier": 0,
-   "seed": 93
-  },
-  {
-   "type": "mesh",
-   "shape": "pill_orb",
-   "t": 3.0,
-   "dur": 4.0,
-   "at": "self",
-   "offset": [
-    -0.53,
-    -0.55,
-    -0.91
-   ],
-   "rot": [
-    100,
-    0,
-    15
-   ],
-   "scale": 0.62,
-   "sweep": 0,
-   "erodeFrom": 0.95,
-   "alpha": 1,
-   "spin": 120,
-   "follow": true,
-   "camFade": true,
-   "tone": "accent",
-   "tier": 0,
-   "seed": 94
-  },
-  {
-   "type": "mesh",
-   "shape": "pill_orb",
-   "t": 3.0,
-   "dur": 4.0,
-   "at": "self",
-   "offset": [
-    0.53,
-    -0.10000000000000003,
-    -0.91
-   ],
-   "rot": [
-    125,
-    0,
-    15
-   ],
-   "scale": 0.62,
-   "sweep": 0,
-   "erodeFrom": 0.95,
-   "alpha": 1,
-   "spin": 120,
-   "follow": true,
-   "camFade": true,
-   "tone": "core",
-   "tier": 0,
-   "seed": 95
-  },
-  {
-   "type": "mesh",
-   "shape": "rune_ring2",
-   "t": 3.0,
-   "dur": 4.0,
-   "at": "self",
-   "offset": [
-    0,
-    -0.9600000000000001,
-    0
-   ],
-   "scale": 1.25,
-   "scaleTo": 1.25,
-   "sweep": 0.08,
-   "erodeFrom": 0.95,
-   "alpha": 0.95,
-   "shadow": false,
-   "follow": true,
-   "tone": "core",
-   "tier": 0,
-   "seed": 96
-  },
-  {
-   "type": "mesh",
-   "shape": "rune_ring2",
-   "t": 3.0,
-   "dur": 4.0,
+   "dur": 3.2,
    "at": "self",
    "offset": [
     0,

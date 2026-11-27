@@ -51,7 +51,7 @@
     -1.05,
     0.3
    ],
-   "scale": 3.0,
+   "scale": 3,
    "shadow": false,
    "tone": "accent",
    "alpha": 1,
@@ -71,8 +71,8 @@
    "type": "decal",
    "tex": "scorch",
    "t": -0.4,
-   "r": 6.0,
-   "dur": 4.0,
+   "r": 6,
+   "dur": 3.2,
    "at": "area",
    "grow": 0.1,
    "tone": "core",
@@ -83,8 +83,8 @@
    "type": "decal",
    "tex": "rune",
    "t": -0.4,
-   "r": 6.0,
-   "dur": 4.0,
+   "r": 6,
+   "dur": 3.2,
    "at": "area",
    "grow": 0.1,
    "tone": "body",
@@ -98,9 +98,9 @@
    "dur": 0.45,
    "at": "area",
    "offset": [
-    0.0,
-    6.0,
-    0.0
+    0,
+    6,
+    0
    ],
    "scale": 0.9,
    "fit": "area",
@@ -129,9 +129,9 @@
    "dur": 0.45,
    "at": "area",
    "offset": [
-    0.0,
+    0,
     6.05,
-    0.0
+    0
    ],
    "scale": 0.95,
    "fit": "area",
@@ -155,7 +155,7 @@
   },
   {
    "type": "soundAt",
-   "t": 0.0,
+   "t": 0,
    "id": "impact",
    "gain": 0.9,
    "rate": 0.7,
@@ -164,15 +164,15 @@
   {
    "type": "mesh",
    "shape": "burst",
-   "t": 0.0,
+   "t": 0,
    "dur": 0.12,
    "at": "area",
    "offset": [
-    0.0,
+    0,
     0.6,
-    0.0
+    0
    ],
-   "scale": 3.0,
+   "scale": 3,
    "billboard": true,
    "sweep": 0,
    "tone": "accent",
@@ -182,15 +182,15 @@
   {
    "type": "mesh",
    "shape": "crack_radial",
-   "t": 0.0,
+   "t": 0,
    "dur": 1.2,
    "at": "area",
    "offset": [
-    0.0,
+    0,
     0.1,
-    0.0
+    0
    ],
-   "scale": 1.0,
+   "scale": 1,
    "fit": "area",
    "alpha": 1,
    "sweep": 0.15,
@@ -207,18 +207,18 @@
    "dur": 0.5,
    "at": "area",
    "offset": [
-    0.0,
+    0,
     0.05,
-    0.0
+    0
    ],
    "scale": [
     0.75,
-    1.0,
+    1,
     0.75
    ],
    "scaleTo": [
     6.75,
-    9.0,
+    9,
     6.75
    ],
    "alpha": 0.9,
@@ -231,7 +231,7 @@
   {
    "type": "particles",
    "kind": "dust",
-   "t": 0.0,
+   "t": 0,
    "n": 80,
    "speed": 6,
    "spread": 1,
@@ -239,9 +239,9 @@
    "size": 0.22,
    "at": "area",
    "offset": [
-    0.0,
+    0,
     0.5,
-    0.0
+    0
    ],
    "tone": "core",
    "grav": -0.4,
@@ -250,7 +250,7 @@
   {
    "type": "particles",
    "kind": "spark",
-   "t": 0.0,
+   "t": 0,
    "n": 50,
    "speed": 8,
    "spread": 1,
@@ -258,9 +258,9 @@
    "size": 0.09,
    "at": "area",
    "offset": [
-    0.0,
-    1.0,
-    0.0
+    0,
+    1,
+    0
    ],
    "tone": "rim",
    "tier": 1
@@ -271,13 +271,13 @@
    "t": 0.04,
    "dur": 0.9,
    "flip": "ink_smoke",
-   "scale": 5.0,
+   "scale": 5,
    "billboard": true,
    "at": "area",
    "offset": [
-    0.0,
+    0,
     0.6,
-    0.0
+    0
    ],
    "alpha": 0.6,
    "tone": "core",
@@ -285,23 +285,23 @@
   },
   {
    "type": "hitstop",
-   "t": 0.0,
+   "t": 0,
    "ms": 75
   },
   {
    "type": "shake",
-   "t": 0.0,
+   "t": 0,
    "level": 0.45
   },
   {
    "type": "flash",
-   "t": 0.0,
-   "amount": 0.0,
+   "t": 0,
+   "amount": 0,
    "tier": 0
   },
   {
    "type": "vignette",
-   "t": 0.0,
+   "t": 0,
    "amount": 0.32,
    "ms": 300,
    "tone": "dark",
@@ -309,7 +309,7 @@
   },
   {
    "type": "camera",
-   "t": 0.0,
+   "t": 0,
    "pull": 0,
    "dur": 0.5,
    "fov": 2.8,
