@@ -3,6 +3,7 @@
 // Có `--base <thư mục bộ trước>` thì so từng cảnh bằng SSIM/ΔE (tools/painted-compare/compare.mjs) và dựng trang trước/sau `index.html`.
 //   pnpm shots dienvo --out <thư mục> [--view 720p|1080p] [--query style=dahoa] [--base <thư mục>] [--ssim 0.9] [--only id1,id2]
 //                     [--quality high|medium|low] [--renderer webgl2] [--diag 1] [--layersoff 2,3] [--fx id1,id2] [--panel 1]
+//                     [--ping 150] [--swings 1 --window 4000]
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -137,6 +138,10 @@ export default {
       }, layersOff);
     await gm(pg, 'dvt');
     await waitLevel(pg, 'dien_vo');
+    // `--ping N`: bật ping giả N ms (khứ hồi) cho cả lượt chụp; `--swings 1`: cảnh đang đánh chỉ ĐẾM số đòn thường ra trong `--window` ms (mặc định 4000)
+    // thay cho đo che quái, để so nhịp chuỗi đòn giữa các mức ping.
+    const ping = num('--ping', 0);
+    if (ping > 0) await pg.evaluate((n) => void (window.__game!.fakePing = n), ping);
     const rows: Row[] = [];
     // `--panel 1`: mở bảng F3, bấm các nút của tab Diễn Võ bằng chuột thật (Playwright) và kiểm kết quả ở trạng thái game. Thay cho việc bấm tay.
     if (opt('--panel', '')) {
@@ -169,6 +174,12 @@ export default {
       await btn('100%').click();
       await sleep(300);
       check('nút "100%" trả tốc độ hình về 1', (await pg.evaluate(() => window.__game!.timeScale)) === 1);
+      await btn('150 ms').click();
+      await sleep(200);
+      check('nút "150 ms" bật ping giả 150', (await pg.evaluate(() => window.__game!.fakePing)) === 150);
+      await btn('0 ms').click();
+      await sleep(200);
+      check('nút "0 ms" tắt ping giả', (await pg.evaluate(() => window.__game!.fakePing)) === 0);
       // Hiệu ứng: tắt lớp 0 rồi bật hết; phát một timeline.
       await btn('Hiệu ứng').click();
       await sleep(200);
@@ -282,6 +293,34 @@ export default {
           g.useSkill(slot);
           return { d: bd, skill: g.bar()[slot]?.id ?? '' };
         }, sc.act.slot);
+        if (opt('--swings', '')) {
+          const win = num('--window', 4000);
+          // Đếm tin hiệu ứng đòn thường của mình (server phát mỗi đòn ra thật) trong cửa sổ, bỏ 1 giây đầu để chuỗi vào nhịp.
+          await sleep(1000);
+          await pg.evaluate(() => {
+            const g = window.__game as unknown as { onFx(m: { t: string; src?: string }, held?: boolean): void; sid: string };
+            const w = window as unknown as { __sw: number; __swOrig?: unknown };
+            w.__sw = 0;
+            if (!w.__swOrig) {
+              const orig = g.onFx.bind(g);
+              w.__swOrig = orig;
+              g.onFx = (m, held) => {
+                if (m.t === 'sword' && m.src === g.sid && !held) w.__sw++;
+                return orig(m, held);
+              };
+            }
+          });
+          await sleep(win);
+          const swings = await pg.evaluate(() => (window as unknown as { __sw: number }).__sw);
+          const hp = await pg.evaluate(() => {
+            const g = window.__game!;
+            const m = g.view.monsters.get(g.targetId);
+            return m ? { hp: m.hp, mhp: m.mhp } : null;
+          });
+          console.log(`  ${sc.id}: ping giả ${ping} ms, ${swings} đòn trong ${win} ms (${((swings * 1000) / win).toFixed(2)} đòn/giây)`);
+          rows.push({ id: sc.id, file, perf: await perfSample(pg), act: { skill: d0.skill, ping, swings, windowMs: win, hp } });
+          continue;
+        }
         // Đo hiệu ứng che thân mục tiêu ở BỐN mốc liên tiếp (cách nhau ~110 ms thật): mỗi mốc dừng lớp hình rồi chụp HAI lần cùng khung, có hiệu ứng
         // và ẩn nhóm VFX; chênh giữa hai ảnh trong ô quanh thân mục tiêu = phần thân bị che (không lẫn tư thế; số sát thương là DOM nên cũng không lẫn).
         // Một mốc thì lệch nhiều theo thời điểm (đo 27/11: cùng cảnh ra 61% rồi 89%), nên báo cả LỚN NHẤT và trung bình.

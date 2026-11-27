@@ -228,19 +228,31 @@ export function rebind(eng: Game, room: Room, init: InitMsg): void {
 }
 
 export function bindRoom(eng: Game, room: Room): void {
+  // Ping giả của phòng thử: mọi tin nhận về bị giữ nửa ping rồi mới xử lý (giữ đúng thứ tự vì cùng một độ trễ). `fakePing` = 0 thì gọi thẳng.
+  const rm = {
+    onMessage<T>(type: string, fn: (m: T) => void): void {
+      room.onMessage(type, (m: T) => {
+        const lag = eng.debugOk ? eng.fakePing / 2 : 0;
+        if (lag <= 0) return fn(m);
+        window.setTimeout(() => {
+          if (!eng.disposed && eng.room === room) fn(m);
+        }, lag);
+      });
+    },
+  };
   eng.leaving = false;
-  room.onMessage(S.CHAR, (c: CharView) => {
+  rm.onMessage(S.CHAR, (c: CharView) => {
     set({ char: c });
     eng.questMarkersDirty = true;
   });
-  room.onMessage(S.INV, (m: InvMsg) => set({ inv: applyInvMsg(useUI.getState().inv, m), equip: m.equip }));
-  room.onMessage(S.WARDROBE, (m: WardrobeMsg) => set({ wardrobe: m }));
-  room.onMessage(S.KIEU_BOARD, (m: KieuBoardMsg) => set({ kieuBoard: m }));
-  room.onMessage(S.QUESTS, (q: QuestView) => {
+  rm.onMessage(S.INV, (m: InvMsg) => set({ inv: applyInvMsg(useUI.getState().inv, m), equip: m.equip }));
+  rm.onMessage(S.WARDROBE, (m: WardrobeMsg) => set({ wardrobe: m }));
+  rm.onMessage(S.KIEU_BOARD, (m: KieuBoardMsg) => set({ kieuBoard: m }));
+  rm.onMessage(S.QUESTS, (q: QuestView) => {
     set({ quests: q });
     eng.questMarkersDirty = true;
   });
-  room.onMessage(S.BOSS_TIMERS, (m: BossTimerMsg) => {
+  rm.onMessage(S.BOSS_TIMERS, (m: BossTimerMsg) => {
     const off = Date.now() - m.now;
     set({ bossTimers: { ...m, off } });
     // Móc của minimap (M-3): giờ hồi sinh boss theo id quái (đồng hồ máy), xóa khi boss sống.
@@ -250,7 +262,7 @@ export function bindRoom(eng: Game, room: Room): void {
       else minimapHooks.bossRespawnAt.delete(tm.t);
     }
   });
-  room.onMessage(S.CD, (m: CdMsg) => {
+  rm.onMessage(S.CD, (m: CdMsg) => {
     const off = Date.now() - m.now;
     const cds: Record<string, number> = {};
     for (const k in m.cds) cds[k] = m.cds[k]! + off;
@@ -258,19 +270,19 @@ export function bindRoom(eng: Game, room: Room): void {
     for (const k in m.em) empowered[k] = m.em[k]! + off;
     set({ cds, gcdAt: m.gcd + off, empowered });
   });
-  room.onMessage(S.METHOD, (m: MethodMsg) => {
+  rm.onMessage(S.METHOD, (m: MethodMsg) => {
     // Dấu ! của nhiệm vụ nhánh Hướng tu phụ thuộc hướng đang tu: dựng lại khi hướng đổi (kể cả lúc tin này tới sau S.QUESTS).
     if (pathOf(m.method)?.id !== pathOf(useUI.getState().method?.method)?.id) eng.questMarkersDirty = true;
     set({ method: m, methodOff: Date.now() - m.now });
   });
-  room.onMessage(S.SYS, (m: SysMsg) => onSys(eng, m));
-  room.onMessage(S.FX, (m: FxMsg) => eng.onFx(m));
-  room.onMessage(S.DMG, (m: DmgMsg) => onDmg(eng, m));
-  room.onMessage(S.HAZARD, (m: HazardMsg) => {
+  rm.onMessage(S.SYS, (m: SysMsg) => onSys(eng, m));
+  rm.onMessage(S.FX, (m: FxMsg) => eng.onFx(m));
+  rm.onMessage(S.DMG, (m: DmgMsg) => onDmg(eng, m));
+  rm.onMessage(S.HAZARD, (m: HazardMsg) => {
     if (eng.monFx?.lab) return;
     onHazard(eng, m);
   });
-  room.onMessage(S.BOLT, (m: BoltMsg) => {
+  rm.onMessage(S.BOLT, (m: BoltMsg) => {
     if (eng.monFx?.lab) return;
     // Đạn của quái (D1): chỉ vẽ, server phán định trúng. Bù độ trễ bằng giờ server lúc bắn.
     if (!eng.vfx || Math.hypot(m.x - eng.renderPos.x, m.z - eng.renderPos.z) > BOLT_VIEW_DIST) return;
@@ -280,19 +292,19 @@ export function bindRoom(eng: Game, room: Room): void {
     if (eng.boltKinds.size > 64) eng.boltKinds.delete(eng.boltKinds.keys().next().value as number);
     sfx('sword', volumeAt(eng, m.x, m.z) * 0.45, m);
   });
-  room.onMessage(S.BOLT_END, (m: BoltEndMsg) => {
+  rm.onMessage(S.BOLT_END, (m: BoltEndMsg) => {
     eng.vfx?.bolts.end(m.id, m.x, m.z, !!m.hit);
     eng.monFx?.bolt(eng.boltKinds.get(m.id) ?? 'fire', m.x, groundAt(m.x, m.z) + 0.8, m.z, 0, true);
     eng.boltKinds.delete(m.id);
     if (m.hit) sfx('impact', m.hit === eng.sid ? 0.8 : volumeAt(eng, m.x, m.z) * 0.5, m);
   });
-  room.onMessage(S.CHAT, (m: ChatMsg) => pushLog(m.m, m.c === 'party' ? 'party' : 'chat', m.from));
+  rm.onMessage(S.CHAT, (m: ChatMsg) => pushLog(m.m, m.c === 'party' ? 'party' : 'chat', m.from));
   // Tổ đội và tỉ thí (P3-9): chỉ hiển thị; mọi phán định ở server. Giờ server đổi sang đồng hồ client.
   // Bảng tổng kết trận (U5): số liệu do server tổng hợp, client chỉ hiển thị.
-  room.onMessage(S.RECAP, (m: RecapMsg) => set({ recap: m }));
-  room.onMessage(S.PARTY, (m: PartyMsg | null) => set({ party: m }));
+  rm.onMessage(S.RECAP, (m: RecapMsg) => set({ recap: m }));
+  rm.onMessage(S.PARTY, (m: PartyMsg | null) => set({ party: m }));
   // Truyền Tống Trận và điểm đánh dấu (M-4): chỉ hiển thị; server quyết định. Thời gian còn lại đổi sang đồng hồ client.
-  room.onMessage(S.TELE, (m: TeleMsg) => {
+  rm.onMessage(S.TELE, (m: TeleMsg) => {
     const now = performance.now();
     set({ tele: { open: m.open, cast: m.cast ? { id: m.cast.id, until: now + m.cast.ms } : null, cdUntil: m.cd > 0 ? now + m.cd : 0 } });
     minimapHooks.teleports = m.open.flatMap((id) => {
@@ -300,15 +312,15 @@ export function bindRoom(eng: Game, room: Room): void {
       return pad ? [{ id, x: pad.x, z: pad.z, label: t(`tele.${id}`) }] : [];
     });
   });
-  room.onMessage(S.MARK, (m: MarkMsg) => set({ marks: m.marks }));
-  room.onMessage(S.ESCORT, (m: EscortMsg) => eng.ents?.setEscort(m));
+  rm.onMessage(S.MARK, (m: MarkMsg) => set({ marks: m.marks }));
+  rm.onMessage(S.ESCORT, (m: EscortMsg) => eng.ents?.setEscort(m));
   // Thần thức (E2-E): chỉ hiển thị; server quyết định kết quả quét. Thời gian đổi sang đồng hồ client.
-  room.onMessage(S.SPIRIT_STATE, (m: SpiritStateMsg) => {
+  rm.onMessage(S.SPIRIT_STATE, (m: SpiritStateMsg) => {
     const now = performance.now();
     set({ spirit: { open: m.open, chUntil: m.ch > 0 ? now + m.ch : 0, cdUntil: m.cd > 0 ? now + m.cd : 0, r: m.r } });
   });
   // Nguyên anh (E3-K): chỉ hiển thị; server quyết định.
-  room.onMessage(S.SOUL_STATE, (m: SoulStateMsg) => {
+  rm.onMessage(S.SOUL_STATE, (m: SoulStateMsg) => {
     const now = performance.now();
     set({
       soul: {
@@ -325,18 +337,18 @@ export function bindRoom(eng: Game, room: Room): void {
     });
   });
   // Phân thân thần niệm (E4-K): chỉ hiển thị; server quyết định.
-  room.onMessage(S.CLONE_STATE, (m: CloneStateMsg) => {
+  rm.onMessage(S.CLONE_STATE, (m: CloneStateMsg) => {
     const now = performance.now();
     set({ clone: { open: m.open, until: m.left > 0 ? now + m.left : 0, cdUntil: m.cd > 0 ? now + m.cd : 0 } });
   });
-  room.onMessage(S.SPIRIT_SCAN, (m: SpiritScanMsg) => {
+  rm.onMessage(S.SPIRIT_SCAN, (m: SpiritScanMsg) => {
     const now = performance.now();
     set({ spiritScan: { x: m.x, z: m.z, r: m.r, at: now, until: now + m.ttl, hits: m.hits } });
     const kinds: Record<string, number> = {};
     for (const h of m.hits) kinds[h.k] = (kinds[h.k] ?? 0) + 1;
     eng.spiritLog.push({ r: m.r, n: m.hits.length, kinds, hits: m.hits });
   });
-  room.onMessage(S.INVITE, (m: InviteMsg) => {
+  rm.onMessage(S.INVITE, (m: InviteMsg) => {
     const until = m.until - eng.timeOffset;
     set((s) => {
       const rest = s.invites.filter((i) => !(i.kind === m.kind && i.id === m.id));
@@ -344,7 +356,7 @@ export function bindRoom(eng: Game, room: Room): void {
     });
     if (!m.gone) sfx('ui_open', 0.8);
   });
-  room.onMessage(S.DUEL, (m: DuelMsg) => {
+  rm.onMessage(S.DUEL, (m: DuelMsg) => {
     // Vào trận: nhắm đối thủ (thay mục tiêu quái cũ); hết trận: bỏ nhắm nếu vẫn đang nhắm người đó.
     if (m.phase === 'count') {
       eng.setTarget(m.foe, 'player');
@@ -354,11 +366,11 @@ export function bindRoom(eng: Game, room: Room): void {
     set({ duel: { ...m, at: m.at - eng.timeOffset } });
     if (m.phase === 'end') setTimeout(() => set((s) => (s.duel?.phase === 'end' ? { duel: null } : {})), 4500);
   });
-  room.onMessage(S.KICK, (m: { k: string }) => {
+  rm.onMessage(S.KICK, (m: { k: string }) => {
     eng.leaving = true;
     set({ phase: 'error', error: t(m.k) });
   });
-  room.onMessage(S.TRANSFER, (m: TransferMsg) => eng.transfer(m));
+  rm.onMessage(S.TRANSFER, (m: TransferMsg) => eng.transfer(m));
   room.onMessage('*', () => {});
   room.onLeave((code) => {
     if (eng.leaving || eng.disposed || eng.room !== room) return;
