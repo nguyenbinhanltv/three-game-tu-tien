@@ -25,8 +25,8 @@ export const DIEN_VO_ZONES: readonly DienVoZone[] = [
   { id: 'boss', x: 1300, z: 968, r: 6 },
   // Bục nhân vật: góc tây nam, xem nhân vật ở góc 52° và cận.
   { id: 'stage', x: 1283, z: 1001, r: 4 },
-  // Hành lang đạo cụ: dọc mép tây.
-  { id: 'props', x: 1281, z: 978, hx: 4, hz: 13 },
+  // Hành lang đạo cụ: hàng ngang ở mép bắc phía tây, đứng phía nam nhìn lên là thấy cả hàng trong một khung.
+  { id: 'props', x: 1285, z: 964, hx: 7.5, hz: 3 },
   // Buồng ánh sáng: góc đông bắc.
   { id: 'light', x: 1318, z: 968, hx: 5, hz: 6 },
   // Tường hiệu ứng: dọc mép đông.
@@ -53,7 +53,9 @@ export function dienVoSpawnAt(i: number, n: number, boss: boolean): { x: number;
 export function dienVoStandAt(id: DienVoZoneId): { x: number; z: number } {
   const z = dienVoZone(id);
   const half = z.r ?? z.hz ?? 0;
-  return { x: z.x, z: half > 5 ? z.z + half - 2 : z.z };
+  // Khu tròn/lớn: đứng trong, sát mép nam. Khu chữ nhật hẹp (hành lang): đứng ngay ngoài mép nam để không đè lên vật bày.
+  if (half > 5) return { x: z.x, z: z.z + half - 2 };
+  return { x: z.x, z: z.hz ? z.z + z.hz + 1.5 : z.z };
 }
 
 /**
@@ -76,7 +78,7 @@ const lamp = (x: number, z: number): HandProp => ({ id: 'prop_den_da', x, z, yaw
 const pillar = (x: number, z: number, s = 1): HandProp => ({ id: 'prop_tru_da_khac_van', x, z, yaw: 0, s, r: 0.8 });
 const sign = (x: number, z: number, yaw: number): HandProp => ({ id: 'prop_bia_da', x, z, yaw, s: 0.9, r: 0.6 });
 
-/** Hàng đạo cụ mẫu của hành lang (mỗi món cách nhau 4 m, quay mặt về giữa phòng): đá, cây, kiến trúc nhỏ, đồ tông môn. */
+/** Hàng đạo cụ mẫu của hành lang (mỗi món cách nhau 2 m, quay mặt về phía nam): đá, cây, kiến trúc nhỏ, đồ tông môn. */
 const CORRIDOR = [
   'prop_da_dung',
   'prop_da_nam',
@@ -109,11 +111,11 @@ export const DIEN_VO_PROPS: readonly HandProp[] = [
   sign(1300, 995, 0),
   sign(1300, 975.5, 0),
   sign(1288.5, 1001, 1.57),
-  sign(1286.5, 978, 1.57),
+  sign(1293.5, 968.5, 0),
   sign(1312, 968, -1.57),
   sign(1314, 992, -1.57),
   // Hành lang đạo cụ.
-  ...CORRIDOR.map((id, i): HandProp => ({ id, x: 1280, z: 966 + i * 4, yaw: 1.57, s: 1, r: 0.9 })),
+  ...CORRIDOR.map((id, i): HandProp => ({ id, x: 1279 + i * 2, z: 963, yaw: 0, s: 1, r: 0.8 })),
   // Buồng ánh sáng: góc cảnh mẫu (đá, cây khô, đèn lồng giấy) để chỉnh mood, sương, đèn.
   { id: 'prop_cay_goc_kho', x: 1320, z: 965, yaw: 0.6, s: 1, r: 0.8 },
   { id: 'prop_da_phien', x: 1316.5, z: 966, yaw: 0.2, s: 1 },
