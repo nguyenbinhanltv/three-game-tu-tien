@@ -3,7 +3,7 @@
 // Có `--base <thư mục bộ trước>` thì so từng cảnh bằng SSIM/ΔE (tools/painted-compare/compare.mjs) và dựng trang trước/sau `index.html`.
 //   pnpm shots dienvo --out <thư mục> [--view 720p|1080p] [--query style=dahoa] [--base <thư mục>] [--ssim 0.9] [--only id1,id2]
 //                     [--quality high|medium|low] [--renderer webgl2] [--diag 1] [--layersoff 2,3] [--fx id1,id2] [--panel 1]
-//                     [--ping 150] [--swings 1 --window 4000] [--crowd 8,20,50] [--fx 'skl_kiem*' --gate 1 [--far 8] [--keepbare 1]] [--silhouette 1] [--floor light|grass|snow]
+//                     [--ping 150] [--swings 1 --window 4000] [--crowd 8,20,50] [--fx 'skl_kiem*' --gate 1 [--far 8] [--keepbare 1]] [--silhouette 1] [--floor light|grass|snow] [--styles 1]
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -187,6 +187,61 @@ export default {
       .split(',')
       .filter(Boolean);
     const scenes = LAB_SCENES.filter((s) => !only.length || only.includes(s.id));
+    // `--styles 1`: bảng SO PHONG CÁCH — mở game bốn lần (mặc định, ?style=da, painted, dahoa), mỗi lần chụp CÙNG ba khung (bản đồ ngoài trời lúc vừa vào,
+    // cảnh cận nhân vật và cảnh sói thường trong phòng tập) rồi ghép thành một tấm lưới: cột = phong cách, hàng = khung. Không chụp bộ cảnh mẫu.
+    if (opt('--styles', '')) {
+      const styles = ['', 'da', 'painted', 'dahoa'];
+      const names = ['mac dinh', 'style=da (Da Canh)', 'style=painted (Hoa Canh)', 'style=dahoa (Da Hoa)'];
+      const frames = ['ngoai-troi', 'nhan_vat_can', 'soi_thuong'];
+      const cw = 640;
+      const ch = 360;
+      const head = 36;
+      const tiles: { input: Buffer; left: number; top: number }[] = [];
+      const perf: unknown[] = [];
+      for (let si = 0; si < styles.length; si++) {
+        const st = styles[si]!;
+        const { page: sp } = await r.open({
+          name: 'Style' + si,
+          quality: opt('--quality', 'high'),
+          renderer: opt('--renderer', '') || undefined,
+          viewport: [1280, 720],
+          query: { cam: 'iso', quiet: 1 },
+          extra: st ? 'style=' + st : '',
+          seenIntro: true,
+          hide: 'hud',
+        });
+        await skipCutscene(sp, 20);
+        await sleep(2500);
+        const shots: Buffer[] = [];
+        shots.push(await snap(sp, r.out, `styles/${st || 'macdinh'}-${frames[0]}.png`, { wait: 300 }));
+        const p0 = await perfSample(sp);
+        await gm(sp, 'dvt');
+        await waitLevel(sp, 'dien_vo');
+        const dflt = await sp.evaluate(() => ({ pitch: window.__game!.camPitch, dist: window.__game!.camDist }));
+        for (const id of frames.slice(1)) {
+          const sc = LAB_SCENES.find((s) => s.id === id);
+          await gm(sp, `scene ${id}`, 3500);
+          await cam(sp, { ...dflt, ...(sc?.cam ?? {}) });
+          shots.push(await snap(sp, r.out, `styles/${st || 'macdinh'}-${id}.png`, { wait: 300 }));
+        }
+        perf.push({ style: st || null, outdoor: p0, room: await perfSample(sp) });
+        for (let fi = 0; fi < shots.length; fi++)
+          tiles.push({ input: await sharp(shots[fi]!).resize(cw, ch).png().toBuffer(), left: si * cw, top: head + fi * ch });
+        const label = `<svg xmlns="http://www.w3.org/2000/svg" width="${cw}" height="${head}"><rect width="100%" height="100%" fill="#111"/><text x="12" y="25" font-family="sans-serif" font-size="20" fill="#fff">${names[si]}</text></svg>`;
+        tiles.push({ input: Buffer.from(label), left: si * cw, top: 0 });
+        await sp.context().close();
+        console.log(`  phong cách ${names[si]}: ${JSON.stringify(p0)}`);
+      }
+      const sheet = path.join(r.out, 'styles-sheet.png');
+      fs.mkdirSync(r.out, { recursive: true });
+      await sharp({ create: { width: cw * styles.length, height: head + ch * frames.length, channels: 3, background: '#000' } })
+        .composite(tiles)
+        .png()
+        .toFile(sheet);
+      writeJson(r.out, 'dienvo-styles.json', { styles, frames, perf });
+      console.log(`[shots:dienvo] bảng so phong cách: ${sheet}`);
+      return;
+    }
     const { page: pg } = await r.open({
       name: 'DienVo',
       // Thử máy yếu: `--quality medium|low` và `--renderer webgl2` (đường lùi không có WebGPU).
