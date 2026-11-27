@@ -187,6 +187,11 @@ CREATE TABLE IF NOT EXISTS ledger (
   ts INTEGER NOT NULL
 );
 CREATE INDEX IF NOT EXISTS ledger_char ON ledger (char_id);
+CREATE TABLE IF NOT EXISTS practice_snap (
+  char_id INTEGER PRIMARY KEY,
+  data TEXT NOT NULL,
+  ts INTEGER NOT NULL
+);
 `;
 
 /**

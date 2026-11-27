@@ -77,6 +77,8 @@ interface GmCtx {
   inDuel(p: PlayerEnt): boolean;
   isDead(p: PlayerEnt): boolean;
   transferLevel(p: PlayerEnt, level: string, spawn: { x: number; z: number } | null, o?: { force?: boolean }): boolean;
+  /** Vào Diễn Võ Trường (đang ở bản đồ thế giới) hoặc rời nó (đang ở trong). false = room này không làm được. */
+  practice(p: PlayerEnt): boolean;
   teleportTo(p: PlayerEnt, x: number, z: number, level?: string): boolean;
   teleGm(p: PlayerEnt, arg: string | undefined): string;
   placeIds(): string[];
@@ -714,6 +716,9 @@ export class GmSystem {
         });
         return say(ok ? t('gm.msg.bag_clear', { n }) : t('gm.msg.bag_fail'));
       }
+      case 'dvt':
+        // /gm dvt: vào Diễn Võ Trường (phòng tập riêng); gõ lại trong phòng để ra. Nhân vật được trả về nguyên trạng khi ra.
+        return this.c.practice(p) ? undefined : say(t('gm.msg.dvt_no'));
       case 'tick':
         return say(`tick p95 ${this.c.tickP95().toFixed(2)}ms, ${this.c.playerCount()} người, ${this.c.monsters().length} quái`);
       default:

@@ -997,6 +997,9 @@ export interface DungeonReward {
 }
 
 /** Bí cảnh theo dữ liệu (E1-B): điểm vào/ra, tâm trận, đợt quái, nơi về. */
+/** Level phòng tập GM. */
+export const PRACTICE_LEVEL = 'dien_vo';
+
 export interface DungeonDef {
   spawn: { x: number; z: number };
   /** Điểm đứng dùng cổng ra (`portal`). */
@@ -1020,6 +1023,11 @@ export interface DungeonDef {
   timeLimit?: number;
   /** Thưởng hoàn thành (nhận một lần mỗi ngày); bỏ trống = chỉ có rơi đồ của quái. */
   reward?: DungeonReward;
+  /**
+   * Phòng tập GM (Diễn Võ Trường): không có đợt quái, không kết thúc, không tính lượt/nhiệm vụ; chỉ vào bằng lệnh GM. Nhân vật được chụp lúc vào
+   * và trả về nguyên trạng lúc ra (`apps/server/src/game/practice.ts`), nên không gì trong phòng ở lại trên nhân vật thật.
+   */
+  practice?: boolean;
 }
 
 /**

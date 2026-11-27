@@ -359,6 +359,8 @@ const TERRAIN_ALIAS: Record<string, string> = {
   kieu_7: 'cuu_kieu',
   kieu_8: 'cuu_kieu',
   kieu_9: 'cuu_kieu',
+  // Diễn Võ Trường (phòng tập GM): mượn bãi phẳng của Thiên Lộ Giới.
+  dien_vo: 'cuu_kieu',
 };
 
 /** Đăng ký (hoặc thay) địa hình của một level. Trả địa hình đã dựng. */
@@ -378,6 +380,7 @@ export const VAN_LAM: Terrain = registerTerrain(VAN_LAM_TERRAIN);
  * Kiếm Trủng vẫn dùng `VAN_LAM` nguyên bản (cự kiếm có thật ở đó).
  */
 const OWN_COLLIDERS = new Set([
+  'dien_vo',
   'do_kiep',
   'gioi_tri',
   'kieu_1',

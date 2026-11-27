@@ -25,6 +25,7 @@ import { authenticate, type AuthResult, ERR_NAME_TAKEN, ERR_NEED_NAME, issueSess
 import { config } from '../config';
 import { Character } from '../game/character';
 import { MarkerSystem } from '../game/marker';
+import { practiceEnd } from '../game/practice';
 import { parties } from '../game/party';
 import { GameSim } from '../game/sim';
 import type { MonEnt, PlayerEnt, SimHost, SimOptions, TransferOpts } from '../game/entities';
@@ -300,6 +301,9 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
         old.leave(4001);
       }
     }
+    // Hàng rào phòng tập: còn ảnh chụp (vừa rời Diễn Võ Trường, hoặc server chết giữa chừng) thì trả nhân vật về nguyên trạng TRƯỚC khi nạp.
+    // Đặt sau khối đá phiên cũ ở trên: `removePlayer` của phiên cũ lưu lần cuối, ảnh chụp ghi đè lên sau.
+    if (!LEVELS[this.levelId]?.dungeon?.practice && practiceEnd(auth.charId)) log.info(`[practice] trả nhân vật ${auth.charId} về ảnh chụp`);
     const char = Character.load(auth.charId);
     // Lưu ở bản đồ khác (không phải room này): cấp vé, bảo client sang đúng room. Không dựng người ở đây
     // (savePlayer sẽ ghi đè vị trí đã lưu bằng toạ độ của level này).
@@ -385,10 +389,14 @@ export abstract class GameRoom extends Room<WorldState> implements SimHost {
     this.markers.drop(p);
     this.aoi.detach(sid);
     this.sim.removePlayer(sid);
+    this.afterDrop(p.char.id);
     log.info(`[leave] ${p.char.name} rời ${this.roomName}`);
   }
 
   beforeRemove(_sid: string): void {}
+
+  /** Sau khi người chơi đã bị gỡ và lưu lần cuối. */
+  afterDrop(_charId: number): void {}
 
   /** Lưu nhân vật rồi bảo client sang room của `level` (vé phải được cấp trước). */
   protected sendTransfer(p: PlayerEnt, level: string, options: Record<string, string> = {}): void {
