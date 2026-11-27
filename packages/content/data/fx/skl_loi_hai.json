@@ -265,7 +265,7 @@
    "sprite": "loi_wave",
    "billboard": true,
    "offset": [
-    -2.2,
+    -3,
     1.7,
     0.8
    ],
@@ -288,7 +288,7 @@
    "sprite": "loi_wave",
    "billboard": true,
    "offset": [
-    2.2,
+    3,
     1.7,
     0.8
    ],
@@ -298,13 +298,13 @@
   {
    "type": "mesh",
    "t": 0,
-   "dur": 0.7,
+   "dur": 0.5,
    "at": "target",
    "sweep": 0,
    "erodeFrom": 0.15,
    "ragged": 0.5,
    "tone": "body",
-   "alpha": 0.56,
+   "alpha": 0.28,
    "tier": 0,
    "seed": 1003,
    "shape": "sprite",
@@ -312,16 +312,16 @@
    "billboard": true,
    "offset": [
     0,
-    0.6,
+    0.15,
     0
    ],
-   "scale": 4.2,
-   "scaleTo": 4.83
+   "scale": 3.6,
+   "scaleTo": 4.14
   },
   {
    "type": "mesh",
    "t": 0.02,
-   "dur": 0.18,
+   "dur": 0.12,
    "at": "target",
    "sweep": 0,
    "erodeFrom": 0.3,
@@ -338,8 +338,8 @@
     1.2,
     0
    ],
-   "scale": 2.28,
-   "scaleTo": 2.85
+   "scale": 1.56,
+   "scaleTo": 1.95
   },
   {
    "type": "mesh",
@@ -358,7 +358,7 @@
    "billboard": true,
    "offset": [
     0,
-    1.6,
+    2.6,
     0
    ],
    "scale": 2.04,
@@ -367,7 +367,7 @@
     "to": "target",
     "offset": [
      0,
-     3.2,
+     4.2,
      0
     ],
     "ease": "out"
