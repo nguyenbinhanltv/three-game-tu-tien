@@ -105,7 +105,7 @@ import { feetSlot, MqFeet } from './mannequinFeet';
 import { lodOf, mergeLodMeshes } from './mannequinLod';
 import { lowerBodyOf, upperBodyOf, MannequinPoseBank, type MqPose, PoseSource, POSE_SOURCE_ASSET, poseClipName } from './mannequinPoses';
 import UAL_HIT from './ualHit.json';
-import type { AnimState, AttackOpts, CharacterView, MonsterView, PerformOpts, SkillEvent } from './view';
+import type { AnimState, AttackOpts, CharacterView, LabAnimPort, MonsterView, PerformOpts, SkillEvent } from './view';
 import { FLAGS } from '../../base/flags';
 import { markVfxMask } from '../../render/post';
 import { logger } from '../../base/log';
@@ -607,6 +607,11 @@ export class MannequinCharacter implements CharacterView {
   readonly height: number;
   /** Cờ nhận diện cho kịch bản quay video (tools/perf/src/scenarios/chrv3.ts). */
   readonly v3 = true;
+  /** Xưởng animation của phòng thử (Diễn Võ Trường V2d): cổng soi mixer, xem `LabAnimPort`. Game không dùng. */
+  private labHook: LabAnimPort['hook'] = { pre: null };
+  labAnim(): LabAnimPort {
+    return { mixer: this.mixer, rig: this.rig, clips: this.tpl.clips, hook: this.labHook };
+  }
   get hasSword(): boolean {
     return !!this.blade;
   }
@@ -1762,6 +1767,7 @@ export class MannequinCharacter implements CharacterView {
     if (this.interval > 0 && !mixerDue(this.acc, this.interval)) return;
     this.blendBases(this.acc);
     if (this.loco && this.base) this.syncLoco(this.acc);
+    this.labHook.pre?.();
     this.mixer.update(this.acc);
     if (this.proportions.length) applyProportions(this.proportions);
     for (const t of V3_OFF.has('twist') ? [] : this.twists) {
