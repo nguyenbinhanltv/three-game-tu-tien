@@ -160,6 +160,20 @@ export interface GameDebug {
     uiTokenGet(name: string): number;
     vitals(what: 'hp' | 'mp', frac: number | null): boolean;
     preset(q: string): boolean;
+    sfx(name: string): boolean;
+    sfxProbe(on: boolean): boolean;
+    audio(): {
+      probe: boolean;
+      stats: { calls: number; throttled: number; quiet: number; burst: number; burstVol: number; top: { name: string; n: number }[] };
+      level: { rms: number; peak: number } | null;
+      music: { track: string | null; src: string; level: number; combat: boolean; boss: boolean; force: string | null };
+    };
+    music(mode: string): boolean;
+    fxAudioAll(): { id: string; verdict: string; nearestMs: number | null; sounds: number }[];
+    pose(pose: string): boolean;
+    poseSeek(pose: string, sec: number): boolean;
+    poseInfo(pose: string): { id: string; duration: number; hit: [number, number] | null; skill: string | null; hitAt: number[]; moments: { name: string; at: number }[] } | null;
+    poseClock(): { t: number; skill: string } | null;
   };
   /** Phòng thử: nhật ký điều khiển (null = tắt); mốc thời gian theo `performance.now()`. */
   labTrace: { rows: { type: string; label: string; key: string | null; keyAt: number | null; sendAt: number; ackAt: number | null; hitAt: number | null }[]; clear(): void } | null;

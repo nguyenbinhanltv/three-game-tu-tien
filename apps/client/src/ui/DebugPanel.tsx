@@ -8,6 +8,7 @@ import {
   itemTier,
   METHODS,
   methodName,
+  POSE,
   MONSTERS,
   monsterName,
   OUTFITS,
@@ -19,8 +20,16 @@ import {
 } from '@dtl/content';
 import { Game, LAB_STYLE } from '../game/engine';
 import {
+  LAB_MUSIC,
   LAB_PRESETS,
   LAB_UI_TOKENS,
+  labAudioState,
+  labMusic,
+  labPose,
+  labPoseInfo,
+  labPoseSeek,
+  labSfx,
+  labSfxProbe,
   labPreset,
   labRendererUrl,
   labUiRate,
@@ -31,6 +40,8 @@ import {
 } from '../game/engine/lab';
 import { FX_PALETTE } from '../render/vfx/palette';
 import { FX_LAYER_OFF } from '../game/fx/fxTimeline';
+import { sfxNames, sfxProbe } from '../game/audio/audio';
+import { fxAudioReport } from '../game/debug/fxAudio';
 import { Button } from './u2/win';
 import { type DebugPerf, set, useUI } from './store';
 
@@ -117,7 +128,7 @@ const LAB_PHASES = [0, 1, 2, 3];
 const LAB_SPEEDS = [100, 50, 25, 10];
 const LAB_PINGS = [0, 50, 150, 300];
 /** Nhóm con của tab Diễn Võ: bảng F3 không cuộn được nên mỗi lúc chỉ hiện một nhóm cho vừa màn 720p. */
-const LAB_TABS = ['scene', 'mon', 'fx', 'look', 'style', 'ui', 'feel', 'time'] as const;
+const LAB_TABS = ['scene', 'mon', 'fx', 'look', 'style', 'ui', 'feel', 'snd', 'anim', 'time'] as const;
 const LAB_STYLE_SLOTS = ['A', 'B'] as const;
 const FX_IDS = [...FX_TIMELINE.keys()].sort();
 /** Số lớp tối đa hiện nút bật tắt (bảng F3 không cuộn được; timeline dài hơn thì soi phần còn lại bằng `pnpm shots dienvo --layersoff`). */
@@ -143,6 +154,132 @@ const LAB_RENDERERS = ['webgl2', 'webgpu'] as const;
 const LAB_UI_RATES = [100, 50, 25, 10];
 const LAB_UI_TOKEN_STEP = 20;
 const LAB_NUM_GAPS = [0, 80, 250];
+const SKL_FX_IDS = FX_IDS.filter((id) => id.startsWith('skl_'));
+const POSE_IDS = [...POSE.keys()].sort();
+const sec = (n: number) => n.toFixed(2);
+
+/**
+ * Xưởng âm thanh của phòng thử: phát từng tiếng, đầu dò mật độ tiếng + mức ra loa, lệch tiếng so với mốc trúng của một chiêu (đo từ dữ liệu),
+ * và ép trạng thái nhạc thường / giao chiến / boss. Người dùng nghe trực tiếp; chơi thử tự động luôn tắt tiếng nên chỉ đọc số.
+ */
+function SoundLab() {
+  const [names] = useState(() => sfxNames());
+  const [name, setName] = useState(() => (sfxNames().includes('hit') ? 'hit' : (sfxNames()[0] ?? '')));
+  const [probe, setProbe] = useState(sfxProbe.on);
+  const [find, setFind] = useState('');
+  const [fx, setFx] = useState(SKL_FX_IDS[0] ?? '');
+  const [mus, setMus] = useState<string>(() => Game.current?.music.labForce ?? 'auto');
+  const [st, setSt] = useState<ReturnType<typeof labAudioState> | null>(null);
+  useEffect(() => {
+    const id = window.setInterval(() => {
+      const g = Game.current;
+      if (g) setSt(labAudioState(g));
+    }, 250);
+    return () => window.clearInterval(id);
+  }, []);
+  const q = find.trim().toLowerCase();
+  const found = q ? SKL_FX_IDS.filter((id) => id.includes(q)) : SKL_FX_IDS;
+  const cur = found.includes(fx) ? fx : (found[0] ?? '');
+  const rep = cur ? fxAudioReport(FX_TIMELINE.get(cur)?.events ?? []) : null;
+  return (
+    <>
+      <div className="debug-row wrap">
+        <Pick label={t('ui.gm.lab.snd.name')} value={name} onChange={setName} options={names.map((id) => ({ value: id, label: id }))} />
+        <Button size="s" variant="primary" disabled={!name} onClick={() => labSfx(name)}>
+          {t('ui.gm.lab.fx_play')}
+        </Button>
+        <Button size="s" pressed={probe} onClick={() => setProbe(labSfxProbe(!probe))}>
+          {t('ui.gm.lab.snd.probe')}
+        </Button>
+      </div>
+      {probe && st && (
+        <div className="debug-note" data-testid="lab-snd-stats">
+          {t('ui.gm.lab.snd.stats', { n: st.stats.calls, burst: st.stats.burst, vol: st.stats.burstVol, thr: st.stats.throttled })}
+          {' · '}
+          {st.level && st.level.peak > -100 ? t('ui.gm.lab.snd.level', { rms: st.level.rms, peak: st.level.peak }) : t('ui.gm.lab.snd.silent')}
+        </div>
+      )}
+      <div className="debug-row wrap">
+        <label>
+          <span>{t('ui.gm.lab.fx_find')}</span>
+          <input value={find} onChange={(e) => setFind(e.target.value)} onKeyDown={(e) => e.stopPropagation()} />
+        </label>
+        <Pick label={t('ui.gm.lab.snd.fx')} value={cur} onChange={setFx} options={found.slice(0, 200).map((id) => ({ value: id, label: id }))} />
+        <Button size="s" disabled={!cur} onClick={() => Game.current?.labFx(cur)}>
+          {t('ui.gm.lab.snd.fx_play')}
+        </Button>
+      </div>
+      {rep && (
+        <div className="debug-note" data-testid="lab-snd-report" data-verdict={rep.verdict}>
+          {t('ui.gm.lab.snd.v.' + rep.verdict)}
+          {rep.impactT !== null ? ' · ' + t('ui.gm.lab.snd.impact', { t: sec(rep.impactT) }) : ''}
+          {rep.sounds.length ? ' · ' + rep.sounds.slice(0, 4).map((s) => (s.offsetMs === null ? s.id : t('ui.gm.lab.snd.off', { id: s.id, ms: (s.offsetMs > 0 ? '+' : '') + s.offsetMs }))).join(', ') : ''}
+        </div>
+      )}
+      <div className="debug-row wrap">
+        <span>{t('ui.gm.lab.snd.music')}</span>
+        {LAB_MUSIC.map((m) => (
+          <Button
+            key={m}
+            size="s"
+            pressed={mus === m}
+            onClick={() => {
+              if (Game.current && labMusic(Game.current, m)) setMus(m);
+            }}
+          >
+            {t('ui.gm.lab.snd.music.' + m)}
+          </Button>
+        ))}
+        {st && <span data-testid="lab-snd-music">{t('ui.gm.lab.snd.music_now', { track: st.music.track ?? '—', level: st.music.level })}</span>}
+      </div>
+    </>
+  );
+}
+
+/**
+ * Xưởng animation của phòng thử: cho nhân vật của mình diễn một pose bất kỳ, xem thời lượng + khung trúng của pose bên cạnh mốc trúng của server,
+ * và dừng hình ở bốn mốc soi (dồn lực, đỉnh đòn, +30 ms, thu đòn). Chỉ là hình ở client: không ra chiêu, không gây sát thương.
+ */
+function PoseLab() {
+  const [find, setFind] = useState('');
+  const [pose, setPose] = useState(POSE_IDS[0] ?? '');
+  const q = find.trim().toLowerCase();
+  const found = q ? POSE_IDS.filter((id) => id.includes(q)) : POSE_IDS;
+  const cur = found.includes(pose) ? pose : (found[0] ?? '');
+  const info = cur ? labPoseInfo(cur) : null;
+  return (
+    <>
+      <div className="debug-row wrap">
+        <label>
+          <span>{t('ui.gm.lab.pose.find')}</span>
+          <input value={find} onChange={(e) => setFind(e.target.value)} onKeyDown={(e) => e.stopPropagation()} />
+        </label>
+        <Pick label={t('ui.gm.lab.pose')} value={cur} onChange={setPose} options={found.map((id) => ({ value: id, label: id }))} />
+        <Button size="s" variant="primary" disabled={!cur} onClick={() => Game.current && labPose(Game.current, cur)}>
+          {t('ui.gm.lab.pose.play')}
+        </Button>
+      </div>
+      {info && (
+        <>
+          <div className="debug-note" data-testid="lab-pose-info">
+            {t('ui.gm.lab.pose.dur', { t: sec(info.duration) })}
+            {info.hit ? ' · ' + t('ui.gm.lab.pose.hit', { a: sec(info.hit[0]), b: sec(info.hit[1]) }) : ''}
+            {info.skill ? ' · ' + t('ui.gm.lab.pose.skill', { name: skillName(info.skill), t: info.hitAt.map(sec).join(' / ') || '—' }) : ''}
+          </div>
+          <div className="debug-row wrap">
+            <span>{t('ui.gm.lab.pose.seek')}</span>
+            {info.moments.map((m) => (
+              <Button key={m.name} size="s" onClick={() => Game.current && labPoseSeek(Game.current, cur, m.at)}>
+                {t('ui.gm.lab.pose.m.' + m.name)}
+              </Button>
+            ))}
+          </div>
+        </>
+      )}
+    </>
+  );
+}
+
 /**
  * Nhóm "Nhịp và HUD" của phòng thử: máu/linh lực giả trên HUD, nhật ký điều khiển, tốc độ phát của animation giao diện và bốn token thời lượng
  * của bộ giao diện (chỉnh trong phiên, không lưu, không đổi mặc định). Chỉ là hình ở client.
@@ -701,6 +838,8 @@ function Tools({ compact, onCompact }: { compact: boolean; onCompact: (v: boolea
           {labTab === 'style' && <StyleLab />}
           {labTab === 'ui' && <UiLab />}
           {labTab === 'feel' && <FeelLab />}
+          {labTab === 'snd' && <SoundLab />}
+          {labTab === 'anim' && <PoseLab />}
           {labTab === 'time' && (
             <>
               <div className="debug-row wrap">

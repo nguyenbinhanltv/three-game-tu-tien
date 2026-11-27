@@ -33,6 +33,7 @@
 // thái trong music.ts (MUSIC_TRACKS); thêm `title` (màn tiêu đề, App.tsx) và `sting_*` (playSting, engine.ts).
 
 import { bellPartials } from './lootBell';
+import type { SfxRow } from '../debug/sfxStats';
 import { gongPartials } from '../camera/chapter';
 import MIX from './audioMix.json';
 import { FLAGS } from '../../base/flags';
@@ -644,16 +645,63 @@ function playFile(name: string, vs: Variant[], e: SfxEntry, v: number, out: Audi
  * `at` là vị trí nguồn trên mặt đất để lệch trái/phải theo camera.
  */
 export function sfx(name: Sfx, volume = 1, at?: { x: number; z: number }, throttle = true, opts?: SfxOpts): void {
-  if (muted || volume <= 0.02) return;
+  if (muted || volume <= 0.02) return probeSfx(name, volume, muted ? 'mute' : 'quiet');
   const c = ensure();
-  if (!c || c.state !== 'running') return;
+  if (!c || c.state !== 'running') return probeSfx(name, volume, 'idle');
   // Không phát cùng một âm dày quá (nhiều sát thương cùng lúc). Bước chân của nhiều người tự giới hạn ở footsteps.ts.
   if (throttle) {
     const now = performance.now();
-    if (now - (lastPlayed.get(name) ?? 0) < 45) return;
+    if (now - (lastPlayed.get(name) ?? 0) < 45) return probeSfx(name, volume, 'throttle');
     lastPlayed.set(name, now);
   }
+  probeSfx(name, volume, 'ok');
   emit(name, volume, at, true, opts);
+}
+
+// ---------- đầu dò của phòng thử (xưởng âm thanh) ----------
+
+/**
+ * Nhật ký LỜI GỌI phát tiếng, chỉ ghi khi `on` (bật ở tab Diễn Võ → Âm thanh). Ghi cả lời gọi bị bỏ (tắt tiếng, quá nhỏ, bị giãn) kèm lý do,
+ * nên đo được mật độ tiếng cả khi chơi thử tắt tiếng. Thống kê ở `game/debug/sfxStats.ts`.
+ */
+export const sfxProbe: { on: boolean; rows: SfxRow[] } = { on: false, rows: [] };
+
+function probeSfx(name: string, vol: number, why: SfxRow['why']): void {
+  if (!sfxProbe.on) return;
+  sfxProbe.rows.push({ name, vol, at: performance.now(), why });
+  if (sfxProbe.rows.length > 600) sfxProbe.rows.splice(0, sfxProbe.rows.length - 600);
+}
+
+/** Mọi tên tiếng phát được: âm tổng hợp có sẵn + tên trong manifest (đã tải). */
+export function sfxNames(): string[] {
+  return [...new Set([...SYNTH_NAMES, ...Object.keys(manifest?.sfx ?? {})])].sort();
+}
+
+let meter: AnalyserNode | null = null;
+let meterBuf: Float32Array<ArrayBuffer> | null = null;
+/**
+ * Mức ra loa hiện tại (dBFS; trung bình bình phương và đỉnh của ~43 ms gần nhất), đo SAU âm lượng tổng; -100 = im lặng (kể cả khi tắt tiếng).
+ * null khi âm thanh chưa khởi tạo. Chỉ dùng cho đồng hồ của phòng thử.
+ */
+export function audioLevel(): { rms: number; peak: number } | null {
+  if (!ctx || !master) return null;
+  if (!meter) {
+    meter = ctx.createAnalyser();
+    meter.fftSize = 2048;
+    master.connect(meter);
+    meterBuf = new Float32Array(meter.fftSize);
+  }
+  const buf = meterBuf!;
+  meter.getFloatTimeDomainData(buf);
+  let sum = 0;
+  let peak = 0;
+  for (let i = 0; i < buf.length; i++) {
+    const v = Math.abs(buf[i]!);
+    sum += v * v;
+    if (v > peak) peak = v;
+  }
+  const db = (x: number) => (x > 1e-5 ? Math.round(20 * Math.log10(x) * 10) / 10 : -100);
+  return { rms: db(Math.sqrt(sum / buf.length)), peak: db(peak) };
 }
 
 /** Phát chuông đồ rơi (âm tổng hợp, bus giao diện). Tắt tiếng (`?mute=1`) thì im. */

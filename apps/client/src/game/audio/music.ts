@@ -495,6 +495,17 @@ export class MusicController {
     });
   }
 
+  /**
+   * Phòng thử (xưởng âm thanh): ép đầu vào giao chiến của đạo diễn nhạc để nghe chuyển cảnh thường → giao chiến → boss mà không cần quái.
+   * null = theo trận thật. Hysteresis của đạo diễn vẫn áp dụng (vào nhanh, ra chậm), đúng như trong trận.
+   */
+  labForce: 'calm' | 'combat' | 'boss' | null = null;
+
+  /** Bài đang yêu cầu, nguồn phát, mức lớp giao chiến và trạng thái đạo diễn (bảng F3 / Playwright đọc). */
+  debugState(): { track: MusicTrack | null; src: string; level: number; combat: boolean; boss: boolean; force: string | null } {
+    return { track: this.track, src: this.src, level: this.level, combat: this.dir.inCombat, boss: this.dir.inBoss, force: this.labForce };
+  }
+
   /** Đòn đánh thật giữa mình và quái (`boss` nếu quái đó là boss): vào nhạc chiến đấu ngay. */
   engage(boss: boolean): void {
     this.dir.engage(performance.now() / 1000, boss);
@@ -513,6 +524,10 @@ export class MusicController {
         if (d2 < BOSS_R * BOSS_R) boss = combat = true;
       } else if (d2 < THREAT_R * THREAT_R) combat = true;
       if (boss) break;
+    }
+    if (this.labForce) {
+      combat = this.labForce !== 'calm';
+      boss = this.labForce === 'boss';
     }
     const inp: MusicInput = {
       dungeon: s.room === 'dungeon',
