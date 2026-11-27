@@ -23,6 +23,7 @@ interface Row {
   act?: unknown;
   /** Cảnh đang đánh: tỉ lệ điểm ảnh trong ô quanh thân mục tiêu bị hiệu ứng thay đổi (0..1), đo ở khung đã dừng. */
   cover?: number;
+  coverAvg?: number;
   ssim?: number;
   deltaE00?: number;
   diff?: string;
@@ -32,9 +33,19 @@ interface Row {
 
 /** Ngưỡng cảnh báo: hiệu ứng đổi quá ngần này phần ô thân mục tiêu thì coi là che quái (chuẩn HPL2: thân địch phải đọc được). */
 export const COVER_WARN = 0.45;
+/** Tổng chênh ba kênh (0–765) để coi một điểm ảnh của thân là bị hiệu ứng thay hẳn. */
+export const HID_DIFF = 120;
 
-/** Tỉ lệ điểm ảnh khác nhau rõ (tổng chênh ba kênh > 45) giữa ảnh ẩn VFX và ảnh có VFX, trong ô vuông tâm (cx, cy) nửa cạnh `half` (điểm ảnh CSS, dpr 1). */
-async function coverIn(bare: Buffer, shot: Buffer, box: { cx: number; cy: number; half: number }): Promise<number> {
+/**
+ * Tỉ lệ THÂN mục tiêu bị hiệu ứng che: trong ô vuông tâm (cx, cy) nửa cạnh `half` (điểm ảnh CSS, dpr 1), mặt nạ thân = điểm ảnh đổi rõ giữa ảnh ẩn VFX
+ * và ảnh ẩn cả VFX lẫn mục tiêu; trên mặt nạ đó đếm điểm ảnh đổi rõ (tổng chênh ba kênh > 45) giữa ảnh có VFX và ảnh ẩn VFX.
+ */
+async function coverIn(
+  bare: Buffer,
+  shot: Buffer,
+  box: { cx: number; cy: number; half: number },
+  empty: Buffer,
+): Promise<number | null> {
   const meta = await sharp(shot).metadata();
   const W = meta.width ?? 0;
   const H = meta.height ?? 0;
@@ -44,12 +55,22 @@ async function coverIn(bare: Buffer, shot: Buffer, box: { cx: number; cy: number
   const height = Math.min(H - top, Math.round(box.half * 2));
   if (width <= 0 || height <= 0) return 0;
   const cut = (b: Buffer) => sharp(b).removeAlpha().extract({ left, top, width, height }).raw().toBuffer();
-  const [a, c] = await Promise.all([cut(bare), cut(shot)]);
-  let diff = 0;
+  const [a, c, e] = await Promise.all([cut(bare), cut(shot), cut(empty)]);
+  const dist = (x: Buffer, y: Buffer, i: number) =>
+    Math.abs(x[i * 3]! - y[i * 3]!) + Math.abs(x[i * 3 + 1]! - y[i * 3 + 1]!) + Math.abs(x[i * 3 + 2]! - y[i * 3 + 2]!);
+  // Mặt nạ thân: đổi rõ (> 45) khi quái biến mất. BỊ CHE: điểm ảnh thân bị THAY HẲN (> `HID_DIFF`), không tính thân chỉ sáng lên nhẹ vì chớp trúng
+  // hay ánh của vệt sáng gần đó (đo 27/11: ngưỡng 45 báo 71% trong khi nhìn ảnh con sói vẫn đọc rõ).
+  const far = (x: Buffer, y: Buffer, i: number) => dist(x, y, i) > 45;
+  let body = 0;
+  let hid = 0;
   const n = width * height;
-  for (let i = 0; i < n; i++)
-    if (Math.abs(a[i * 3]! - c[i * 3]!) + Math.abs(a[i * 3 + 1]! - c[i * 3 + 1]!) + Math.abs(a[i * 3 + 2]! - c[i * 3 + 2]!) > 45) diff++;
-  return diff / n;
+  for (let i = 0; i < n; i++) {
+    if (!far(a, e, i)) continue; // không phải điểm ảnh của thân mục tiêu
+    body++;
+    if (dist(a, c, i) > HID_DIFF) hid++;
+  }
+  // Thân quá nhỏ trong khung (dưới 40 điểm ảnh) thì không đủ để kết luận.
+  return body >= 40 ? hid / body : null;
 }
 
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
@@ -62,7 +83,7 @@ function page(rows: Row[], view: string, style: string, limit: number): string {
         r.ssim === undefined
           ? '<td class="na" colspan="2">chưa có bộ trước</td>'
           : `<td><img src="${esc(r.base!)}"></td><td><img src="${esc(r.diff!)}"></td>`;
-      const cov = r.cover === undefined ? '' : `<b class="${r.cover > COVER_WARN ? 'bad' : 'ok'}">che ${Math.round(r.cover * 100)}% thân mục tiêu</b>`;
+      const cov = r.cover === undefined ? '' : `<b class="${r.cover > COVER_WARN ? 'bad' : 'ok'}">che thân mục tiêu: lớn nhất ${Math.round(r.cover * 100)}%, trung bình ${Math.round((r.coverAvg ?? 0) * 100)}%</b>`;
       const score = (r.ssim === undefined ? '' : `<b class="${r.flag ? 'bad' : 'ok'}">SSIM ${r.ssim}</b> · ΔE ${r.deltaE00}`) + cov;
       return `<tr><th>${esc(r.id)}<br>${score}<br><small>${p?.drawCalls ?? '?'} draw · ${Math.round((p?.triangles ?? 0) / 1000)}k tam giác</small></th>${cmp}<td><img src="${esc(r.file)}"></td></tr>`;
     })
@@ -129,40 +150,56 @@ export default {
           g.useSkill(slot);
           return bd;
         }, sc.act.slot);
-        // Dừng lớp hình đúng mốc chụp rồi chụp HAI lần cùng khung: có hiệu ứng và ẩn nhóm VFX. Chênh giữa hai ảnh trong ô quanh thân mục tiêu
-        // = phần thân quái bị hiệu ứng che (không lẫn tư thế, số sát thương là DOM nên cũng không lẫn).
+        // Đo hiệu ứng che thân mục tiêu ở BỐN mốc liên tiếp (cách nhau ~110 ms thật): mỗi mốc dừng lớp hình rồi chụp HAI lần cùng khung, có hiệu ứng
+        // và ẩn nhóm VFX; chênh giữa hai ảnh trong ô quanh thân mục tiêu = phần thân bị che (không lẫn tư thế; số sát thương là DOM nên cũng không lẫn).
+        // Một mốc thì lệch nhiều theo thời điểm (đo 27/11: cùng cảnh ra 61% rồi 89%), nên báo cả LỚN NHẤT và trung bình.
+        const setVfx = (on: boolean) =>
+          pg.evaluate((v) => void ((window.__game as unknown as { vfx: { group: { visible: boolean } } }).vfx.group.visible = v), on);
+        // Chờ đúng hai khung vẽ (không chờ theo ms): hoạt ảnh giật lùi của quái chạy theo giờ thật, chờ lâu thì thân lệch giữa các ảnh và bị tính nhầm là che.
+        const frames2 = () => pg.evaluate(() => new Promise<void>((res) => requestAnimationFrame(() => requestAnimationFrame(() => res()))));
+        const covers: number[] = [];
         await sleep(sc.act.waitMs);
-        await pg.evaluate(() => void (window.__game!.timeScale = 0));
-        await sleep(120);
-        const shot = await snap(pg, r.out, file, { wait: 0 });
-        const box = await pg.evaluate(`(() => {
-          var g = window.__game, v = new g.camera.position.constructor(), u = new g.camera.position.constructor();
-          if (!g.ents.chestOf(g.targetId, v)) return null;
-          var m = g.view.monsters.get(g.targetId);
-          u.copy(v); u.y += 1;
-          v.project(g.camera); u.project(g.camera);
-          var W = window.innerWidth, H = window.innerHeight;
-          var cx = (v.x * 0.5 + 0.5) * W, cy = (-v.y * 0.5 + 0.5) * H;
-          var pxPerM = Math.abs((-u.y * 0.5 + 0.5) * H - cy);
-          return { cx: cx, cy: cy, half: Math.max(18, pxPerM * 1.1), t: m ? m.t : '' };
-        })()`) as { cx: number; cy: number; half: number; t: string } | null;
-        await pg.evaluate(() => void ((window.__game as unknown as { vfx: { group: { visible: boolean } } }).vfx.group.visible = false));
-        await sleep(120);
-        const bare = await snap(pg, r.out, `${view}/${sc.id}.novfx.png`, { wait: 0 });
-        await pg.evaluate(() => {
-          (window.__game as unknown as { vfx: { group: { visible: boolean } } }).vfx.group.visible = true;
-          window.__game!.timeScale = 1;
-        });
-        const cover = box ? await coverIn(bare, shot, box) : null;
-        for (const k of [1, 2]) await snap(pg, r.out, `${view}/${sc.id}.k${k}.png`, { wait: 120 });
+        for (let k = 0; k < 4; k++) {
+          await pg.evaluate(() => void (window.__game!.timeScale = 0));
+          await frames2();
+          const shot = await snap(pg, r.out, k === 0 ? file : `${view}/${sc.id}.k${k}.png`, { wait: 0 });
+          const box = (await pg.evaluate(`(() => {
+            var g = window.__game, v = new g.camera.position.constructor(), u = new g.camera.position.constructor();
+            if (!g.ents.chestOf(g.targetId, v)) return null;
+            u.copy(v); u.y += 1;
+            v.project(g.camera); u.project(g.camera);
+            var W = window.innerWidth, H = window.innerHeight;
+            var cx = (v.x * 0.5 + 0.5) * W, cy = (-v.y * 0.5 + 0.5) * H;
+            var pxPerM = Math.abs((-u.y * 0.5 + 0.5) * H - cy);
+            return { cx: cx, cy: cy, half: Math.max(18, pxPerM * 1.1) };
+          })()`)) as { cx: number; cy: number; half: number } | null;
+          await setVfx(false);
+          await frames2();
+          const bare = await snap(pg, r.out, `${view}/${sc.id}.k${k}.novfx.png`, { wait: 0 });
+          // Ảnh thứ ba: ẩn luôn thân mục tiêu (thu nhỏ gốc mô hình) để lấy MẶT NẠ THÂN = chỗ ảnh đổi khi quái biến mất. Chỉ tính che trên mặt nạ này,
+          // nên vệt quạt/pháp trận nằm trên sàn quanh quái không bị tính là che quái.
+          await pg.evaluate(`(() => { var m = window.__game.ents.monsters.get(window.__game.targetId); if (m) { m.model.root.userData.__s = m.model.root.scale.x; m.model.root.scale.setScalar(1e-4); } })()`);
+          await frames2();
+          const empty = await pg.screenshot();
+          await pg.evaluate(`(() => { var m = window.__game.ents.monsters.get(window.__game.targetId); if (m && m.model.root.userData.__s) m.model.root.scale.setScalar(m.model.root.userData.__s); })()`);
+          await setVfx(true);
+          await pg.evaluate(() => void (window.__game!.timeScale = 1));
+          if (box) {
+            const c = await coverIn(bare, shot, box, empty);
+            if (c !== null) covers.push(c);
+          }
+          await sleep(110);
+        }
+        const cover = covers.length ? Math.max(...covers) : null;
+        const coverAvg = covers.length ? covers.reduce((n, x) => n + x, 0) / covers.length : null;
         const d1 = await pg.evaluate(() => {
           const g = window.__game!;
           const me = g.info();
           const m = g.view.monsters.get(g.targetId);
           return m ? { d: Math.hypot(m.x - me.x, m.z - me.z), hp: m.hp, mhp: m.mhp } : null;
         });
-        rows.push({ id: sc.id, file, perf: await perfSample(pg), act: { distBefore: d0, after: d1 }, cover: cover ?? undefined });
-        if (cover !== null) console.log(`  ${sc.id}: hiệu ứng che ${Math.round(cover * 100)}% ô thân mục tiêu`);
+        rows.push({ id: sc.id, file, perf: await perfSample(pg), act: { distBefore: d0, after: d1 }, cover: cover ?? undefined, coverAvg: coverAvg ?? undefined });
+        if (cover !== null) console.log(`  ${sc.id}: hiệu ứng che thân mục tiêu lớn nhất ${Math.round(cover * 100)}%, trung bình ${Math.round((coverAvg ?? 0) * 100)}% (4 mốc)`);
         continue;
       }
       await snap(pg, r.out, file, { wait: 1200 });
