@@ -99,7 +99,15 @@ export class DienVoRoom {
       pos.setXYZ(i, x, inp.heightAt(x, z) + LIFT, z);
     }
     geo.computeVertexNormals();
-    const mat = new THREE.MeshStandardNodeMaterial({ map: tex, roughness: 0.95, metalness: 0 });
+    const mat = new THREE.MeshStandardNodeMaterial({
+      map: tex,
+      roughness: 0.95,
+      metalness: 0,
+      // Tự sáng nhẹ theo chính texture: ranh khu và chữ vẫn đọc được khi nền đêm của Dạ Họa hạ ánh trăng.
+      emissive: 0xffffff,
+      emissiveMap: tex,
+      emissiveIntensity: 0.28,
+    });
     const mesh = new THREE.Mesh(geo, mat);
     mesh.receiveShadow = true;
     mesh.name = 'dien-vo-floor';
