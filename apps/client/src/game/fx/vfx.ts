@@ -849,6 +849,9 @@ export class Vfx {
   sigil(shape: SigilShape, x: number, z: number, yaw: number, r: number, w: number, color: number, y: number, top = false): FxMesh {
     const L = sigilLayout(shape, r, w);
     const m = this.fx(SIGIL_GEO, color, 0, top ? 'sigilTop' : 'sigil');
+    // Tấm phẳng trên nền dốc nhẹ: nửa phía cao chìm dưới đất (Diễn Võ Trường: vòng pháp trận lớn và vệt quạt bị cắt đôi). Tấm NẰM SÁT ĐẤT
+    // (cách mặt đất ở gốc dưới 1 m) được nâng lên trên điểm cao nhất quanh nó; pháp trận lơ lửng thì giữ nguyên độ cao người gọi đặt.
+    if (r > 1.5 && Math.abs(y - groundAt(x, z)) < 1) y = Math.max(y, sigilGroundY(x, z, r));
     m.position.set(x + Math.sin(yaw) * L.offset, y, z + Math.cos(yaw) * L.offset);
     m.rotation.y = yaw;
     m.scale.set(L.sx, 1, L.sz);
@@ -1284,6 +1287,18 @@ export class Vfx {
     this.clouds.clear();
     this.group.removeFromParent();
   }
+}
+
+/** Độ cao đặt tấm pháp trận bán kính `r` quanh (x, z) để không chìm dưới đất: điểm cao nhất trong 8 hướng ở mép và giữa bán kính, cộng 0,12 m. */
+export function sigilGroundY(x: number, z: number, r: number, ground: (x: number, z: number) => number = groundAt): number {
+  let y = ground(x, z);
+  for (let i = 0; i < 8; i++) {
+    const a = (i * Math.PI) / 4;
+    const sx = Math.sin(a);
+    const cz = Math.cos(a);
+    y = Math.max(y, ground(x + sx * r, z + cz * r), ground(x + sx * r * 0.5, z + cz * r * 0.5));
+  }
+  return y + 0.12;
 }
 
 /** Số sát thương bay lên, vẽ bằng DOM. */
