@@ -51,7 +51,11 @@ Mọi cải thiện Dạ Họa (VFX, animation, nhân vật, đạo cụ, ánh s
 - Vào và ra bằng `/gm dvt` (chỉ tài khoản thử). Ra thì về đúng bản đồ và chỗ đứng cũ.
 - **Hàng rào** (`apps/server/src/game/practice.ts`): lúc vào chụp nguyên trạng nhân vật trong DB (bảng `practice_snap`); lúc ra, hoặc ở lần vào room kế tiếp nếu server chết giữa chừng, trả lại y nguyên trong một giao dịch. Sổ cái không bị xóa: dòng ghi trong phòng được gắn `practice:`, bỏ khóa chống trùng, và có dòng bù để tổng vẫn khớp túi.
 
-Chưa có: sáu khu trong phòng, tab Diễn Võ ở bảng F3, đóng băng và ép trạng thái quái, cảnh mẫu lưu lại, bộ ảnh chuẩn.
+- **Lệnh GM của phòng thử** (server quyết, chỉ tài khoản thử; dùng được ở mọi room): `/gm freeze` (quái đứng yên, giữ trạng thái), `/gm lockhp` (quái không tụt dưới 1 máu), `/gm state weak|break|stun|chant|phase N|clear [giây]` (ép trạng thái lên quái trong 40 m; `weak`/`chant` chỉ bật cờ nên dùng kèm `freeze`), `/gm free` (chiêu không hồi, linh lực đầy; GCD và khóa đòn giữ nguyên), `/gm build <công pháp> [cấp]` (dựng nhân vật thử một nút), `/gm labreset` (trả phòng về như mới).
+- **Tab "Diễn Võ"** ở bảng F3 (`apps/client/src/ui/DebugPanel.tsx`): gom các nút trên, gọi quái có ô tìm theo tên.
+- **Kịch bản chụp** `pnpm shots dienvo --out <thư mục> --query style=dahoa`: vào phòng, dựng nhân vật, gọi quái, ép trạng thái, chụp 5 ảnh + số đo, rồi ra và kiểm nhân vật đã về nguyên trạng.
+
+Chưa có: sáu khu trong phòng (hiện là bãi phẳng trống, nền đất loang lổ), cảnh mẫu lưu lại, bộ ảnh chuẩn so trước/sau, đồng hồ hiệu năng trên tab.
 
 ## Lộ trình
 
