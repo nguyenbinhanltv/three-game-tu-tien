@@ -81,6 +81,7 @@ Playtest luôn tắt tiếng: mở game với `?mute=1` (ví dụ `?mute=1&debug
 | `spawn` | `/gm spawn <id quái\|boss\|clear> [n ≤ 20]` — gọi quái trước mặt; clear dọn quái đã gọi. | `/gm spawn boss_han_giao 1` |
 | `killall` | `/gm killall` — hạ quái trong 40 m. |  |
 | `hurt` | `/gm hurt <pct>` — hạ máu quái quanh mình về pct%. | `/gm hurt 30` |
+| `dvt` | `/gm dvt` — vào Diễn Võ Trường (phòng tập riêng); gõ lại trong phòng để ra. Ra khỏi phòng, nhân vật trở về nguyên trạng. |  |
 | `tick` | `/gm tick` — số đo tick server. |  |
 
 ### Tra cứu
