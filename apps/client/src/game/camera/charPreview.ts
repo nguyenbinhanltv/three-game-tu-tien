@@ -3,10 +3,20 @@
 // canvas gắn vào (~30 khung/giây), đóng bảng thì giải phóng model và render target. Quá ngân sách CPU thì tự tắt
 // để bảng lùi về hình bóng 2D (`onFail`).
 import * as THREE from 'three/webgpu';
+import { mrt, output, vec4 } from 'three/tsl';
 import type { CharacterView } from '../character/view';
+import { FLAGS } from '../../base/flags';
 import { logger } from '../../base/log';
 
 const previewLog = logger('preview');
+
+/**
+ * Họa Cảnh / Dạ Họa: vật liệu nhân vật v3 mang `mrtNode` ghi mặt nạ vào đích phụ `aux` (`markVfxMask`). Vẽ chúng vào một đích chỉ có MỘT màu và
+ * không có MRT của renderer thì `mrtNode` thay luôn đầu ra màu: shader không còn đầu ra nào (WGSL "structures must have at least one member"),
+ * khung xem trước trống và lỗi lặp mỗi khung. Nên ở các phong cách đó khung xem trước vẽ vào đích HAI màu (`output`, `aux`) với cùng bố cục MRT
+ * của pass cảnh; chỉ màu thứ nhất được đọc về.
+ */
+const PREVIEW_MRT = FLAGS.painted ? mrt({ output, aux: vec4(0, 0, 0, 0) }) : null;
 
 /** Rộng phải là bội số của 64: WebGPU đọc texture theo hàng căn 256 byte (three không bù phần đệm). */
 const PREVIEW_W = 256;
@@ -218,7 +228,16 @@ export class CharPreview {
   private renderToTarget(): void {
     const r = this.host.renderer;
     if (!this.rt) {
-      this.rt = new THREE.RenderTarget(PREVIEW_W, PREVIEW_H, { type: THREE.UnsignedByteType, depthBuffer: true, samples: PREVIEW_SAMPLES });
+      this.rt = new THREE.RenderTarget(PREVIEW_W, PREVIEW_H, {
+        type: THREE.UnsignedByteType,
+        depthBuffer: true,
+        samples: PREVIEW_SAMPLES,
+        count: PREVIEW_MRT ? 2 : 1,
+      });
+      if (PREVIEW_MRT) {
+        this.rt.textures[0]!.name = 'output';
+        this.rt.textures[1]!.name = 'aux';
+      }
     }
     const prevRT = r.getRenderTarget();
     const prevAlpha = r.getClearAlpha();
@@ -226,10 +245,13 @@ export class CharPreview {
     const info = r.info.render;
     const dc0 = info.drawCalls ?? info.calls;
     const tri0 = info.triangles;
+    const prevMrt = r.getMRT();
     r.setRenderTarget(this.rt);
+    if (PREVIEW_MRT) r.setMRT(PREVIEW_MRT);
     r.setClearColor(0x000000, 0);
     r.render(this.scene, this.camera);
     r.setRenderTarget(prevRT);
+    if (PREVIEW_MRT) r.setMRT(prevMrt);
     r.setClearColor(prevColor, prevAlpha);
     this.stats.drawCalls = (info.drawCalls ?? info.calls) - dc0;
     this.stats.triangles = info.triangles - tri0;

@@ -18,7 +18,17 @@ import {
   t,
 } from '@dtl/content';
 import { Game, LAB_STYLE } from '../game/engine';
-import { LAB_PRESETS, labPreset, labRendererUrl, labVitalsSet } from '../game/engine/lab';
+import {
+  LAB_PRESETS,
+  LAB_UI_TOKENS,
+  labPreset,
+  labRendererUrl,
+  labUiRate,
+  labUiRateGet,
+  labUiToken,
+  labUiTokenGet,
+  labVitalsSet,
+} from '../game/engine/lab';
 import { FX_PALETTE } from '../render/vfx/palette';
 import { FX_LAYER_OFF } from '../game/fx/fxTimeline';
 import { Button } from './u2/win';
@@ -107,7 +117,7 @@ const LAB_PHASES = [0, 1, 2, 3];
 const LAB_SPEEDS = [100, 50, 25, 10];
 const LAB_PINGS = [0, 50, 150, 300];
 /** Nhóm con của tab Diễn Võ: bảng F3 không cuộn được nên mỗi lúc chỉ hiện một nhóm cho vừa màn 720p. */
-const LAB_TABS = ['scene', 'mon', 'fx', 'look', 'style', 'ui', 'time'] as const;
+const LAB_TABS = ['scene', 'mon', 'fx', 'look', 'style', 'ui', 'feel', 'time'] as const;
 const LAB_STYLE_SLOTS = ['A', 'B'] as const;
 const FX_IDS = [...FX_TIMELINE.keys()].sort();
 /** Số lớp tối đa hiện nút bật tắt (bảng F3 không cuộn được; timeline dài hơn thì soi phần còn lại bằng `pnpm shots dienvo --layersoff`). */
@@ -130,16 +140,91 @@ const LAB_VITALS: [string, 'hp' | 'mp', number | null][] = [
   ['mp5', 'mp', 0.05],
 ];
 const LAB_RENDERERS = ['webgl2', 'webgpu'] as const;
+const LAB_UI_RATES = [100, 50, 25, 10];
+const LAB_UI_TOKEN_STEP = 20;
 const LAB_NUM_GAPS = [0, 80, 250];
-/** Khu Giao diện của phòng thử: máy bắn số sát thương, gọi khoảnh khắc, máu/linh lực giả, nhật ký điều khiển (chỉ hình ở client). */
-function UiLab() {
-  const [count, setCount] = useState(5);
-  const [gap, setGap] = useState(80);
+/**
+ * Nhóm "Nhịp và HUD" của phòng thử: máu/linh lực giả trên HUD, nhật ký điều khiển, tốc độ phát của animation giao diện và bốn token thời lượng
+ * của bộ giao diện (chỉnh trong phiên, không lưu, không đổi mặc định). Chỉ là hình ở client.
+ */
+function FeelLab() {
   const traceOn = useUI((s) => s.labTraceOn);
+  const [rate, setRate] = useState(() => Math.round(labUiRateGet() * 100));
+  const [, bump] = useState(0);
   const vitals = (what: 'hp' | 'mp', frac: number | null) => {
     const g = Game.current;
     if (g) labVitalsSet(g, what, frac);
   };
+  const token = (name: string, ms: number | null) => {
+    labUiToken(name, ms);
+    bump((n) => n + 1);
+  };
+  return (
+    <>
+      <div className="debug-row wrap">
+        <span>{t('ui.gm.lab.vitals')}</span>
+        <Button
+          size="s"
+          onClick={() => {
+            vitals('hp', null);
+            vitals('mp', null);
+          }}
+        >
+          {t('ui.gm.lab.vitals.real')}
+        </Button>
+        {LAB_VITALS.map(([k, what, frac]) => (
+          <Button key={k} size="s" onClick={() => vitals(what, frac)}>
+            {t('ui.gm.lab.vitals.' + k)}
+          </Button>
+        ))}
+        <Button size="s" pressed={traceOn} onClick={() => set({ labTraceOn: !traceOn })}>
+          {t('ui.gm.lab.trace')}
+        </Button>
+      </div>
+      <div className="debug-row wrap">
+        <span>{t('ui.gm.lab.uirate')}</span>
+        {LAB_UI_RATES.map((n) => (
+          <Button
+            key={n}
+            size="s"
+            pressed={rate === n}
+            onClick={() => {
+              labUiRate(n / 100);
+              setRate(n);
+            }}
+          >
+            {t('ui.gm.lab.uirate_v', { n })}
+          </Button>
+        ))}
+      </div>
+      <div className="debug-row wrap">
+        {LAB_UI_TOKENS.map((name) => {
+          const v = labUiTokenGet(name);
+          return (
+            <span key={name} className="lab-style" data-k={name}>
+              <span>
+                {t('ui.gm.lab.uitoken.' + name.slice(2))} {t('ui.gm.lab.trace.ms', { n: v })}
+              </span>
+              <Button size="s" onClick={() => token(name, v - LAB_UI_TOKEN_STEP)}>
+                −
+              </Button>
+              <Button size="s" onClick={() => token(name, v + LAB_UI_TOKEN_STEP)}>
+                +
+              </Button>
+            </span>
+          );
+        })}
+        <Button size="s" variant="primary" onClick={() => LAB_UI_TOKENS.forEach((name) => token(name, null))}>
+          {t('ui.gm.lab.style.reset')}
+        </Button>
+      </div>
+    </>
+  );
+}
+/** Khu Giao diện của phòng thử: máy bắn số sát thương, gọi khoảnh khắc (chỉ hình ở client). */
+function UiLab() {
+  const [count, setCount] = useState(5);
+  const [gap, setGap] = useState(80);
   return (
     <>
       <div className="debug-row wrap">
@@ -171,26 +256,6 @@ function UiLab() {
             {t('ui.gm.lab.num_gap_v', { n })}
           </Button>
         ))}
-      </div>
-      <div className="debug-row wrap">
-        <span>{t('ui.gm.lab.vitals')}</span>
-        <Button
-          size="s"
-          onClick={() => {
-            vitals('hp', null);
-            vitals('mp', null);
-          }}
-        >
-          {t('ui.gm.lab.vitals.real')}
-        </Button>
-        {LAB_VITALS.map(([k, what, frac]) => (
-          <Button key={k} size="s" onClick={() => vitals(what, frac)}>
-            {t('ui.gm.lab.vitals.' + k)}
-          </Button>
-        ))}
-        <Button size="s" pressed={traceOn} onClick={() => set({ labTraceOn: !traceOn })}>
-          {t('ui.gm.lab.trace')}
-        </Button>
       </div>
     </>
   );
@@ -635,6 +700,7 @@ function Tools({ compact, onCompact }: { compact: boolean; onCompact: (v: boolea
           {labTab === 'look' && <LookLab />}
           {labTab === 'style' && <StyleLab />}
           {labTab === 'ui' && <UiLab />}
+          {labTab === 'feel' && <FeelLab />}
           {labTab === 'time' && (
             <>
               <div className="debug-row wrap">

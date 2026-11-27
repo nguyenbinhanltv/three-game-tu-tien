@@ -151,7 +151,7 @@ import { RealmAuraFx, type RealmAuraEnv } from './fx/realmAura';
 import { PathAuraFx } from './fx/pathAura';
 import { type FxQuality } from '@dtl/shared';
 import { type SkillEvent } from './character/view';
-import { labMomentExtra, type LabVitals } from './engine/lab';
+import { LAB_NAMES, labMomentExtra, type LabVitals, makeLabX } from './engine/lab';
 import type { LabTrace } from './debug/labTrace';
 import { HitQueue, SwingGuard, type HitSoundLog } from './combat/hitjuice';
 import { debugAllowed, readTestParams } from './core/testParams';
@@ -1034,6 +1034,8 @@ export class Game {
   labTrace: LabTrace | null = null;
   /** Phòng thử: máu/linh lực GIẢ trên HUD của mình (xem `labVitalsSet`); null = số thật. */
   labVitals: LabVitals | null = null;
+  /** Phòng thử: cổng gọi các công cụ ở `engine/lab.ts` từ console / Playwright (`__game.labx.window('bag')`...). */
+  readonly labx = makeLabX(this);
 
   /** Phòng thử: thanh boss giả đang ép lên HUD (xem `labHudLoad`); null = HUD theo trận thật. */
   labHudBoss: BossInfo | null = null;
@@ -1053,7 +1055,7 @@ export class Game {
     }
     const s = get();
     if (!this.labHudSaved) this.labHudSaved = { party: s.party, quests: s.quests };
-    const names = ['Vạn Kiếm Quy Tông Chân Nhân', 'Thanh Mộc Đan Sư', 'Hộ Pháp Kim Cương', 'Cửu Tiêu Lôi Quân'];
+    const names = LAB_NAMES;
     const roles = ['dps', 'support', 'tank', 'dps'] as const;
     set({
       party: {

@@ -157,7 +157,7 @@ function useToastDodge(ref: RefObject<HTMLDivElement | null>, active: boolean): 
       const box = baseBox(el, dx * zoom, dy * zoom);
       let minY = 8;
       // Chỉ tính khung ở GIỮA phía trên (khung mục tiêu, khối thanh boss kể cả thanh niệm chú / phá thế): thông báo không được nằm đè lên chúng.
-      for (const f of document.querySelectorAll<HTMLElement>('.hud .target-frame, .hud .boss-bar, .hud [class^="u2h-boss"]')) {
+      for (const f of document.querySelectorAll<HTMLElement>('.hud .target-frame, .hud .boss-bar, .hud [class^="u2h-boss"], .hud .pty-invites')) {
         const fr = f.getBoundingClientRect();
         if (fr.width > 0 && fr.right > box.x && fr.left < box.x + box.w) minY = Math.max(minY, fr.bottom + 6);
       }

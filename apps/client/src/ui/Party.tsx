@@ -1,6 +1,6 @@
 // Tổ đội và tỉ thí (P3-9): khung tổ đội trên HUD, lời mời, đếm ngược tỉ thí, bảng tổ đội. Chỉ hiển thị và gửi ý định.
 import './party.css';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { C, inArena, type LootMode, type PartyMember } from '@dtl/shared';
 import { realmName, t } from '@dtl/content';
 import { Game } from '../game/engine';
@@ -121,9 +121,30 @@ export function InviteStack() {
   useEffect(() => {
     if (live.length !== invites.length) set({ invites: live });
   }, [live.length, invites.length]);
+  // Chồng lời mời nằm giữa phía trên, cùng chỗ với khung mục tiêu và khối thanh boss: đo đáy các khung đó rồi hạ chồng xuống dưới (phòng thử chỉ ra
+  // lời mời đè lên thanh boss khi đang đánh boss).
+  const ref = useRef<HTMLDivElement>(null);
+  const shown = live.length > 0;
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || !shown) return;
+    const tick = () => {
+      const zoom = Number(getComputedStyle(el).zoom) || 1;
+      const b = el.getBoundingClientRect();
+      let minY = 0;
+      for (const f of document.querySelectorAll<HTMLElement>('.hud .target-frame, .hud .boss-bar, .hud [class^="u2h-boss"]')) {
+        const r = f.getBoundingClientRect();
+        if (r.width > 0 && r.right > b.left && r.left < b.right) minY = Math.max(minY, r.bottom + 6);
+      }
+      el.style.top = minY > 0 ? Math.round(minY / zoom) + 'px' : '';
+    };
+    tick();
+    const id = window.setInterval(tick, 250);
+    return () => window.clearInterval(id);
+  }, [shown]);
   if (!live.length) return null;
   return (
-    <div className="pty-invites">
+    <div className="pty-invites" ref={ref}>
       {live.map((i) => {
         const cmd = i.kind === 'party' ? C.PARTY : C.DUEL;
         const answer = (a: 'acc' | 'dec') => {
