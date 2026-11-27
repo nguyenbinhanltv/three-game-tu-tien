@@ -1,11 +1,13 @@
 // Dạ Cảnh (`?style=da`): mood theo LOẠI TRẬN. Nền đêm của level lùi lại (ít tương phản, bớt bão hòa) để nhân vật và chiêu nổi lên;
 // có tinh anh gần thì cảnh ngả đỏ sẫm nhẹ, có boss thì đỏ sẫm rõ và sương dày hơn. Chỉ là lớp hình (loại quái lấy từ state server),
 // chỉ chỉnh uniform (không biên dịch lại shader), theo mẫu `updateFaceMood`.
+import * as THREE from 'three/webgpu';
 import { MONSTER } from '@dtl/content';
 import { MS_DEAD } from '@dtl/shared';
 import { tuneAtmosphere } from '../../render/atmosphere';
 import { GRADING, mixHex, mixPreset, type GradingPreset } from '../../render/grading';
-import { applyGrading } from '../../render/post';
+import { applyGrading, postParams } from '../../render/post';
+import { FLAGS } from '../../base/flags';
 import { skyTopOf } from '../../render/sky';
 import type { Game } from '../engine';
 
@@ -55,6 +57,20 @@ export function daPreset(base: GradingPreset, wElite: number, wBoss: number): Gr
   return p;
 }
 
+/** Màu nhuộm khung theo loại trận ở Dạ Họa (không gian hiển thị): tinh anh đỏ tía sẫm, boss đỏ thẫm. */
+export const DA_TINT_ELITE = 0x7a1c3a;
+export const DA_TINT_BOSS = 0x9a1418;
+
+/**
+ * Mức và màu nhuộm khung của Dạ Họa theo trọng số tinh anh/boss (∈ [0, 1], boss lấn tinh anh). Tinh anh chỉ nhuộm nửa mức boss
+ * để hai loại trận phân biệt được bằng mắt. Hàm thuần.
+ */
+export function daMoodTint(wElite: number, wBoss: number): { w: number; color: number } {
+  const b = Math.min(1, Math.max(0, wBoss));
+  const e = Math.min(1, Math.max(0, wElite)) * (1 - b);
+  return { w: Math.min(1, e * 0.5 + b), color: mixHex(DA_TINT_ELITE, DA_TINT_BOSS, b) };
+}
+
 const st = { level: '', elite: 0, boss: 0, applied: -1 };
 
 /** Gọi mỗi khung khi `?style=da`: tìm tinh anh/boss còn sống gần người chơi, trộn mượt (~0,4 s) rồi áp nếu đổi đáng kể. */
@@ -79,6 +95,12 @@ export function updateDaMood(eng: Game, dt: number, x: number, z: number): void 
   st.boss += (tB - st.boss) * k;
   const wE = st.elite < 0.004 ? 0 : st.elite;
   const wB = st.boss < 0.004 ? 0 : st.boss;
+  // Họa Cảnh không dùng sương: mood theo loại trận đi qua lớp nhuộm khung ở hậu kỳ (rẻ: hai uniform).
+  if (FLAGS.painted) {
+    const tint = daMoodTint(wE, wB);
+    postParams.moodW.value = tint.w;
+    postParams.moodTint.value.setHex(tint.color, THREE.LinearSRGBColorSpace);
+  }
   const sig = wE * 3 + wB * 7;
   if (Math.abs(sig - st.applied) < 0.01) return;
   st.applied = sig;
