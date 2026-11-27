@@ -126,20 +126,20 @@ const SPEC = {
   // Thiểm Lôi Bộ (lướt, kích theo S.FX: mọi mốc ≥ 0): vệt sét zigzag từ chỗ đứng sang mục tiêu, hai đầu quầng chớp, vài tia nhỏ.
   skl_thiem_loi_bo: () => [
     flash('self', [0, 1.1, 0], 2.4, 0),
-    strike('loi_bolt_zigzag', { size: 6, at: 'ahead', off: [0, 1.2, 2.8], dur: 0.5, align: 'aim' }),
+    strike('loi_bolt_zigzag', { size: 6, at: 'ahead', off: [0, 3.4, 2.8], dur: 0.26, align: 'aim' }),
     sprite('loi_bolt_zigzag', {
       t: 0.04,
-      dur: 0.45,
+      dur: 0.26,
       at: 'ahead',
-      off: [0.3, 1.0, 3.4],
+      off: [0.3, 3.2, 3.4],
       size: 4.2,
-      alpha: 0.5,
+      alpha: 0.4,
       align: 'aim',
       erodeFrom: 0.15,
     }),
     scorch('ahead', [0, 0.02, 3.2], 2.4),
-    flash('ahead', [0, 1.2, 5.4], 2.2, 0.02),
-    after('ahead', [0, 1.3, 3.8], 2.4, 0.2, 1.1),
+    flash('ahead', [0, 2.0, 5.4], 2.0, 0.02, { dur: 0.12 }),
+    after('ahead', [0, 3.2, 3.8], 2.4, 0.2, 1.1),
     sparks('ahead', [0, 1.2, 4], 10, 0.05),
   ],
   // Lôi Ấn Kích: tia sét dày chẻ nhánh giáng thẳng từ trên xuống, điểm trúng bừng dấu ấn ba vạch chụm.
@@ -263,15 +263,15 @@ const SPEC = {
   ],
   // Lôi Hải: biển hồ quang bò sát đất cuộn lên như sóng điện, nhiều tia nhỏ nhảy cao, giữa vùng nổ chớp lớn.
   skl_loi_hai: () => [
-    ...[gather('loi_wave', { size: 5, off: [0, 1.6, 0] })],
+    ...[gather('loi_wave', { size: 4, off: [0, 3.8, 0] })],
     pullIn('target', [0, 1.2, 0], -0.24),
     ...[
-      [-3.0, 0.8, 0],
-      [3.0, 0.8, 0.04],
-    ].map(([x, z, dt]) => strike('loi_wave', { size: 5, off: [x, 1.7, z], t: dt, dur: 0.6, erodeFrom: 0.12 })),
-    ground('target', [0, 0.15, 0], 6, 0.0, { dur: 0.5, alpha: 0.4 }),
-    flash('target', [0, 1.2, 0], 2.6, 0.02, { dur: 0.12 }),
-    after('target', [0, 2.6, 0], 3.4, 0.19, 1.6),
+      [-4.4, 0.8, 0],
+      [4.4, 0.8, 0.04],
+    ].map(([x, z, dt]) => strike('loi_wave', { size: 5, off: [x, 3.2, z], t: dt, dur: 0.28, erodeFrom: 0.12 })),
+    ground('target', [0, 0.15, 0], 6, 0.0, { dur: 0.34, alpha: 0.3 }),
+    flash('target', [0, 2.0, 0], 2.2, 0.02, { dur: 0.12 }),
+    after('target', [0, 3.6, 0], 3.4, 0.19, 1.6),
     sparks('target', [0, 1.4, 0], 14, 0),
   ],
 };
