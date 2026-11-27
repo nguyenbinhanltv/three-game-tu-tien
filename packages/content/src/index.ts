@@ -121,6 +121,8 @@ import xichTanKhichAssetsJson from '../data/levels/xich_tan_khich.assets.json';
 import kimDaCungJson from '../data/levels/kim_da_cung.json';
 import kimDaCungAssetsJson from '../data/levels/kim_da_cung.assets.json';
 import luyenThanJson from '../data/levels/luyen_than.json';
+import dienVoJson from '../data/levels/dien_vo.json';
+import dienVoAssetsJson from '../data/levels/dien_vo.assets.json';
 import luyenThanAssetsJson from '../data/levels/luyen_than.assets.json';
 import starsJson from '../data/stars.json';
 import doKiepAssetsJson from '../data/levels/do_kiep.assets.json';
@@ -350,6 +352,7 @@ export const LEVELS: Record<string, LevelDef> = {
   xich_tan_khich: xichTanKhichJson as LevelDef,
   kim_da_cung: kimDaCungJson as LevelDef,
   luyen_than: luyenThanJson as LevelDef,
+  dien_vo: dienVoJson as LevelDef,
 };
 // Địa hình dữ liệu hóa của bản đồ mở rộng (E2-A): đăng ký khi nạp @dtl/content để server, client và công cụ cùng thấy `terrainOf('doan_mach')`.
 registerTerrain(doanMachTerrainJson as unknown as TerrainDef);
@@ -387,6 +390,7 @@ export const LEVEL_ASSETS: Record<string, LevelAssets> = {
   xich_tan_khich: xichTanKhichAssetsJson as LevelAssets,
   kim_da_cung: kimDaCungAssetsJson as LevelAssets,
   luyen_than: luyenThanAssetsJson as LevelAssets,
+  dien_vo: dienVoAssetsJson as LevelAssets,
 };
 // Mood và lớp prop sàn phòng cầu Cửu Kiều (TN-7): bảng `KIEU_MOOD` (sinh bởi tools/maps/gen-kieu-arena.mjs) ghi đè `assets.mood` để cầu 3–9 (level thêm sau) tự theo.
 for (const [id, a] of Object.entries(LEVEL_ASSETS)) {

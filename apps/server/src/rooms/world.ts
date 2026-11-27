@@ -1,6 +1,6 @@
 // Room bản đồ thế giới (R-7, tách từ rooms.ts).
 import { ServerError } from 'colyseus';
-import { HOME_LEVEL, PF_DEAD, SPAWN_POINT, TELE_PARTY_R, TRIB_DEFS, TRIB_IDS, worldRoomName, at } from '@dtl/shared';
+import { HOME_LEVEL, PRACTICE_LEVEL, PF_DEAD, SPAWN_POINT, TELE_PARTY_R, TRIB_DEFS, TRIB_IDS, worldRoomName, at } from '@dtl/shared';
 import { LEVELS, realmName, t } from '@dtl/content';
 import { ERR_NO_TICKET } from '../auth';
 import { parties } from '../game/party';
@@ -41,6 +41,20 @@ export class WorldRoom extends GameRoom {
   simOptions(): SimOptions {
     const spawn = at(LEVELS, this.levelId).spawn ?? SPAWN_POINT;
     return { levelId: this.levelId, roomName: worldRoomName(this.levelId), spawn, respawn: spawn, persistPosition: true };
+  }
+
+  /** Lệnh GM `/gm dvt`: vào Diễn Võ Trường, mỗi lần một room riêng. Quyền GM đã kiểm ở nơi nhận lệnh; ở đây chỉ kiểm bận. */
+  enterPractice(p: PlayerEnt): boolean {
+    if (!LEVELS[PRACTICE_LEVEL]?.dungeon?.practice) return false;
+    const why = this.sim.leaveBlocker(p);
+    if (why) {
+      this.sim.sys(p, why, undefined, 'bad');
+      return false;
+    }
+    const dgKey = randomUUID();
+    tickets.issue(p.char.id, PRACTICE_LEVEL, null, undefined, dgKey);
+    this.sendTransfer(p, PRACTICE_LEVEL, { dgKey });
+    return true;
   }
 
   override onPortal(p: PlayerEnt): void {
