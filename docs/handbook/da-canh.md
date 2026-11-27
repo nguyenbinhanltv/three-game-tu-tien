@@ -86,7 +86,7 @@ Chưa có: nội dung riêng cho bục nhân vật, buồng ánh sáng và tư�
 - Preset Thấp trên WebGL2: có một vệt tối tròn lệch phía trên nhân vật (bóng đổ giả), và nền đất ngoài sàn lốm đốm hạt vì không có bút Kuwahara.
 - Cảnh `nhan_vat_can` không nhìn cận được: camera chéo khóa khoảng cách nên tham số `cam` của cảnh mẫu bị bỏ qua. Bục nhân vật cần một chế độ nhìn cận riêng của phòng.
 - ~~Hiệu ứng che quái~~ **ĐÃ SỬA phần chung (27/11):** xem mục số đo che quái ở trên. Đòn thường còn sát ngưỡng (lớn nhất 47%): nét cọ `fx_hit_cut` vẫn xẻ qua thân theo thiết kế; nếu cần giảm nữa thì dời nét về phía camera ở Xưởng VFX (V2b).
-- **Tấm hiệu ứng nằm đất bị cắt đôi (chưa sửa):** vòng pháp trận vàng lớn của chiêu ô 4 mất nửa phải vì sàn phòng bám địa hình hơi dốc còn tấm hiệu ứng thì phẳng. `Vfx.sigil` đã sửa, loại tấm của timeline thì chưa; cần xem trên bản đồ thật (nền dốc) có bị như vậy không.
+- **Vòng pháp trận vàng của chiêu ô 4 khuyết một múi (CHƯA RÕ NGUYÊN NHÂN):** giả thuyết "tấm phẳng chìm dưới sàn dốc" SAI: đã cho tấm decal lớn của timeline tự nâng theo điểm cao nhất quanh nó (`apps/client/src/game/fx/groundLift.ts`, giữ lại vì đúng cho nền dốc thật) mà múi khuyết vẫn y nguyên, mép thẳng, cùng vị trí ở mọi khung. Chưa xác định được chiêu nào và lớp nào vẽ vòng này (không phải `skl_*_ho_the`). Cần Xưởng VFX (V2b: bật tắt từng lớp, thanh thời gian) để khoanh; khả năng là hình quét góc của chính tấm đó hoặc một lưới khác ghi độ sâu phía trước.
 - Còn lại: hào quang cảnh giới (mây lam quanh nhân vật cấp cao) bị bút Kuwahara làm nhòe thành vệt; cảnh bầy 12 sói chỉ 9 con có viền (trần 10 thể).
 
 ## Lộ trình
