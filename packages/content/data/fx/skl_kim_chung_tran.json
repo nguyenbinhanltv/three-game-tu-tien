@@ -160,10 +160,10 @@
   {
    "type": "mesh",
    "t": 0,
-   "dur": 1.4,
+   "dur": 0.16,
    "at": "self",
    "sweep": 0,
-   "erodeFrom": 0.5,
+   "erodeFrom": 0.6,
    "ragged": 0.5,
    "tone": "body",
    "alpha": 0.85,
@@ -174,20 +174,34 @@
    "billboard": true,
    "offset": [
     0,
-    2.2,
-    0
+    1.7,
+    -1.7
    ],
-   "scale": 3.12,
-   "scaleTo": 3.8,
-   "move": {
-    "to": "self",
-    "offset": [
-     0,
-     1.7,
-     0
-    ],
-    "ease": "in"
-   }
+   "scale": 2.05,
+   "scaleTo": 2.5
+  },
+  {
+   "type": "mesh",
+   "t": 0.13,
+   "dur": 1.27,
+   "at": "self",
+   "sweep": 0,
+   "erodeFrom": 0.45,
+   "ragged": 0.5,
+   "tone": "body",
+   "alpha": 0.3,
+   "tier": 0,
+   "seed": 1002,
+   "shape": "sprite",
+   "sprite": "hp_bell",
+   "billboard": true,
+   "offset": [
+    0,
+    1.7,
+    -1.7
+   ],
+   "scale": 2.5,
+   "scaleTo": 2.5
   },
   {
    "type": "mesh",
@@ -200,17 +214,17 @@
    "tone": "body",
    "alpha": 0.9,
    "tier": 0,
-   "seed": 1002,
+   "seed": 1003,
    "shape": "sprite",
    "sprite": "hp_flash",
    "billboard": true,
    "offset": [
     0,
     1.4,
-    0
+    -0.5
    ],
-   "scale": 2,
-   "scaleTo": 2.5
+   "scale": 1.8,
+   "scaleTo": 2.25
   },
   {
    "type": "decal",
@@ -238,25 +252,25 @@
    "erodeFrom": 0.2,
    "ragged": 0.5,
    "tone": "body",
-   "alpha": 0.75,
+   "alpha": 0.3,
    "tier": 0,
-   "seed": 1003,
+   "seed": 1004,
    "shape": "sprite",
    "sprite": "hp_dust",
    "billboard": true,
    "offset": [
     0,
-    0.6,
-    0
+    1,
+    -1.7
    ],
-   "scale": 3,
-   "scaleTo": 3,
+   "scale": 1.8,
+   "scaleTo": 1.8,
    "move": {
     "to": "self",
     "offset": [
      0,
-     1.6,
-     0
+     1.8,
+     -1.7
     ],
     "ease": "out"
    }
@@ -275,7 +289,7 @@
     "tone": "body",
     "alpha": 0.8,
     "tier": 0,
-    "seed": 1004,
+    "seed": 1005,
     "shape": "sprite",
     "sprite": "hp_rubble",
     "billboard": true,
@@ -300,7 +314,7 @@
     "tone": "body",
     "alpha": 0.8,
     "tier": 0,
-    "seed": 1005,
+    "seed": 1006,
     "shape": "sprite",
     "sprite": "hp_shield",
     "billboard": true,

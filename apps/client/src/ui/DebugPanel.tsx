@@ -455,6 +455,9 @@ function Tools() {
                 <Button size="s" onClick={() => gm('scene save')}>
                   {t('ui.gm.lab.scene_save')}
                 </Button>
+                <Button size="s" onClick={() => Game.current?.labCamSet(Game.current.labCam ? 0 : 7)}>
+                  {t('ui.gm.lab.cam_close')}
+                </Button>
               </div>
               <div className="debug-row wrap">
                 <Pick

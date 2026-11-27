@@ -187,18 +187,12 @@ const SPEC = {
   skl_kim_chung_tran: () => [
     ...[gather('hp_bell', { size: 2.4, off: [0, 3.6, 0], rest: { at: 'self' } })],
     pullIn('self', [0, 1.4, 0], -0.26),
-    strike('hp_bell', {
-      size: 3.8,
-      at: 'self',
-      off: [0, 2.2, 0],
-      dur: 1.4,
-      alpha: 0.85,
-      erodeFrom: 0.5,
-      move: { to: 'self', offset: [0, 1.7, 0], ease: 'in' },
-    }),
-    flash('self', [0, 1.4, 0], 2, 0.03, { dur: 0.14 }),
+    // Hào quang quanh mình (27/11): chuông bật ĐẦY 0,16 s rồi ở lại dạng bóng mờ sau lưng, địch đứng sát không bị che.
+    strike('hp_bell', { size: 2.5, at: 'self', off: [0, 1.7, -1.7], dur: 0.16, alpha: 0.85, erodeFrom: 0.6 }),
+    { ...sprite('hp_bell', { t: 0.13, dur: 1.27, at: 'self', off: [0, 1.7, -1.7], size: 2.5, erodeFrom: 0.45 }), alpha: 0.3 },
+    flash('self', [0, 1.4, -0.5], 1.8, 0.03, { dur: 0.14 }),
     scorch('self', [0, -1.05, 0], 2.2, -0.05, 2.2),
-    after('self', [0, 0.6, 0], 3, 0.25, 1),
+    { ...after('self', [0, 1.0, -1.7], 1.8, 0.25, 0.8), alpha: 0.3 },
   ],
   // Sơn Nhạc Hóa Thân: thân phình lớn thành ngọn núi — ba đỉnh núi đá lởm chởm trồi lên quanh người, tảng đá và mây bụi quấn chân.
   skl_son_nhac_hoa_than: () => [
@@ -226,11 +220,13 @@ const SPEC = {
   skl_anh_thiet_than: () => [
     ...[gather('hp_armor', { size: 2.6, off: [0, 2, -0.8], rest: { at: 'self' } })],
     pullIn('self', [0, 1.4, 0], -0.24),
-    strike('hp_armor', { size: 4.4, at: 'self', off: [0, 2.2, -0.8], dur: 1.6, alpha: 0.75, erodeFrom: 0.5 }),
-    flash('self', [0, 1.4, 0], 2, 0.03, { dur: 0.14 }),
-    scorch('self', [0, -1.05, 0], 3.2, -0.1, 2.4),
-    scorch('self', [0, -1.05, 0], 2.72, -0.1, 2.4),
-    after('self', [0, 1.3, 0], 2.6, 0.25, 1.2),
+    // Hào quang quanh mình (27/11): bóng giáp bật ĐẦY 0,16 s rồi ở lại dạng bóng mờ sau lưng.
+    strike('hp_armor', { size: 2.6, at: 'self', off: [0, 1.6, -1.7], dur: 0.16, alpha: 0.8, erodeFrom: 0.6 }),
+    { ...sprite('hp_armor', { t: 0.13, dur: 1.47, at: 'self', off: [0, 1.6, -1.7], size: 2.6, erodeFrom: 0.5 }), alpha: 0.3 },
+    flash('self', [0, 1.4, -0.5], 1.8, 0.03, { dur: 0.14 }),
+    scorch('self', [0, -1.05, 0], 2.4, -0.1, 2.4),
+    scorch('self', [0, -1.05, 0], 2.04, -0.1, 2.4),
+    { ...after('self', [0, 1.3, -1.7], 1.8, 0.25, 0.8), alpha: 0.3 },
   ],
   // Thuấn Di Hộ Thế: vệt ánh vàng nối hai điểm, tới nơi úp lên đồng đội tấm khiên cổ đỉnh nhọn.
   skl_thuan_di_ho_the: () => [

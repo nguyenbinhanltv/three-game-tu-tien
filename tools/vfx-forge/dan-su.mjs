@@ -138,20 +138,22 @@ const SPEC = {
     gather('dan_smoke_spiral', { size: 2.6, off: [0, 1.7, 0.3], rest: { at: 'self' } }),
     pullIn('self', [0, 1.5, 0.3], -0.3),
     scorch('self', [0, 0.02, 0], 1.6, -0.1),
-    strike('dan_lo_tripod', { size: 2.6, at: 'self', off: [0, 1.6, 0.5], dur: 1.1, erodeFrom: 0.55 }),
-    sprite('dan_flame', { t: 0.0, dur: 1.0, at: 'self', off: [0, 2.15, 0.5], size: 1.4, alpha: 0.9, erodeFrom: 0.5 }),
+    // Hào quang quanh mình (27/11): lò đan bật ĐẦY 0,16 s rồi ở lại dạng bóng mờ sau lưng; khói bay lên cao, lùi sau lưng.
+    strike('dan_lo_tripod', { size: 2.4, at: 'self', off: [0, 1.5, -1.7], dur: 0.16, erodeFrom: 0.6 }),
+    { ...sprite('dan_lo_tripod', { t: 0.13, dur: 0.97, at: 'self', off: [0, 1.5, -1.7], size: 2.4, erodeFrom: 0.45 }), alpha: 0.3 },
+    sprite('dan_flame', { t: 0.0, dur: 1.0, at: 'self', off: [0, 2.0, -1.7], size: 1.2, alpha: 0.5, erodeFrom: 0.5 }),
     sprite('dan_smoke_spiral', {
       t: 0.05,
       dur: 1.0,
       at: 'self',
-      off: [0, 2.9, 0.4],
-      size: 2.8,
-      alpha: 0.65,
+      off: [0, 2.9, -1.7],
+      size: 2.4,
+      alpha: 0.4,
       erodeFrom: 0.35,
-      move: { to: 'self', offset: [0, 3.5, 0.4], ease: 'out' },
+      move: { to: 'self', offset: [0, 3.5, -1.7], ease: 'out' },
     }),
-    flash('self', [0, 1.8, 0.5], 1.8, 0.01),
-    after('self', [0, 2.0, 0.4], 2, 0.2, 0.9),
+    flash('self', [0, 1.8, -0.5], 1.6, 0.01),
+    { ...after('self', [0, 2.0, -1.7], 1.6, 0.2, 0.8), alpha: 0.3 },
   ],
   // Đan Hỏa Chỉ: viên đan lớn sáng vàng chanh kéo đuôi khói mực lục dài bắn từ ngón tay tới mục tiêu, điểm trúng nở hoa lửa nhỏ.
   skl_dan_hoa_chi: () => [
@@ -220,10 +222,12 @@ const SPEC = {
     gather('dan_smoke_bud', { size: 2.4, off: [0, 1.5, 0], rest: { at: 'self' } }),
     scorch('self', [0, 0.02, 0], 1.7, -0.1),
     pullIn('self', [0, 0.9, 0], -0.22),
-    strike('dan_smoke_bud', { size: 3.4, at: 'self', off: [0, 1.9, 0], dur: 1.0, erodeFrom: 0.4, alpha: 0.85 }),
-    flash('self', [0, 1.3, 0], 2, 0.01),
-    after('self', [0, 1.6, 0], 2.4, 0.2, 1.1),
-    leaves('self', [0, 1.0, 0], 8, 0.05, { speed: 0.9 }),
+    // Hào quang quanh mình (27/11): cột khói bật ĐẦY 0,16 s rồi ở lại dạng bóng mờ sau lưng.
+    strike('dan_smoke_bud', { size: 2.4, at: 'self', off: [0, 1.5, -1.7], dur: 0.16, erodeFrom: 0.6, alpha: 0.85 }),
+    { ...sprite('dan_smoke_bud', { t: 0.13, dur: 0.87, at: 'self', off: [0, 1.5, -1.7], size: 2.4, erodeFrom: 0.4 }), alpha: 0.3 },
+    flash('self', [0, 1.3, -0.5], 1.6, 0.01),
+    { ...after('self', [0, 1.4, -1.7], 1.6, 0.2, 0.8), alpha: 0.3 },
+    leaves('self', [0, 1.0, -0.8], 8, 0.05, { speed: 0.9 }),
   ],
   // Đan Hỏa Phong Tràn: viên đan lớn ném xuống mục tiêu rồi vỡ thành bông mẫu đơn lửa lục nhiều lớp cánh dày (6 m), cánh ngoài cuộn khói mực.
   skl_dan_hoa_phong_tran: () => [
