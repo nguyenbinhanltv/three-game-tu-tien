@@ -3,7 +3,7 @@
 // - tools: bấm các nút mới của tab Diễn Võ (nhật ký điều khiển, khoảnh khắc đợt hai, máu/linh lực giả, kiểm máy yếu) rồi đối chiếu trạng thái game.
 // - contrast: TƯƠNG PHẢN CHỮ của HUD trên nền game thật (WCAG): chụp HUD với chữ trong suốt để lấy nền ngay dưới từng dòng chữ, tính tỉ lệ tương phản
 //   của màu chữ với từng điểm ảnh nền; báo dòng có phân vị 10% dưới 4,5 (chữ thường) hoặc 3 (chữ lớn ≥ 24 px, hoặc ≥ 18,7 px đậm).
-//   Giới hạn: WCAG không tính bóng chữ/viền chữ, nên chữ có bóng đậm đọc được hơn con số ở đây.
+//   Giới hạn: WCAG không tính bóng chữ, nên chữ có bóng đậm đọc được hơn con số ở đây. Chữ có VIỀN từ 1,5 px vẽ dưới nét chữ thì tính chữ so với viền.
 //   Bỏ qua chữ đang mờ dần (độ đục dưới 0,9 ở chính nó hoặc khối cha: dòng chat sắp tan, thông báo đang hiện) vì màu đo được là màu giữa chừng.
 // - windows: dựng nhân vật đủ đồ rồi mở TỪNG cửa sổ ở năm cỡ màn hình; báo cửa sổ tràn khỏi khung nhìn và dòng chữ bị cắt (tràn ngang trong ô ẩn phần thừa).
 // - sound: xưởng âm thanh — bấm nút thật (đầu dò tiếng, ép nhạc boss), in bảng lệch tiếng so với mốc trúng của mọi chiêu `skl_*` (đo từ dữ liệu).
@@ -28,6 +28,8 @@ interface TextBox {
   px: number;
   bold: boolean;
   shadow: boolean;
+  /** Màu viền chữ (r, g, b) khi chữ có viền từ 1,5 px vẽ DƯỚI nét chữ; null = không viền. */
+  stroke: number[] | null;
 }
 
 const lin = (v: number): number => {
@@ -245,7 +247,7 @@ export default {
           var m = cs.color.match(/[\\d.]+/g) || ['255', '255', '255'];
           var name = (typeof e.className === 'string' ? e.className : '').trim().split(/\\s+/)[0] || e.tagName.toLowerCase();
           var par = e.parentElement && typeof e.parentElement.className === 'string' ? e.parentElement.className.trim().split(/\\s+/)[0] : '';
-          out.push({ text: txt.slice(0, 28), sel: (par ? par + ' > ' : '') + name, x: r.left, y: r.top, w: r.width, h: r.height, c: [Number(m[0]), Number(m[1]), Number(m[2]), m.length > 3 ? Number(m[3]) : 1], px: parseFloat(cs.fontSize), bold: Number(cs.fontWeight) >= 600, shadow: cs.textShadow !== 'none' || (cs.webkitTextStrokeWidth && cs.webkitTextStrokeWidth !== '0px') });
+          out.push({ text: txt.slice(0, 28), sel: (par ? par + ' > ' : '') + name, x: r.left, y: r.top, w: r.width, h: r.height, c: [Number(m[0]), Number(m[1]), Number(m[2]), m.length > 3 ? Number(m[3]) : 1], px: parseFloat(cs.fontSize), bold: Number(cs.fontWeight) >= 600, shadow: cs.textShadow !== 'none', stroke: parseFloat(cs.webkitTextStrokeWidth) >= 1.5 && cs.paintOrder.indexOf('stroke') === 0 ? (cs.webkitTextStrokeColor.match(/[\\d.]+/g) || []).slice(0, 3).map(Number) : null });
         }
         return out;
       })()`)) as (TextBox & { skip?: boolean })[];
@@ -274,6 +276,12 @@ export default {
               const fg = lum(b.c[0] * a + br * (1 - a), b.c[1] * a + bgc * (1 - a), b.c[2] * a + bb * (1 - a));
               ratios.push(contrast(fg, lum(br, bgc, bb)));
             }
+          // Chữ có viền mực vẽ dưới nét chữ: nền sát chữ là chính viền đó, nên tương phản tính giữa màu chữ và màu viền (không phụ thuộc nền phía sau).
+          if (b.stroke && b.stroke.length === 3) {
+            const k = contrast(lum(b.c[0], b.c[1], b.c[2]), lum(b.stroke[0]!, b.stroke[1]!, b.stroke[2]!));
+            ratios.length = 0;
+            ratios.push(k);
+          }
           ratios.sort((p, q) => p - q);
           const at = (f: number) => ratios[Math.min(ratios.length - 1, Math.floor(ratios.length * f))] ?? 0;
           const large = b.px >= 24 || (b.px >= 18.66 && b.bold);
