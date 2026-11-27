@@ -7,6 +7,8 @@ export interface SfxRow {
   vol: number;
   /** `performance.now()` lúc gọi. */
   at: number;
+  /** Tiếng đặt lịch trễ (tiếng vung chờ tới sát khung trúng): số ms từ lúc gọi tới lúc tiếng vang lên. Bỏ trống = phát ngay. */
+  delayMs?: number;
   /** `ok` đã phát; `mute` đang tắt tiếng; `quiet` âm lượng dưới ngưỡng nghe; `throttle` trùng tên trong 45 ms; `idle` âm thanh chưa mở khóa. */
   why: 'ok' | 'mute' | 'quiet' | 'throttle' | 'idle';
 }

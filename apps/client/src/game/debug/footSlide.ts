@@ -31,12 +31,24 @@ export const SLIDE_WARN_CM_PER_M = 12;
 /** Chân "trụ" mà dịch nhanh hơn ngần này (m/s) là dịch chuyển tức thời (lướt, giật lùi, hụt khung), không phải trượt: bỏ khỏi số đo. */
 export const SLIDE_JUMP = 8;
 
+/** Trạng thái tức thời của một bàn chân (cho giao diện xưởng). */
+export interface FootState {
+  /** Cao hơn mặt đất (m). */
+  h: number;
+  planted: boolean;
+  /** Tốc độ ngang (m/s). */
+  v: number;
+}
+
+/** Đế của nhịp bước = độ cao thấp nhất của bàn chân trong cửa sổ này (giây): dài hơn một chu kỳ bước, đủ ngắn để theo kịp khi đổi clip. */
+export const SLIDE_BASE_WINDOW = 1.2;
+
 interface Foot {
   x: number;
   y: number;
   z: number;
-  /** Độ cao thấp nhất so với đất đã thấy (đế của nhịp bước), trồi chậm lên để theo được clip khác. */
-  base: number;
+  /** Lịch sử độ cao so với đất trong `SLIDE_BASE_WINDOW` giây gần nhất (tuổi tính bằng giây đã đo). */
+  hist: { t: number; h: number }[];
   planted: boolean;
   /** Tốc độ trượt khung trước (để bỏ gai một khung khi tính đỉnh). */
   lastV: number;
@@ -55,6 +67,9 @@ export class FootSlide {
   private acc = new Map<string, Acc>();
   private key = '';
   private root: { x: number; z: number } | null = null;
+  private clock = 0;
+  /** Trạng thái từng bàn chân ở khung vừa đo. */
+  now: FootState[] = [];
 
   /**
    * @param lift chân cao hơn đế nhịp bước chừng này (m) thì coi là đang nhấc.
@@ -70,6 +85,8 @@ export class FootSlide {
     this.acc.clear();
     this.root = null;
     this.key = '';
+    this.clock = 0;
+    this.now = [];
   }
 
   /** Một khung: `dt` giây, clip nền trội `key`, vị trí gốc nhân vật và các bàn chân. Khung quá dài (tab ẩn) hoặc dt = 0 (đang dừng hình) bị bỏ. */
@@ -79,22 +96,25 @@ export class FootSlide {
       // Đổi clip hoặc đứt nhịp: lấy lại mốc, không tính quãng nhảy.
       this.key = key;
       this.root = { x: rootX, z: rootZ };
-      this.feet = feet.map((f, i) => ({ x: f.x, y: f.y, z: f.z, base: Math.min(this.feet[i]?.base ?? Infinity, f.y - f.ground), planted: false, lastV: 0 }));
+      this.feet = feet.map((f, i) => ({ x: f.x, y: f.y, z: f.z, hist: this.feet[i]?.hist ?? [], planted: false, lastV: 0 }));
       return;
     }
     let a = this.acc.get(key);
     if (!a) this.acc.set(key, (a = { time: 0, planted: 0, slide: 0, travel: 0, peak: 0 }));
     a.time += dt;
+    this.clock += dt;
     a.travel += Math.hypot(rootX - this.root!.x, rootZ - this.root!.z);
     this.root!.x = rootX;
     this.root!.z = rootZ;
     feet.forEach((f, i) => {
       const p = this.feet[i]!;
       const h = f.y - f.ground;
-      // Đế nhịp bước: bám ngay khi thấp hơn, trồi 2 cm/s khi cao hơn (đổi sang clip có cổ chân cao hơn vẫn nhận ra chân trụ).
-      p.base = h < p.base ? h : p.base + 0.02 * dt;
+      p.hist.push({ t: this.clock, h });
+      while (p.hist.length && this.clock - p.hist[0]!.t > SLIDE_BASE_WINDOW) p.hist.shift();
+      let base = h;
+      for (const s of p.hist) if (s.h < base) base = s.h;
       const vy = Math.abs(f.y - p.y) / dt;
-      const planted = h <= p.base + this.lift && vy <= this.maxVy;
+      const planted = h <= base + this.lift && vy <= this.maxVy;
       const d = Math.hypot(f.x - p.x, f.z - p.z);
       const v = d / dt;
       if (planted && p.planted && v <= SLIDE_JUMP) {
@@ -104,6 +124,7 @@ export class FootSlide {
         a.peak = Math.max(a.peak, Math.min(v, p.lastV));
         p.lastV = v;
       } else p.lastV = 0;
+      this.now[i] = { h, planted, v };
       p.planted = planted;
       p.x = f.x;
       p.y = f.y;

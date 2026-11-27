@@ -1,0 +1,26 @@
+/* Lớp phủ số đo của xưởng âm thanh + xưởng animation (Diễn Võ Trường, V2d). Dùng lại khung `.lab-trace`; neo đáy để bảng mọc lên trên,
+   không đè nhật ký điều khiển (neo đỉnh) và không lọt xuống thanh chiêu. */
+.lab-ws {
+  position: fixed;
+  top: auto;
+  bottom: 150px;
+  max-width: 620px;
+}
+.lab-ws table + .lab-trace-head {
+  margin-top: 6px;
+}
+.lab-ws td.num,
+.lab-ws th.num {
+  text-align: right;
+}
+.lab-ws .bad {
+  color: var(--gold);
+  font-weight: 700;
+}
+.lab-ws-note {
+  opacity: 0.7;
+}
+.lab-clip-seek {
+  flex: 1 1 160px;
+  min-width: 0;
+}
