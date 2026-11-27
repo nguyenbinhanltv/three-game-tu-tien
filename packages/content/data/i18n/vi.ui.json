@@ -1200,6 +1200,7 @@
   "ui.gm.lab.style.cel": "Chia bậc nhân vật",
   "ui.gm.lab.style.night": "Độ sáng đêm",
   "ui.gm.lab.style.fog": "Sương thấp ×",
+  "ui.gm.lab.style.monrim": "Viền sáng quái",
   "ui.gm.lab.style.reset": "Về mặc định",
   "ui.gm.lab.style.save": "Lưu {s}",
   "ui.gm.lab.style.load": "Gọi {s}",

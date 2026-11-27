@@ -127,7 +127,18 @@ export function toonLevel(r: number): number {
 /** Phòng thử (khu Phong cách): độ sâu chia bậc của Dạ Cảnh, 1 = ba bậc như quy định, 0 = tô mịn không chia bậc. Mặc định 1 cho ra đúng kết quả cũ. */
 export const toonDepth = uniform(1);
 
-export function toonBands(m: THREE.MeshStandardNodeMaterial): THREE.MeshStandardNodeMaterial {
+/**
+ * Dạ Cảnh: cường độ VIỀN SÁNG TÁCH NỀN của quái (0 = tắt). Quái xám/nâu trên nền đêm lam tối gần như cùng độ sáng với nền, mà viền mực lại tối trên
+ * tối; giả thuyết là một viền fresnel hẹp sắc trăng lạnh ở mép hình bóng sẽ tách khối. ĐO (`pnpm shots daread`, 28/11) cho kết quả NGƯỢC LẠI: quái đọc như
+ * bóng tối trên sàn sáng hơn, viền sáng kéo mép thân về gần độ sáng nền (tương phản mép 40,7 → 31,1 ở 1,2) và làm nhạt sắc đỏ của tinh anh/boss.
+ * Vì vậy mặc định 0; giữ làm núm thử ở khu Phong cách của phòng thử.
+ */
+export const DA_SEP_RIM = 0;
+export const daSepRim = uniform(DA_SEP_RIM);
+/** Sắc viền tách nền (tuyến tính): trăng lạnh, khớp ánh viền đạo cụ của Dạ Họa. */
+const DA_SEP_COLOR = vec3(0.5, 0.68, 1.0);
+
+export function toonBands(m: THREE.MeshStandardNodeMaterial, sepRim = false): THREE.MeshStandardNodeMaterial {
   const lit = output.rgb;
   const base = luminance(diffuseColor.rgb).max(0.02);
   const r = luminance(lit).div(base);
@@ -136,6 +147,13 @@ export function toonBands(m: THREE.MeshStandardNodeMaterial): THREE.MeshStandard
   const lvl = mix(r.min(TOON_HILITE), banded, toonDepth);
   // Phần vượt bậc sáng nhất (viền sáng, đèn mạnh) giữ nguyên để rim và điểm sáng không bị cắt.
   const k = lvl.add(r.sub(TOON_HILITE).max(0)).div(r.max(0.02));
+  if (sepRim) {
+    // Mép hình bóng (pháp tuyến gần vuông góc hướng nhìn), mạnh hơn ở nửa trên thân để chân không sáng hơn lưng; cộng SAU chia bậc nên viền không bị lượng tử.
+    const fres = float(1).sub(normalView.dot(positionViewDirection).clamp(0, 1)).pow(3);
+    const up = normalWorld.y.mul(0.5).add(0.5);
+    m.outputNode = vec4(lit.mul(k).add(DA_SEP_COLOR.mul(fres.mul(mix(float(0.45), float(1), up)).mul(daSepRim))), output.a);
+    return m;
+  }
   m.outputNode = vec4(lit.mul(k), output.a);
   return m;
 }

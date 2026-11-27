@@ -326,3 +326,15 @@ Nguồn số: `textures.json` của `roomperf` (mọi texture đang sống trên
 Gộp 1 + 3 + 4 + 5: khoảng **150–175 MB**, đưa phòng tập từ 344 MB về quanh 170–195 MB. Đề xuất thứ tự: **1** (lợi lớn nhất, đã có cổng VFX để so ảnh), rồi **4** bản hạ bậc cho phòng tập và **5** cho phòng tập (không rủi ro cho bản đồ khác), rồi mới tới **3** vì phải quyết đường nâng three hay đổi mã hóa.
 
 Chưa biết: bốn tấm 2048×1024 và 1024×2048 không có tên file là của hệ nào (hai tấm trong đó không mang đường dẫn nguồn); mức lộ bậc thật của BC1/BC3 trên sprite VFX (phải nén thử mới biết); số trên là của MỘT phiên ở preset Cao, preset Vừa/Thấp và WebGL2 chưa đo (WebGL2 nhận BC7 nên normal đã nén sẵn ở đó).
+
+## Dạ Họa: độ đọc rõ của quái, boss và bảng tên (28/11)
+
+Soát ở góc nhìn thật của game trên các cảnh sàn của bộ gốc. Công cụ đo: `pnpm shots daread --out <thư mục> [--only soi_thuong,tinh_anh,bay_dong,boss] [--key <tham số phong cách>] [--vals 0,0.7,1.2]` (`tools/perf/src/scenarios/daread.ts`). Mỗi cảnh: `/gm face 90` cho quái đứng yên (KHÔNG dùng `/gm freeze`, đó là công tắc), dừng lớp hình, chụp một ảnh cho từng giá trị của tham số, rồi ẩn thân quái + vỏ viền mực và chụp ảnh nền. Trên mặt nạ thân: **tách** = trung bình chênh độ sáng thân so với nền ngay sau nó (0–255), **chìm** = phần thân chênh dưới 10, **mép** = như tách nhưng trên dải 2 px sát mép hình bóng.
+
+**Số nền (Dạ Họa 720p, mặc định):** sói thường tách 43 / chìm 5% / mép 42; bầy 12 sói 36 / 3% / 35; tinh anh 28 / 14% / 32; boss 29 / 16% / 33. Quái đọc như BÓNG TỐI trên sàn sáng hơn; tinh anh và boss tách kém sói thường vì nền của trận tinh anh/boss bị nhuộm tối.
+
+**Thử và BỎ: viền sáng tách nền cho quái** (`daSepRim` ở `apps/client/src/render/materials/world.ts`, núm "Viền sáng quái" ở khu Phong cách). Giả thuyết: viền fresnel sắc trăng ở mép sẽ tách khối. Đo ngược lại ở cả bốn cảnh: sói thường mép 40,7 → 35,1 → 31,1 và chìm 4% → 19% → 29% ở mức 0 / 0,7 / 1,2; boss mép 33,6 → 27,7. Viền sáng kéo mép thân về gần độ sáng của nền và làm nhạt sắc đỏ nhận diện của tinh anh/boss. Mặc định để 0; núm giữ lại để thử.
+
+**Đã sửa: bảng tên và thanh máu trên đầu.** Chữ nhãn vẽ bằng màu sáng (boss cam, tinh anh lam, dòng cấp xám nhạt) nhưng nằm trong cảnh nên bị lớp nhuộm đêm của Dạ Họa làm tối: tên boss thành đỏ nâu trên nền đỏ, dòng "tầng N" gần như mất. Nhân vật và quái đã ở trong mặt nạ hậu kỳ (không bị nhuộm, không bị bút Kuwahara nhòe), bảng tên và thanh máu thì chưa → `markVfxMask` cho vật liệu của `apps/client/src/game/entities/labelBatch.ts` và `apps/client/src/game/entities/headBars.ts`. Chỉ có tác dụng khi cờ `painted` bật (Họa Cảnh, Dạ Họa); phong cách mặc định không đổi. So với bộ gốc trên sáu cảnh sàn: SSIM 0,955–0,974 (thay đổi gói trong vùng nhãn), ΔE00 0,47–0,66, draw call không đổi trong ±4, 0 lỗi console. Thời gian khung không so được (máy đang chạy năm phiên cùng lúc).
+
+**Chưa làm / gợi ý cho tuyến khác:** nền trận tinh anh và boss tối làm thân quái chìm 14–16% (hướng sửa là nền, thuộc lớp nhuộm trận ở hậu kỳ); thân nhân vật cấp Hóa Thần gần như trắng xóa vì hào quang cảnh giới phủ lên (thuộc fx); ở cảnh boss bảng tên nằm sát mép trên khung và dòng cấp bị cắt.

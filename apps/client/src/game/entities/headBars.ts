@@ -1,4 +1,5 @@
 import * as THREE from 'three/webgpu';
+import { markVfxMask } from '../../render/post';
 import {
   abs,
   cameraProjectionMatrix,
@@ -83,6 +84,8 @@ export class HeadBars {
     const isAlly = step(0.5, kind).mul(float(1).sub(step(1.5, kind)));
 
     const mat = new THREE.MeshBasicNodeMaterial({ transparent: true, depthWrite: false, fog: false });
+    // Họa Cảnh / Dạ Họa: thanh máu trên đầu vào mặt nạ hậu kỳ như bảng tên (không bị nhuộm đêm, không bị nhòe).
+    markVfxMask(mat);
     // Billboard: lấy tâm trong view space rồi cộng góc của quad theo trục màn hình.
     const viewCenter = cameraViewMatrix.mul(vec4(A.xyz, 1)).xyz;
     const corner = positionGeometry.xy; // PlaneGeometry 1×1: −0,5..0,5
