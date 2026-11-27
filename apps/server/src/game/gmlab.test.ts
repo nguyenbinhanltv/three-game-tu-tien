@@ -146,6 +146,21 @@ describe('lệnh GM phòng thử', () => {
     }
   });
 
+  it('scene save: cảnh đang dựng đọc lại đúng như cảnh mẫu đã nạp', async () => {
+    const { LAB_SCENES } = await import('@dtl/content');
+    const { sim, p, gm } = setup(true, 'dien_vo');
+    for (const id of ['soi_vo_the', 'tinh_anh', 'boss', 'nhan_vat_can']) {
+      const sc = LAB_SCENES.find((s) => s.id === id)!;
+      gm('scene ' + id);
+      const got = sim.gmSys.sceneOf(p, id);
+      expect(got.at, id).toBe(sc.at);
+      expect(got.method).toBe(sc.method);
+      expect(got.level).toBe(sc.level);
+      expect(got.mons, id).toEqual(sc.mons);
+      expect(got.state, id).toBe(sc.state);
+    }
+  });
+
   it('tài khoản thường gõ lệnh không có tác dụng', () => {
     const { sim, mon, gm } = setup(false);
     const m = mon();
