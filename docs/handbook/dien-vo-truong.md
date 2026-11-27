@@ -246,3 +246,40 @@ Bổ sung cho hai nhóm con "Âm thanh" và "Động tác" ở trên (phát từ
 - **Đã sửa, `refSpeed` đặt lệch** (`apps/client/src/game/character/monsterSkins.ts`; clip chạy, trước → sau): Hỏa Vân Hồ 2,0 → 2,85 (−43% → −9%; clip đi −186% → +10%), Kiếm Linh cùng model 2,0 → 2,85 (sau: −7%), Huyết Nha Lang 4,3 → 1,65 (+62% → +17%), Kiếm Khôi 4,6 → 4,0 (+26% → −7%). Huyết Lang Vương 2,7 → 3,2 còn +22%: số của con này dao động giữa các lượt (72 đến 164 mẫu), chưa chắc đã tốt hơn. Không đổi: sói +11%, heo +11%, thạch viên −2%, Thủ Mộ Tướng +7%.
 - **Đã sửa, quái trôi trong tư thế đánh:** đánh xong server cho đuổi tiếp ngay, clip đòn ở client còn dài nên thân đi 3 đến 6 m/s mà chân không bước. Quái đi nhanh hơn 1,5 m/s liên tục 0,25 giây thì nhả clip đòn thường (`GLIDE_SPEED`, `GLIDE_HOLD` ở `apps/client/src/game/character/skinned.ts`; không áp cho đòn lớn của boss và người chơi). Số mẫu "đang trôi mà clip `attack` còn trội" của sói, thạch viên, Huyết Lang Vương, Kiếm Khôi: 782 → 370 trong cùng kịch bản. Phần còn lại là 0,25 giây chờ + 0,16 giây mờ ra của mỗi đòn khi mình chạy liên tục.
 - **Chưa sửa:** Kính Nguyệt Chân Quân chạy +45% (`refSpeed` 1,3 đã chạm trần tốc độ phát 2,6 lần, phải dựng lại clip chạy sải dài hơn); boss đang `slam` / `sweep` mà thân đi 5 m/s thì chân trôi 75 đến 100% (lao/nhảy có chủ ý hay không là việc của sân boss); mới quét 13 trên 94 quái; lớp phủ F3 chưa hiện cột này (đọc qua kịch bản).
+
+## Vùng trúng thật và độ khớp của vạch báo (28/11)
+
+**Lớp vẽ vùng trúng thật** (chỉ bản dev): nút "Vùng trúng thật" trong bảng Chỉnh phòng (F4; component `ZoneOverlayToggle` ở `apps/client/src/ui/lab-editor/RoomEditPanel.tsx` để gắn vào tab Diễn Võ) hoặc `__labEdit.zones().toggle()`. Mỗi vùng sát thương hiện một viền mảnh trên sàn: lam nhạt cho đòn vùng của quái/boss, lục nhạt cho chiêu của người chơi; viền mờ trong lúc báo, sáng hẳn đúng lúc server phán định rồi tan sau 0,7 giây.
+
+- **Không thêm gì ở server.** Đòn vùng của quái: tin `S.HAZARD` mà mọi client vốn nhận mang NGUYÊN hình server lưu và kiểm bằng `inHazard` (`packages/shared/src/combat.ts`), nên viền là vùng thật, không phải ước lượng (test so 2000 điểm mỗi hình với `inHazard`). Chiêu vùng và chiêu đường thẳng của người chơi: tâm, bán kính, điểm cuối, bề rộng có sẵn trong tin `S.FX`. Vì chỉ dùng dữ liệu client thường đã có, lớp này không mở đường nào để biết trước hay né đòn.
+- **Giới hạn:** đòn thường chém quét của hướng cận chiến vẽ cung theo vị trí người đánh và mục tiêu LÚC TIN TỚI (server tính hướng lúc trúng; lệch tối đa một nhịp đồng bộ), và chưa cộng bán kính thân quái mà server cộng thêm. Đòn đánh đơn, đạn của quái và phản đòn không có vùng nên không vẽ.
+- Mã: `apps/client/src/game/editor/zoneShapes.ts` (hình, thuần, có test), `apps/client/src/game/editor/zoneOverlay.ts` (nghe tin, vẽ viền, nhật ký `log`).
+
+**Đo vạch báo so với vùng thật:** `pnpm --filter @dtl/perf exec tsx src/zonecheck.ts --out <thư mục> --query style=dahoa [--mons id1,id2 | all] [--kinds slam,line]` (`tools/perf/src/scenarios/zonecheck.ts`). Mỗi chiêu: `/gm boss`, `/gm cast <loại> loop`, dừng lớp hình 120 ms trước lúc phán định, chụp hai ảnh cùng khung có và không có nhóm VFX; phần chênh là vạch báo người chơi thật sự thấy. *Phủ* = phần vùng thật có vạch vẽ lên; *Tràn* = vạch vẽ ngoài vùng (trong vòng 3 m), tính theo diện tích vùng. Ảnh ra có chú giải: mép vùng thật (lục), phần vùng không có vạch (lam), phần tràn (vàng).
+
+Dạ Họa 720p, WebGPU preset Cao; hai lượt đo cho số lệch nhau dưới 5 điểm phần trăm:
+
+| Quái | Chiêu | Vùng thật | Báo trước (s) | Phủ | Tràn | Nhận xét |
+| --- | --- | --- | --- | --- | --- | --- |
+| `boss_huyet_lang_vuong` | slam | tròn r 5,5 | 1,70 | 97% | 6% |  |
+| `boss_han_giao` | slam | tròn r 5,5 | 1,70 | 98% | 25% |  |
+| `boss_han_giao` | chant | tròn r 12 | 0,90 | 54% | 5% | vạch tô không kín vùng r 12 |
+| `boss_kiem_khoi` | slam | tròn r 5,5 | 1,70 | 97% | 17% |  |
+| `boss_dia_mach_long` | slam | tròn r 6 | 1,60 | 44% | 19% | đúng cỡ; vạch là pháp trận NÉT (không tô) nên phủ thấp |
+| `boss_dia_mach_long` | line | chữ nhật 30,0 × 4 | 2,00 | 86% | 35% |  |
+| `boss_van_hai_kinh_vuong` | slam | tròn r 7 | 1,50 | 95% | 18% |  |
+| `boss_van_hai_kinh_vuong` | line | chữ nhật 40,0 × 6 | 2,00 | 95% | 36% |  |
+| `boss_kinh_nguyet_chan_quan` | sweep | quạt r 14, 70° | 1,40 | 91% | 28% |  |
+| `boss_thien_khuyet_thu_linh` | slam | tròn r 8 | 1,50 | 76% | 12% | mép ngoài mờ |
+| `boss_thien_khuyet_thu_linh` | line | chữ nhật 20,0 × 4 | 1,80 | 91% | 28% |  |
+| `boss_kim_da_ma_hau` | slam | tròn r 8 | 1,30 | 22% | 9% | **thiếu vạch báo trên sàn** (chỉ có vòng đỏ nhỏ dưới chân boss) |
+| `boss_kim_da_ma_hau` | chant | tròn r 12 | 1,00 | 26% | 5% | **thiếu vạch báo trên sàn** |
+| `boss_tan_hoa_kiem_co` | sweep | quạt r 9, 80° | 1,20 | 76% | 35% |  |
+| `elite_xich_sa_ngo_cong` | burrow | tròn r 3 | 2,00 | 87% | 22% |  |
+| `elite_kinh_dien_ma_quan` | line | chữ nhật 9,0 × 3 | 1,10 | 98% | 59% |  |
+
+- **Không chiêu nào vẽ SAI CỠ hay SAI HÌNH**: ở mọi chiêu có vạch, mép vạch trùng mép vùng thật; bán kính trong thẻ chiêu (`data/vfx/cards/mon`) bằng `ai` của quái. Không có lệch nào ở dữ liệu quái hay server.
+- **Lệch thật, phía hiệu ứng: Kim Dạ Ma Hậu.** Cả đập (r 8, quanh người chơi) lẫn niệm chú (r 12, quanh boss) gần như KHÔNG có vạch báo trên sàn ở 120 ms trước lúc trúng (phủ 22–26%); thứ nhìn thấy chỉ là một vòng đỏ nhỏ dưới chân boss. Người chơi dính đòn 8–12 m mà không được báo.
+- Phủ thấp nhưng đúng cỡ: Địa Mạch Long đập (pháp trận nét vàng, không tô, 44%), Hàn Giao niệm chú (54%), Thiên Khuyết Thủ Lĩnh đập (76%). Đọc được hình nhưng phần ruột vùng không được tô.
+- "Tràn" 5–37% phần lớn KHÔNG phải vạch báo to hơn thật: nó gồm quầng sáng quanh mép, hào quang và hiệu ứng khác của boss nằm chung nhóm VFX, và thân boss/người chơi. Chỉ dùng cột này để tìm chiêu tràn bất thường, không coi là số tuyệt đối.
+- **Chưa đo được:** `charge` và `leap` (boss chỉ ra khi người chơi đứng xa; kịch bản đứng gần), `caster` (đạn, không có vùng). Trong một phiên, các quái đo SAU Kim Dạ Ma Hậu không ra chiêu nữa (chưa rõ vì sao; đo riêng từng con thì được) nên ba dòng cuối bảng lấy từ lượt chạy riêng.

@@ -7,7 +7,7 @@
 //   - tràn %    : phần vạch báo vẽ RA NGOÀI vùng thật, tính theo diện tích vùng (cao = báo to hơn thật)
 //   - vượt mép  : vạch báo lấn ra ngoài viền bao xa (m, phân vị 95 của các ô tràn)
 // Giới hạn: thân quái và nhân vật đứng trong vùng che mất một phần vạch (phủ bị thấp đi); hiệu ứng khác của quái trong cùng nhóm VFX
-// (hào quang, bụi) cũng tính vào "tràn". Dùng để tìm chiêu lệch RÕ, không phải số tuyệt đối. Ảnh `<quái>__<loại>.png` có viền vùng thật.
+// (hào quang, bụi) cũng tính vào "tràn". Dùng để tìm chiêu lệch RÕ, không phải số tuyệt đối. Ảnh `<quái>__<loại>.png` có chú giải: mép vùng thật (lục), phần vùng không có vạch báo (lam), phần vạch tràn ra ngoài (vàng).
 import { MONSTERS } from '@dtl/content';
 import type { Page } from 'playwright';
 import sharp from 'sharp';
@@ -57,6 +57,7 @@ interface ZoneEntry {
 interface Zones {
   enable(): void;
   setVisible(v: boolean): void;
+  hold(on: boolean): void;
   log: ZoneEntry[];
   screenMask(zone: unknown, cell: number, y: number): { w: number; h: number; dist: number[] };
 }
@@ -130,6 +131,8 @@ export default {
       const kinds = ZONE_KINDS.filter((k) => k in ai && (!kindsOnly.length || kindsOnly.includes(k)));
       if (!kinds.length) continue;
       await gm(pg, 'boss ' + id, 2600);
+      const present = await pg.evaluate(() => [...window.__game!.view.monsters.values()].filter((m) => m.st !== 4).map((m) => m.t));
+      if (!present.includes(id)) console.log(`[zonecheck] ${id}: /gm boss không gọi được (đang có: ${present.join(', ') || 'không con nào'})`);
       for (const kind of kinds) {
         let best: Row | null = null;
         for (let k = 0; k < tries; k++) {
@@ -164,7 +167,10 @@ export default {
           await sleep(Math.max(0, e.at - 120));
           await pg.evaluate(() => void (window.__game!.timeScale = 0));
           await frames2();
-          await zonesDo(pg, (z) => z.setVisible(false));
+          await zonesDo(pg, (z) => {
+            z.hold(true);
+            z.setVisible(false);
+          });
           await frames2();
           const a = await shot(pg);
           await setVfx(false);
@@ -174,7 +180,6 @@ export default {
           await zonesDo(pg, (z) => z.setVisible(true));
           await frames2();
           const file = `${id}__${kind}.png`;
-          await pg.screenshot({ path: path.join(r.out, file) });
           const mask = await pg.evaluate(
             ([zone, cell]) => {
               const g = window.__game as unknown as { me(): { y: number } | undefined };
@@ -182,8 +187,15 @@ export default {
             },
             [e.zone, CELL] as const,
           );
+          await zonesDo(pg, (z) => z.hold(false));
           await pg.evaluate(() => void (window.__game!.timeScale = 1));
           // Ô có vạch báo: ≥ 25% điểm ảnh của ô đổi màu giữa hai ảnh.
+          // Ảnh chú giải: mép vùng thật (lục), phần vùng KHÔNG có vạch báo (lam), phần vạch báo tràn ra ngoài (vàng).
+          const mark = Buffer.alloc(a.w * a.h * 4);
+          const paint = (i: number, j: number, c: [number, number, number, number]) => {
+            for (let y = 0; y < CELL; y++)
+              for (let x = 0; x < CELL; x++) mark.set(c, ((j * CELL + y) * a.w + i * CELL + x) * 4);
+          };
           let zoneN = 0;
           let inN = 0;
           let spillN = 0;
@@ -202,11 +214,18 @@ export default {
               if (d === 0) {
                 zoneN++;
                 if (warn) inN++;
+                else paint(i, j, [60, 140, 255, 90]);
               } else if (warn) {
                 spillN++;
                 outD.push(d);
+                paint(i, j, [255, 220, 40, 110]);
               }
+              if (d > 0 && d <= 0.12) paint(i, j, [80, 255, 120, 255]);
             }
+          await sharp(a.data, { raw: { width: a.w, height: a.h, channels: 3 } })
+            .composite([{ input: mark, raw: { width: a.w, height: a.h, channels: 4 } }])
+            .png()
+            .toFile(path.join(r.out, file));
           outD.sort((x, y) => x - y);
           const z = e.zone;
           const area = z.kind === 'circle' ? Math.PI * z.r! ** 2 : z.kind === 'rect' ? z.len! * z.w! : z.half! * z.r! ** 2;
