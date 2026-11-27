@@ -216,6 +216,22 @@
     ],
     "ease": "out"
    }
+  },
+  {
+   "type": "soundAt",
+   "t": -0.5,
+   "id": "cast",
+   "gain": 0.4,
+   "rate": 1.1,
+   "jitter": 0.05
+  },
+  {
+   "type": "soundAt",
+   "t": 0,
+   "id": "sword",
+   "gain": 0.45,
+   "rate": 1.0,
+   "jitter": 0.05
   }
  ]
 }

@@ -287,6 +287,22 @@
     ],
     "ease": "out"
    }
+  },
+  {
+   "type": "soundAt",
+   "t": -0.22,
+   "id": "sword",
+   "gain": 0.45,
+   "rate": 1.05,
+   "jitter": 0.05
+  },
+  {
+   "type": "soundAt",
+   "t": 0.04,
+   "id": "impact",
+   "gain": 0.6,
+   "rate": 1.0,
+   "jitter": 0.05
   }
  ],
  "variants": {
