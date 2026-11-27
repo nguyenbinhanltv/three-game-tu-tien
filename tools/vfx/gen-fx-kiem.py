@@ -54,7 +54,7 @@ def ring_spikes(n, r, t, at, scale, dur, tier=1, tilt=18, stagger=0.02, y=0, see
 
 def write(tl):
     p = os.path.join(OUT, tl['skill'] + '.json')
-    with open(p, 'w', encoding='utf8') as f:
+    with open(p, 'w', encoding='utf8', newline='\n') as f:
         json.dump(tl, f, ensure_ascii=False, indent=1)
 
 

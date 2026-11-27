@@ -234,12 +234,12 @@ const SPEC = {
   skl_thuan_di_ho_the: () => [
     sprite('hp_flash', { t: -0.1, dur: 0.3, at: 'self', off: [0, 1.0, 0], size: 2, alpha: 0.7, erodeFrom: 0.3 }),
     pullIn('target', [0, 1.6, 0], -0.22),
-    strike('hp_shield', { size: 3.4, off: [0, 1.8, 0], dur: 1.0, erodeFrom: 0.45 }),
-    flash('target', [0, 1.6, 0], 2, 0.03, { dur: 0.14 }),
+    strike('hp_shield', { size: 2.8, off: [0, 3.1, 0], dur: 1.0, erodeFrom: 0.45 }),
+    flash('target', [0, 1.6, 0], 1.5, 0.03, { dur: 0.12 }),
     scorch('target', [0, 0.02, 0], 3, 0.03, 1.8),
     scorch('target', [0, 0.02, 0], 2.55, 0.03, 1.8),
-    sprite('hp_dust', { t: 0.15, dur: 0.7, off: [0, 1, 0], size: 3, alpha: 0.6, erodeFrom: 0.3 }),
-    after('target', [0, 1.3, 0], 2.4, 0.25, 1.2),
+    sprite('hp_dust', { t: 0.15, dur: 0.5, off: [0, 0.3, 0], size: 2.4, alpha: 0.4, erodeFrom: 0.2 }),
+    after('target', [0, 2.6, 0], 2.4, 0.25, 1.2),
   ],
   // Thiên Kim Pháp Tướng: pháp tướng giáp trụ vàng khổng lồ không mặt hiện sau lưng, giậm chân nứt đất.
   skl_thien_kim_phap_tuong: () => [
