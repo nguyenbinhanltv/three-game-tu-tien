@@ -3,7 +3,7 @@ import { paintedProp } from '../../render/painted/props';
 import * as THREE from 'three/webgpu';
 import { KIEM_TRUNG, padsOfLevel, vdGateYaw, terrainOf, propsOf, SECT, tribDef, MF_FACE, MF_FACE_T, MS_DEAD } from '@dtl/shared';
 import { heightAt, levelAssets, levelId, levelTerrain } from '../../base/levelCtx';
-import { LEVELS, MONSTER } from '@dtl/content';
+import { LEVELS, MONSTER, t } from '@dtl/content';
 import { get } from '../../ui/store';
 import { Butterflies, BUTTERFLY_LEVELS } from '../world/butterflies';
 import { Breakables, BREAKABLES_BY_LEVEL } from '../world/breakables';
@@ -70,6 +70,7 @@ import { Terrain } from '../world/terrain';
 import { loadGroundTextures, resolveGroundSet } from '../../base/groundTextures';
 import { FLAGS } from '../../base/flags';
 import { kieuIndex, startKieuRoomFx } from '../fx/kieuRoomFx';
+import { DienVoRoom } from '../world/dienVoRoom';
 import { LANTERN_LIGHT, QUALITY, isWebGPU, isWorldRoom } from './common';
 import { DA_FLAME, DA_LAMP_K } from './daMood';
 import type { Game } from '../engine';
@@ -477,6 +478,15 @@ export function buildLevelA(eng: Game, id: string, q: (typeof QUALITY)[string]):
   if (id === 'cuu_kieu') {
     // Thiên Lộ Giới (TN-7): đường lát đá + lan can, chuỗi cầu vòm trên biển mây, hub có mái, cổ thụ, cỏ lau, thác (dùng chung ô `vdWonders` để dọn).
     eng.vdWonders = new CkWonders({ heightAt: (x, z) => heightAt(x, z), seaY: levelTerrain().def.seaY ?? 0 });
+    eng.scene.add(eng.vdWonders.group);
+  }
+  if (id === 'dien_vo') {
+    // Diễn Võ Trường (phòng tập GM): sàn đá đều màu có ranh và tên sáu khu (dùng chung ô `vdWonders` để dọn).
+    eng.vdWonders = new DienVoRoom({
+      heightAt: (x, z) => heightAt(x, z),
+      zoneName: (z) => t('dienvo.zone.' + z),
+      font: getComputedStyle(document.documentElement).getPropertyValue('--u-font-head').trim() || 'serif',
+    });
     eng.scene.add(eng.vdWonders.group);
   }
   if (kieuIndex(id)) {

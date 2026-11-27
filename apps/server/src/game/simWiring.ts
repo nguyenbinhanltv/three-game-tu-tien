@@ -695,7 +695,7 @@ export function wireGmSys(s: GameSim, priv: SimPrivates): ConstructorParameters<
     teleportTo: (p, x, z, level) => s.teleportTo(p, x, z, level),
     teleGm: (p, arg) => s.tele.gm(p, arg),
     players: () => s.players.values(),
-    lab: () => s.monSys,
+    lab: () => priv.monSys,
     placeIds: () => s.placeIds(),
     questEvent: (p, type, target, n) => s.questEvent(p, type, target, n),
     damageMonster: (m, dmg, p) => s.damageMonster(m, dmg, p),

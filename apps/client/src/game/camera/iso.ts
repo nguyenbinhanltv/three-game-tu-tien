@@ -35,7 +35,8 @@ export const ISO_YAW: Readonly<Record<string, number>> = {
   kim_da_cung: (45 * Math.PI) / 180,
   kinh_nguyet: (45 * Math.PI) / 180,
   luyen_than: (45 * Math.PI) / 180,
-  dien_vo: (45 * Math.PI) / 180,
+  // Diễn Võ Trường: 0° để sáu khu và tên khu trên sàn đọc thẳng, sàn đấu nằm ngay phía trên điểm vào.
+  dien_vo: 0,
   phuc_mach: (45 * Math.PI) / 180,
   than_tang: (45 * Math.PI) / 180,
   xich_tan_khich: (-45 * Math.PI) / 180,
