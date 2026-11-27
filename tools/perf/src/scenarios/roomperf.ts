@@ -88,7 +88,11 @@ function initScript(): void {
         be.createTexture = (t: any, o: any) => {
           create(t, o);
           tex.set(t, bytesOf(t, o));
-          desc.set(t, `${t.name || t.constructor?.name} ${o?.width}x${o?.height} L${o?.levels ?? 1}${t.isRenderTargetTexture ? ' RT' : ''}`);
+          const src = String(t.image?.src ?? t.source?.data?.src ?? t.userData?.url ?? '').split('/').slice(-2).join('/').slice(0, 70);
+          desc.set(
+            t,
+            `${t.name || t.constructor?.name} ${o?.width}x${o?.height}${(o?.depth ?? 1) > 1 ? 'x' + o.depth : ''} L${o?.levels ?? 1} f${t.format} t${t.type}${t.isCompressedTexture ? ' NÉN' : ''}${t.isRenderTargetTexture ? ' RT' : ''}${t.isDepthTexture ? ' DEPTH' : ''}${src ? ' ' + src : ''}`,
+          );
         };
         be.destroyTexture = (t: object) => {
           tex.delete(t);
@@ -278,6 +282,12 @@ export default {
     ].join('\n');
     fs.writeFileSync(path.join(r.out, 'roomperf.md'), md + '\n');
     writeJson(r.out, 'roomperf.json', { backend: backend ? 'webgpu' : 'webgl2', quality, seconds, budget: BUDGET, rows });
+    // Danh sách texture đang sống cuối phiên, lớn trước (để khảo sát bộ nhớ texture): `textures.json`.
+    const texAll = await pg.evaluate(() => {
+      const P = (window as unknown as { __roomPerf: { texTop(n: number): string[]; texBytes(): number } }).__roomPerf;
+      return { totalMB: Math.round((P.texBytes() / 1048576) * 10) / 10, list: P.texTop(400) };
+    });
+    writeJson(r.out, 'textures.json', texAll);
     const bad = rows.filter((x) => x.over.length);
     console.log(`[roomperf] ${rows.length} cảnh, ${bad.length} cảnh vượt ngân sách; backend ${backend ? 'WebGPU' : 'WebGL2'}, preset ${quality}`);
     console.log('[roomperf] texture lớn nhất: ' + (rows[rows.length - 1]?.texTop ?? []).join(' | '));

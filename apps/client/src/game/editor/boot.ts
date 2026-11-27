@@ -10,6 +10,7 @@ import type { Game } from '../engine';
 import { hotEntries, installHotData, onHotData } from './hotData';
 import { forgetProps } from '../world/propScatter';
 import { RoomEditor } from './roomEdit';
+import { ZoneOverlay } from './zoneOverlay';
 
 let editor: RoomEditor | null = null;
 let owner: Game | null = null;
@@ -35,6 +36,21 @@ export function roomEditor(): RoomEditor | null {
   return editor;
 }
 
+let zones: ZoneOverlay | null = null;
+let zonesOwner: Game | null = null;
+
+/** Lớp vẽ vùng trúng thật của Game đang chạy (tạo lười; Game đổi thì tạo lại). Chưa vào game thì null. */
+export function zoneOverlay(): ZoneOverlay | null {
+  const g = game();
+  if (!g) return null;
+  if (zonesOwner !== g) {
+    zones?.dispose();
+    zones = new ZoneOverlay(g);
+    zonesOwner = g;
+  }
+  return zones;
+}
+
 export function bootLabEditor(): void {
   if (booted) return;
   booted = true;
@@ -53,8 +69,8 @@ export function bootLabEditor(): void {
     if (e.kind === 'layout') roomEditor()?.onFileChanged();
     else if (e.kind === 'fx' && e.id && labAuto.fxReplay) g.labFx(e.id);
   });
-  // Cổng cho console / Playwright (kịch bản kiểm): `__labEdit.editor()`, `__labEdit.hot()`.
-  (window as unknown as { __labEdit?: unknown }).__labEdit = { editor: roomEditor, hot: hotEntries, auto: labAuto };
+  // Cổng cho console / Playwright (kịch bản kiểm): `__labEdit.editor()`, `__labEdit.hot()`, `__labEdit.zones()` (vùng trúng thật).
+  (window as unknown as { __labEdit?: unknown }).__labEdit = { editor: roomEditor, hot: hotEntries, auto: labAuto, zones: zoneOverlay };
   // F4: mở/đóng bảng Chỉnh phòng nổi (bảng F3 → Diễn Võ có thể nhúng cùng component `RoomEditPanel`).
   let panel: Promise<{ toggleRoomEditPanel(): void }> | null = null;
   window.addEventListener('keydown', (e) => {
