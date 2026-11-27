@@ -19,6 +19,8 @@ import {
   parseRealmCode,
   INV_SIZE,
   planSort,
+  MF_CHANT,
+  MF_WEAK,
   MS_DEAD,
   tribDef,
   chainDone,
@@ -81,6 +83,16 @@ interface GmCtx {
   practice(p: PlayerEnt): boolean;
   teleportTo(p: PlayerEnt, x: number, z: number, level?: string): boolean;
   teleGm(p: PlayerEnt, arg: string | undefined): string;
+  players(): Iterable<PlayerEnt>;
+  /** Công tắc và thao tác trên quái của phòng thử (MonsterSystem). */
+  lab(): {
+    gmFreeze: boolean;
+    gmLockHp: boolean;
+    stagger(m: MonEnt, sec: number): void;
+    stun(m: MonEnt, sec: number): void;
+    setPhase(m: MonEnt, ph: number): void;
+    setMonFlags(m: MonEnt, mf: number, ce: number): void;
+  };
   placeIds(): string[];
   questEvent(p: PlayerEnt, type: Parameters<Character['questEvent']>[0], target: string | undefined, n: number): void;
   damageMonster(mon: MonEnt, dmg: number, p: PlayerEnt | null): void;
@@ -139,6 +151,64 @@ export class GmSystem {
       return 'trib: túi đầy, không thêm được vật phẩm đột phá';
     this.c.onBreakthrough(p, true, id);
     return p.trib ? 'trib: bắt đầu độ kiếp' : def.room === 'tribulation' ? 'trib: đang vào room độ kiếp' : 'trib: không bắt đầu được';
+  }
+
+  /** Mỗi tick: người bật `/gm free` được xóa hồi chiêu và hồi đầy linh lực (GCD và khóa đòn giữ nguyên để nhịp ra chiêu vẫn thật). */
+  tick(): void {
+    for (const p of this.c.players()) {
+      if (!p.gmFree) continue;
+      p.char.mp = p.char.mmp;
+      if (p.cds.size) {
+        p.cds.clear();
+        this.c.sendCd(p);
+        this.c.resetCooldowns(p);
+      }
+    }
+  }
+
+  /** Quái còn sống trong 40 m quanh người gọi lệnh. */
+  private near(p: PlayerEnt): MonEnt[] {
+    return this.c.monsters().filter((m) => m.state !== MS_DEAD && Math.hypot(m.s.x - p.move.x, m.s.z - p.move.z) < 40);
+  }
+
+  /**
+   * `/gm state <weak|break|stun|chant|phase N|clear> [giây]`: ép trạng thái hiển thị lên quái quanh mình để soi viền, mood, hiệu ứng.
+   * `break`/`stun`/`phase` đi đúng đường của trận thật; `weak`/`chant` chỉ bật cờ (nên dùng kèm `/gm freeze on` để AI không ghi đè).
+   */
+  private forceState(p: PlayerEnt, kind: string | undefined, arg: string | undefined): string {
+    const lab = this.c.lab();
+    const ms = this.near(p);
+    const sec = Math.max(1, Math.min(600, Number(arg) || 8));
+    const until = Date.now() + sec * 1000;
+    switch (kind) {
+      case 'break':
+        for (const m of ms) lab.stagger(m, sec);
+        break;
+      case 'stun':
+        for (const m of ms) lab.stun(m, sec);
+        break;
+      case 'weak':
+        for (const m of ms) lab.setMonFlags(m, MF_WEAK, until);
+        break;
+      case 'chant':
+        for (const m of ms) lab.setMonFlags(m, MF_CHANT, until);
+        break;
+      case 'phase': {
+        const ph = Math.max(0, Number(arg) | 0);
+        for (const m of ms) lab.setPhase(m, Math.min(ph, m.def.phases?.length ?? 0));
+        break;
+      }
+      case 'clear':
+        for (const m of ms) {
+          m.stunUntil = 0;
+          m.chant = null;
+          lab.setMonFlags(m, 0, 0);
+        }
+        break;
+      default:
+        return helpLine('state')!;
+    }
+    return `state ${kind}: ${ms.length} quái`;
   }
 
   /** Quái gọi bằng `/gm spawn` (để `spawn clear` dọn). */
@@ -716,6 +786,20 @@ export class GmSystem {
         });
         return say(ok ? t('gm.msg.bag_clear', { n }) : t('gm.msg.bag_fail'));
       }
+      case 'freeze':
+      case 'lockhp': {
+        // /gm freeze|lockhp [on|off]: quái đứng yên không nghĩ / quái không tụt dưới 1 máu (cả room; phòng tập là room riêng).
+        const lab = this.c.lab();
+        const k = a[0] === 'freeze' ? 'gmFreeze' : 'gmLockHp';
+        lab[k] = a[1] === 'off' ? false : a[1] === 'on' ? true : !lab[k];
+        return say(`${a[0]} ${lab[k] ? 'on' : 'off'}`);
+      }
+      case 'free':
+        // /gm free [on|off]: chiêu không hồi, linh lực luôn đầy.
+        p.gmFree = a[1] === 'off' ? false : a[1] === 'on' ? true : !p.gmFree;
+        return say('free ' + (p.gmFree ? 'on' : 'off'));
+      case 'state':
+        return say(this.forceState(p, a[1], a[2]));
       case 'dvt':
         // /gm dvt: vào Diễn Võ Trường (phòng tập riêng); gõ lại trong phòng để ra. Nhân vật được trả về nguyên trạng khi ra.
         return this.c.practice(p) ? undefined : say(t('gm.msg.dvt_no'));
