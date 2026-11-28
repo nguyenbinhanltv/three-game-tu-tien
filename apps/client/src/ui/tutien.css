@@ -328,6 +328,21 @@
   font-size: calc(14px * var(--s));
   opacity: 0.85;
 }
+/* Dạ Họa: nền đá nhạt / sương lam làm số mỏng (viền 0,6 px) chìm; viền mực dày hơn + quầng tối rộng, màu chữ giữ nguyên. */
+.dmg-layer.da .dmg {
+  -webkit-text-stroke-width: calc(1.6px * var(--s));
+  text-shadow:
+    0 0 4px var(--u-x-rgba-0-0-0-0-95),
+    0 0 8px var(--u-x-rgba-0-0-0-0-6),
+    0 2px 2px var(--u-x-rgba-0-0-0-0-75);
+}
+.dmg-layer.da .dmg.crit {
+  text-shadow:
+    0 0 10px var(--u-x-rgba-255-170-40-0-7),
+    0 0 4px var(--u-x-rgba-0-0-0-0-95),
+    0 0 8px var(--u-x-rgba-0-0-0-0-6),
+    0 2px 2px var(--u-x-rgba-0-0-0-0-8);
+}
 /* ---------- thông báo nổi nằm trên bảng ----------
  * Toast (ví dụ "Tu vi đã đầy nhưng gặp bình cảnh…") trước đây nằm dưới bảng đang mở nên bị che giữa câu.
  * Đưa lên trên bảng, dưới tooltip; không nhận chuột để không chặn nút đóng bảng.
