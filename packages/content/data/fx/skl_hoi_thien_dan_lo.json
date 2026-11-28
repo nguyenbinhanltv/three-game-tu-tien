@@ -130,30 +130,6 @@
    "tier": 1
   },
   {
-   "type": "mesh",
-   "t": -0.28,
-   "dur": 0.28,
-   "at": "self",
-   "sweep": 0,
-   "erodeFrom": 0.8,
-   "ragged": 0.5,
-   "tone": "body",
-   "alpha": 0.34,
-   "tier": 0,
-   "seed": 1000,
-   "shape": "sprite",
-   "sprite": "dan_smoke_bud",
-   "billboard": true,
-   "offset": [
-    0,
-    4.4,
-    -1.7
-   ],
-   "scale": 1.05,
-   "scaleTo": 1.51,
-   "spriteStyle": 12
-  },
-  {
    "type": "particles",
    "kind": "spark",
    "t": -0.34,
@@ -198,7 +174,7 @@
    "erodeFrom": 0.6,
    "ragged": 0.5,
    "tone": "body",
-   "alpha": 0.81,
+   "alpha": 1.0,
    "tier": 0,
    "seed": 1001,
    "shape": "sprite",
@@ -246,7 +222,7 @@
    "erodeFrom": 0.45,
    "ragged": 0.5,
    "tone": "body",
-   "alpha": 0.72,
+   "alpha": 1.0,
    "tier": 0,
    "seed": 1003,
    "shape": "sprite",
@@ -257,7 +233,7 @@
     2.4,
     -1.7
    ],
-   "scale": 2.1,
+   "scale": 2.52,
    "scaleTo": 2.1,
    "spriteStyle": 12
   },
@@ -270,7 +246,7 @@
    "erodeFrom": 0.6,
    "ragged": 0.5,
    "tone": "body",
-   "alpha": 0.68,
+   "alpha": 1.0,
    "tier": 0,
    "seed": 1004,
    "shape": "sprite",
@@ -331,39 +307,6 @@
    ],
    "scale": 1.54,
    "scaleTo": 1.92,
-   "spriteStyle": 12
-  },
-  {
-   "type": "mesh",
-   "t": 0.22,
-   "dur": 0.6,
-   "at": "self",
-   "sweep": 0,
-   "erodeFrom": 0.2,
-   "ragged": 0.5,
-   "tone": "body",
-   "alpha": 0.3,
-   "tier": 0,
-   "seed": 1007,
-   "shape": "sprite",
-   "sprite": "dan_sparks",
-   "billboard": true,
-   "offset": [
-    0,
-    1.8,
-    -1.7
-   ],
-   "scale": 1.4,
-   "scaleTo": 1.4,
-   "move": {
-    "to": "self",
-    "offset": [
-     0,
-     2.6,
-     -1.7
-    ],
-    "ease": "out"
-   },
    "spriteStyle": 12
   },
   {
