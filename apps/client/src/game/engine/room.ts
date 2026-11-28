@@ -120,7 +120,15 @@ export function onHazard(eng: Game, m: HazardMsg): void {
   // Boss thả vùng: động tác đòn lớn chạm đúng lúc vùng nổ (vùng chữ nhật/quạt từ boss = chém/quét, vùng tròn = nện).
   if (m.src) eng.ents?.monsters.get(m.src)?.model.bossMove?.(m.sh ? 'sweep' : 'slam', m.delay);
   // Vòng kéo (Nuốt) và vũng độc không nổ: không âm nện/rung màn hình.
-  if (m.mv === 'pull' || m.mv === 'pool' || m.mv === 'trail') return;
+  // Vòng kéo (Nuốt) không nổ nhưng kéo người chơi vào lúc hết báo trước: một tiếng riêng đúng mốc đó (trước đây im, chỉ còn tiếng giao diện của thông báo choáng).
+  if (m.mv === 'pull') {
+    const pullVol = volumeAt(eng, m.x, m.z);
+    later(eng, m.delay, () => {
+      if (!eng.disposed) sfx(m.kind === 'frost' ? 'ice_hit' : 'block', pullVol * 0.9, m);
+    });
+    return;
+  }
+  if (m.mv === 'pool' || m.mv === 'trail') return;
   const vol = volumeAt(eng, m.x, m.z);
   const bsrc = m.src ? eng.ents?.monsters.get(m.src) : undefined;
   // Vùng tròn: `Vfx.hazard` tự gọi `boom` lúc nổ và chỉ bỏ hình cũ khi nó thật sự phát; vùng chữ nhật/nón (telegraph) gọi ở đây.
