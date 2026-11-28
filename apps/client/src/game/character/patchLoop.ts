@@ -59,7 +59,40 @@ export function phaseOffsetOf(clipName: string): number {
   return PATCH_PHASE[clipName.split('|')[0]!] ?? 0;
 }
 
-/** Thời gian đọc clip (giây) tại pha chung `phase` ∈ [0,1) của clip dài `dur`, đã cộng độ lệch pha. */
+/**
+ * Hậu tố của bản đọc NGƯỢC thời gian của clip đi ngang, dùng cho hướng chéo-lùi. Clip lùi của UAL là clip tới đảo chiều thời gian (hông vẫn hướng trước,
+ * chân chạy ngược), còn clip ngang là clip tới xoay hông ±90° (chân chạy xuôi): trộn hai thứ đó thì chuyển động chân triệt tiêu ở MỌI độ lệch pha
+ * (đo 28/11 trên file clip: lùi 0,5 + ngang 0,5 chỉ còn sải 0,45 m/chu kỳ so với 5,9 của từng clip, tức chân gần như đứng yên khi thân đi 7 m/s).
+ * Ghép đúng cho chéo-lùi là clip lùi + clip ngang PHÍA ĐỐI DIỆN đọc ngược (hông xoay sang bên kia, chân chạy ngược, thân vẫn đi về bên cần): sải 5,6–5,75.
+ */
+export const REV_SUFFIX = '|rev';
+
+/**
+ * Pha đọc của bản ngược = `REV_PHASE` − pha chung: chọn để chân trụ của nó trùng pha chân trụ của clip lùi (quét 0..1 trên file clip, 28/11:
+ * đi bộ và chạy tốt nhất ở 0,52, chạy nhanh 0,56; quanh đỉnh ±0,04 sải đổi dưới 3%).
+ */
+export const REV_PHASE = 0.53;
+
+/** Thời gian đọc clip (giây) tại pha chung `phase` ∈ [0,1) của clip dài `dur`, đã cộng độ lệch pha; clip mang hậu tố `|rev` đọc ngược thời gian. */
 export function clipTimeAt(clipName: string, dur: number, phase: number): number {
-  return ((((phase + phaseOffsetOf(clipName)) % 1) + 1) % 1) * dur;
+  const ph = clipName.split('|').includes('rev') ? REV_PHASE - phase : phase + phaseOffsetOf(clipName);
+  return (((ph % 1) + 1) % 1) * dur;
+}
+
+/**
+ * Chéo-tới (clip chạy Patch trộn clip ngang UAL): sải THẬT của hỗn hợp ngắn hơn công thức tuyến tính của `locoMix`, vì hai clip khác dáng chạy. Tỉ số
+ * sải thật / công thức theo phần hướng tới `f` (0 = ngang hẳn, 1 = tới hẳn), bước 0,1; đo trên file clip 28/11, trung bình dải chạy và chạy nhanh
+ * (chạy 0,82 ở f = 0,7; chạy nhanh 0,84 ở f = 0,6). Đi bộ và chéo-lùi không cần bù (lệch dưới 6%).
+ */
+export const DIAG_STRIDE: readonly number[] = [1, 0.97, 0.95, 0.93, 0.895, 0.86, 0.835, 0.83, 0.86, 0.92, 1];
+
+/**
+ * Hệ số nhân vào độ dài chu kỳ khi đi chéo-tới bằng bảng Patch: `f` = phần hướng tới của hỗn hợp hướng, `run` = phần dải chạy + chạy nhanh (đi bộ không bù).
+ * Nhịp chân = nhịp của `locoMix` chia cho số này.
+ */
+export function diagStrideGain(f: number, run: number): number {
+  const x = Math.min(1, Math.max(0, f)) * (DIAG_STRIDE.length - 1);
+  const i = Math.min(DIAG_STRIDE.length - 2, Math.floor(x));
+  const g = DIAG_STRIDE[i]! + (DIAG_STRIDE[i + 1]! - DIAG_STRIDE[i]!) * (x - i);
+  return 1 - (1 - g) * Math.min(1, Math.max(0, run));
 }

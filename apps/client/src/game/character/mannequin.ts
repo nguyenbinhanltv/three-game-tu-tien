@@ -100,7 +100,7 @@ import {
   turnLagOf,
   xfade,
 } from './mannequinAnim';
-import { clipTimeAt, PATCH_TABLE } from './patchLoop';
+import { clipTimeAt, diagStrideGain, PATCH_TABLE, REV_SUFFIX } from './patchLoop';
 import { feetSlot, MqFeet } from './mannequinFeet';
 import { lodOf, mergeLodMeshes } from './mannequinLod';
 import { lowerBodyOf, upperBodyOf, MannequinPoseBank, type MqPose, PoseSource, POSE_SOURCE_ASSET, poseClipName } from './mannequinPoses';
@@ -595,6 +595,21 @@ function shadowMaterial(): THREE.MeshStandardNodeMaterial {
  */
 export const PATCH_TUNE = { stopFade: 0.06 };
 
+/** Hướng của một clip trong bộ đi/chạy: bốn hướng của `dirMix` + hai bản chéo-lùi (`lb` = đi sang trái khi đang lùi, `rb` = sang phải). */
+type LegDir = LocoDirKey | 'lb' | 'rb';
+
+const revCache = new WeakMap<THREE.AnimationClip, THREE.AnimationClip>();
+/** Bản sao clip mang hậu tố `REV_SUFFIX`: action riêng, `clipTimeAt` đọc nó ngược thời gian. Có bộ nhớ đệm theo clip. */
+export function revClipOf(clip: THREE.AnimationClip): THREE.AnimationClip {
+  let c = revCache.get(clip);
+  if (!c) {
+    c = clip.clone();
+    c.name = `${clip.name}${REV_SUFFIX}`;
+    revCache.set(clip, c);
+  }
+  return c;
+}
+
 /**
  * Tỉ lệ tốc độ của nhịp vào thế để khung trúng đầu tiên (`hitAt`, giây theo đồng hồ chiêu) tới muộn thêm `lag` giây thật, tính từ mốc `from`.
  * 1 = không đổi (không có mốc trúng, không bù, hoặc nhịp vào thế còn dưới 50 ms: kéo chậm một đoạn ngắn như vậy trông như khựng).
@@ -649,7 +664,6 @@ export class MannequinCharacter implements CharacterView {
     pose: MqPose;
     upper: THREE.AnimationAction;
     lower: THREE.AnimationAction;
-    lowerBase: THREE.AnimationAction | null;
     t: number;
     end: number;
     timing?: PerformOpts['timing'];
@@ -770,13 +784,23 @@ export class MannequinCharacter implements CharacterView {
   private dir: DirMix = { f: 1, b: 0, l: 0, r: 0 };
   /** Chân bám đất + bước chân khi xoay tại chỗ (A2); null với bóng hoặc asset thiếu xương chân. */
   private feet: MqFeet | null = null;
-  private lowerPick: THREE.AnimationAction | null = null;
-  private locoKey = new Map<THREE.AnimationAction, { band: LocoBand; dir: LocoDirKey }>();
+  private locoKey = new Map<THREE.AnimationAction, { band: LocoBand; dir: LegDir }>();
+  /** Đang ở góc phần tư lùi (có trễ) và mức chuyển đã làm mượt 0..1: phần đi ngang chuyển từ clip ngang sang clip ngang đối diện đọc ngược (`revClipOf`). */
+  private backMode = false;
+  private backK = 0;
+  /** Bộ clip có đủ sáu bản đọc ngược (ba dải × hai bên); thiếu thì không dùng chéo-lùi kiểu mới. */
+  private revOk = false;
   /** Đòn UAL dự phòng chỉ nửa trên khi đang chạy; chân theo clip nền (nửa dưới). */
   private shotUpper = false;
-  private shotLower: THREE.AnimationAction | null = null;
-  private shotLowerSrc: THREE.AnimationAction | null = null;
   private shotLowerW = 0;
+  /** Trọng số chân chạy của chiêu K-5 đang diễn lúc đang đi (= đường bao của chiêu, 0 khi đứng yên hoặc không có chiêu). */
+  private perfLegW = 0;
+  /**
+   * Chân của đòn/chiêu nửa trên khi đang đi: bản NỬA DƯỚI của từng clip nền đang sống (clip nền → action nửa dưới), trọng số chia theo đúng hỗn hợp
+   * dải tốc độ × hướng của clip nền. Trước 28/11 chỉ có MỘT clip chốt lúc bấm chiêu: chiêu xoay mặt về mục tiêu thì thân đi lùi/ngang mà chân vẫn
+   * chạy tới (đo: chân trụ trôi 31–47%).
+   */
+  private legs = new Map<THREE.AnimationAction, THREE.AnimationAction>();
   // Lớp phụ sau mixer (A/C): nghiêng khi rẽ, xoay tại chỗ, thở, nhìn mục tiêu, giật khi trúng đòn, bù tay.
   private bones: Record<string, THREE.Object3D | null> = {};
   /** Xương đầu của Mannequin (tên 'Head' viết hoa: `bones.head` không bao giờ tìm thấy). */
@@ -1242,9 +1266,8 @@ export class MannequinCharacter implements CharacterView {
         ['sprint', 'f'],
       ];
       for (const band of ['jog', 'walk', 'sprint'] as const) for (const d of ['b', 'l', 'r'] as const) want.push([band, d]);
-      for (const [band, d] of want) {
-        const c = this.action(locoClipName(band, d, table));
-        if (!c) continue;
+      const add = (c: THREE.AnimationAction | null, band: LocoBand, d: LegDir): boolean => {
+        if (!c) return false;
         c.setLoop(THREE.LoopRepeat, Infinity);
         c.reset().play();
         c.timeScale = 0;
@@ -1252,7 +1275,20 @@ export class MannequinCharacter implements CharacterView {
         this.weights.set(c, this.base ? 0 : 1);
         this.companions.push(c);
         this.locoKey.set(c, { band, dir: d });
-      }
+        return true;
+      };
+      for (const [band, d] of want) add(this.action(locoClipName(band, d, table)), band, d);
+      // Chéo-lùi: phần đi sang trái dùng clip ngang PHẢI đọc ngược thời gian và ngược lại (xem `REV_SUFFIX` ở patchLoop.ts).
+      let rev = 0;
+      for (const band of ['jog', 'walk', 'sprint'] as const)
+        for (const [d, src] of [
+          ['lb', 'r'],
+          ['rb', 'l'],
+        ] as const) {
+          const clip = this.tpl.clips.get(locoClipName(band, src, table));
+          if (add(clip ? this.mixer.clipAction(revClipOf(clip)) : null, band, d)) rev++;
+        }
+      this.revOk = rev === 6;
     }
     const loop = /Loop$|Idle$/.test(name);
     next.setLoop(loop ? THREE.LoopRepeat : THREE.LoopOnce, Infinity);
@@ -1267,26 +1303,14 @@ export class MannequinCharacter implements CharacterView {
     this.baseName = name;
   }
 
-  /** Clip cho chân khi chỉ nửa trên đang đánh: clip đi-chạy trội nhất (có trễ để không đổi qua lại ở chéo 45°). */
-  private lowerSrc(): THREE.AnimationAction | null {
-    if (!this.base || !this.loco) return this.base;
-    let best = this.lowerPick && (this.lowerPick === this.base || this.companions.includes(this.lowerPick)) ? this.lowerPick : this.base;
-    let bw = this.locoW(best) + 0.15;
-    for (const c of [this.base, ...this.companions]) {
-      const w = this.locoW(c);
-      if (w > bw) {
-        best = c;
-        bw = w;
-      }
-    }
-    this.lowerPick = best;
-    return best;
-  }
-
   /** Trọng số của một action đi/chạy = dải tốc độ × hướng. */
   private locoW(a: THREE.AnimationAction): number {
     const k = this.locoKey.get(a);
-    return k ? this.mix[k.band] * this.dir[k.dir] : 1;
+    if (!k) return 1;
+    const bk = this.revOk ? this.backK : 0;
+    const d =
+      k.dir === 'lb' ? this.dir.l * bk : k.dir === 'rb' ? this.dir.r * bk : k.dir === 'l' || k.dir === 'r' ? this.dir[k.dir] * (1 - bk) : this.dir[k.dir];
+    return this.mix[k.band] * d;
   }
 
   /** Hòa clip nền: clip hiện tại về 1 (về 0 khi đang có đòn, trừ ~0,12 s cuối để khỏi rơi về tư thế nghỉ), clip cũ tắt dần. */
@@ -1312,14 +1336,44 @@ export class MannequinCharacter implements CharacterView {
       }
     }
     // Chân của đòn nửa trên: theo clip nền hiện tại, đúng lúc nền bị hạ trọng số thì chân thay vào.
-    if (this.shotLower) {
-      const want = this.shotUpper && this.shot ? 1 - gate : 0;
-      this.shotLowerW = want > this.shotLowerW ? Math.min(want, this.shotLowerW + step) : Math.max(want, this.shotLowerW - step * 2);
-      this.shotLower.setEffectiveWeight(this.shotLowerW);
-      if (this.shotLowerW <= 0 && !this.shot) {
-        this.shotLower.stop();
-        this.shotLower = null;
-        this.shotLowerSrc = null;
+    const want = this.shotUpper && this.shot && this.base ? 1 - gate : 0;
+    this.shotLowerW = want > this.shotLowerW ? Math.min(want, this.shotLowerW + step) : Math.max(want, this.shotLowerW - step * 2);
+  }
+
+  /**
+   * Chân chạy dưới đòn/chiêu nửa trên: mỗi clip nền đang sống có một action nửa dưới, trọng số = mức cần (`perfLegW` của chiêu K-5 hoặc `shotLowerW`
+   * của đòn UAL) × phần của clip đó trong hỗn hợp đi/chạy; pha lấy từ pha chung. Gọi ngay trước `mixer.update`, sau `syncLoco`.
+   */
+  private syncLegs(): void {
+    const want = Math.max(this.perfLegW, this.shotLowerW);
+    if (want <= 0 && !this.legs.size) return;
+    const live = this.base ? [this.base, ...this.companions] : [];
+    for (const [src, lb] of this.legs) {
+      if (want > 0 && live.includes(src)) continue;
+      lb.stop();
+      this.legs.delete(src);
+    }
+    if (want <= 0) return;
+    let sum = 0;
+    if (this.loco) for (const src of live) sum += this.locoW(src);
+    for (const src of live) {
+      const share = !this.loco ? 1 : sum > 0 ? this.locoW(src) / sum : src === this.base ? 1 : 0;
+      let lb = this.legs.get(src);
+      if (!lb) {
+        if (share <= 0) continue;
+        lb = this.mixer.clipAction(lowerBodyOf(src.getClip()));
+        lb.setLoop(THREE.LoopRepeat, Infinity);
+        lb.reset();
+        lb.play();
+        this.legs.set(src, lb);
+      }
+      lb.setEffectiveWeight(want * share);
+      if (this.loco) {
+        lb.timeScale = 0;
+        lb.time = clipTimeAt(lb.getClip().name, lb.getClip().duration, this.locoPhase);
+      } else {
+        lb.timeScale = src.timeScale;
+        lb.time = src.time;
       }
     }
   }
@@ -1473,7 +1527,6 @@ export class MannequinCharacter implements CharacterView {
       pose,
       upper: act(pose.upper),
       lower: act(pose.lower),
-      lowerBase: null,
       t: o.from ?? 0,
       end: Math.max(pose.def.duration, tm?.end ?? 0),
       timing: tm,
@@ -1506,7 +1559,7 @@ export class MannequinCharacter implements CharacterView {
     if (!p) return;
     p.upper.stop();
     p.lower.stop();
-    p.lowerBase?.stop();
+    this.perfLegW = 0;
     this.perf = null;
   }
 
@@ -1556,21 +1609,8 @@ export class MannequinCharacter implements CharacterView {
     const moving = a.speed > 0.3;
     p.upper.setEffectiveWeight(p.env);
     p.lower.setEffectiveWeight(moving ? 0 : p.env);
-    // Đang đi: chân giữ clip chạy (chỉ kênh nửa dưới của clip nền hiện tại).
-    const src = this.lowerSrc();
-    if (moving && !p.lowerBase && src) {
-      const lb = this.mixer.clipAction(lowerBodyOf(src.getClip()));
-      lb.setLoop(THREE.LoopRepeat, Infinity);
-      lb.reset();
-      lb.time = src.time;
-      lb.timeScale = src.timeScale;
-      lb.play();
-      p.lowerBase = lb;
-    }
-    if (p.lowerBase) {
-      p.lowerBase.timeScale = this.base?.timeScale ?? 1;
-      p.lowerBase.setEffectiveWeight(moving ? p.env : 0);
-    }
+    // Đang đi: chân giữ nhịp chạy bằng kênh nửa dưới của hỗn hợp clip nền (`syncLegs`), theo cả hướng đi so với mặt.
+    this.perfLegW = moving ? p.env : 0;
   }
 
   /** Đang phát (hoặc chờ phát) động tác `pose`. */
@@ -1743,7 +1783,6 @@ export class MannequinCharacter implements CharacterView {
     const rawName = baseClipOf({ ...a, combat: a.combat || this.combatT > 0 });
     const name = this.baseFor(a, rawName);
     this.play(name);
-    this.syncShotLower();
     this.stepPatch(dt, a);
     if (this.loco) {
       // Trộn đi/chạy/chạy nhanh theo tốc độ thật; pha chung nên chân trụ không trượt khi đổi nhịp.
@@ -1755,10 +1794,17 @@ export class MannequinCharacter implements CharacterView {
       this.mix.sprint += (m.sprint - this.mix.sprint) * k;
       const dm = dirMix(a.moveAngle ?? 0);
       for (const d of ['f', 'b', 'l', 'r'] as const) this.dir[d] += (dm[d] - this.dir[d]) * k;
+      // Góc phần tư lùi: vào khi phần lùi quá 0,12, ra khi phần tới quá 0,12 (đi ngang quanh mục tiêu, góc ~90°, không đổi qua lại); chuyển trong ~0,15 s.
+      if (dm.b > 0.12) this.backMode = true;
+      else if (dm.f > 0.12) this.backMode = false;
+      this.backK += ((this.backMode ? 1 : 0) - this.backK) * Math.min(1, realDt * 14);
+      if (this.backK < 0.01) this.backK = 0;
+      else if (this.backK > 0.99) this.backK = 1;
       // Làm mượt chỉ tiệm cận 0: kẹp giá trị nhỏ về đúng 0 (three bỏ qua action trọng số 0) rồi chuẩn hóa lại tổng = 1.
       snapMix(this.mix);
       snapMix(this.dir);
-      this.locoCycles = m.cycles;
+      // Chéo-tới bằng clip Patch: sải thật của hỗn hợp ngắn hơn công thức, nhịp chân nhanh lên tương ứng (`diagStrideGain`).
+      this.locoCycles = this.locoTable === PATCH_TABLE ? m.cycles / diagStrideGain(this.dir.f, m.jog + m.sprint) : m.cycles;
     } else if (this.base && name === 'Jog_Fwd_Loop') this.base.timeScale = jogRate(a.speed);
     else if (this.base) this.base.timeScale = 1;
     // Đòn UAL dự phòng: anticipation (kéo lại chậm rồi bung nhanh qua điểm trúng).
@@ -1781,6 +1827,7 @@ export class MannequinCharacter implements CharacterView {
     if (this.interval > 0 && !mixerDue(this.acc, this.interval)) return;
     this.blendBases(this.acc);
     if (this.loco && this.base) this.syncLoco(this.acc);
+    this.syncLegs();
     this.labHook.pre?.();
     this.mixer.update(this.acc);
     if (this.proportions.length) applyProportions(this.proportions);
@@ -1867,38 +1914,13 @@ export class MannequinCharacter implements CharacterView {
     this.patchKind = ev.kind;
   }
 
-  /** Khóa pha ba clip chạy và chân của đòn nửa trên; tạo/giữ clip nửa dưới khi đang đánh nửa trên. */
+  /** Khóa pha các clip đi/chạy theo pha chung (chân của đòn nửa trên đọc cùng pha ở `syncLegs`). */
   private syncLoco(dt: number): void {
     this.locoPhase = (this.locoPhase + this.locoCycles * dt) % 1;
     for (const act of [this.base!, ...this.companions]) {
       act.timeScale = 0;
       act.time = clipTimeAt(act.getClip().name, act.getClip().duration, this.locoPhase);
     }
-    const lb = this.perf?.lowerBase;
-    if (lb) {
-      lb.timeScale = 0;
-      lb.time = clipTimeAt(lb.getClip().name, lb.getClip().duration, this.locoPhase);
-    }
-  }
-
-  private syncShotLower(): void {
-    if (!(this.shotUpper && this.shot && this.base)) return;
-    const src = this.lowerSrc()!;
-    if (this.shotLowerSrc !== src) {
-      this.shotLower?.stop();
-      const lb = this.mixer.clipAction(lowerBodyOf(src.getClip()));
-      lb.setLoop(THREE.LoopRepeat, Infinity);
-      lb.reset();
-      lb.play();
-      lb.setEffectiveWeight(0);
-      this.shotLower = lb;
-      this.shotLowerSrc = src;
-      this.shotLowerW = 0;
-    }
-    const lb = this.shotLower!;
-    lb.timeScale = this.loco ? 0 : src.timeScale;
-    if (this.loco) lb.time = clipTimeAt(lb.getClip().name, lb.getClip().duration, this.locoPhase);
-    else lb.time = src.time;
   }
 
   /** Lớp phụ sau mixer (xương chỉnh thêm trên tư thế clip): nghiêng khi rẽ, xoay tại chỗ, thở, nhìn mục tiêu, giật khi trúng đòn, bù dang tay. */
