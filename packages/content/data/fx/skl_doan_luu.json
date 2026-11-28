@@ -119,11 +119,11 @@
    "billboard": true,
    "offset": [
     0,
-    1.5,
+    4.6,
     0
    ],
-   "scale": 1.3,
-   "scaleTo": 1.87
+   "scale": 1,
+   "scaleTo": 1.44
   },
   {
    "type": "particles",
@@ -164,8 +164,8 @@
     0.3,
     0
    ],
-   "scale": 5,
-   "scaleTo": 5
+   "scale": 3.6,
+   "scaleTo": 3.6
   },
   {
    "type": "mesh",
@@ -187,8 +187,8 @@
     0.25,
     0
    ],
-   "scale": 3.6,
-   "scaleTo": 3.6
+   "scale": 2.6,
+   "scaleTo": 2.6
   },
   {
    "type": "mesh",
@@ -207,11 +207,11 @@
    "billboard": true,
    "offset": [
     0,
-    2.7,
+    3.2,
     0
    ],
-   "scale": 3.94,
-   "scaleTo": 4.8
+   "scale": 2.95,
+   "scaleTo": 3.6
   },
   {
    "type": "mesh",
@@ -230,11 +230,11 @@
    "billboard": true,
    "offset": [
     0,
-    2.3,
+    3,
     0
    ],
-   "scale": 2.8,
-   "scaleTo": 2.8
+   "scale": 2.2,
+   "scaleTo": 2.2
   },
   {
    "type": "mesh",
@@ -263,7 +263,7 @@
    "type": "decal",
    "tex": "scorch",
    "t": 0,
-   "r": 3.2,
+   "r": 2.6,
    "dur": 1.8,
    "at": "target",
    "offset": [
@@ -280,7 +280,7 @@
    "type": "decal",
    "tex": "scorch",
    "t": 0.04,
-   "r": 2.4,
+   "r": 2,
    "dur": 1.8,
    "at": "target",
    "offset": [
@@ -310,16 +310,16 @@
    "billboard": true,
    "offset": [
     0,
-    2.5,
+    3.2,
     0
    ],
-   "scale": 2.4,
-   "scaleTo": 2.4,
+   "scale": 2,
+   "scaleTo": 2,
    "move": {
     "to": "target",
     "offset": [
      0,
-     3.7,
+     4.4,
      0
     ],
     "ease": "out"

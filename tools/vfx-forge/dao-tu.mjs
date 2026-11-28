@@ -194,16 +194,16 @@ const SPEC = {
   ],
   // Đoạn Lưu: chém đứt dòng chảy — vết chém thẳng đứng mảnh, hai dải lụa khí thép bị tách đôi chảy lệch về hai phía.
   skl_doan_luu: () => [
-    ...[gather('dao_ribbons', { size: 2.6, off: [0, 1.5, 0] })],
+    ...[gather('dao_ribbons', { size: 2, off: [0, 4.6, 0] })],
     pullIn('target', [0, 1.4, 0], -0.24),
-    shade('target', [0, 0.3, 0], 5, 0.0, { dur: 0.36, alpha: 0.4 }),
-    shade('target', [0, 0.25, 0], 3.6, 0.04, { dur: 0.36, alpha: 0.4 }),
-    strike('dao_ribbons', { size: 4.8, off: [0, 2.7, 0], dur: 0.4, erodeFrom: 0.25 }),
-    sprite('dao_shards', { t: 0.06, dur: 0.36, off: [0, 2.3, 0], size: 2.8, alpha: 0.5, erodeFrom: 0.2 }),
+    shade('target', [0, 0.3, 0], 3.6, 0.0, { dur: 0.36, alpha: 0.4 }),
+    shade('target', [0, 0.25, 0], 2.6, 0.04, { dur: 0.36, alpha: 0.4 }),
+    strike('dao_ribbons', { size: 3.6, off: [0, 3.2, 0], dur: 0.4, erodeFrom: 0.25 }),
+    sprite('dao_shards', { t: 0.06, dur: 0.36, off: [0, 3, 0], size: 2.2, alpha: 0.5, erodeFrom: 0.2 }),
     flash('target', [0, 1.5, 0], 1.4, 0.03, { dur: 0.1 }),
-    scorch('target', [0, 0.02, 0], 3.2, 0.0, 1.8),
-    scorch('target', [0, 0.02, 0], 2.4, 0.04, 1.8),
-    after('target', [0, 2.5, 0], 2.4, 0.2, 1.2),
+    scorch('target', [0, 0.02, 0], 2.6, 0.0, 1.8),
+    scorch('target', [0, 0.02, 0], 2, 0.04, 1.8),
+    after('target', [0, 3.2, 0], 2, 0.2, 1.2),
   ],
   // Liệt Địa Trảm: hai khe nứt thép bắt chéo chữ X rạch nền, đá tảng văng lên bốn góc.
   skl_liet_dia_tram: () => [
