@@ -83,7 +83,11 @@ const GLIDE_HOLD = 0.25;
  * bước nhảy trọng số 0,24 mỗi lần cập nhật xương; 0,14 s → 2514°/s và 0,12; 0,20 s → 2155°/s và 0,11. Boss ở tầm camera chỉ cập nhật xương 30 Hz
  * nên 0,07 s chỉ là hai bước. Chọn 0,14: đòn lớn có nhịp báo trước dài, và thời điểm chạm không đổi (chỉ trộn, không dời đồng hồ clip).
  */
-export const SKIN_TUNE = { moveFade: 0.14 };
+export const SKIN_TUNE = {
+  moveFade: 0.14,
+  /** Thời gian (giây) chuyển giữa các trạng thái nền (đứng ↔ đi ↔ chạy, hết đòn → nền). Mặc định `FADE_BASE`; xưởng animation (`bossscan --ab 1`) đổi trong phiên để so. */
+  baseFade: FADE_BASE,
+};
 /** Về lại nền trước khi clip một lần hết. */
 const FADE_OUT_SHOT = 0.16;
 const FADE_DEATH = 0.12;
@@ -725,7 +729,7 @@ export class SkinnedCharacter implements CharacterView {
           // Chỉ tiếp đất khi trở về đứng trên đất; sang bay/niệm chú... thì vào thẳng trạng thái mới.
           this.base = want;
           this.playShot('jump', 'ual_jump_land', JUMP_LAND_RATE);
-        } else this.enterBase(want, FADE_BASE);
+        } else this.enterBase(want, SKIN_TUNE.baseFade);
       }
       this.updateIdleVariants(dt, want);
       if (!this.shot && this.current) {
