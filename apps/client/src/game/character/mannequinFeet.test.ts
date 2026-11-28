@@ -202,6 +202,22 @@ describe('MqFeet', () => {
     expect(feet.stepping).toBe(0);
     for (const n of ['foot_l', 'foot_r']) expect(root.getObjectByName(n)!.getWorldPosition(new THREE.Vector3()).x).toBeGreaterThan(19.8);
   });
+  it('bắt đầu chạy từ đứng yên: đùi không lật trong một khung (nhánh "thân nhảy xa" không khóa lại tức thì khi pin còn nhả dần)', () => {
+    const { root, feet } = rig();
+    const thigh = root.getObjectByName('thigh_l')!;
+    for (let i = 0; i < 40; i++) feet.update(1 / 60, { active: true, standing: true }, flat);
+    let prev = thigh.quaternion.clone();
+    let worst = 0;
+    // thân lao 12 m/s (xa hơn FEET.jump so với chỗ khóa chỉ sau ~0,08 s, lúc pin còn ~0,4)
+    for (let i = 0; i < 40; i++) {
+      root.position.z += 12 / 60;
+      root.updateMatrixWorld(true);
+      feet.update(1 / 60, { active: true, standing: false }, flat);
+      worst = Math.max(worst, prev.angleTo(thigh.quaternion));
+      prev = thigh.quaternion.clone();
+    }
+    expect(worst).toBeLessThan(0.25);
+  });
   it('đang đi thì không khóa chân', () => {
     const { root, feet } = rig();
     for (let i = 0; i < 20; i++) feet.update(1 / 60, { active: true, standing: true }, flat);

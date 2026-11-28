@@ -93,6 +93,9 @@ interface TraceRow {
   fl: number[];
   fr: number[];
   sh: string;
+  ta: number[];
+  tr: string;
+  ik: string;
 }
 interface TraceSeg {
   rows: TraceRow[];
@@ -112,7 +115,7 @@ const TRACE_INSTALL = `(() => {
     if (!m || !m.mixer) return;
     if (tr.model !== m) {
       tr.model = m; tr.b = {};
-      m.rig.traverse((o) => { if (['upperarm_r', 'ball_l', 'ball_r'].includes(o.name)) tr.b[o.name] = o; });
+      m.rig.traverse((o) => { if (['upperarm_r', 'thigh_l', 'ball_l', 'ball_r'].includes(o.name)) tr.b[o.name] = o; });
     }
     const a = m.lastAnim || {}, mx = m.mixer, acts = [];
     for (const x of mx._actions) if (x.enabled && mx._isActiveAction(x) && x.getEffectiveWeight() > 1e-3) acts.push([x.getClip().name, r3(x.getEffectiveWeight()), r3(x.time)]);
@@ -123,7 +126,7 @@ const TRACE_INSTALL = `(() => {
       sp: r3(a.speed || 0), ma: r3(a.moveAngle || 0), base: m.baseName, shot: m.shot ? m.shot.getClip().name : '', perf: m.perf ? m.perf.id : '', env: m.perf ? r3(m.perf.env) : 0,
       lb: acts.filter((x) => x[0].endsWith('|lower')).map((x) => x[0].replace('|lower', '') + ' ' + x[1].toFixed(2)).join(' + '), patch: m.patchShot ? m.patchKind : '',
       dir: [m.dir.f, m.dir.b, m.dir.l, m.dir.r].map(r3), mix: [m.mix.walk, m.mix.jog, m.mix.sprint].map(r3), ph: r3(m.locoPhase), acts,
-      ua: [q.x, q.y, q.z, q.w].map((v) => Math.round(v * 1e5) / 1e5), sh: m.shots ? [...m.shots].map(([a, e]) => a.getClip().name + ':' + e.w.toFixed(2) + '>' + e.to + (a === m.shot ? '*' : '') + (a === m.patchShot ? 'P' : '') + '@' + a.time.toFixed(2)).join(' ') : '', fl: tr.b.ball_l ? wp(tr.b.ball_l) : [0, 0, 0], fr: tr.b.ball_r ? wp(tr.b.ball_r) : [0, 0, 0],
+      ua: [q.x, q.y, q.z, q.w].map((v) => Math.round(v * 1e5) / 1e5), ta: tr.b.thigh_l ? [tr.b.thigh_l.quaternion.x, tr.b.thigh_l.quaternion.y, tr.b.thigh_l.quaternion.z, tr.b.thigh_l.quaternion.w].map((v) => Math.round(v * 1e5) / 1e5) : [0, 0, 0, 1], tr: m.pivot && m.pivot.active ? 'pivot' : '', ik: m.feet ? 'w' + r3(m.feet.w) + ' pin' + r3(m.feet.pin) + ' hip' + r3(m.feet.hip) + ' ik' + (m.feet.ik ? 1 : 0) + ' ' + m.feet.legs.map((l) => 'd' + r3(l.tgt.distanceTo(l.pos)) + (l.step ? 'S' : '') + (l.plant.has ? 'P' : '')).join('/') : '', sh: m.shots ? [...m.shots].map(([a, e]) => a.getClip().name + ':' + e.w.toFixed(2) + '>' + e.to + (a === m.shot ? '*' : '') + (a === m.patchShot ? 'P' : '') + '@' + a.time.toFixed(2)).join(' ') : '', fl: tr.b.ball_l ? wp(tr.b.ball_l) : [0, 0, 0], fr: tr.b.ball_r ? wp(tr.b.ball_r) : [0, 0, 0],
     });
   };
   requestAnimationFrame(f);
@@ -163,6 +166,22 @@ function traceSummary(s: { name: string } & TraceSeg): void {
     if (h.l < minL.v) minL = { v: h.l, i };
   }
   const at = (i: number) => `${Math.round(rows[i]!.t - t0)} ms`;
+  // Đùi trái: cùng cách đo với bắp tay, in 3 khung xoay nhanh nhất kèm trọng số, pha chung và tốc độ.
+  const tspin: { i: number; v: number }[] = [];
+  for (let i = 1; i < rows.length; i++) {
+    const a = rows[i - 1]!;
+    const b = rows[i]!;
+    const dt = (b.t - a.t) / 1000;
+    const dot = Math.min(1, Math.abs(a.ta[0]! * b.ta[0]! + a.ta[1]! * b.ta[1]! + a.ta[2]! * b.ta[2]! + a.ta[3]! * b.ta[3]!));
+    tspin.push({ i, v: dt > 4e-3 ? ((2 * Math.acos(dot) * 180) / Math.PI) / dt : 0 });
+  }
+  for (const sp of [...tspin].sort((p, q) => q.v - p.v).slice(0, 3)) {
+    console.log(`    ĐÙI trái ${Math.round(sp.v)}°/s lúc ${at(sp.i)}:`);
+    for (let j = Math.max(1, sp.i - 2); j <= Math.min(rows.length - 1, sp.i + 2); j++) {
+      const r = rows[j]!;
+      console.log(`      ${String(Math.round(r.t - t0)).padStart(5)} ms  ${Math.round(tspin[j - 1]!.v).toString().padStart(5)}°/s  v ${r.sp.toFixed(1)}  pha ${r.ph.toFixed(3)}  nền ${r.base}  shot ${r.shot || '-'}${r.patch ? '(' + r.patch + ')' : ''}  [${actStr(r)}]  IK ${r.ik}  shots{${r.sh}}`);
+    }
+  }
   console.log(`    tổng trọng số nhỏ nhất: nửa trên ${minU.v.toFixed(2)} lúc ${at(minU.i)} [${actStr(rows[minU.i]!)}] · nửa dưới ${minL.v.toFixed(2)} lúc ${at(minL.i)} [${actStr(rows[minL.i]!)}]`);
   const top = [...spins].sort((p, q) => q.v - p.v).slice(0, 4);
   for (const sp of top) {
