@@ -230,7 +230,7 @@ export const MONSTER_SKINS: Record<string, MonsterSkin> = {
   mon_mach_thuong_ho_ve: {
     asset: 'mon_mach_thuong_ho_ve',
     clips: GUARD_CLIPS,
-    refSpeed: 2.2,
+    refSpeed: 2.95,
     legs: 'biped',
     tint: '#ffffff',
     lazy: true,
@@ -239,7 +239,7 @@ export const MONSTER_SKINS: Record<string, MonsterSkin> = {
   mon_khai_mach_khoi_loi: {
     asset: 'mon_khai_mach_khoi_loi',
     clips: WOLF_CLIPS,
-    refSpeed: 1.7,
+    refSpeed: 2.33,
     legs: 'biped',
     tint: '#ffffff',
     lazy: true,
@@ -270,7 +270,7 @@ export const MONSTER_SKINS: Record<string, MonsterSkin> = {
   mon_kinh_linh: {
     asset: 'mon_kinh_linh',
     clips: GUARD_CLIPS,
-    refSpeed: 2.1,
+    refSpeed: 2.86,
     legs: 'biped',
     tint: '#ffffff',
     palette: { dark: '#1c2c48', light: '#b8d4f4', glow: '#7fc4ff' },
@@ -300,7 +300,7 @@ export const MONSTER_SKINS: Record<string, MonsterSkin> = {
   mon_thach_tuong_vo_si: {
     asset: 'mon_thach_tuong_vo_si',
     clips: GUARD_CLIPS,
-    refSpeed: 1.9,
+    refSpeed: 2.56,
     legs: 'biped',
     tint: '#ffffff',
     lazy: true,
@@ -318,7 +318,7 @@ export const MONSTER_SKINS: Record<string, MonsterSkin> = {
   mon_cot_ve_kiem_thu: {
     asset: 'mon_cot_ve_kiem_thu',
     clips: WOLF_CLIPS,
-    refSpeed: 2.1,
+    refSpeed: 2.84,
     legs: 'biped',
     tint: '#ffffff',
     lazy: true,
@@ -327,7 +327,7 @@ export const MONSTER_SKINS: Record<string, MonsterSkin> = {
   mon_co_thanh_chien_ma: {
     asset: 'mon_co_thanh_chien_ma',
     clips: WOLF_CLIPS,
-    refSpeed: 2.7,
+    refSpeed: 3.89,
     legs: 'biped',
     tint: '#ffffff',
     lazy: true,
@@ -360,7 +360,7 @@ export const MONSTER_SKINS: Record<string, MonsterSkin> = {
   mon_liet_hoa_ma_nguu: {
     asset: 'mon_liet_hoa_ma_nguu',
     clips: WOLF_CLIPS,
-    refSpeed: 4.4,
+    refSpeed: 3.68,
     legs: 'quad',
     tint: '#ffffff',
     rim: 0.3,
@@ -485,7 +485,7 @@ export const MONSTER_SKINS: Record<string, MonsterSkin> = {
   mon_tt_cot_ve: {
     asset: 'mon_cot_ve_kiem_thu',
     clips: WOLF_CLIPS,
-    refSpeed: 2.1,
+    refSpeed: 2.86,
     legs: 'biped',
     tint: '#ffffff',
     lazy: true,
@@ -494,7 +494,7 @@ export const MONSTER_SKINS: Record<string, MonsterSkin> = {
   mon_tt_thach_tuong: {
     asset: 'mon_thach_tuong_vo_si',
     clips: GUARD_CLIPS,
-    refSpeed: 1.9,
+    refSpeed: 2.85,
     legs: 'biped',
     tint: '#ffffff',
     lazy: true,
@@ -503,7 +503,7 @@ export const MONSTER_SKINS: Record<string, MonsterSkin> = {
   mon_tt_chien_ma: {
     asset: 'mon_co_thanh_chien_ma',
     clips: WOLF_CLIPS,
-    refSpeed: 2.7,
+    refSpeed: 3.65,
     legs: 'biped',
     tint: '#ffffff',
     lazy: true,
@@ -552,7 +552,7 @@ export const MONSTER_SKINS: Record<string, MonsterSkin> = {
   mon_tan_chung: {
     asset: 'mon_tan_chung',
     clips: MQ_ZOMBIE_CLIPS,
-    refSpeed: 3.2,
+    refSpeed: 5.44,
     legs: 'none',
     tint: '#ffffff',
     rim: 0.2,
@@ -565,7 +565,7 @@ export const MONSTER_SKINS: Record<string, MonsterSkin> = {
   mon_giac_kiem_trong_binh: {
     asset: 'mon_giac_kiem_trong_binh',
     clips: MQ_SHIELD_CLIPS,
-    refSpeed: 3.4,
+    refSpeed: 5.51,
     legs: 'none',
     tint: '#ffffff',
     rim: 0.3,
@@ -579,7 +579,7 @@ export const MONSTER_SKINS: Record<string, MonsterSkin> = {
   elite_hoi_giac_cu_thu: {
     asset: 'elite_hoi_giac_cu_thu',
     clips: MQ_CLIPS,
-    refSpeed: 3.4,
+    refSpeed: 5.34,
     legs: 'none',
     tint: '#ffffff',
     rim: 0.3,
@@ -593,7 +593,7 @@ export const MONSTER_SKINS: Record<string, MonsterSkin> = {
   mon_kd_trien_bo_cham_ba: {
     asset: 'mon_tan_chung',
     clips: MQ_ZOMBIE_CLIPS,
-    refSpeed: 3.2,
+    refSpeed: 5.34,
     legs: 'none',
     tint: '#e6d6b4',
     rim: 0.25,
@@ -606,7 +606,7 @@ export const MONSTER_SKINS: Record<string, MonsterSkin> = {
   elite_kd_huyet_giac_ma_tuong: {
     asset: 'elite_hoi_giac_cu_thu',
     clips: MQ_CLIPS,
-    refSpeed: 3.4,
+    refSpeed: 5.3,
     legs: 'none',
     tint: '#ffffff',
     rim: 0.35,
