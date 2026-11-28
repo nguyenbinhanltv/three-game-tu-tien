@@ -142,6 +142,18 @@ describe('MannequinCharacter: tổng trọng số không bao giờ tụt dưới
     expect(acc.min).toBeGreaterThan(0.999);
   });
 
+  it('hủy đòn một lần giữa lúc sắp hết clip (bấm chạy lại khi clip dừng gần xong): đuôi clip vẫn áp, không có khung nào tổng thiếu', () => {
+    const m = fake();
+    const acc = run(m, anim(), 0.2);
+    priv(m).oneShot('Shot');
+    run(m, anim(), 0.43, acc);
+    // còn ~0,07 s tới hết clip (0,5 s): hủy bằng mờ ra chậm 0,12 s, như `stepPatch` làm khi tốc độ vượt ngưỡng
+    priv(m).fadeShot(priv(m).shot!, 0.12);
+    run(m, anim(), 0.5, acc);
+    expect(priv(m).shots.size).toBe(0);
+    expect(acc.min).toBeGreaterThan(0.98);
+  });
+
   it('đòn mới đè đòn cũ, và phát lại đúng đòn đang phát: không thiếu trọng số', () => {
     const m = fake();
     const acc = run(m, anim(), 0.2);
