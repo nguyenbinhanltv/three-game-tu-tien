@@ -291,7 +291,14 @@ function PoseLab() {
 
 const BAL_BOSSES = MONSTERS.filter((m) => m.boss || m.elite);
 const BAL_HP = [100, 75, 50, 25, 5];
+/** Loại chiêu `/gm cast` hiểu (khớp `CAST_KINDS` ở apps/server/src/game/gm/index.ts); phòng thử chỉ hiện những loại boss/quái đang chọn CÓ thật trong dữ liệu (`ai` + `phases[].ai`). */
 const BAL_CASTS = ['chant', 'sweep', 'slam', 'caster', 'line', 'leap', 'charge', 'burrow', 'summon', 'reflect', 'reveal'] as const;
+function castsOf(id: string): string[] {
+  const def = MONSTERS.find((m) => m.id === id);
+  if (!def) return [];
+  const ais = [def.ai, ...(def.phases ?? []).map((p) => p.ai)] as (Record<string, unknown> | undefined)[];
+  return BAL_CASTS.filter((k) => ais.some((ai) => !!ai?.[k]));
+}
 
 /**
  * Nhóm "Cân bằng / Sân boss" (V2e): nút cho các lệnh GM của bàn cân bằng (`/gm dps`, `/gm dummy`) và sân boss (`/gm boss`, `/gm phase`, `/gm hp`,
@@ -301,9 +308,26 @@ const BAL_CASTS = ['chant', 'sweep', 'slam', 'caster', 'line', 'leap', 'charge',
 function BalanceLab() {
   const [dummy, setDummy] = useState(MONSTERS[0]?.id ?? '');
   const [boss, setBoss] = useState(BAL_BOSSES[0]?.id ?? '');
+  const [findD, setFindD] = useState('');
+  const [findB, setFindB] = useState('');
   const [lv, setLv] = useState(30);
-  const [cast, setCast] = useState<string>(BAL_CASTS[0]);
+  const [hp, setHp] = useState('50');
+  const [cast, setCast] = useState<string>('');
   const levels = LAB_LEVELS.map((v) => ({ value: v, label: realmName(v) }));
+  const match = (id: string, q: string) => {
+    const k = q.trim().toLowerCase();
+    return !k || id.includes(k) || monsterName(id).toLowerCase().includes(k);
+  };
+  const dummies = MONSTERS.filter((m) => match(m.id, findD));
+  const bosses = BAL_BOSSES.filter((m) => match(m.id, findB));
+  const dummyCur = dummies.some((m) => m.id === dummy) ? dummy : (dummies[0]?.id ?? '');
+  const bossCur = bosses.some((m) => m.id === boss) ? boss : (bosses[0]?.id ?? '');
+  const bossDef = MONSTERS.find((m) => m.id === bossCur);
+  const phases = Array.from({ length: (bossDef?.phases?.length ?? 0) + 1 }, (_, i) => i);
+  const casts = castsOf(bossCur);
+  const castCur = casts.includes(cast) ? cast : (casts[0] ?? '');
+  const hpNum = Math.round(Number(hp));
+  const hpOk = Number.isFinite(hpNum) && hpNum >= 1 && hpNum <= 100;
   return (
     <>
       <div className="debug-row wrap">
@@ -320,8 +344,12 @@ function BalanceLab() {
         <Pick label={t('ui.debug.realm')} value={lv} onChange={setLv} options={levels} />
       </div>
       <div className="debug-row wrap">
-        <Pick label={t('ui.gm.lab.bal.dummy')} value={dummy} onChange={setDummy} options={MONSTERS.map((m) => ({ value: m.id, label: monsterName(m.id) }))} />
-        <Button size="s" disabled={!dummy} onClick={() => gm(`dummy ${dummy} ${lv}`)}>
+        <label>
+          <span>{t('ui.gm.lab.find')}</span>
+          <input value={findD} onChange={(e) => setFindD(e.target.value)} onKeyDown={(e) => e.stopPropagation()} />
+        </label>
+        <Pick label={t('ui.gm.lab.bal.dummy')} value={dummyCur} onChange={setDummy} options={dummies.map((m) => ({ value: m.id, label: monsterName(m.id) }))} />
+        <Button size="s" disabled={!dummyCur} onClick={() => gm(`dummy ${dummyCur} ${lv}`)}>
           {t('ui.gm.lab.bal.dummy_set')}
         </Button>
         <Button size="s" onClick={() => gm('dummy off')}>
@@ -329,12 +357,18 @@ function BalanceLab() {
         </Button>
       </div>
       <div className="debug-row wrap">
-        <Pick label={t('ui.gm.lab.bal.boss')} value={boss} onChange={setBoss} options={BAL_BOSSES.map((m) => ({ value: m.id, label: monsterName(m.id) }))} />
-        <Button size="s" variant="primary" disabled={!boss} onClick={() => gm(`boss ${boss} ${lv}`)}>
+        <label>
+          <span>{t('ui.gm.lab.find')}</span>
+          <input value={findB} onChange={(e) => setFindB(e.target.value)} onKeyDown={(e) => e.stopPropagation()} />
+        </label>
+        <Pick label={t('ui.gm.lab.bal.boss')} value={bossCur} onChange={setBoss} options={bosses.map((m) => ({ value: m.id, label: monsterName(m.id) }))} />
+        <Button size="s" variant="primary" disabled={!bossCur} onClick={() => gm(`boss ${bossCur} ${lv}`)}>
           {t('ui.gm.lab.bal.boss_call')}
         </Button>
+      </div>
+      <div className="debug-row wrap">
         <span>{t('ui.gm.lab.phase')}</span>
-        {LAB_PHASES.map((n) => (
+        {phases.map((n) => (
           <Button key={n} size="s" onClick={() => gm('phase ' + n)}>
             {String(n + 1)}
           </Button>
@@ -342,21 +376,32 @@ function BalanceLab() {
         <Button size="s" onClick={() => gm('phase off')}>
           {t('ui.gm.lab.bal.phase_off')}
         </Button>
-      </div>
-      <div className="debug-row wrap">
         <span>{t('ui.gm.lab.bal.hp')}</span>
         {BAL_HP.map((n) => (
           <Button key={n} size="s" onClick={() => gm('hp ' + n)}>
             {t('ui.gm.lab.uirate_v', { n })}
           </Button>
         ))}
+        <input
+          className="lab-hp-input"
+          type="number"
+          min={1}
+          max={100}
+          value={hp}
+          aria-label={t('ui.gm.lab.bal.hp_input')}
+          onChange={(e) => setHp(e.target.value)}
+          onKeyDown={(e) => e.stopPropagation()}
+        />
+        <Button size="s" disabled={!hpOk} onClick={() => gm('hp ' + hpNum)}>
+          {t('ui.debug.set')}
+        </Button>
       </div>
       <div className="debug-row wrap">
-        <Pick label={t('ui.gm.lab.bal.cast')} value={cast} onChange={setCast} options={BAL_CASTS.map((k) => ({ value: k, label: t('ui.gm.lab.bal.cast.' + k) }))} />
-        <Button size="s" onClick={() => gm('cast ' + cast)}>
+        <Pick label={t('ui.gm.lab.bal.cast')} value={castCur} onChange={setCast} options={casts.map((k) => ({ value: k, label: k }))} />
+        <Button size="s" disabled={!castCur} onClick={() => gm('cast ' + castCur)}>
           {t('ui.gm.lab.bal.cast_once')}
         </Button>
-        <Button size="s" onClick={() => gm(`cast ${cast} loop`)}>
+        <Button size="s" disabled={!castCur} onClick={() => gm(`cast ${castCur} loop`)}>
           {t('ui.gm.lab.bal.cast_loop')}
         </Button>
         <Button size="s" onClick={() => gm('cast off')}>

@@ -515,6 +515,28 @@ export default {
       await sleep(1800);
       const b2 = await mons();
       check('nút tua máu "25%" đưa máu quái về 25%', b2.length === 1 && Math.abs(b2[0]!.hp - 0.25) < 0.03, b2.map((m) => Math.round(m.hp * 100) + '%').join(', '));
+      // Ô nhập máu tự do: gõ 80 rồi Đặt → máu quái về 80%.
+      await pg.locator('.debug-panel .lab-hp-input').fill('80');
+      await pg.locator('.debug-panel .debug-row', { has: pg.locator('.lab-hp-input') }).locator('button', { hasText: /^Đặt$/ }).click();
+      await sleep(1800);
+      const b3 = await mons();
+      check('ô nhập máu "80" + Đặt đưa máu quái về 80%', b3.length === 1 && Math.abs(b3[0]!.hp - 0.8) < 0.03, b3.map((m) => Math.round(m.hp * 100) + '%').join(', '));
+      // Nút pha và danh sách chiêu theo boss đang chọn: nút pha ≥ 1, danh sách chiêu chỉ chứa loại thật; bấm "Ra chiêu" không sinh lỗi console.
+      const sel = await pg.evaluate(() => {
+        const rows = [...document.querySelectorAll('.debug-panel .debug-row')];
+        const phaseRow = rows.find((r) => /Pha boss/.test(r.textContent || ''));
+        const phaseBtns = phaseRow ? [...phaseRow.querySelectorAll('button')].filter((b) => /^\d$/.test((b.textContent || '').trim())).length : 0;
+        const castRow = rows.find((r) => /Chiêu của quái/.test(r.textContent || ''));
+        const opts = castRow ? [...castRow.querySelectorAll('option')].map((o) => o.value) : [];
+        return { phaseBtns, opts };
+      });
+      check('nút pha và danh sách chiêu theo boss đang chọn', sel.phaseBtns >= 1 && sel.opts.length >= 1, `${sel.phaseBtns} nút pha, chiêu: ${sel.opts.join(',')}`);
+      const eC = r.errors.length;
+      await btn('Ra chiêu').click();
+      await sleep(1500);
+      await btn('Thôi lặp').click();
+      await sleep(1200);
+      check('bấm "Ra chiêu" rồi "Thôi lặp" không lỗi console', r.errors.length === eC, `${r.errors.length - eC} lỗi`);
       await snap(pg, r.out, 'panel/can-bang.png', { wait: 200 });
       await btn('Bỏ hình nộm').click();
       await sleep(1200);
