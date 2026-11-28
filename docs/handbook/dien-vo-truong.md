@@ -434,3 +434,17 @@ Giá trị `refSpeed` nằm ở `apps/client/src/game/character/eliteSkins.ts` (
 - **Chưa chữa:** `elite_liet_cot_bao` (+53%, thử 4,7 → 3,43 xuống +32% rồi trả về): clip chạy phát quá chậm so với thân; cần thử mức thấp hơn (nội suy cho ~3,0, chưa đo) hoặc dựng clip. `elite_cu_nham_vien` (+26%) quá sát ngưỡng nên để nguyên.
 - **Chưa đo được (29 loại):** năm tinh anh (`elite_anh_hac_vuong`, `elite_hu_anh_nhan`, `elite_sa_tuong`, `elite_may_lang_vuong`, `elite_lo_thach_tuong`) và nhiều quái nhỏ không có cổng soi model (model khối hoặc dựng thủ tục chưa có xương soi được) hoặc không đủ mẫu chạy đuổi (đứng yên, bay, chui đất như `elite_xich_sa_ngo_cong`, `elite_van_hac_vuong`). Việc kế: dựng cổng soi cho model khối, hoặc đo bằng cách khác.
 - **Xoay khớp lúc chuyển clip** (cao nhất: `mon_tam_ma` 9347°/s `Sword_Regular_A→Sword_Idle`, `mon_thach_vien` 8809 `attack→run`, `mon_tt_cot_ve` 8389 `attack→run`, `mon_tan_chung` 6892, `mon_khai_mach_khoi_loi` 5705, `mon_giac_kiem_trong_binh` 5165): chưa xử lý. Theo kết luận A/B ở mục trên, phép đo này lẫn chuyển động thật của clip đòn nên không dùng để chỉnh thời gian mờ; cần đo khác (so tư thế xương cũ và mới đúng lúc chuyển).
+
+## Đòn lớn của chín boss chưa có clip (28/11)
+
+Soát theo mục "Quét boss theo pha, đủ 27 boss": chín boss không khai `moves`. Hóa ra hai nhóm khác nhau:
+
+- **Hai boss có GLB:** `boss_tu_nhan_ma_tuong` (model Cốt Kiếm Thông Linh) có sẵn clip `slam` 1,9 s và `sweep` 1,6 s cùng thời lượng bộ clip người của Kính Nguyệt → khai `moves: BIPED_MOVES` (`apps/client/src/game/character/monsterSkins.ts`). `boss_tam_thu_nguc_khuyen` chỉ có `slam` (1,8 s), không có `sweep` → đòn quét dùng lại clip `slam`, cùng mốc chạm 1,0 s.
+- **Bảy boss Cửu Kiều là model khối thủ tục `ape`, không có GLB và không có clip nào:** `boss_hu_anh_chu`, `boss_dinh_linh`, `boss_phu_chu`, `boss_kieu_thu`, `boss_dao_linh`, `boss_lo_linh`, `boss_thach_tuong`. Khai `moves` không áp dụng được. Thay vào đó `MonsterModel.bossMove` (`apps/client/src/game/core/models.ts`, mới) hẹn cú đập thủ tục có sẵn (`attack()`: 0,4 s, đỉnh ở 0,2 s) sao cho ĐỈNH rơi đúng lúc vùng nổ: gọi ở `delay − 0,2` s. Không tạo hay tải asset nào. Hai vùng liên tiếp giữ lần hẹn sớm nhất. Quạt, chữ nhật, tròn dùng chung một động tác. Cũng áp cho mọi boss/quái dùng model khối khác (trước đây đứng yên lúc vùng nổ).
+
+**Đo lại** bằng `bossscan` (model khối: góc tay trước của xương 1; model GLB: đồng hồ clip), 25 pha:
+
+- **41 đòn khớp mốc server trong ±80 ms, hầu hết trong ±25 ms** (model khối −19…+21 ms; Tử Nhân Ma Tướng −1/+15 ms; Tam Thủ Ngục Khuyển −43…+11 ms). Test đơn vị (`apps/client/src/game/core/models.block.test.ts`): đỉnh đập lệch dưới 50 ms ở báo trước 0,9 / 1,5 / 1,7 / 2,0 s.
+- **4 đòn "lệch"** đều ở model khối: `boss_hu_anh_chu` pha 1 (slam −734, line −465 ms), `boss_thach_tuong` pha 0 (line −673), `boss_lo_linh` pha 1 (line +245). Nghi nhiễu: cửa sổ đo cũng bắt cú đập của đòn đánh thường (`attack()`) của chính boss, vốn dùng cùng động tác; kịch bản chưa phân biệt được hai cú đập. Các đòn khác của chính bốn boss này (kể cả cùng pha) khớp trong ±20 ms.
+- **7 đòn không đo được:** ba lần boss không ra chiêu `line` trong 9 giây (`hu_anh_chu`, `phu_chu`, `dao_linh` pha 0), bốn lần đòn lớn trước còn đang phát nên đòn mới bị bỏ qua (cố ý, `playMove`).
+- **Giới hạn:** cú đập thủ tục là một động tác chung (tay vung xuống, thân chúi); chưa có phần gồng báo trước dài như clip đòn lớn của model có xương, nên "đúng mốc" nhưng chưa "đẹp". Chưa soi ảnh từng boss khi đập.

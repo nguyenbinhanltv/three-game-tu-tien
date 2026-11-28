@@ -5,10 +5,14 @@ import { createWorldMaterial } from '../../render/materials/world';
 import { markBloom } from '../../render/post';
 import { createLabel, releaseLabel, type Label } from '../entities/labelBatch';
 import { HitReact, type HitOpts } from '../combat/hitreact';
-import type { AnimState, CharacterView, MonsterView } from '../character/view';
+import type { AnimState, BossMoveKind, CharacterView, MonsterView } from '../character/view';
 
 /** Material dùng chung cho mọi mô hình tô màu theo đỉnh. */
 export const MODEL_MAT = createWorldMaterial({ vertexColors: true });
+/** Cú đập thủ tục của model khối (`MonsterModel.attack`): dài 0,4 s, đỉnh ở giữa; `bossMove` hẹn nó cho trùng lúc vùng nổ. */
+const BOSS_SMASH_LEN = 0.4;
+const BOSS_SMASH_PEAK = BOSS_SMASH_LEN / 2;
+
 const GLOW_MAT = (color: number, opacity = 0.5) => {
   const m = new THREE.MeshBasicMaterial({
     color,
@@ -643,7 +647,21 @@ export class MonsterModel implements MonsterView {
   }
 
   attack(): void {
-    this.attackT = 0.4;
+    this.attackT = BOSS_SMASH_LEN;
+  }
+
+  /** Còn bao lâu (giây) thì bắt đầu cú đập đã hẹn của đòn lớn (`bossMove`); âm = không có. */
+  private bossIn = -1;
+
+  /**
+   * Đòn lớn của boss model khối (không có clip): hẹn cú đập thủ tục sao cho ĐỈNH (tay vung hết cỡ, thân chúi) rơi đúng lúc vùng nổ sau
+   * `delay` giây. `attack()` chạy 0,4 s với đỉnh ở 0,2 s sau khi gọi, nên gọi nó ở `delay − 0,2`. Hai vùng liên tiếp (đập nhiều vùng cùng
+   * lúc) giữ lần hẹn sớm nhất. Quạt, chữ nhật và tròn dùng cùng một động tác vì model khối không có clip riêng cho từng loại.
+   */
+  bossMove(_kind: BossMoveKind, delay: number): boolean {
+    const at = Math.max(0, delay - BOSS_SMASH_PEAK);
+    this.bossIn = this.bossIn >= 0 ? Math.min(this.bossIn, at) : at;
+    return true;
   }
 
   hitReact(o: HitOpts): void {
@@ -664,10 +682,17 @@ export class MonsterModel implements MonsterView {
     const moving = speed > 0.3 && !dead;
     if (moving) this.phase += dt * (5 + speed * 1.5);
     const sw = moving ? Math.sin(this.phase) : 0;
+    if (this.bossIn >= 0) {
+      this.bossIn -= dt;
+      if (this.bossIn <= 0) {
+        this.bossIn = -1;
+        this.attackT = BOSS_SMASH_LEN;
+      }
+    }
     let lunge = 0;
     if (this.attackT > 0) {
       this.attackT -= dt;
-      lunge = Math.sin((Math.PI * Math.max(0, this.attackT)) / 0.4);
+      lunge = Math.sin((Math.PI * Math.max(0, this.attackT)) / BOSS_SMASH_LEN);
     }
     if (dead) this.deadT = Math.min(3, this.deadT + dt);
     else this.deadT = 0;
