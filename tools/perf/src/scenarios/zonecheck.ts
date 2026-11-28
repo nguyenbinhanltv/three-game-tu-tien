@@ -1,5 +1,5 @@
 // Diễn Võ Trường, sân boss: ĐO ĐỘ LỆCH giữa VẠCH BÁO được vẽ và VÙNG TRÚNG THẬT của server cho đòn vùng của boss/tinh anh.
-//   pnpm --filter @dtl/perf exec tsx src/zonecheck.ts --out <thư mục> [--query style=dahoa] [--mons id1,id2 | all] [--kinds slam,line] [--tries 2]
+//   pnpm --filter @dtl/perf exec tsx src/zonecheck.ts --out <thư mục> [--query style=dahoa] [--mons id1,id2 | all] [--kinds slam,line] [--tries 2] [--set maskkeep=0,monrim=0]
 // Mỗi (quái, loại chiêu): `/gm boss <id>` → `/gm cast <loại> loop` → chờ tin vạch báo → dừng lớp hình ngay TRƯỚC lúc server phán định
 // → chụp hai ảnh cùng khung (có hiệu ứng / ẩn nhóm VFX): chênh giữa hai ảnh = phần vạch báo người chơi thật sự nhìn thấy. So với mặt nạ
 // của vùng thật (hình trong tin `S.HAZARD`, đúng hình server kiểm bằng `inHazard`; chiếu lên màn hình bởi `ZoneOverlay.screenMask`):
@@ -76,6 +76,10 @@ interface Row {
   cover: number;
   spill: number;
   over: number;
+  /** Độ nổi (28/11, độ chênh sáng TB 0–255 của điểm ảnh vạch báo so với nền không VFX), % điểm vạch còn ấm (đỏ/cam, đúng HPL2), % ô vùng thật gần như không thấy (chênh sáng TB < 8). */
+  pop: number;
+  warm: number;
+  faint: number;
   note: string;
   file: string;
 }
@@ -95,7 +99,7 @@ async function shot(pg: Page): Promise<{ data: Buffer; w: number; h: number }> {
 export default {
   name: 'zonecheck',
   desc: 'Sân boss: đo vạch báo được vẽ so với vùng trúng thật của server (phủ, tràn, vượt mép) cho boss/tinh anh',
-  usage: '[--query style=dahoa] [--mons id1,id2 | all] [--kinds slam,line] [--tries 2]',
+  usage: '[--query style=dahoa] [--mons id1,id2 | all] [--kinds slam,line] [--tries 2] [--set maskkeep=0]',
   env: { RATE_LIMIT_EXEMPT: 'loopback' },
   async run(r) {
     const want = opt('--mons', '');
@@ -119,6 +123,11 @@ export default {
     await gm(pg, 'dvt');
     await waitLevel(pg, 'dien_vo');
     await gm(pg, 'build lac_kiem_quyet 30', 1500);
+    // `--set khóa=giá trị,...`: đặt tham số khu Phong cách (`Game.labStyle`) cho cả lượt đo, để A/B một núm.
+    for (const kv of opt('--set', '').split(',').filter(Boolean)) {
+      const [k, v] = kv.split('=');
+      await pg.evaluate(([kk, vv]) => void window.__game!.labStyle(kk as string, Number(vv)), [k, v] as [string, string]);
+    }
     await zonesDo(pg, (z) => z.enable());
     const rows: Row[] = [];
     const frames2 = () => pg.evaluate(() => new Promise<void>((res) => requestAnimationFrame(() => requestAnimationFrame(() => res()))));
@@ -161,7 +170,7 @@ export default {
             );
           }
           if (!e) {
-            best ??= { mon: id, kind, shape: '—', size: '', delay: 0, seen: 0, cover: 0, spill: 0, over: 0, note: 'không thấy vạch báo trong 14 giây', file: '' };
+            best ??= { mon: id, kind, shape: '—', size: '', delay: 0, seen: 0, cover: 0, spill: 0, over: 0, pop: 0, warm: 0, faint: 0, note: 'không thấy vạch báo trong 14 giây', file: '' };
             continue;
           }
           const delay = Math.round(e.at - e.t0) / 1000;
@@ -201,6 +210,10 @@ export default {
           let zoneN = 0;
           let inN = 0;
           let spillN = 0;
+          let popSum = 0;
+          let popN = 0;
+          let warmN = 0;
+          let faintN = 0;
           const outD: number[] = [];
           for (let j = 0; j < mask.h; j++)
             for (let i = 0; i < mask.w; i++) {
@@ -213,6 +226,22 @@ export default {
                   if (Math.abs(a.data[o]! - b.data[o]!) + Math.abs(a.data[o + 1]! - b.data[o + 1]!) + Math.abs(a.data[o + 2]! - b.data[o + 2]!) > DIFF) ch++;
                 }
               const warn = ch >= (CELL * CELL) / 4;
+              // Độ nổi của chính điểm ảnh vạch báo (chỉ ô trong vùng thật).
+              let cellDl = 0;
+              if (d === 0) {
+                for (let y = 0; y < CELL; y++)
+                  for (let x = 0; x < CELL; x++) {
+                    const o = ((j * CELL + y) * a.w + i * CELL + x) * 3;
+                    const dl = Math.abs(0.2126 * (a.data[o]! - b.data[o]!) + 0.7152 * (a.data[o + 1]! - b.data[o + 1]!) + 0.0722 * (a.data[o + 2]! - b.data[o + 2]!));
+                    cellDl += dl;
+                    if (Math.abs(a.data[o]! - b.data[o]!) + Math.abs(a.data[o + 1]! - b.data[o + 1]!) + Math.abs(a.data[o + 2]! - b.data[o + 2]!) > DIFF) {
+                      popSum += dl;
+                      popN++;
+                      if (a.data[o]! > a.data[o + 1]! + 10 && a.data[o]! > a.data[o + 2]! + 10) warmN++;
+                    }
+                  }
+                if (cellDl / (CELL * CELL) < 8) faintN++;
+              }
               if (d === 0) {
                 zoneN++;
                 if (warn) inN++;
@@ -247,6 +276,9 @@ export default {
             cover: zoneN ? Math.round((inN / zoneN) * 100) : 0,
             spill: zoneN ? Math.round((spillN / zoneN) * 100) : 0,
             over: outD.length ? Math.round(outD[Math.floor(outD.length * 0.95)]! * 10) / 10 : 0,
+            pop: popN ? Math.round(popSum / popN) : 0,
+            warm: popN ? Math.round((warmN / popN) * 100) : 0,
+            faint: zoneN ? Math.round((faintN / zoneN) * 100) : 0,
             note: zoneN < 60 ? `vùng gần như ngoài khung (${zoneN} ô, ${area.toFixed(0)} m²)` : '',
             file,
           };
@@ -258,15 +290,15 @@ export default {
         if (best) {
           rows.push(best);
           console.log(
-            `[zonecheck] ${best.mon.padEnd(30)} ${best.kind.padEnd(7)} ${best.shape.padEnd(6)} ${best.size.padEnd(14)} báo ${best.delay.toFixed(2)} s  phủ ${String(best.cover).padStart(3)}%  tràn ${String(best.spill).padStart(3)}%  vượt mép ${best.over} m  ${best.note}`,
+            `[zonecheck] ${best.mon.padEnd(30)} ${best.kind.padEnd(7)} ${best.shape.padEnd(6)} ${best.size.padEnd(14)} báo ${best.delay.toFixed(2)} s  phủ ${String(best.cover).padStart(3)}%  tràn ${String(best.spill).padStart(3)}%  vượt mép ${best.over} m  nổi ${String(best.pop).padStart(3)}  ấm ${String(best.warm).padStart(3)}%  mờ ${String(best.faint).padStart(3)}%  ${best.note}`,
           );
         }
       }
     }
     const md = [
-      '| Quái | Chiêu | Vùng thật | Báo trước (s) | Phủ | Tràn | Vượt mép (m) | Ghi chú |',
-      '| --- | --- | --- | --- | --- | --- | --- | --- |',
-      ...rows.map((x) => `| \`${x.mon}\` | ${x.kind} | ${x.shape} ${x.size} | ${x.delay.toFixed(2)} | ${x.cover}% | ${x.spill}% | ${x.over} | ${x.note} |`),
+      '| Quái | Chiêu | Vùng thật | Báo trước (s) | Phủ | Tràn | Vượt mép (m) | Nổi | Ấm | Mờ | Ghi chú |',
+      '| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |',
+      ...rows.map((x) => `| \`${x.mon}\` | ${x.kind} | ${x.shape} ${x.size} | ${x.delay.toFixed(2)} | ${x.cover}% | ${x.spill}% | ${x.over} | ${x.pop} | ${x.warm}% | ${x.faint}% | ${x.note} |`),
     ].join('\n');
     fs.writeFileSync(path.join(r.out, 'zonecheck.md'), md + '\n');
     writeJson(r.out, 'zonecheck.json', { cell: CELL, diff: DIFF, roi: ROI, rows });
