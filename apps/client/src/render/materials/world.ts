@@ -129,11 +129,11 @@ export const toonDepth = uniform(1);
 
 /**
  * Dạ Cảnh: cường độ VIỀN SÁNG TÁCH NỀN của quái (0 = tắt). Quái xám/nâu trên nền đêm lam tối gần như cùng độ sáng với nền, mà viền mực lại tối trên
- * tối; một viền fresnel hẹp sắc trăng lạnh ở mép hình bóng tách khối. ĐO ĐÚNG (`pnpm shots daread`, 28/11, cổng riêng, có đối chứng lặp cùng giá trị lệch ≤ ±1,5):
- * tách nền tăng ở mức 0,7 / 1,2 so với 0: bầy sói 33 → 39 / 42, tinh anh 26 → 35 / 40, boss 31 → 36 / 40, chìm 3,5% → 1,4% (bầy). NHƯNG ở tinh anh và boss
- * viền sáng làm thân ngả hồng tím, mất sắc ĐỎ nhận diện (xem ảnh). Vì vậy chưa bật mặc định; dự kiến chỉ bật cho quái thường (xám) và giữ nguyên tinh anh/boss.
+ * tối; một viền fresnel hẹp ở mép hình bóng tách khối. ĐO (`pnpm shots daread`, 28/11, cổng riêng, đối chứng lặp lệch ≤ ±1,5), mức 0 → 0,7: bầy sói 33 → 39,
+ * boss 29 → 37, tinh anh 27 → 31 (chìm 14% → 10%), sói thường 43 → 47. Sắc viền theo TÔNG MÀU THÂN (viền trăng thuần làm tinh anh/boss ngả hồng tím, mất sắc đỏ).
+ * Chỉ có tác dụng ở Dạ Cảnh/Dạ Họa (`toonBands` chỉ gắn cho quái khi cờ `da` bật). Chỉnh được ở khu Phong cách của phòng thử.
  */
-export const DA_SEP_RIM = 0;
+export const DA_SEP_RIM = 0.7;
 export const daSepRim = uniform(DA_SEP_RIM);
 /** Sắc viền tách nền (tuyến tính): trăng lạnh, khớp ánh viền đạo cụ của Dạ Họa. */
 const DA_SEP_COLOR = vec3(0.5, 0.68, 1.0);
@@ -151,7 +151,11 @@ export function toonBands(m: THREE.MeshStandardNodeMaterial, sepRim = false): TH
     // Mép hình bóng (pháp tuyến gần vuông góc hướng nhìn), mạnh hơn ở nửa trên thân để chân không sáng hơn lưng; cộng SAU chia bậc nên viền không bị lượng tử.
     const fres = float(1).sub(normalView.dot(positionViewDirection).clamp(0, 1)).pow(3);
     const up = normalWorld.y.mul(0.5).add(0.5);
-    m.outputNode = vec4(lit.mul(k).add(DA_SEP_COLOR.mul(fres.mul(mix(float(0.45), float(1), up)).mul(daSepRim))), output.a);
+    // Sắc viền = TÔNG MÀU THÂN đẩy lên sáng nhất (chia cho kênh lớn nhất) trộn 30% về trăng lạnh: tinh anh/boss đỏ giữ viền đỏ, sói xám giữ viền xám;
+    // viền trăng thuần làm thân ngả hồng tím và mất sắc nhận diện (đo 28/11).
+    const bodyTone = diffuseColor.rgb.div(diffuseColor.r.max(diffuseColor.g).max(diffuseColor.b).max(0.05));
+    const sepCol = mix(bodyTone, DA_SEP_COLOR, 0.3);
+    m.outputNode = vec4(lit.mul(k).add(sepCol.mul(fres.mul(mix(float(0.45), float(1), up)).mul(daSepRim))), output.a);
     return m;
   }
   m.outputNode = vec4(lit.mul(k), output.a);
