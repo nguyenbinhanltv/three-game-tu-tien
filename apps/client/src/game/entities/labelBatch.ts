@@ -1,4 +1,5 @@
 import * as THREE from 'three/webgpu';
+import { FLAGS } from '../../base/flags';
 import { markVfxMask } from '../../render/post';
 import {
   cameraProjectionMatrix,
@@ -163,8 +164,9 @@ class LabelBatch {
       g.fillText(t, cx, oy + y);
     };
     if (spec.sub) {
-      put(spec.sub, 34, '600 30px "Segoe UI", Arial, sans-serif', spec.subColor);
-      put(spec.text, 88, '700 42px "Segoe UI", Arial, sans-serif', spec.color);
+      // Dạ Họa: dòng phụ (cảnh giới, chức danh) nhỏ + màu nhạt nên chìm trên đá nhạt/sương lam: to hơn và đậm hơn một bậc.
+      put(spec.sub, FLAGS.da ? 36 : 34, FLAGS.da ? '700 34px "Segoe UI", Arial, sans-serif' : '600 30px "Segoe UI", Arial, sans-serif', spec.subColor);
+      put(spec.text, FLAGS.da ? 92 : 88, '700 42px "Segoe UI", Arial, sans-serif', spec.color);
     } else put(spec.text, 72, '700 42px "Segoe UI", Arial, sans-serif', spec.color);
     g.restore();
     this.redraws++;
