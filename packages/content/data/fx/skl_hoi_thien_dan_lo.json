@@ -130,6 +130,30 @@
    "tier": 1
   },
   {
+   "type": "mesh",
+   "t": -0.28,
+   "dur": 0.28,
+   "at": "self",
+   "sweep": 0,
+   "erodeFrom": 0.8,
+   "ragged": 0.5,
+   "tone": "body",
+   "alpha": 0.34,
+   "tier": 0,
+   "seed": 1000,
+   "shape": "sprite",
+   "sprite": "dan_smoke_bud",
+   "billboard": true,
+   "offset": [
+    0,
+    5.6,
+    -2.6
+   ],
+   "scale": 0.84,
+   "scaleTo": 1.21,
+   "spriteStyle": 12
+  },
+  {
    "type": "particles",
    "kind": "spark",
    "t": -0.34,
@@ -307,6 +331,39 @@
    ],
    "scale": 1.54,
    "scaleTo": 1.92,
+   "spriteStyle": 12
+  },
+  {
+   "type": "mesh",
+   "t": 0.22,
+   "dur": 0.6,
+   "at": "self",
+   "sweep": 0,
+   "erodeFrom": 0.2,
+   "ragged": 0.5,
+   "tone": "body",
+   "alpha": 0.5,
+   "tier": 0,
+   "seed": 1007,
+   "shape": "sprite",
+   "sprite": "dan_sparks",
+   "billboard": true,
+   "offset": [
+    0,
+    1.8,
+    -1.7
+   ],
+   "scale": 1.4,
+   "scaleTo": 1.4,
+   "move": {
+    "to": "self",
+    "offset": [
+     0,
+     2.6,
+     -1.7
+    ],
+    "ease": "out"
+   },
    "spriteStyle": 12
   },
   {
