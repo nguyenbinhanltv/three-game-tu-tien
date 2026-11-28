@@ -18,6 +18,7 @@ import { shapeGeometry, swordFxGeometry, QUAD_XZ } from '../../render/vfx/fxShap
 import { DECAL_RUNE } from '../../render/vfx/stylized';
 import { spriteCell, useSpriteGroup } from '../../render/vfx/art';
 import { FX_PALETTE } from '../../render/vfx/palette';
+import { FLAGS } from '../../base/flags';
 import { G } from '../core/geo';
 import { groundAt } from '../../base/levelCtx';
 import type { CharacterView, SkillEvent } from '../character/view';
@@ -123,6 +124,8 @@ const VIOLET = { body: 0x8a52f0, rim: 0xffe27a };
 const INK = { body: 0x15110a, rim: 0x6a4a1a };
 /** Rim light theo tầng (Nguyên Anh vàng-ngọc, Hóa Thần bạc xanh, Ảnh Biến tím) và độ mạnh gốc. */
 const RIM = { 2: { hex: 0xffd98a, k: 0.8 }, 3: { hex: 0xbfd6ff, k: 1.8 }, 4: { hex: 0xc9a4ff, k: 1.8 } } as const;
+/** Dạ Họa (`?style=dahoa`): nhân cường độ viền emissive của hào quang cảnh giới; ở cấp 30 (Hóa Thần) viền cộng vào nền tối làm thân nhân vật trắng xóa, mất chi tiết áo. */
+export const RIM_DAHOA_K = 0.2;
 const WUXING = [0xf4ecd0, 0x4fd16a, 0x3a8cf0, 0xf0502a, 0xe3b43a];
 
 /** Màu theo đạo (phi kiếm, hạt linh khí, viền tranh pháp tướng). */
@@ -411,7 +414,7 @@ export class RealmAuraFx {
       });
     }
     const r = RIM[stage as 2 | 3 | 4];
-    au.rimCol.setHex(r.hex).multiplyScalar(r.k * c.vDan * c.wMain * (1 + c.pulse * 0.8));
+    au.rimCol.setHex(r.hex).multiplyScalar(r.k * (FLAGS.da && FLAGS.painted ? RIM_DAHOA_K : 1) * c.vDan * c.wMain * (1 + c.pulse * 0.8));
     for (const m of au.rimMeshes) m.userData.rimCol = au.rimCol;
   }
 
