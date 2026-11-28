@@ -68,7 +68,7 @@ export const PROP_CFG: Record<string, PropCfg> = {
   prop_da_dung: { range: 300, lod: [60, 140], sight: true, dense: true },
   prop_da_nam: { range: 240, lod: [45, 110], sight: true, dense: true },
   prop_da_phien: { range: 200, lod: [35, 90] },
-  prop_den_da: { range: 260, lod: [40, 110] },
+  prop_den_da: { range: 260, lod: [40, 110], dense: true }, // 5 nghìn tam giác/bản: LOD và cắt khung theo từng bản, không theo ô
   prop_bia_da: { range: 200, lod: [35, 90] },
   prop_tuong_canh: { range: 220, lod: [40, 100] },
   prop_lu_huong: { range: 220, lod: [40, 100] },
