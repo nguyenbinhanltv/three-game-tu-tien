@@ -10,6 +10,7 @@
     "test": "vitest run",
     "ledger:check": "tsx src/tools/ledgerCheck.ts",
     "fight:check": "tsx src/tools/fightCheck.ts",
+    "leash:check": "tsx src/tools/leashCheck.ts",
     "invite": "tsx src/tools/invite.ts"
   },
   "dependencies": {

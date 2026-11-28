@@ -160,6 +160,8 @@ const BLOCK_STALL_MS = 4000;
 const BLOCK_PROGRESS = 1;
 /** Hai lần trượt cách nhau quá chừng này thì không còn là "liên tục". */
 const BLOCK_GAP_MS = 600;
+/** Đang VỀ NHÀ mà bị vật rắn giữ liên tục chừng này, không tiến gần nhà thêm ≥ `BLOCK_PROGRESS` m: coi như đã về (xem `returnStalled`). */
+const RETURN_STALL_MS = 2500;
 
 export class MonsterSystem {
   constructor(readonly c: MonsterCtx) {}
@@ -823,6 +825,16 @@ export class MonsterSystem {
     return this.c.now - m.slideSince > BLOCK_STALL_MS && d > m.slideD0 - BLOCK_PROGRESS;
   }
 
+  /**
+   * Quái đang về nhà nhưng không tới được: điểm nhà nằm sát/trong vật rắn, hoặc đường về bị vật chắn (không có tìm đường).
+   * Không có phép này thì quái ép vật mãi ở trạng thái "đang về": không bao giờ đứng yên nên không tự phát hiện người chơi nữa
+   * (`pnpm --filter @dtl/server leash:check` bắt được ở Vân Lam). `left`: khoảng cách còn lại tới nhà sau bước đi của tick này.
+   */
+  returnStalled(m: MonEnt, left: number): boolean {
+    if (!m.slideSince || this.c.now - m.slideLast > BLOCK_GAP_MS) return false;
+    return this.c.now - m.slideSince > RETURN_STALL_MS && left > m.slideD0 - BLOCK_PROGRESS;
+  }
+
   moveToward(m: MonEnt, tx: number, tz: number, speed: number, dt: number): number {
     const dx = tx - m.s.x;
     const dz = tz - m.s.z;
@@ -850,6 +862,8 @@ export class MonsterSystem {
   }
 
   setMonState(m: MonEnt, st: number): void {
+    // Bắt đầu về nhà: mốc "bị vật giữ" của lúc đuổi (đo theo khoảng cách tới người chơi) không dùng lại cho đường về.
+    if (st === MS_RETURN && m.state !== MS_RETURN) m.slideSince = 0;
     m.state = st;
     if (m.s.st !== st) m.s.st = st;
     if (st === MS_RETURN || st === MS_DEAD || st === MS_IDLE) this.resetAi(m);

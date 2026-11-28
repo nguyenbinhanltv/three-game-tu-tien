@@ -19,6 +19,9 @@ import { LEASH } from '../combat/consts';
 import type { MonEnt, PlayerEnt } from '../entities';
 import type { MonsterSystem } from './index';
 
+/** Về nhà bị vật cản giữ khi còn xa hơn chừng này (m): đặt thẳng về nhà; gần hơn thì đứng lại tại chỗ. */
+const RETURN_SNAP_M = 4;
+
 /** Cờ chỉ-để-vẽ (làm chậm, độc, bỏng) suy ra từ trạng thái server; chỉ ghi khi đổi. Không ảnh hưởng gameplay. */
 function syncDisplayFlags(sys: MonsterSystem, m: MonEnt): void {
   const now = sys.c.now;
@@ -102,15 +105,28 @@ export function tickMonsterImpl(sys: MonsterSystem, m: MonEnt, dt: number): void
     if (m.s.hp < m.s.mhp) m.s.hp = Math.min(m.s.mhp, m.s.hp + Math.ceil(m.s.mhp * 0.25 * dt));
     // Hồi đầy máu thì trận mới bắt đầu lại từ pha đầu.
     if (m.s.hp >= m.s.mhp) sys.setPhase(m, 0);
-    if (left < 0.5) {
+    const stalled = sys.returnStalled(m, left);
+    if (left < 0.5 || stalled) {
+      if (stalled) {
+        // Không tới được nhà: xa thì đặt thẳng về nhà (như lúc sinh ra), gần thì nhận chỗ đang đứng; hồi đầy như một lần về trọn vẹn.
+        if (left > RETURN_SNAP_M) {
+          m.s.x = m.homeX;
+          m.s.z = m.homeZ;
+          m.s.y = sys.c.terrain.groundAt(m.homeX, m.homeZ);
+        }
+        m.s.hp = m.s.mhp;
+        sys.setPhase(m, 0);
+        m.slideSince = 0;
+      }
       if (def.boss) {
         // Boss về tới chỗ: đầy máu, trận sau bắt đầu lại từ pha đầu (cả khi cả đội chết ngay cạnh chỗ sinh).
         m.s.hp = m.s.mhp;
         sys.setPhase(m, 0);
       }
       m.threat.clear();
-      m.wx = m.homeX;
-      m.wz = m.homeZ;
+      // Đứng lại ở chỗ vừa nhận (không đi bộ tiếp vào vật cản khi đứng yên).
+      m.wx = stalled ? m.s.x : m.homeX;
+      m.wz = stalled ? m.s.z : m.homeZ;
       sys.setMonState(m, MS_IDLE);
     }
     return;
