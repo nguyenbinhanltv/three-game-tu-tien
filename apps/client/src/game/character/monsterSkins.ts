@@ -196,7 +196,7 @@ export const MONSTER_SKINS: Record<string, MonsterSkin> = {
   boss_thu_mo_tuong: {
     asset: 'boss_thu_mo_tuong',
     clips: CHANT_BOSS_CLIPS,
-    refSpeed: 3.1,
+    refSpeed: 4.0,
     legs: 'biped',
     tint: '#ffffff',
     lazy: true,
@@ -407,7 +407,7 @@ export const MONSTER_SKINS: Record<string, MonsterSkin> = {
   boss_thach_tam_khoi_vuong: {
     asset: 'boss_thach_tam_khoi_vuong',
     clips: CHANT_BOSS_CLIPS,
-    refSpeed: 2.0,
+    refSpeed: 2.7,
     legs: 'biped',
     tint: '#ffffff',
     coreGlow: 1.2,
@@ -472,7 +472,7 @@ export const MONSTER_SKINS: Record<string, MonsterSkin> = {
   boss_vo_dien_than_quan: {
     asset: 'boss_vo_dien_than_quan',
     clips: CHANT_BOSS_CLIPS,
-    refSpeed: 1.75,
+    refSpeed: 2.3,
     legs: 'biped',
     tint: '#ffffff',
     rim: 0.25,
@@ -527,7 +527,7 @@ export const MONSTER_SKINS: Record<string, MonsterSkin> = {
   boss_xich_tan_cu_khoi: {
     asset: 'boss_thach_tam_khoi_vuong',
     clips: CHANT_BOSS_CLIPS,
-    refSpeed: 2.0,
+    refSpeed: 2.8,
     legs: 'biped',
     tint: '#d89080',
     coreGlow: 1.5,
