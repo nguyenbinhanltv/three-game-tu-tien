@@ -92,6 +92,7 @@ interface TraceRow {
   ua: number[];
   fl: number[];
   fr: number[];
+  sh: string;
 }
 interface TraceSeg {
   rows: TraceRow[];
@@ -122,7 +123,7 @@ const TRACE_INSTALL = `(() => {
       sp: r3(a.speed || 0), ma: r3(a.moveAngle || 0), base: m.baseName, shot: m.shot ? m.shot.getClip().name : '', perf: m.perf ? m.perf.id : '', env: m.perf ? r3(m.perf.env) : 0,
       lb: acts.filter((x) => x[0].endsWith('|lower')).map((x) => x[0].replace('|lower', '') + ' ' + x[1].toFixed(2)).join(' + '), patch: m.patchShot ? m.patchKind : '',
       dir: [m.dir.f, m.dir.b, m.dir.l, m.dir.r].map(r3), mix: [m.mix.walk, m.mix.jog, m.mix.sprint].map(r3), ph: r3(m.locoPhase), acts,
-      ua: [q.x, q.y, q.z, q.w].map((v) => Math.round(v * 1e5) / 1e5), fl: tr.b.ball_l ? wp(tr.b.ball_l) : [0, 0, 0], fr: tr.b.ball_r ? wp(tr.b.ball_r) : [0, 0, 0],
+      ua: [q.x, q.y, q.z, q.w].map((v) => Math.round(v * 1e5) / 1e5), sh: m.shots ? [...m.shots].map(([a, e]) => a.getClip().name + ':' + e.w.toFixed(2) + '>' + e.to + (a === m.shot ? '*' : '') + (a === m.patchShot ? 'P' : '') + '@' + a.time.toFixed(2)).join(' ') : '', fl: tr.b.ball_l ? wp(tr.b.ball_l) : [0, 0, 0], fr: tr.b.ball_r ? wp(tr.b.ball_r) : [0, 0, 0],
     });
   };
   requestAnimationFrame(f);
@@ -169,7 +170,7 @@ function traceSummary(s: { name: string } & TraceSeg): void {
     for (let j = Math.max(1, sp.i - 2); j <= Math.min(rows.length - 1, sp.i + 2); j++) {
       const r = rows[j]!;
       const h = halfSums(r.acts);
-      console.log(`      ${String(Math.round(r.t - t0)).padStart(5)} ms  ${Math.round(spins[j - 1]!.v).toString().padStart(5)}°/s  v ${r.sp.toFixed(1)}  nền ${r.base}  shot ${r.shot || '-'}${r.patch ? '(' + r.patch + ')' : ''}  perf ${r.perf || '-'}  Σtrên ${h.u.toFixed(2)} Σdưới ${h.l.toFixed(2)}  [${actStr(r)}]`);
+      console.log(`      ${String(Math.round(r.t - t0)).padStart(5)} ms  ${Math.round(spins[j - 1]!.v).toString().padStart(5)}°/s  v ${r.sp.toFixed(1)}  nền ${r.base}  shot ${r.shot || '-'}${r.patch ? '(' + r.patch + ')' : ''}  perf ${r.perf || '-'}  Σtrên ${h.u.toFixed(2)} Σdưới ${h.l.toFixed(2)}  [${actStr(r)}]  shots{${r.sh}}`);
     }
   }
   // Vừa chạy vừa đánh: chân trụ trôi (phân vị 15% của vận tốc bàn chân dọc hướng đi ÷ tốc độ thân) tách theo có/không có chiêu, kèm hướng trộn.
@@ -499,6 +500,24 @@ export default {
       // 1) vừa chạy vừa đánh: chạy ngang (A) rồi chiêu ô 2 và đòn thường, như phần `player`.
       segs.push(
         await seg('chay-danh', async () => {
+          await pg.keyboard.down('KeyA');
+          await sleep(600);
+          for (const slot of [1, 0]) {
+            await pg.evaluate((i) => window.__game!.useSkill(i), slot);
+            await sleep(1300);
+          }
+          await pg.evaluate(() => void ((window.__game as unknown as { autoAttack: boolean }).autoAttack = false));
+          await pg.keyboard.up('KeyA');
+          await sleep(900);
+        }),
+      );
+      // 1b) đúng trình tự của phần `player`: chạy tới, dừng, lùi, dừng, rồi chạy ngang + chiêu + đòn thường, dừng (nơi từng thấy `PM_Sprint_To_Idle → Idle_Loop` nhảy 0,8).
+      segs.push(
+        await seg('nhu-player', async () => {
+          await key('KeyW', 2200);
+          await sleep(1200);
+          await key('KeyS', 1600);
+          await sleep(1000);
           await pg.keyboard.down('KeyA');
           await sleep(600);
           for (const slot of [1, 0]) {

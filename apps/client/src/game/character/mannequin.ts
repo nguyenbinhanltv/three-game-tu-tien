@@ -1361,8 +1361,10 @@ export class MannequinCharacter implements CharacterView {
         continue;
       }
       let w = e.w;
-      // Đuôi clip: mờ ra trong `SHOT_TAIL` giây cuối để clip nền lên thay đúng nhịp (clip còn nối tiếp thì giữ nguyên tới hết).
-      if (e.to > 0 && !(this.chain && a === this.shot)) w = Math.min(w, Math.max(0, (dur - a.time) / Math.max(0.1, Math.abs(a.timeScale))) / SHOT_TAIL);
+      // Đuôi clip: mờ ra trong `SHOT_TAIL` giây cuối để clip nền lên thay đúng nhịp (clip còn nối tiếp thì giữ nguyên tới hết). Áp cả khi đòn đang bị mờ
+      // ra (huỷ giữa chừng): khung clip hết, three tắt action và coi trọng số = 0, nên trọng số còn lại ở khung đó biến thành chỗ trống (đo 28/11: tổng 0,28,
+      // bắp tay xoay 9645°/s khi người chơi bấm chạy lại lúc clip dừng sắp hết).
+      if (!(this.chain && a === this.shot)) w = Math.min(w, Math.max(0, (dur - a.time) / Math.max(0.1, Math.abs(a.timeScale))) / SHOT_TAIL);
       a.setEffectiveWeight(w);
       if (e.half === 'full') full += w;
       else if (e.half === 'upper') up += w;
