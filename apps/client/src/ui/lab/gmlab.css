@@ -1,0 +1,56 @@
+/* Tab Lệnh GM (Diễn Võ Trường): hàng lệnh gọn trong khung 720p. Nhãn lệnh đậm, ô số hẹp, ô tìm hẹp trước ô chọn. */
+.debug-row.gm-cmd > b {
+  flex: 0 0 110px;
+  font-weight: 700;
+}
+.debug-row.gm-cmd label {
+  flex: 0 1 auto;
+}
+.debug-row.gm-cmd label span {
+  flex: 0 0 auto;
+}
+.debug-row.gm-cmd .gm-num {
+  width: 64px;
+}
+.debug-row.gm-cmd .gm-text {
+  width: 96px;
+}
+.debug-row.gm-cmd .gm-find {
+  width: 70px;
+}
+.debug-row.gm-cmd select {
+  flex: 1 1 120px;
+  max-width: 190px;
+}
+
+/* Cửa sổ nổi: cột phải dưới minimap, trên thanh chiêu; danh sách cuộn bên trong. */
+.gm-win {
+  position: fixed;
+  right: 10px;
+  top: 262px;
+  width: 400px;
+  max-height: calc(100vh - 262px - 70px);
+  display: flex;
+  flex-direction: column;
+  padding: 8px 10px;
+  z-index: 60;
+  font-size: 12px;
+  color: var(--u-p-text, var(--u-p-paper));
+  background: var(--u-p-night-0, var(--u-p-night-0));
+  border: 1px solid var(--u-p-edge-dim, var(--u-p-edge-dim));
+  border-radius: 6px;
+  pointer-events: auto;
+}
+.gm-win-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.gm-list {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+}
+.gm-win .debug-row.gm-cmd > b {
+  flex: 0 0 100%;
+}
