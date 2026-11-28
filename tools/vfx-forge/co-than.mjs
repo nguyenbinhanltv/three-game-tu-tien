@@ -163,6 +163,9 @@ const SPEC = {
     scorch('target', [0, 0.02, 0], 4.2, 0.04, 2.6),
     after('target', [0, 4.2, 0], 3.8, 0.24, 1.4),
     sparks('target', [0, 1.4, 0], 12, 0),
+    // PROC-CNK (28/11): lớp thủ tục bằng hình có sẵn (không sprite) để nâng độ nổi: chớp lõi, sóng vành sáng, nón sóng đất; nhịp trúng t=0.
+    mesh({ shape: 'burst', t: 0, dur: 0.12, at: 'target', offset: [0, 1.2, 0], scale: 3.2, camFade: false, billboard: true, tone: 'rim', cross: true }),
+    mesh({ shape: 'shock_cone', t: 0.02, dur: 0.3, at: 'target', offset: [0, 0.05, 0], scale: [1, 1, 1], scaleTo: [5, 5, 5], alpha: 0.7, sweep: 0.3, erodeFrom: 0.2, tone: 'body', shadow: false }),
   ],
   // Tinh Bạo: khối đá nhân hổ phách nổ thành chùm mảnh hổ phách hóa thạch nhọn tỏa như sao.
   skl_tinh_bao: () => [
