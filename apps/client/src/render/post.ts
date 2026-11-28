@@ -99,6 +99,11 @@ export const postParams = {
    * về `moodTint` (đỏ sẫm), giữ độ chói tương đối và giữ nguyên điểm ảnh sáng. `moodW` 0 = không vẽ gì. Đặt bởi `game/engine/daMood.ts`.
    */
   moodW: uniform(0),
+  /**
+   * Dạ Họa: mức GIỮ MÀU THẬT cho điểm ảnh trong mặt nạ hậu kỳ (thân nhân vật, quái, bảng tên, hiệu ứng) trước lớp tối dần ra xa tâm trận và lớp
+   * nhuộm trận: 0 = như cũ (chỉ điểm ảnh sáng được giữ), 1 = giữ hẳn. Quái đứng xa tâm khung không bị nhuộm lẫn vào nền. Mặc định 0,6 ở Dạ Họa (`da`), 0 ở Họa Cảnh thường.
+   */
+  maskKeep: uniform(FLAGS.da ? 0.6 : 0),
   moodTint: uniform(new THREE.Color(0.5, 0.06, 0.09)),
 };
 
@@ -221,12 +226,13 @@ export function hideRenderables(root: THREE.Object3D, keep: THREE.Object3D): () 
  * Lớp phản hồi chiến đấu ở không gian hiển thị (đọc uniform `postParams`): viền trúng đòn, chớp, khung va chạm, viền `punch`, nhuộm chuyển pha, mực khi chết.
  * Dùng chung cho chuỗi thường và cho Họa Cảnh (`?style=painted`), để `hit()/flash()/impactFrame()/punch()` không mất tác dụng.
  */
-function feedbackLayers(rgb: Node, fromCenter: Node): Node {
+function feedbackLayers(rgb: Node, fromCenter: Node, keepMask?: Node): Node {
   let g = rgb;
   // Dạ Cảnh: tối dần ra xa tâm trận (chỉ khi `focusDark` > 0). Điểm ảnh sáng (chiêu, vạch báo, đèn) giữ nguyên.
   const fd = screenUV.sub(postParams.focus).mul(vec2(postParams.focusAspect, 1));
   const fDark = smoothstep(FOCUS_R0, FOCUS_R1, length(fd)).mul(FOCUS_MAX).mul(postParams.focusDark);
-  const fKeep = smoothstep(0.5, 0.85, luminance(vec3(g)));
+  const fBright = smoothstep(0.5, 0.85, luminance(vec3(g)));
+  const fKeep = keepMask ? fBright.max(float(keepMask).mul(6).clamp(0, 1).mul(postParams.maskKeep)) : fBright;
   g = vec3(vec3(g).mul(float(1).sub(fDark.mul(float(1).sub(fKeep)))));
   // Dạ Họa: nhuộm đỏ sẫm theo loại trận (tinh anh/boss), mạnh dần ra xa tâm; giữa khung và điểm ảnh sáng giữ màu thật để đọc chiêu.
   const mMask = smoothstep(MOOD_R0, MOOD_R1, length(fd)).mul(MOOD_MAX).mul(postParams.moodW).mul(float(1).sub(fKeep));
@@ -325,7 +331,7 @@ export class PostPipeline {
         mask: maskAt,
         ...(wide ? { wide: (uv: Node) => wide.sample(uv) } : {}),
         aberration: postParams.hit.mul(0.012),
-        overlay: (g) => feedbackLayers(g, fromCenterP),
+        overlay: (g) => feedbackLayers(g, fromCenterP, maskAt(screenUV)),
       });
       return;
     }
