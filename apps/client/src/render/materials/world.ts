@@ -138,7 +138,11 @@ export const daSepRim = uniform(DA_SEP_RIM);
 /** Sắc viền tách nền (tuyến tính): trăng lạnh, khớp ánh viền đạo cụ của Dạ Họa. */
 const DA_SEP_COLOR = vec3(0.5, 0.68, 1.0);
 
-export function toonBands(m: THREE.MeshStandardNodeMaterial, sepRim = false): THREE.MeshStandardNodeMaterial {
+/** Hệ số viền sáng của tinh anh/boss: nhẹ hơn quái thường để giữ sắc đỏ/nhận diện của loại quái (viền đầy mức làm boss xám đi). */
+export const DA_SEP_ELITE_K = 0.5;
+
+/** `sepRim`: 0/false = không viền tách nền; true = đủ mức; số = nhân hệ số (vd. `DA_SEP_ELITE_K`). */
+export function toonBands(m: THREE.MeshStandardNodeMaterial, sepRim: boolean | number = false): THREE.MeshStandardNodeMaterial {
   const lit = output.rgb;
   const base = luminance(diffuseColor.rgb).max(0.02);
   const r = luminance(lit).div(base);
@@ -155,7 +159,7 @@ export function toonBands(m: THREE.MeshStandardNodeMaterial, sepRim = false): TH
     // viền trăng thuần làm thân ngả hồng tím và mất sắc nhận diện (đo 28/11).
     const bodyTone = diffuseColor.rgb.div(diffuseColor.r.max(diffuseColor.g).max(diffuseColor.b).max(0.05));
     const sepCol = mix(bodyTone, DA_SEP_COLOR, 0.3);
-    m.outputNode = vec4(lit.mul(k).add(sepCol.mul(fres.mul(mix(float(0.45), float(1), up)).mul(daSepRim))), output.a);
+    m.outputNode = vec4(lit.mul(k).add(sepCol.mul(fres.mul(mix(float(0.45), float(1), up)).mul(daSepRim).mul(float(sepRim === true ? 1 : sepRim)))), output.a);
     return m;
   }
   m.outputNode = vec4(lit.mul(k), output.a);
