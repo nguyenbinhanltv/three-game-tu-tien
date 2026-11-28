@@ -30,6 +30,8 @@ interface Sample {
   heapMB: number;
   /** Texture lớn nhất (để tìm điểm nóng). */
   texTop: string[];
+  /** CPU trung bình (ms) của từng hệ trong `Game.frame()` + `khac` = phần còn lại (như `iso.ts`). */
+  parts: Record<string, number>;
 }
 interface Row extends Sample {
   id: string;
@@ -47,6 +49,7 @@ function initScript(): void {
     frames: [] as number[][],
     gpu: [] as number[],
     patched: null as unknown,
+    parts: [] as Record<string, number>[],
     texBytes: () => {
       let s = 0;
       for (const v of tex.values()) s += v;
@@ -74,6 +77,22 @@ function initScript(): void {
     for (let l = 0; l < levels; l++) total += Math.max(1, w0 >> l) * Math.max(1, h0 >> l) * (t.is3DTexture ? Math.max(1, d0 >> l) : d0) * bpp;
     return total * samples;
   };
+  let cur: Record<string, number> = {};
+  const wrapped = new WeakSet<object>();
+  const wrapPart = (obj: any, fn: string, label: string) => {
+    if (!obj || typeof obj[fn] !== 'function' || wrapped.has(obj[fn])) return;
+    const orig = obj[fn];
+    const f = function (this: unknown, ...a: unknown[]) {
+      const t0 = performance.now();
+      try {
+        return orig.apply(this, a);
+      } finally {
+        cur[label] = (cur[label] ?? 0) + performance.now() - t0;
+      }
+    };
+    wrapped.add(f);
+    obj[fn] = f;
+  };
   let gpuPending = false;
   let gpuFrames = 0;
   const hook = (g: Record<string, any>) => {
@@ -100,10 +119,26 @@ function initScript(): void {
           destroy(t);
         };
       }
+      // Cùng danh sách hệ với tools/perf/src/iso.ts.
+      wrapPart(g.terrain, 'update', 'terrain');
+      wrapPart(g.ents, 'update', 'ents');
+      wrapPart(g.vfx, 'update', 'vfx');
+      wrapPart(g.env, 'update', 'env');
+      wrapPart(g.ambient, 'update', 'ambient');
+      wrapPart(g.scene, 'updateMatrixWorld', 'matrix');
+      wrapPart(g.post, 'render', 'render');
+      wrapPart(g.post, 'update', 'post');
+      wrapPart(g.dmg, 'update', 'ui');
+      wrapPart(g.offscreen, 'update', 'offscreen');
+      wrapPart(g, 'updateCamera', 'camera');
+      cur = {};
       const t0 = performance.now();
       frame.call(g);
       const dt = performance.now() - t0;
-      if (P.rec && r) P.frames.push([dt, r.info.render.drawCalls ?? r.info.render.calls, r.info.render.triangles]);
+      if (P.rec && r) {
+        P.frames.push([dt, r.info.render.drawCalls ?? r.info.render.calls, r.info.render.triangles]);
+        P.parts.push({ ...cur });
+      }
       gpuFrames++;
       if (be?.trackTimestamp && !gpuPending) {
         gpuPending = true;
@@ -136,6 +171,7 @@ const measure = (pg: Page, seconds: number): Promise<Sample> =>
     const P = (window as any).__roomPerf;
     P.frames = [];
     P.gpu = [];
+    P.parts = [];
     P.rec = true;
     const t0 = performance.now();
     await new Promise((r) => setTimeout(r, sec * 1000));
@@ -157,8 +193,92 @@ const measure = (pg: Page, seconds: number): Promise<Sample> =>
       texMB: Math.round((P.texBytes() / 1048576) * 10) / 10,
       heapMB: Math.round(((performance as any).memory?.usedJSHeapSize ?? 0) / 1e6),
       texTop: P.texTop(6),
+      parts: (() => {
+        const labels = new Set<string>();
+        for (const p of P.parts as Record<string, number>[]) for (const k of Object.keys(p)) labels.add(k);
+        const out: Record<string, number> = {};
+        let sum = 0;
+        for (const k of labels) {
+          const v = (P.parts as Record<string, number>[]).reduce((a, p) => a + (p[k] ?? 0), 0) / Math.max(1, P.parts.length);
+          out[k] = r2(v);
+          sum += v;
+        }
+        out.khac = r2(Math.max(0, avg(cpu) - sum));
+        return out;
+      })(),
     };
   }, seconds);
+
+/**
+ * Phân rã tam giác của khung hiện tại theo nhóm đối tượng: duyệt cảnh, lấy lưới đang hiện và (cầu bao) nằm trong khung nhìn, đếm tam giác
+ * (lưới có chỉ mục: index/3; lưới instancing nhân với số bản). Khóa nhóm = chuỗi tên tổ tiên gần nhất có tên (2 cấp) + loại lưới. Tổng ước lượng so với
+ * `renderer.info` để biết phần sai lệch (LOD ẩn bằng cách khác, bóng đổ vẽ thêm một lượt…).
+ */
+const breakdown = (pg: Page) =>
+  pg.evaluate(async () => {
+    const g = window.__game as any;
+    const cam = g.camera;
+    cam.updateMatrixWorld();
+    const proj = cam.projectionMatrix.clone().multiply(cam.matrixWorldInverse);
+    const e = proj.elements;
+    // Mặt phẳng khung nhìn (Gribb-Hartmann).
+    const planes: number[][] = [];
+    const row = (i: number, sgn: number) => [e[3]! + sgn * e[i]!, e[7]! + sgn * e[i + 4]!, e[11]! + sgn * e[i + 8]!, e[15]! + sgn * e[i + 12]!];
+    for (let i = 0; i < 3; i++) {
+      planes.push(row(i, 1));
+      planes.push(row(i, -1));
+    }
+    const inView = (o: any): boolean => {
+      const geo = o.geometry;
+      if (!geo) return false;
+      if (!geo.boundingSphere) geo.computeBoundingSphere();
+      const bs = geo.boundingSphere;
+      if (!bs) return true;
+      if (o.isInstancedMesh || o.isBatchedMesh || o.isSkinnedMesh || o.frustumCulled === false) return true;
+      const c = bs.center.clone().applyMatrix4(o.matrixWorld);
+      const sc = o.matrixWorld.getMaxScaleOnAxis();
+      const rad = bs.radius * sc;
+      for (const pl of planes) {
+        const n = Math.hypot(pl[0]!, pl[1]!, pl[2]!) || 1;
+        if ((pl[0]! * c.x + pl[1]! * c.y + pl[2]! * c.z + pl[3]!) / n < -rad) return false;
+      }
+      return true;
+    };
+    const acc = new Map<string, { tris: number; meshes: number }>();
+    let total = 0;
+    g.scene.traverse((o: any) => {
+      if (!o.isMesh || !o.geometry) return;
+      for (let p = o; p; p = p.parent) if (p.visible === false) return;
+      if (!inView(o)) return;
+      const geo = o.geometry;
+      const base = (geo.index ? geo.index.count : (geo.attributes.position?.count ?? 0)) / 3;
+      const n = o.isInstancedMesh ? (o.count ?? 1) : 1;
+      const tris = base * n;
+      const names: string[] = [];
+      for (let p = o.parent; p && names.length < 2; p = p.parent) if (p.name) names.push(p.name);
+      const key = `${names.reverse().join('/') || '(không tên)'} · ${o.isInstancedMesh ? 'inst' : o.isSkinnedMesh ? 'skin' : 'mesh'}${o.name ? ' ' + o.name : ''}`;
+      const a = acc.get(key) ?? { tris: 0, meshes: 0 };
+      a.tris += tris;
+      a.meshes += 1;
+      acc.set(key, a);
+      total += tris;
+    });
+    const list = [...acc.entries()].sort((a, b) => b[1].tris - a[1].tris).slice(0, 30).map(([k, v]) => ({ k, tris: Math.round(v.tris), meshes: v.meshes }));
+    // Tắt đổ bóng của mọi đèn một lúc: hiệu số tam giác renderer báo = phần của lượt vẽ bóng.
+    const frames = () => new Promise<void>((res) => requestAnimationFrame(() => requestAnimationFrame(() => requestAnimationFrame(() => res()))));
+    await frames();
+    const withShadow = g.renderer.info.render.triangles as number;
+    const lights: any[] = [];
+    g.scene.traverse((o: any) => {
+      if (o.isLight && o.castShadow) lights.push(o);
+    });
+    for (const l of lights) l.castShadow = false;
+    await frames();
+    const noShadow = g.renderer.info.render.triangles as number;
+    for (const l of lights) l.castShadow = true;
+    await frames();
+    return { total: Math.round(total), info: withShadow, noShadow, lights: lights.length, list };
+  });
 
 /** Nhắm quái gần nhất và bấm ô chiêu (0 = đòn thường, bật tự đánh). */
 const attack = (pg: Page, slot: number) =>
@@ -226,6 +346,7 @@ export default {
     const push = (id: string, kind: Row['kind'], s: Sample) => {
       const row: Row = { id, kind, ...s, over: verdict(s) };
       rows.push(row);
+      if (opt('--parts', '') === '1') console.log(`[roomperf]    hệ: ${Object.entries(s.parts).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${k} ${v}`).join(' · ')}`);
       console.log(
         `[roomperf] ${id.padEnd(26)} ${kind.padEnd(9)} draw ${String(s.drawMax).padStart(3)}  tri ${(s.trisMax / 1000).toFixed(0).padStart(5)}k  CPU ${s.cpuAvg.toFixed(2)}/${s.cpuP95.toFixed(2)} ms  GPU ${s.gpuAvg ?? '—'} ms  tex ${s.texMB} MB  ${s.fps} fps${row.over.length ? '  VƯỢT: ' + row.over.join(', ') : ''}`,
       );
@@ -251,6 +372,12 @@ export default {
       await gm(pg, 'god on', 900);
       await sleep(2500);
       push('map_' + lv, 'tĩnh', await measure(pg, seconds));
+      if (opt('--break', '') === '1') {
+        const b = await breakdown(pg);
+        console.log(`[roomperf] phân rã tam giác ${lv}: ước lượng một lượt ${b.total} · renderer ${b.info} · tắt bóng (${b.lights} đèn) ${b.noShadow}`);
+        for (const x of b.list.slice(0, 20)) console.log(`[roomperf]    ${String(x.tris).padStart(8)}  ${String(x.meshes).padStart(4)} lưới  ${x.k}`);
+        writeJson(r.out, `break-${lv}.json`, b);
+      }
     }
     if (nBots > 0 && !maps.length && (!only.length || only.includes('crowd'))) {
       const key = 'perf' + nBots;
