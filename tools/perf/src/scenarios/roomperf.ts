@@ -263,10 +263,77 @@ const breakdown = (pg: Page) =>
       acc.set(key, a);
       total += tris;
     });
+    // Lượt vẽ bóng: lưới castShadow đang hiện và nằm trong hộp bóng của đèn (lưới `frustumCulled=false` luôn bị vẽ). Cộng theo cùng khóa nhóm.
+    const sun = (() => {
+      let l: any = null;
+      g.scene.traverse((o: any) => {
+        if (o.isLight && o.castShadow && o.shadow?.camera && !l) l = o;
+      });
+      return l;
+    })();
+    const shAcc = new Map<string, { tris: number; meshes: number }>();
+    let shTotal = 0;
+    if (sun) {
+      const sc = sun.shadow.camera;
+      sc.updateMatrixWorld();
+      const sp = sc.projectionMatrix.clone().multiply(sc.matrixWorldInverse).elements;
+      const spl: number[][] = [];
+      const srow = (i: number, sgn: number) => [sp[3]! + sgn * sp[i]!, sp[7]! + sgn * sp[i + 4]!, sp[11]! + sgn * sp[i + 8]!, sp[15]! + sgn * sp[i + 12]!];
+      for (let i = 0; i < 3; i++) {
+        spl.push(srow(i, 1));
+        spl.push(srow(i, -1));
+      }
+      g.scene.traverse((o: any) => {
+        if (!o.isMesh || !o.geometry || !o.castShadow) return;
+        for (let p = o; p; p = p.parent) if (p.visible === false) return;
+        const geo = o.geometry;
+        if (!geo.boundingSphere) geo.computeBoundingSphere();
+        const bs = geo.boundingSphere;
+        if (bs && o.frustumCulled !== false && !o.isSkinnedMesh) {
+          const c = bs.center.clone().applyMatrix4(o.matrixWorld);
+          const rad = bs.radius * o.matrixWorld.getMaxScaleOnAxis();
+          for (const pl of spl) {
+            const n = Math.hypot(pl[0]!, pl[1]!, pl[2]!) || 1;
+            if ((pl[0]! * c.x + pl[1]! * c.y + pl[2]! * c.z + pl[3]!) / n < -rad) return;
+          }
+        }
+        const base = (geo.index ? geo.index.count : (geo.attributes.position?.count ?? 0)) / 3;
+        const tris = base * (o.isInstancedMesh ? (o.count ?? 1) : 1);
+        const names: string[] = [];
+        for (let p = o.parent; p && names.length < 2; p = p.parent) if (p.name) names.push(p.name);
+        const key = `${names.reverse().join('/') || '(không tên)'} · ${o.isInstancedMesh ? 'inst' : o.isSkinnedMesh ? 'skin' : 'mesh'}${o.name ? ' ' + o.name : ''}`;
+        const a = shAcc.get(key) ?? { tris: 0, meshes: 0 };
+        a.tris += tris;
+        a.meshes += 1;
+        shAcc.set(key, a);
+        shTotal += tris;
+      });
+    }
+    const shList = [...shAcc.entries()].sort((a, b) => b[1].tris - a[1].tris).slice(0, 12).map(([k, v]) => ({ k, tris: Math.round(v.tris), meshes: v.meshes }));
     const list = [...acc.entries()].sort((a, b) => b[1].tris - a[1].tris).slice(0, 30).map(([k, v]) => ({ k, tris: Math.round(v.tris), meshes: v.meshes }));
     // Tắt đổ bóng của mọi đèn một lúc: hiệu số tam giác renderer báo = phần của lượt vẽ bóng.
     const frames = () => new Promise<void>((res) => requestAnimationFrame(() => requestAnimationFrame(() => requestAnimationFrame(() => res()))));
     await frames();
+    // Lượt vẽ THẬT theo từng vật: bọc `info.update` (renderer gọi cho mỗi lệnh vẽ, cả lượt bóng) trong 2 khung, chia 6 (hai lượt `frames()` = 6 khung) cho ra một khung.
+    const drew = new Map<string, { tris: number; draws: number }>();
+    {
+      const inf = g.renderer.info;
+      const orig = inf.update.bind(inf);
+      inf.update = (object: any, count: number, instanceCount: number) => {
+        const names: string[] = [];
+        for (let p = object.parent; p && names.length < 2; p = p.parent) if (p.name) names.push(p.name);
+        const key = `${names.reverse().join('/') || '(không tên)'} · ${object.isInstancedMesh ? 'inst' : object.isSkinnedMesh ? 'skin' : 'mesh'}${object.name ? ' ' + object.name : ''}`;
+        const a = drew.get(key) ?? { tris: 0, draws: 0 };
+        a.tris += ((count / 3) * Math.max(1, instanceCount)) / 6;
+        a.draws += 1 / 6;
+        drew.set(key, a);
+        orig(object, count, instanceCount);
+      };
+      await frames();
+      await frames();
+      inf.update = orig;
+    }
+    const drawn = [...drew.entries()].sort((a, b) => b[1].tris - a[1].tris).slice(0, 24).map(([k, v]) => ({ k, tris: Math.round(v.tris), draws: Math.round(v.draws * 10) / 10 }));
     const withShadow = g.renderer.info.render.triangles as number;
     const lights: any[] = [];
     g.scene.traverse((o: any) => {
@@ -277,7 +344,7 @@ const breakdown = (pg: Page) =>
     const noShadow = g.renderer.info.render.triangles as number;
     for (const l of lights) l.castShadow = true;
     await frames();
-    return { total: Math.round(total), info: withShadow, noShadow, lights: lights.length, list };
+    return { total: Math.round(total), info: withShadow, noShadow, lights: lights.length, list, shadowTotal: Math.round(shTotal), shadowList: shList, drawn };
   });
 
 /** Nhắm quái gần nhất và bấm ô chiêu (0 = đòn thường, bật tự đánh). */
@@ -371,12 +438,23 @@ export default {
       if ((await shownLevel(pg)) !== lv) await enterLevel(pg, lv);
       await gm(pg, 'god on', 900);
       await sleep(2500);
-      push('map_' + lv, 'tĩnh', await measure(pg, seconds));
-      if (opt('--break', '') === '1') {
-        const b = await breakdown(pg);
-        console.log(`[roomperf] phân rã tam giác ${lv}: ước lượng một lượt ${b.total} · renderer ${b.info} · tắt bóng (${b.lights} đèn) ${b.noShadow}`);
-        for (const x of b.list.slice(0, 20)) console.log(`[roomperf]    ${String(x.tris).padStart(8)}  ${String(x.meshes).padStart(4)} lưới  ${x.k}`);
-        writeJson(r.out, `break-${lv}.json`, b);
+      // `--spots tong_mon,thung_lung`: đo thêm ở các điểm trong `places.json` (`--snap 1`: mỗi điểm một ảnh `map-<level>-<điểm>.png`).
+      for (const spot of ['', ...opt('--spots', '').split(',').filter(Boolean)]) {
+        if (spot) {
+          await gm(pg, 'tp ' + spot, 3500);
+          await sleep(1500);
+        }
+        push('map_' + lv + (spot ? '@' + spot : ''), 'tĩnh', await measure(pg, seconds));
+        if (opt('--snap', '') === '1') await snap(pg, r.out, `map-${lv}${spot ? '-' + spot : ''}.png`, { wait: 100 });
+        if (opt('--break', '') === '1') {
+          const b = await breakdown(pg);
+          console.log(`[roomperf] phân rã tam giác ${lv}${spot ? '@' + spot : ''}: ước lượng một lượt ${b.total} · renderer ${b.info} · tắt bóng (${b.lights} đèn) ${b.noShadow}`);
+          console.log(`[roomperf] lượt bóng (tính theo lưới castShadow trong hộp bóng): ${b.shadowTotal} tam giác`);
+          for (const x of b.shadowList) console.log(`[roomperf]    bóng ${String(x.tris).padStart(8)}  ${String(x.meshes).padStart(4)} lưới  ${x.k}`);
+          for (const x of b.drawn) console.log(`[roomperf]    vẽ ${String(x.tris).padStart(8)}  ${String(x.draws).padStart(4)} lần  ${x.k}`);
+          for (const x of b.list.slice(0, 20)) console.log(`[roomperf]    ${String(x.tris).padStart(8)}  ${String(x.meshes).padStart(4)} lưới  ${x.k}`);
+          writeJson(r.out, `break-${lv}${spot ? '-' + spot : ''}.json`, b);
+        }
       }
     }
     if (nBots > 0 && !maps.length && (!only.length || only.includes('crowd'))) {

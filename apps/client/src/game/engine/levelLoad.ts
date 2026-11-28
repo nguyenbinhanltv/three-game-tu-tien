@@ -76,6 +76,7 @@ import { DA_FLAME, DA_LAMP_K } from './daMood';
 import type { Game } from '../engine';
 import { logger } from '../../base/log';
 import { addSectSigns } from '../world/sectSigns';
+import { splitMeshesUnder } from '../world/meshCells';
 import { ASSET_BASE } from '../../base/assetBase';
 
 const groundLog = logger('ground');
@@ -906,6 +907,9 @@ async function loadSectModel(eng: Game, shadows: boolean): Promise<void> {
       m.receiveShadow = shadows;
       m.frustumCulled = false;
     });
+    // Kiến trúc là vài lưới lớn trải cả tông môn: chia theo ô 32 m để lượt cảnh và lượt bóng cắt được phần ngoài khung (28/11, giữ Vân Lam dưới 80% trần tam giác).
+    const cells = splitMeshesUnder(root);
+    assetLog.info(`arch_sect: chia ${cells.split} lưới thành ${cells.made} ô`);
     eng.sectAsset.mats.push(...addSectSigns(root, withOccluderFade)); // biển hiệu thư pháp (sau traverse: tấm biển không cần đổ bóng)
     eng.scene.add(root);
     if (eng.sectMesh) {

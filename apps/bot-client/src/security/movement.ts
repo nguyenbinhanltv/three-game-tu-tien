@@ -8,6 +8,8 @@ export async function runMovement(ctx: Ctx): Promise<void> {
   // 2. Không ra chiêu được khi lơ lửng trên không.
   await gm('level 15');
   await gm('tp 2048 2455');
+  // Sau tp, AOI gửi quái quanh điểm mới sau vài nhịp: chờ có quái sống trong tầm thấy thay vì giả định có ngay (gmAck không còn ngủ cố định 900 ms nên nhanh hơn đồng bộ state).
+  await waitUntil(() => [...mons().values()].some((m) => m.st !== 4 && Math.hypot(m.x - me().x, m.z - me().z) < 80), 8000);
   let target = '';
   let best = 1e9;
   mons().forEach((m, id) => {
