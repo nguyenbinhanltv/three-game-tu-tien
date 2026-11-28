@@ -73,6 +73,7 @@ import fx_mon_cast__boss_dia_mach_long from '../data/fx/mon_cast__boss_dia_mach_
 import fx_mon_cast__boss_thon_mach_ngo_cong_vuong from '../data/fx/mon_cast__boss_thon_mach_ngo_cong_vuong.json';
 import fx_mon_cast__boss_thu_mo_tuong from '../data/fx/mon_cast__boss_thu_mo_tuong.json';
 import fx_mon_warn__boss_dia_mach_long__chant from '../data/fx/mon_warn__boss_dia_mach_long__chant.json';
+import fx_mon_warn__boss_dia_mach_long__slam from '../data/fx/mon_warn__boss_dia_mach_long__slam.json';
 import fx_mon_warn__boss_huyet_lang_vuong__slam from '../data/fx/mon_warn__boss_huyet_lang_vuong__slam.json';
 import fx_mon_warn__boss_kiem_khoi__slam from '../data/fx/mon_warn__boss_kiem_khoi__slam.json';
 import fx_mon_warn__boss_thach_tam_khoi_vuong__leap from '../data/fx/mon_warn__boss_thach_tam_khoi_vuong__leap.json';
@@ -698,6 +699,7 @@ export const MON_FX_TIMELINES = [
   fx_mon_cast__boss_thon_mach_ngo_cong_vuong,
   fx_mon_cast__boss_thu_mo_tuong,
   fx_mon_warn__boss_dia_mach_long__chant,
+  fx_mon_warn__boss_dia_mach_long__slam,
   fx_mon_warn__boss_huyet_lang_vuong__slam,
   fx_mon_warn__boss_kiem_khoi__slam,
   fx_mon_warn__boss_thach_tam_khoi_vuong__leap,
