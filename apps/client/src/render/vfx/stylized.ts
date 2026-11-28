@@ -552,11 +552,11 @@ export function artNodes(U: FxUniforms): { color: N; opacity: N } {
  * `fxA` = (-, tan 0..1,1, seed, ô sprite 0..15). Giữ màu vẽ tay (tím/lam) nhưng kéo lõi tối xuống theo độ sáng để đọc được trên nền đá trắng;
  * phần sáng nhất của tranh + mép đang tan ăn mòn có ánh viền lạnh theo màu viền của nhánh (`fxB.xyz`).
  */
-export function spriteNodesFor(group: SpriteGroup) {
-  return (U: FxUniforms): { color: N; opacity: N } => spriteNodesImpl(U, group);
+export function spriteNodesFor(group: SpriteGroup, tile?: (q: N) => N) {
+  return (U: FxUniforms): { color: N; opacity: N } => spriteNodesImpl(U, group, tile);
 }
 export const spriteNodes = spriteNodesFor('hon');
-function spriteNodesImpl(U: FxUniforms, group: SpriteGroup): { color: N; opacity: N } {
+function spriteNodesImpl(U: FxUniforms, group: SpriteGroup, tile?: (q: N) => N): { color: N; opacity: N } {
   const SPRITE_COLS = SPRITE_GROUPS[group].cols;
   const SPRITE_ROWS = SPRITE_GROUPS[group].rows;
   const q = uv();
@@ -565,7 +565,10 @@ function spriteNodesImpl(U: FxUniforms, group: SpriteGroup): { color: N; opacity
   const sk = idx;
   const sCol = sk.sub(floor(sk.div(SPRITE_COLS)).mul(SPRITE_COLS));
   const sRow = floor(sk.div(SPRITE_COLS));
-  const ts = texture(spriteAtlas(group), vec2(q.x.add(sCol).div(SPRITE_COLS), q.y.add(float(SPRITE_ROWS - 1).sub(sRow)).div(SPRITE_ROWS)));
+  // `tile` (render/vfx/procSprites): ô thủ tục thay cho mẫu atlas, trả (độ sáng, độ sáng, độ sáng, alpha) cùng quy ước với ô vẽ tay.
+  const ts = tile
+    ? tile(q)
+    : texture(spriteAtlas(group), vec2(q.x.add(sCol).div(SPRITE_COLS), q.y.add(float(SPRITE_ROWS - 1).sub(sRow)).div(SPRITE_ROWS)));
   const spLum = dot(ts.rgb, vec3(0.3, 0.59, 0.11));
   // Bảng tím âm hồn (hue ~270–285°, tuyến tính): lõi mực tối gần đen tím → thân tím đậm → viền tím nhạt/trắng lạnh. Giữ quan hệ với màu của sự kiện
   // (`tone`): màu nhánh sáng hơn (tone `rim`: lớp điểm nhấn ngắn) thì ramp sáng dần về viền; tone `body` giữ ramp tối.

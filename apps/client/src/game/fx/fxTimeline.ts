@@ -41,6 +41,7 @@ import {
 import { forgeDecalIndex, forgeFlipIndex } from '../../render/vfx/forgeTex';
 import { shapeGeometry, shapeKind, QUAD_XZ } from '../../render/vfx/fxShapes';
 import { spriteCell, useSpriteGroup } from '../../render/vfx/art';
+import { PROC_TILES } from '../../render/vfx/procSprites';
 import {
   DECAL_CRACK,
   DECAL_CRACK_INK,
@@ -613,7 +614,11 @@ export class FxRunner {
     const kind0 = ev.shape === 'flip' && ev.flip && (FORGE_FLIPS as readonly string[]).includes(ev.flip) ? 'mapFlip' : shapeKind(ev.shape);
     // Sprite vẽ tay: mỗi nhóm atlas hướng tu một kind riêng (`sprite`, `sprite_loi`...); nạp atlas của nhóm khi lần đầu có chiêu của hướng đó hiện ra.
     const cell = kind0 === 'sprite' ? spriteCell(ev.sprite ?? 'hon_hand_claw') : null;
-    const kind = cell
+    // Ô đã thay bằng shader thủ tục (render/vfx/procSprites; `?procfx=0` về sprite): kind riêng của ô, vẫn dùng chung quad sprite.
+    const procName = cell && FLAGS.procFx && ev.sprite && PROC_TILES[ev.sprite] ? ev.sprite : null;
+    const kind = procName
+      ? (`proc_${procName}` as 'proc_chung_hexweb')
+      : cell
       ? cell.group === 'hon'
         ? 'sprite'
         : (`sprite_${cell.group}` as
@@ -826,7 +831,7 @@ export class FxRunner {
 
   /** Ghi màu viền, độ rách và bảng màu vào tham số của lưới. */
   private style(m: FxMesh, pal: FxPalette, ev: FxMeshEvent, kind: string): void {
-    const isSprite = kind.startsWith('sprite');
+    const isSprite = kind.startsWith('sprite') || kind.startsWith('proc_');
     const cell = isSprite ? spriteCell(ev.sprite ?? 'hon_hand_claw') : null;
     _col.setHex(pal.rim);
     m.fxB.set(_col.r, _col.g, _col.b, ev.ragged ?? 0.5);

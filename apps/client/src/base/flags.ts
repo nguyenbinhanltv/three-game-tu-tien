@@ -20,6 +20,8 @@ interface Flags {
   legacyModels: boolean;
   /** `?batch=0` tắt gộp draw call VFX (chẩn đoán hiệu năng). */
   batching: boolean;
+  /** `?procfx=1` bật các ô sprite thay bằng shader thủ tục (render/vfx/procSprites; mặc định TẮT: chưa ô nào qua đủ cổng chất lượng, dùng để so A/B). */
+  procFx: boolean;
   /** `?vfxlab=1` (chỉ dev) phòng thử VFX: gắn `window.__vfxlab` (tạm dừng, chậm, bước đơn, đồng hồ ngân sách) cho `pnpm shots vfxlab`. */
   vfxLab: boolean;
   /** `?animlab=1` (chỉ dev) phòng thử animation Thân Pháp: gắn `window.__animlab`. */
@@ -145,6 +147,7 @@ export const FLAG_DOCS: Readonly<Record<string, { scope: 'user' | 'diag' | 'test
   debug: { scope: 'diag', doc: 'bảng F3 + dòng số đo ở bản build' },
   models: { scope: 'diag', doc: '=legacy: model khối (dự phòng)' },
   batch: { scope: 'diag', doc: '=0: tắt gộp draw call VFX' },
+  procfx: { scope: 'diag', doc: '=1: dùng shader thủ tục thay sprite cho các ô trong PROC_TILES (render/vfx/procSprites; mặc định tắt, so A/B)' },
   vfxlab: { scope: 'test', doc: '=1 (dev): phòng thử VFX, gắn window.__vfxlab; dùng với pnpm shots vfxlab' },
   animlab: { scope: 'test', doc: '=1 (dev): phòng thử animation Thân Pháp, gắn window.__animlab; dùng với pnpm shots animlab' },
   thanphap: {
@@ -233,6 +236,7 @@ export function readFlags(search: string): Flags {
     debug: q.has('debug'),
     legacyModels: q.get('models') === 'legacy',
     batching: !off(q.get('batch')),
+    procFx: q.get('procfx') === '1',
     vfxLab: q.get('vfxlab') === '1',
     animLab: q.get('animlab') === '1',
     thanPhap: q.get('thanphap') !== '0',

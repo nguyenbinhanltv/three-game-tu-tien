@@ -9,6 +9,7 @@ import { mapDecalNodes, mapFlipNodes } from '../vfx/forgeTex';
 import { beamNodes } from '../vfx/loot';
 import { sigilNodes } from '../vfx/sigil';
 import { slashNodes } from '../vfx/slash';
+import { PROC_TILES } from '../vfx/procSprites';
 import { artNodes, burstNodes, cardNodes, crystalNodes, decalNodes, spriteNodesFor, toonNodes } from '../vfx/stylized';
 import { trailInkNodes, trailNodes } from '../vfx/trail';
 import { FLAGS } from '../../base/flags';
@@ -97,6 +98,8 @@ export type FxKind =
   | 'sprite_kiep'
   | 'sprite_dong'
   | 'sprite_guong'
+  /** Ô sprite thay bằng shader thủ tục (`render/vfx/procSprites.ts`, `?procfx=0` trả về sprite): một kind cho mỗi ô trong `PROC_TILES`. */
+  | 'proc_chung_hexweb'
   | 'wind'
   | 'flip'
   /** Decal từ trên bằng texture Codex (`forgeTex.ts`; vân nứt vạch báo, băng nứt). */
@@ -144,6 +147,7 @@ const SPEC: Record<FxKind, { blending: THREE.Blending; boost: number; bloom: num
   sprite_dp: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.2, fog: false },
   sprite_hq: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.2, fog: false },
   sprite_chung: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.2, fog: false },
+  proc_chung_hexweb: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.2, fog: false },
   sprite_ngu: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.2, fog: false },
   sprite_canh: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.2, fog: false },
   sprite_kiep: { blending: THREE.NormalBlending, boost: 1.0, bloom: 0.2, fog: false },
@@ -189,6 +193,7 @@ const BUILDERS: Partial<Record<FxKind, (u: FxUniforms) => { color: unknown; opac
   sprite_dp: spriteNodesFor('dp'),
   sprite_hq: spriteNodesFor('hq'),
   sprite_chung: spriteNodesFor('chung'),
+  proc_chung_hexweb: spriteNodesFor('chung', PROC_TILES.chung_hexweb),
   sprite_ngu: spriteNodesFor('ngu'),
   sprite_canh: spriteNodesFor('canh'),
   sprite_kiep: spriteNodesFor('kiep'),
