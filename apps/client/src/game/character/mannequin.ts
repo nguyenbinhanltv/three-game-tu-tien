@@ -820,6 +820,12 @@ export class MannequinCharacter implements CharacterView {
   private bones: Record<string, THREE.Object3D | null> = {};
   /** Xương đầu của Mannequin (tên 'Head' viết hoa: `bones.head` không bao giờ tìm thấy). */
   private headBone: THREE.Object3D | null = null;
+  /**
+   * Tư thế SẠCH (do mixer ghi) và tư thế sau lớp thủ tục của các xương `procedural()` chạm tới. Three chỉ ghi xương khi giá trị clip đổi so với khung trước, nên lúc clip đứng
+   * (khựng hình, clip kẹp cuối, tư thế giữ) các lớp CỘNG DỒN (`rotateWorld`: giật khi trúng đòn, thở, đảo chiều...) cộng lên giá trị đã cộng từ khung trước: đo 28/11 cánh tay
+   * xoay 31°/khung (3900°/s) suốt lúc khựng rồi bật 176° khi hết khựng. `restoreLayers` trả xương về tư thế sạch nếu mixer không ghi lại (xem `saveLayers`).
+   */
+  private layers: { bone: THREE.Object3D; clean: THREE.Quaternion; out: THREE.Quaternion; has: boolean }[] = [];
   private lastYaw = NaN;
   private yawRate = 0;
   private lean = 0;
@@ -973,6 +979,8 @@ export class MannequinCharacter implements CharacterView {
       this.armFit = ARM_FIT[tpl.handle.id] ?? ARM_FIT_DEFAULT;
     }
     this.headBone = this.rig.getObjectByName('Head') ?? null;
+    for (const bn of new Set([...Object.values(this.bones), this.headBone]))
+      if (bn) this.layers.push({ bone: bn, clean: new THREE.Quaternion(), out: new THREE.Quaternion(), has: false });
     this.scabbard = this.rig.getObjectByName('dtl_scabbard') ?? null;
     this.hand = this.rig.getObjectByName('dtl_sword') ?? null;
     if (sword && !shadow && this.scabbard && this.hand) {
@@ -1918,7 +1926,11 @@ export class MannequinCharacter implements CharacterView {
       t.tw.quaternion.copy(t.restTw).multiply(_tq2.setFromAxisAngle(t.axis, TWIST_COUNTER * twistAngle(_tq, t.axis)));
     }
     if (this.parked) this.syncParked();
-    if (!V3_OFF.has('proc') && !this.shadow && this.lodLevel === 0 && this.inner.visible) this.procedural(this.acc, a);
+    if (!V3_OFF.has('proc') && !this.shadow && this.lodLevel === 0 && this.inner.visible) {
+      this.restoreLayers();
+      this.procedural(this.acc, a);
+      this.saveLayers();
+    } else for (const l of this.layers) l.has = false;
     if (this.feet && !V3_OFF.has('feet')) {
       if (this.lodLevel === 0 && this.inner.visible) {
         // Hết suất (đông người ở xa camera): `active: false` để IK mờ dần rồi tự nhả, được cấp lại thì hiện dần, không giật.
@@ -1956,6 +1968,21 @@ export class MannequinCharacter implements CharacterView {
     if (ANIM_FX.smear && this.lodLevel === 0 && this.inner.visible && PATH_TP[this.tpPath ?? '']?.smear) this.updateSmear();
     this.acc = 0;
     this.locoAcc = 0;
+  }
+
+  /** Xương mà mixer không ghi lại khung này (còn đúng giá trị ta để lại) thì trả về tư thế sạch; mixer vừa ghi thì giá trị đó là tư thế sạch mới. */
+  private restoreLayers(): void {
+    for (const l of this.layers) {
+      if (l.has && l.bone.quaternion.equals(l.out)) l.bone.quaternion.copy(l.clean);
+      else l.clean.copy(l.bone.quaternion);
+    }
+  }
+
+  private saveLayers(): void {
+    for (const l of this.layers) {
+      l.out.copy(l.bone.quaternion);
+      l.has = true;
+    }
   }
 
   /**

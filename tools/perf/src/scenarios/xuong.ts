@@ -603,6 +603,37 @@ export default {
             }),
           );
       }
+      // 2c) phản ứng BỊ ĐÁNH (`--hurt 1`). Kịch bản mở trang với quiet=1, mà `fxMsgs.ts` bỏ qua hitReact của chính mình khi QUIET, nên quái đánh thật không gây được
+      // phản ứng; ở đây gọi đúng hàm engine dùng (`ents.hitReact` rồi `model.knockdown`) với các cấp đòn, lúc đứng/chạy/giữa chiêu.
+      if (opt('--hurt', '')) {
+        const tgt = await aimNearest(pg);
+        const hit = (tier: number, heavy = false, crit = false, stopT = 0.09) =>
+          pg.evaluate(
+            ([t, hv, cr, st, id]) => {
+              const g = window.__game as unknown as { sid: string; ents: { hitReact(...a: unknown[]): void } };
+              g.ents.hitReact(g.sid, id || undefined, cr, 0, hv, { target: st, attacker: 0 }, t);
+            },
+            [tier, heavy, crit, stopT, tgt?.id ?? ''] as [number, boolean, boolean, number, string],
+          );
+        const knock = () => pg.evaluate(() => void (window.__game as unknown as { ents: { players: Map<string, { model: { knockdown?(): void } }> }; sid: string }).ents.players.get((window.__game as unknown as { sid: string }).sid)!.model.knockdown?.());
+        const hurtSegs: [string, () => Promise<void>][] = [
+          ['hurt-dung-nhe', async () => { for (const t of [0, 1, 2, 3]) { await hit(t, t >= 2, t === 3); await sleep(1100); } }],
+          ['hurt-chay', async () => { await pg.keyboard.down('KeyW'); await sleep(700); for (const t of [0, 2, 3]) { await hit(t, t >= 2); await sleep(900); } await pg.keyboard.up('KeyW'); await sleep(900); }],
+          ['hurt-chay-lui', async () => { await pg.keyboard.down('KeyS'); await sleep(700); for (const t of [1, 3]) { await hit(t, t >= 2); await sleep(900); } await pg.keyboard.up('KeyS'); await sleep(900); }],
+          ['hurt-lien-tiep', async () => { for (let k = 0; k < 6; k++) { await hit(k % 4, k % 3 === 2); await sleep(180); } await sleep(1500); }],
+          ['hurt-nga-dung', async () => { await hit(3, true, true, 0.12); await knock(); await sleep(3200); }],
+          ['hurt-nga-chay-ngay', async () => { await hit(3, true, true, 0.12); await knock(); await sleep(450); await pg.keyboard.down('KeyW'); await sleep(1500); await pg.keyboard.up('KeyW'); await sleep(900); }],
+          ['hurt-nga-chieu', async () => { await pg.evaluate(() => window.__game!.useSkill(1)); await sleep(150); await hit(3, true, true, 0.12); await knock(); await sleep(250); await pg.evaluate(() => window.__game!.useSkill(1)); await sleep(2500); }],
+          ['hurt-giua-chieu', async () => { await pg.keyboard.down('KeyA'); await sleep(500); await pg.evaluate(() => window.__game!.useSkill(1)); await sleep(200); await hit(1); await sleep(150); await hit(2, true); await sleep(900); await pg.keyboard.up('KeyA'); await sleep(900); }],
+        ];
+        for (const [name, fn] of hurtSegs) segs.push(await seg(name, fn));
+        // `--hurt ab`: lặp ba đoạn đại diện với ragdoll nhẹ (T5) TẮT để cô lập nguồn giật (clip Hit_* hay lớp ragdoll/flinch).
+        if (opt('--hurt', '') === 'ab') {
+          await pg.evaluate(`import('/src/game/character/animFx.ts').then((m) => { m.ANIM_FX.ragdoll = false; })`);
+          for (const [name, fn] of hurtSegs.filter(([n]) => ['hurt-dung-nhe', 'hurt-chay', 'hurt-lien-tiep', 'hurt-nga-dung'].includes(n))) segs.push(await seg(name + '-norag', fn));
+          await pg.evaluate(`import('/src/game/character/animFx.ts').then((m) => { m.ANIM_FX.ragdoll = true; })`);
+        }
+      }
       // 3) tiếng bước: chạy thẳng, dừng, chạy lùi.
       segs.push(
         await seg('buoc-chan', async () => {
