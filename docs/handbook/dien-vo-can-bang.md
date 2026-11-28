@@ -82,6 +82,30 @@ Kết quả của lệnh ở ba cấp (đồ phẩm 2):
 
 Gợi ý quy trình chơi thử: `/gm preset dansu 16` → ra bản đồ (hoặc `/gm dvt` vào Diễn Võ Trường) → đánh quái; để đo, `/gm dps` rồi `/gm dummy` (hình nộm) hoặc `/gm boss <id>`; so với `/gm preset kiem 16`. Công pháp khác ngoài ba lối trên chưa có preset (dùng `/gm build <công pháp> [cấp]`, không có đồ và bật `free`). Mã: `apps/server/src/game/gm/index.ts` (`case 'preset'`), test `apps/server/src/game/gmlab.test.ts`.
 
+## Kênh GM có cấu trúc `C.GM` / `S.GM` (28/11, cho giao diện lệnh GM của phòng tập)
+
+Song song với `/gm …` qua chat (giữ nguyên, vẫn dùng được): kênh riêng trả kết quả CÓ CẤU TRÚC, không bị giới hạn chat 800 ms, không in dòng chat. **Chỉ tài khoản thử** (`p.dev`, cùng điều kiện với chat); người khác không nhận trả lời nào (không lộ kênh tồn tại). Lệnh chạy đúng `GmSystem.run` nên mọi kiểm tham số, quyền, phòng giữ nguyên. Kiểu dùng chung ở `packages/shared/src/protocol.ts` (`GmRequest`, `GmReply`, `GmState`, `GmListResult`…); mã server: `apps/server/src/game/sim.ts` (`onGm`), `apps/server/src/game/gm/index.ts` (`exec`, `state`), `apps/server/src/game/gm/list.ts` (`gmList`); room đăng ký ở `apps/server/src/rooms/base.ts`.
+
+**Yêu cầu** (`room.send(C.GM, …)`; `r` là mã do client đặt, số nguyên, trả lại nguyên):
+
+| Yêu cầu | Ý nghĩa | `d` trong trả lời |
+| --- | --- | --- |
+| `{ r, a: ['level', '20'] }` | chạy lệnh `/gm level 20` (các từ KHÔNG có tiền tố `/gm`; tối đa 8 từ, mỗi từ 1–64 ký tự, không có khoảng trắng/ký tự điều khiển) | tùy lệnh (xem dưới) |
+| `{ r, q: 'state' }` | trạng thái phòng thử/nhân vật | `GmState` |
+| `{ r, q: 'list', k, f?, n? }` | danh sách có lọc: `k` thuộc `mon, boss, item, weapon, skin, skill, method, set, art, place, quest, scene, branch, level`; `f` lọc không dấu theo id hoặc tên (≤ 64 ký tự); `n` tối đa 200 | `GmListResult` `{ k, total, items: [{ id, name, sub? }] }` |
+
+**Trả lời** (`room.onMessage(S.GM, …)`): `{ r, ok, e?, m, d?, st? }`.
+- `ok`: lệnh thành công. `e` (khi `ok = false`): `unknown` lệnh không có; `usage` thiếu/sai tham số; `bad` yêu cầu hỏng (kiểu, độ dài, ký tự, hoặc thiếu/sai `r`: `r` bắt buộc là số nguyên an toàn, hỏng thì không chạy); `fail` lệnh hợp lệ nhưng không làm được (túi đầy, không ở phòng tập, chưa đo…); `rate` quá nhanh (dưới 40 ms kể từ yêu cầu trước).
+- `m`: các dòng kết quả đã dịch (giống chat). Với `usage`, dòng đầu là cú pháp.
+- `st`: chỉ ở trả lời CHẠY LỆNH, là `GmState` sau lệnh (đỡ một lượt hỏi `state`).
+- `d` của lệnh: `dps` → báo cáo đồng hồ (`secs, total, dps, hits, critRate, targets, skills[], kills[], est?`); `preset` → `{ branch, level, tier, pieces, quality, skillLevel, branches }`; `boss` → `{ id, def, level, hp, phases, kinds }`. Lệnh khác chỉ có `m`.
+
+`GmState`: `level, levelId, practice` (đang ở Diễn Võ Trường), `method`, `branches` (mốc → id), `stars`, các công tắc `god, free, freeze, lockhp, phaseLock, dummy`, `loop` (loại chiêu đang lặp), `meter` (đồng hồ đang đo), `spawned` (quái gọi bằng lệnh còn sống: `{ id, def, hp, mhp, phase, state }`).
+
+Lưu ý cho giao diện: danh sách `place` (địa điểm đặt tên của `/gm tp`) chỉ server biết (client không có tọa độ); mọi loại khác client cũng có thể tự dựng từ `@dtl/content`, nhưng nên dùng `list` để có tên và ghi chú thống nhất và lọc không dấu giống `/gm find`. Ví dụ: `room.send(C.GM, { r: 1, q: 'list', k: 'skill', f: 'hoi xuan' })`.
+
+Kiểm: `apps/server/src/game/gmrpc.test.ts` (11 mục: thành công/lỗi có mã, dữ liệu, trạng thái, danh sách, quyền, tin hỏng, giới hạn) và bài security `SECURITY_ONLY=gm pnpm --filter @dtl/bot-client security` (`apps/bot-client/src/security/gm.ts`; chạy cả bộ thì nằm sau bài chuỗi đòn).
+
 ## Bảng tinh anh theo luật thật: `fight:check --elites`
 
 `pnpm --filter @dtl/server fight:check --elites [--runs 3] [--strict]`

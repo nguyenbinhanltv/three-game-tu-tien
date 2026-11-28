@@ -53,6 +53,8 @@ import { DeathSystem } from './death';
 import { TribulationSystem } from './tribulation';
 import { PlayerSystem, SAVE_INTERVAL } from './players';
 import { GmSystem } from './gm';
+import { gmList } from './gm/list';
+import { GM_LIST_KINDS, GM_MAX_ARG_LEN, GM_MAX_ARGS, GM_MIN_GAP_MS, type GmListKind, type GmReply } from '@dtl/shared';
 import { CombatSystem } from './combat';
 import { MonsterSystem } from './monsters';
 import { EconomySystem } from './economy';
@@ -933,6 +935,44 @@ export class GameSim {
     }
   }
   private mirrorChatAt = 0;
+
+  /** Lúc yêu cầu GM gần nhất của từng người (chống dồn dập, tách khỏi giới hạn chat 800 ms). */
+  private readonly gmAt = new WeakMap<PlayerEnt, number>();
+
+  /**
+   * Kênh GM có cấu trúc (`C.GM`): chạy lệnh / trạng thái / danh sách có lọc, trả `S.GM` cho người hỏi.
+   * Chỉ tài khoản thử (`p.dev`, cùng điều kiện với `/gm` qua chat); người khác bị bỏ qua im lặng (không lộ kênh này tồn tại).
+   * Lệnh chạy đúng `GmSystem.run` nên mọi kiểm tham số/phòng giữ nguyên; yêu cầu hỏng (kiểu, độ dài, quá nhanh) trả `ok: false` mà không đụng trạng thái.
+   */
+  onGm(p: PlayerEnt, msg: unknown): void {
+    if (!p.dev) return;
+    const m = msg !== null && typeof msg === 'object' ? (msg as Record<string, unknown>) : null;
+    const r = typeof m?.r === 'number' && Number.isSafeInteger(m.r) ? m.r : 0;
+    const reply = (x: Omit<GmReply, 'r'>): void => p.client.send(S.GM, { r, ...x } satisfies GmReply);
+    // `r` bắt buộc là số nguyên an toàn: không thì từ chối (không chạy) thay vì chạy lệnh rồi trả lời mang r = 0 dễ gây hiểu nhầm.
+    if (!m || r !== m.r) return reply({ ok: false, e: 'bad', m: [] });
+    const last = this.gmAt.get(p) ?? 0;
+    if (this.now - last < GM_MIN_GAP_MS) return reply({ ok: false, e: 'rate', m: [] });
+    this.gmAt.set(p, this.now);
+    if (m.q === 'state') return reply({ ok: true, m: [], d: this.gmSys.state(p) });
+    if (m.q === 'list') {
+      const k = m.k;
+      if (typeof k !== 'string' || !(GM_LIST_KINDS as readonly string[]).includes(k)) return reply({ ok: false, e: 'bad', m: [] });
+      const f = typeof m.f === 'string' ? m.f.slice(0, GM_MAX_ARG_LEN) : '';
+      const n = typeof m.n === 'number' ? m.n : undefined;
+      return reply({ ok: true, m: [], d: gmList(k as GmListKind, f, n, { placeIds: this.placeIds(), method: p.char.meta.method ?? null }) });
+    }
+    const a = m.a;
+    if (
+      !Array.isArray(a) ||
+      a.length < 1 ||
+      a.length > GM_MAX_ARGS ||
+      !a.every((x) => typeof x === 'string' && x.length >= 1 && x.length <= GM_MAX_ARG_LEN && !/[\s\u0000-\u001f]/.test(x))
+    )
+      return reply({ ok: false, e: 'bad', m: [] });
+    const res = this.gmSys.exec(p, a as string[]);
+    reply({ ...res, st: this.gmSys.state(p) });
+  }
   /** Hệ số sát thương boss lên người chơi (E3-M: giải đố ba gương đúng thì < 1). */
   bossDmgMul = 1;
 

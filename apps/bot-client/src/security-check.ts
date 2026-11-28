@@ -13,6 +13,7 @@ import { runRealm } from './security/realm';
 import { runGear } from './security/gear';
 import { runParty } from './security/party';
 import { runCombo } from './security/combo';
+import { runGm } from './security/gm';
 import { runDashaoi } from './security/dashaoi';
 import { runMisc } from './security/misc';
 import { runTeleport } from './security/teleport';
@@ -60,6 +61,12 @@ async function main() {
     console.log(stats.failed ? `${stats.failed} mục HỎNG` : 'Tất cả đều ĐẠT');
     process.exit(stats.failed ? 1 : 0);
   }
+  // SECURITY_ONLY=gm: chỉ chạy bài kênh GM có cấu trúc (C.GM).
+  if (process.env.SECURITY_ONLY === 'gm') {
+    await runGm();
+    console.log(stats.failed ? `${stats.failed} mục HỎNG` : 'Tất cả đều ĐẠT');
+    process.exit(stats.failed ? 1 : 0);
+  }
   // SECURITY_ONLY=kieu: chỉ chạy bài Cửu Kiều (TN-7).
   if (process.env.SECURITY_ONLY === 'kieu') {
     await runKieu();
@@ -79,6 +86,7 @@ async function main() {
   await runHitReact();
   await runAim(ctx);
   await runCombo();
+  await runGm();
   await runRealm(ctx);
   await runGear(ctx);
   await runParty(ctx);

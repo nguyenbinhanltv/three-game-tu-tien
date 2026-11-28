@@ -101,6 +101,8 @@ export const C = {
   QUEST: 'q',
   TALK: 'talk',
   CHAT: 'chat',
+  /** Lệnh GM có cấu trúc (CHỈ tài khoản thử, phòng tập): `GmRequest` → server trả `S.GM` (`GmReply`). Song song với `/gm …` qua chat, không thay nó. */
+  GM: 'gm',
   RESPAWN: 'resp',
   BREAKTHROUGH: 'brk',
   /** Xuất khiếu trong Tam Trọng Kiếp (E3-L, móc tạm cho tới khi E3-K nối phím X thật): không tham số. */
@@ -174,6 +176,8 @@ export const S = {
   FX: 'fx',
   DMG: 'dmg',
   CHAT: 'chat',
+  /** Trả lời `C.GM` (`GmReply`): chỉ gửi cho người hỏi, chỉ khi người đó là tài khoản thử. */
+  GM: 'gm',
   HAZARD: 'haz',
   BOLT: 'bolt',
   BOLT_END: 'boltx',
@@ -378,6 +382,80 @@ export interface ChatMsg {
   from: string;
   c: string;
   m: string;
+}
+
+/** Loại danh sách của truy vấn `list` của kênh GM. */
+export const GM_LIST_KINDS = ['mon', 'boss', 'item', 'weapon', 'skin', 'skill', 'method', 'set', 'art', 'place', 'quest', 'scene', 'branch', 'level'] as const;
+export type GmListKind = (typeof GM_LIST_KINDS)[number];
+
+/**
+ * Yêu cầu của kênh GM (`C.GM`). `r` là mã yêu cầu do client đặt (số nguyên, trả lại nguyên trong `GmReply.r`).
+ * - chạy lệnh: `{ r, a }`, `a` là các từ của lệnh KHÔNG có tiền tố `/gm` (ví dụ `['level', '20']`); tối đa `GM_MAX_ARGS` từ, mỗi từ `GM_MAX_ARG_LEN` ký tự;
+ * - trạng thái: `{ r, q: 'state' }` → `d` là `GmState`;
+ * - danh sách có lọc: `{ r, q: 'list', k, f?, n? }` → `d` là `GmListResult` (`f` lọc không dấu theo id/tên, `n` tối đa `GM_LIST_MAX`).
+ */
+export type GmRequest =
+  | { r: number; a: string[] }
+  | { r: number; q: 'state' }
+  | { r: number; q: 'list'; k: GmListKind; f?: string; n?: number };
+
+export const GM_MAX_ARGS = 8;
+export const GM_MAX_ARG_LEN = 64;
+export const GM_LIST_MAX = 200;
+/** Khoảng cách tối thiểu giữa hai yêu cầu GM của một người (ms). */
+export const GM_MIN_GAP_MS = 40;
+
+/** Mã lỗi: `unknown` lệnh không có; `usage` thiếu/sai tham số; `bad` yêu cầu hỏng (kiểu/độ dài); `fail` lệnh hợp lệ nhưng không làm được (túi đầy, không đúng phòng…); `rate` quá nhanh. */
+export type GmErr = 'unknown' | 'usage' | 'bad' | 'fail' | 'rate';
+
+export interface GmReply {
+  r: number;
+  ok: boolean;
+  e?: GmErr;
+  /** Các dòng kết quả (đã dịch sang tiếng Việt), giống những gì lệnh gõ tay in ra chat. */
+  m: string[];
+  /** Dữ liệu có cấu trúc của lệnh/truy vấn (nếu có). */
+  d?: unknown;
+  /** Chỉ ở trả lời CHẠY LỆNH: trạng thái sau lệnh (đỡ một lượt hỏi `state`). */
+  st?: GmState;
+}
+
+export interface GmListItem {
+  id: string;
+  name: string;
+  /** Ghi chú ngắn (loại, cấp, công pháp…). */
+  sub?: string;
+}
+
+export interface GmListResult {
+  k: GmListKind;
+  /** Tổng số phần tử khớp trước khi cắt theo `n`. */
+  total: number;
+  items: GmListItem[];
+}
+
+/** Trạng thái phòng thử/nhân vật của tài khoản thử, để giao diện hiện đúng công tắc và số đo. */
+export interface GmState {
+  level: number;
+  levelId: string;
+  /** Đang ở phòng tập Diễn Võ Trường (nhóm lệnh sân boss/hình nộm dùng được). */
+  practice: boolean;
+  method: string | null;
+  /** Nhánh đã chọn: mốc → id. */
+  branches: Record<string, string>;
+  stars: number;
+  god: boolean;
+  free: boolean;
+  freeze: boolean;
+  lockhp: boolean;
+  phaseLock: boolean;
+  dummy: boolean;
+  /** Loại chiêu đang lặp bằng `/gm cast … loop`, hoặc null. */
+  loop: string | null;
+  /** Đồng hồ sát thương đang đo. */
+  meter: boolean;
+  /** Quái gọi bằng lệnh còn sống. */
+  spawned: { id: string; def: string; hp: number; mhp: number; phase: number; state: number }[];
 }
 
 export type HazardKind = 'lightning' | 'frost' | 'fire' | 'spirit';
