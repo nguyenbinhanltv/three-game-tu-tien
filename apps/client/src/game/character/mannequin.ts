@@ -235,6 +235,10 @@ export function v3AssetOf(g: string, skin?: string, set?: string): string {
 export const JOG_SPEED = 5.4;
 const FADE = 0.16;
 const COMBAT_HOLD = 4;
+/** Đuôi của đòn một lần (giây): clip mờ ra trong ngần này trước khi hết, clip nền lên thay. */
+const SHOT_TAIL = FADE * 0.75;
+/** Chiêu K-5 mờ vào, và chiêu cũ nhường chỗ mờ ra, trong ngần này giây. */
+const PERF_HANDOVER = 0.06;
 const SWING = ['Sword_Regular_A', 'Sword_Regular_B', 'Sword_Regular_C'];
 
 /** Tốc độ phát clip chạy để chân trụ không trượt (kẹp [0,4; 2]). */
@@ -674,6 +678,8 @@ export class MannequinCharacter implements CharacterView {
     recovered?: boolean;
     /** Tỉ lệ tốc độ của nhịp vào thế (bù trễ mạng, xem `windupWarp`); 1 = tốc độ thật. */
     warp: number;
+    /** Trọng số mang sang khi chính pose này vừa bị diễn lại (cùng một action): đường bao không rơi về 0. */
+    carry: number;
     /** Đã hủy (phá niệm/lướt/di chuyển): không phát thêm `hit`, tắt dần nhanh. */
     cancelled?: boolean;
   } | null = null;
@@ -792,9 +798,14 @@ export class MannequinCharacter implements CharacterView {
   private revOk = false;
   /** Đòn UAL dự phòng chỉ nửa trên khi đang chạy; chân theo clip nền (nửa dưới). */
   private shotUpper = false;
-  private shotLowerW = 0;
-  /** Trọng số chân chạy của chiêu K-5 đang diễn lúc đang đi (= đường bao của chiêu, 0 khi đứng yên hoặc không có chiêu). */
-  private perfLegW = 0;
+  /**
+   * Trọng số TỰ QUẢN của mọi action một lần đang góp tư thế (đòn UAL, clip Patch, trúng đòn, lăn, và chiêu K-5 cũ đang nhường chỗ): hiện tại `w`,
+   * đích `to`, tốc độ đổi `rate` (1/giây), nửa thân nó điều khiển. Không dùng `fadeIn`/`fadeOut` của three: cần biết ĐÚNG trọng số trước `mixer.update`
+   * để clip nền bù phần còn thiếu (`blendBases`), và `fadeOut` của three gọi giữa lúc đang mờ vào thì nhảy về 1.
+   */
+  private shots = new Map<THREE.AnimationAction, { w: number; to: number; rate: number; half: 'full' | 'upper' | 'lower' }>();
+  /** Trọng số chân chạy dưới đòn/chiêu nửa trên (phần nửa trên được phủ mà nửa dưới chưa có gì phủ), tính ở `blendBases`. */
+  private legW = 0;
   /**
    * Chân của đòn/chiêu nửa trên khi đang đi: bản NỬA DƯỚI của từng clip nền đang sống (clip nền → action nửa dưới), trọng số chia theo đúng hỗn hợp
    * dải tốc độ × hướng của clip nền. Trước 28/11 chỉ có MỘT clip chốt lúc bấm chiêu: chiêu xoay mặt về mục tiêu thì thân đi lùi/ngang mà chân vẫn
@@ -1005,7 +1016,8 @@ export class MannequinCharacter implements CharacterView {
       this.shot = null;
       const next = this.chain;
       this.chain = null;
-      if (next && !this.dead) this.oneShot(next, this.chainRate);
+      // Clip nối (ngã → đứng dậy) bắt đầu đúng tư thế clip trước kết thúc: vào thẳng trọng số 1, không mờ qua clip nền.
+      if (next && !this.dead) this.oneShot(next, this.chainRate, false, 0);
       else this.knocking = false;
     });
     this.play('Idle_Loop');
@@ -1313,39 +1325,80 @@ export class MannequinCharacter implements CharacterView {
     return this.mix[k.band] * d;
   }
 
-  /** Hòa clip nền: clip hiện tại về 1 (về 0 khi đang có đòn, trừ ~0,12 s cuối để khỏi rơi về tư thế nghỉ), clip cũ tắt dần. */
+  /**
+   * Chia trọng số mỗi lần cập nhật xương, theo thứ tự ưu tiên: (1) đòn một lần và chiêu K-5, (2) clip nền cũ đang tắt dần, (3) clip nền hiện tại nhận
+   * ĐÚNG phần còn thiếu để tổng bằng 1. Tổng dưới 1 thì three trộn thêm tư thế gốc (A-pose) vào phần thiếu: trước 28/11 nền lên chậm hơn đòn tắt nên
+   * khung cuối của clip dừng tổng chỉ còn ~0,5 và bắp tay xoay 4200–9400°/s trong một khung; lúc bắt đầu chạy tổng tụt tới 0,2–0,5.
+   */
   private blendBases(dt: number): void {
-    let gate = 1;
-    const sh = this.shot;
-    if (this.perf) gate = 1 - this.perf.env;
-    else if (sh) {
-      const ts = Math.max(0.1, Math.abs(sh.timeScale));
-      gate = (sh.getClip().duration - sh.time) / ts < FADE * 0.75 ? 1 : 0;
+    let full = 0;
+    let up = 0;
+    let low = 0;
+    for (const [a, e] of [...this.shots]) {
+      const dur = a.getClip().duration;
+      if (!a.isScheduled() || (!a.enabled && a.time >= dur - 1e-6)) {
+        // Hết clip (three tự tắt action một lần) hoặc đã bị `stop()` ở nơi khác.
+        if (a.isScheduled()) a.stop();
+        this.shots.delete(a);
+        continue;
+      }
+      // Xưởng animation đang tạm tắt action này (ép clip): không tính, chờ thả.
+      if (!a.enabled) continue;
+      e.w = e.w < e.to ? Math.min(e.to, e.w + dt * e.rate) : Math.max(e.to, e.w - dt * e.rate);
+      if (e.to <= 0 && e.w <= 0) {
+        a.stop();
+        this.shots.delete(a);
+        continue;
+      }
+      let w = e.w;
+      // Đuôi clip: mờ ra trong `SHOT_TAIL` giây cuối để clip nền lên thay đúng nhịp (clip còn nối tiếp thì giữ nguyên tới hết).
+      if (e.to > 0 && !(this.chain && a === this.shot)) w = Math.min(w, Math.max(0, (dur - a.time) / Math.max(0.1, Math.abs(a.timeScale))) / SHOT_TAIL);
+      a.setEffectiveWeight(w);
+      if (e.half === 'full') full += w;
+      else if (e.half === 'upper') up += w;
+      else low += w;
     }
+    const p = this.perf;
+    const coverU = full + up + (p ? p.upper.getEffectiveWeight() : 0);
+    const coverL = full + low + (p ? p.lower.getEffectiveWeight() : 0);
+    // Nửa trên được phủ nhiều hơn nửa dưới (đòn/chiêu chỉ nửa trên khi đang đi): chân chạy lấp phần chênh.
+    this.legW = this.base ? Math.max(0, coverU - coverL) : 0;
+    const cover = Math.max(coverU, coverL);
+    // Clip nền cũ: tắt dần theo `fadeDur`, nhưng chỉ được phần đòn/chiêu chưa phủ.
     const step = dt / this.fadeDur;
-    const mixOf = (a: THREE.AnimationAction): number => (this.loco ? this.locoW(a) : 1);
+    let old = 0;
     for (const [a, w] of [...this.weights]) {
-      const live = a === this.base || this.companions.includes(a);
-      const target = live ? gate : 0;
-      const nw = w < target ? Math.min(target, w + step) : Math.max(target, w - step * 2);
-      this.weights.set(a, nw);
-      a.setEffectiveWeight(live ? nw * mixOf(a) : nw * (this.frozenMix.get(a) ?? 1));
-      if (nw <= 0 && !live) {
+      if (a === this.base || this.companions.includes(a)) continue;
+      const nw = w - step;
+      if (nw <= 0) {
         a.stop();
         this.weights.delete(a);
+        continue;
+      }
+      this.weights.set(a, nw);
+      old = Math.max(old, nw);
+    }
+    const oldEff = Math.min(old, Math.max(0, 1 - cover));
+    const oldK = old > 0 ? oldEff / old : 0;
+    for (const [a, w] of this.weights) {
+      if (a === this.base || this.companions.includes(a)) continue;
+      a.setEffectiveWeight(w * oldK * (this.frozenMix.get(a) ?? 1));
+    }
+    const live = Math.max(0, 1 - cover - oldEff);
+    if (this.base) {
+      for (const a of [this.base, ...this.companions]) {
+        this.weights.set(a, live);
+        a.setEffectiveWeight(live * (this.loco ? this.locoW(a) : 1));
       }
     }
-    // Chân của đòn nửa trên: theo clip nền hiện tại, đúng lúc nền bị hạ trọng số thì chân thay vào.
-    const want = this.shotUpper && this.shot && this.base ? 1 - gate : 0;
-    this.shotLowerW = want > this.shotLowerW ? Math.min(want, this.shotLowerW + step) : Math.max(want, this.shotLowerW - step * 2);
   }
 
   /**
-   * Chân chạy dưới đòn/chiêu nửa trên: mỗi clip nền đang sống có một action nửa dưới, trọng số = mức cần (`perfLegW` của chiêu K-5 hoặc `shotLowerW`
-   * của đòn UAL) × phần của clip đó trong hỗn hợp đi/chạy; pha lấy từ pha chung. Gọi ngay trước `mixer.update`, sau `syncLoco`.
+   * Chân chạy dưới đòn/chiêu nửa trên: mỗi clip nền đang sống có một action nửa dưới, trọng số = `legW` (phần nửa trên đã được đòn/chiêu phủ mà nửa dưới
+   * chưa có gì phủ, tính ở `blendBases`) × phần của clip đó trong hỗn hợp đi/chạy; pha lấy từ pha chung. Gọi ngay trước `mixer.update`, sau `syncLoco`.
    */
   private syncLegs(): void {
-    const want = Math.max(this.perfLegW, this.shotLowerW);
+    const want = this.legW;
     if (want <= 0 && !this.legs.size) return;
     const live = this.base ? [this.base, ...this.companions] : [];
     for (const [src, lb] of this.legs) {
@@ -1386,13 +1439,24 @@ export class MannequinCharacter implements CharacterView {
       a = this.mixer.clipAction(upperBodyOf(this.tpl.clips.get(name)!));
       this.shotUpper = true;
     }
-    if (this.shot) this.shot.fadeOut(0.08);
+    if (this.shot && this.shot !== a) this.fadeShot(this.shot, 0.08);
     a.setLoop(THREE.LoopOnce, 1);
     a.clampWhenFinished = false;
     a.timeScale = rate;
-    a.reset().fadeIn(fadeIn).play();
+    // Phát lại đúng action đang phát (cùng clip): giữ trọng số hiện có, không rơi về 0.
+    const w0 = fadeIn > 0 ? (this.shots.get(a)?.w ?? 0) : 1;
+    a.reset().setEffectiveWeight(w0).play();
+    this.shots.set(a, { w: w0, to: 1, rate: 1 / Math.max(fadeIn, 1e-3), half: this.shotUpper ? 'upper' : 'full' });
     this.shot = a;
     return true;
+  }
+
+  /** Cho một đòn một lần mờ ra trong `dur` giây (tính từ trọng số đầy) rồi tự dừng; clip nền bù lại đúng phần nó nhả. */
+  private fadeShot(a: THREE.AnimationAction, dur: number): void {
+    const e = this.shots.get(a);
+    if (!e) return;
+    e.to = 0;
+    e.rate = 1 / Math.max(dur, 1e-3);
   }
 
   attack(o: AttackOpts = {}): void {
@@ -1511,8 +1575,15 @@ export class MannequinCharacter implements CharacterView {
 
   private startPerform(id: string, pose: MqPose, o: PerformOpts): void {
     this.abortPerform();
-    const act = (clip: THREE.AnimationClip) => {
+    // Chính pose này vừa nhường chỗ (đòn lặp lại cùng động tác): cùng một action nên không mờ chéo được, mang trọng số cũ sang.
+    let carry = 0;
+    const act = (clip: THREE.AnimationClip, upper: boolean) => {
       const x = this.mixer.clipAction(clip);
+      const prev = this.shots.get(x);
+      if (prev) {
+        if (upper) carry = prev.w;
+        this.shots.delete(x);
+      }
       x.setLoop(THREE.LoopOnce, 1);
       x.clampWhenFinished = true;
       x.reset();
@@ -1522,11 +1593,12 @@ export class MannequinCharacter implements CharacterView {
       return x;
     };
     const tm = o.timing;
+    const upper = act(pose.upper, true);
     this.perf = {
       id,
       pose,
-      upper: act(pose.upper),
-      lower: act(pose.lower),
+      upper,
+      lower: act(pose.lower, false),
       t: o.from ?? 0,
       end: Math.max(pose.def.duration, tm?.end ?? 0),
       timing: tm,
@@ -1535,13 +1607,17 @@ export class MannequinCharacter implements CharacterView {
       fired: 0,
       env: 0,
       warp: windupWarp(tm?.hitAt[0], o.from ?? 0, o.lag),
+      carry,
     };
     const p = this.perf;
     if (tm) {
       while (p.fired < tm.hitAt.length && tm.hitAt[p.fired]! < p.t) p.fired++;
       this.emit('windup', 0);
     }
-    if (this.shot) this.shot.fadeOut(0.05);
+    if (this.shot) {
+      this.fadeShot(this.shot, 0.05);
+      this.shot = null;
+    }
     if (o.ambient) return;
     this.attacks++;
     this.combatT = COMBAT_HOLD;
@@ -1551,7 +1627,17 @@ export class MannequinCharacter implements CharacterView {
   private abortPerform(): void {
     const p = this.perf;
     if (p && !p.cancelled && p.timing) this.emit(p.fired < p.timing.hitAt.length ? 'cancel' : 'end', p.fired);
-    this.stopPerform();
+    if (!p) return;
+    // Nhường chỗ: hai action của chiêu cũ mờ ra trong `PERF_HANDOVER` giây (chiêu mới mờ vào cùng nhịp, tổng trọng số giữ 1) thay vì tắt phụt.
+    for (const [a, half] of [
+      [p.upper, 'upper'],
+      [p.lower, 'lower'],
+    ] as const) {
+      const w = a.getEffectiveWeight();
+      if (w > 1e-3) this.shots.set(a, { w, to: 0, rate: 1 / PERF_HANDOVER, half });
+      else a.stop();
+    }
+    this.perf = null;
   }
 
   private stopPerform(): void {
@@ -1559,7 +1645,6 @@ export class MannequinCharacter implements CharacterView {
     if (!p) return;
     p.upper.stop();
     p.lower.stop();
-    this.perfLegW = 0;
     this.perf = null;
   }
 
@@ -1605,12 +1690,11 @@ export class MannequinCharacter implements CharacterView {
       return;
     }
     // Đường bao: vào nhanh, ra êm ở 0,18 s cuối.
-    p.env = Math.min(1, p.t / 0.06, (p.end - p.t) / 0.18);
+    p.env = Math.min(1, p.t / PERF_HANDOVER + p.carry, (p.end - p.t) / 0.18);
     const moving = a.speed > 0.3;
     p.upper.setEffectiveWeight(p.env);
     p.lower.setEffectiveWeight(moving ? 0 : p.env);
-    // Đang đi: chân giữ nhịp chạy bằng kênh nửa dưới của hỗn hợp clip nền (`syncLegs`), theo cả hướng đi so với mặt.
-    this.perfLegW = moving ? p.env : 0;
+    // Đang đi: pose không giữ chân, `blendBases` thấy nửa dưới chưa được phủ và giao cho chân chạy (`syncLegs`), theo cả hướng đi so với mặt.
   }
 
   /** Đang phát (hoặc chờ phát) động tác `pose`. */
@@ -1679,7 +1763,7 @@ export class MannequinCharacter implements CharacterView {
     if (!this.knocking) return;
     this.knocking = false;
     this.chain = null;
-    if (this.shot) this.shot.fadeOut(0.15);
+    if (this.shot) this.fadeShot(this.shot, 0.15);
     this.shot = null;
   }
 
@@ -1739,7 +1823,8 @@ export class MannequinCharacter implements CharacterView {
       this.deathTurn =
         this.clock - lh.at <= DEATH_DIR_TTL ? { to: deathYawOffset(this.root.rotation.y, lh.dx, lh.dz), t: 0 } : { to: 0, t: 1 };
       // Chết: bỏ đòn đang phát và đòn nối tiếp, để Death01 phát trọn.
-      this.shot?.stop();
+      for (const x of this.shots.keys()) x.stop();
+      this.shots.clear();
       this.shot = null;
       this.chain = null;
     }
@@ -1902,7 +1987,7 @@ export class MannequinCharacter implements CharacterView {
     if (this.patchShot) {
       const stopLike = this.patchKind !== 'start';
       if (!free || (stopLike ? a.speed > 0.6 : a.speed < 0.3)) {
-        this.patchShot.fadeOut(0.12);
+        this.fadeShot(this.patchShot, 0.12);
         if (this.shot === this.patchShot) this.shot = null;
         this.patchShot = null;
       }
