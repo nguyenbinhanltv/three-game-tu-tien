@@ -78,7 +78,7 @@ Chạy với **`?mute=1`/`--mute-audio`** (skill `playtest`). Một vòng build 
 | 4 dải × 3 đốt voan | 139 xương > 128 | 3 × 2 (127) |
 | `run.mjs` trả 0 khi Python lỗi | đo trên asset cũ, tưởng thay đổi vô tác dụng | grep `Traceback` mỗi lần build |
 | Tripo Segment "Auto Detailed" (78 mảnh `tripo_part_N`) | mảnh vô nghĩa, không tách được vải | không dùng; tách vùng bằng hình học + màu |
-| Thiên Y: dựng lại vải bằng mô phỏng, vai dừng lại | khối vuông, CPU ×8 | giữ lưới gốc, chỉ rig; mô phỏng vải (`?cloth`) chỉ để thử |
+| Thiên Y: dựng lại vải bằng mô phỏng, vai dừng lại | khối vuông, CPU ×8 | giữ lưới gốc, chỉ rig (mô phỏng vải `?cloth` đã gỡ 28/11) |
 | Phép đo "xuyên thân" cũ xếp nhầm cột twist/lò xo | số ảo (−73%) | dùng `rigstretch` trong game |
 
 ## 9. Checklist áp cho bộ mới
@@ -120,7 +120,7 @@ Kế hoạch gốc: pha TP-0..TP-6 (artifact "nhan-vat-animation" của phiên C
 1. **Bóng dáng đọc được ở góc chéo 720p**: ảnh khung đỉnh đòn ở camera chéo (cắt giữa khung) vẫn thấy rõ tay, kiếm, hướng đòn.
 2. **Ba tư thế khóa + khung giữ**: dồn lực (anticipation) → đỉnh đòn GIỮ 2–4 khung kiểu anime (key `ease: "linear"` hai khung liền cùng tư thế, hoặc `stepped`) → thu đòn. Giữa các tư thế chuyển nhanh. Dữ liệu ở `packages/content/data/poses/<id>.json` (key IK), không viết cứng trong code.
 3. **Không trượt chân, không xuyên vũ khí vào thân** (IK chân `mannequinFeet`, `rigstretch`, ảnh cận).
-4. **Chuyển động phụ có mặt**: tóc, tua kiếm, dải lụa chạy lò xo (`spring.ts`), chung với Thiên Y (`?cloth=1`) chứ không thay thế.
+4. **Chuyển động phụ có mặt**: tóc, tua kiếm, dải lụa chạy lò xo (`spring.ts`) (mô phỏng vải Thiên Y `?cloth=1` đã gỡ 28/11).
 5. **Khớp nhịp VFX và hit-stop**: khung đỉnh đòn trùng `hit[0]` của pose, `hitAt` của chiêu và mốc 0 của timeline FX; nét kéo (smear)/tàn ảnh đồng bộ.
 6. **Trong ngân sách**: CPU tổng < 8 ms/khung, mục `anim` của `FrameBudget` đo trước/sau (đứng và chạy); LOD animation cho nhân vật xa (xương thưa 15–30 Hz, spring bone chỉ LOD0); lớp mới nằm sau cờ `?thanphap=1` cho tới khi người dùng duyệt.
 

@@ -48,8 +48,6 @@ interface Flags {
   v3Palette: boolean;
   /** `?ual=0` tắt clip UAL. */
   ual: boolean;
-  /** `?cloth=1` bật vải mô phỏng (Thiên Y) cho model v3 có mesh vải cũ tách riêng. */
-  cloth: boolean;
   /** `?v3side=front|double` ép mặt vẽ của vật liệu model giữ gốc Tripo (so sánh; mặc định theo cấu hình asset). */
   v3Side: string | null;
   /** `?v3veil=0` tắt xử lý voan alpha/sáng của model giữ gốc (đo chi phí A/B). */
@@ -169,7 +167,6 @@ export const FLAG_DOCS: Readonly<Record<string, { scope: 'user' | 'diag' | 'test
   v3side: { scope: 'test', doc: 'front|double: ép mặt vẽ vật liệu model giữ gốc Tripo (so sánh voan một lớp)' },
   v3off: { scope: 'test', doc: 'proc,feet,twist,cloth,park: tắt từng hệ phụ của v3 (chẩn đoán; park = đỗ rig ở LOD2)' },
   headlift: { scope: 'test', doc: 'góc ngửa đầu bù clip Idle cho model giữ gốc (rad, mặc định 0,23)' },
-  cloth: { scope: 'test', doc: '=1 vải mô phỏng Thiên Y (model v3 có vải cũ tách riêng)' },
   renderer: { scope: 'diag', doc: 'webgl2|webgpu|auto' },
   fullnormal: { scope: 'diag', doc: '=1 giữ pháp tuyến 2K của GLB kiến trúc (đối chứng bộ nhớ texture)' },
   keeptex: { scope: 'diag', doc: '=1 giữ bản sao texture CPU sau khi tải lên GPU (đối chứng heap JS)' },
@@ -250,7 +247,6 @@ export function readFlags(search: string): Flags {
     armFit: q.get('armfit') === null || Number.isNaN(Number(q.get('armfit'))) ? null : Number(q.get('armfit')),
     v3Palette: !off(q.get('v3pal')),
     ual: !off(q.get('ual')),
-    cloth: q.get('cloth') === '1',
     v3Side: q.get('v3side'),
     v3Veil: !off(q.get('v3veil')),
     v3Silk: !off(q.get('v3silk')),

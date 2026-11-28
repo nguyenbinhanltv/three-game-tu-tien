@@ -60,7 +60,6 @@ import {
   vec4,
 } from 'three/tsl';
 import { skyParams } from '../../render/sky';
-import { ClothRig } from './thienY';
 import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
 import { SWORD_MODEL_DEFAULT } from '@dtl/content';
 import { canCancel, POSE_CAST, POSE_FLY, POSE_SKY, silkTier, v3SilkOf, type MonsterDef, type V3Silk } from '@dtl/shared';
@@ -110,10 +109,8 @@ import type { AnimState, AttackOpts, CharacterView, LabAnimPort, MonsterView, Pe
 import { FLAGS } from '../../base/flags';
 import { markVfxMask } from '../../render/post';
 import { logger } from '../../base/log';
-import { ASSET_BASE } from '../../base/assetBase';
 
 const modelsLog = logger('models');
-const thienYLog = logger('thienY');
 
 export const V3_LIB = 'anim_ual_native';
 /** Asset Lạc Kiếm theo giới tính: Lạc Kiếm Môn Phục v3 (N-3), model Tripo toàn thân đặt lên xương Mannequin (chr_v3.py). Bản v3/v3b cũ đã gỡ (A2). */
@@ -741,9 +738,6 @@ export class MannequinCharacter implements CharacterView {
     { m: THREE.SkinnedMesh; home: THREE.Object3D; pos: THREE.Vector3; quat: THREE.Quaternion; scale: THREE.Vector3 }[] | null = null;
   /** Tăng mỗi lần tư thế xương đổi lúc đang đỗ; `skeleton.update()` của lưới đỗ bỏ qua khi phiên bản chưa đổi. */
   private parkVersion = 0;
-  /** Vải mô phỏng Thiên Y (null nếu tắt hoặc model không có vải cũ tách riêng). */
-  cloth: ClothRig | null = null;
-  private clothSit = 0;
   private colScale = 1;
   private twists: Twist[] = [];
   private lodLevel = 0;
@@ -893,21 +887,6 @@ export class MannequinCharacter implements CharacterView {
     this.rig.traverse((o) => {
       if (!(o as THREE.Mesh).isMesh && typeof o.userData.lod === 'number') o.visible = true;
     });
-    // Thiên Y: mesh vải cũ tách riêng (`*_oldskirt`, `*_oldsleeve`) do chr_v3.py --split-cloth; có `?cloth=1` thì thay bằng vải mô phỏng, không thì hiện như thường.
-    // Hướng lai: giữ váy Tripo (lò xo), chỉ thay voan tay áo (`*_oldsleeve`) bằng panel vải mô phỏng.
-    const oldCloth = meshes.filter((m) => /_oldsleeve/.test(m.name));
-    if (FLAGS.cloth && !shadow && oldCloth.length) {
-      try {
-        // Texture đã bake (tools/asset-pipeline/src/thienybake.ts) nếu có; chưa có thì vải màu trơn.
-        const map = new THREE.TextureLoader().load(`${ASSET_BASE}thien_y/${tpl.handle.id}.png`, undefined, undefined, () => undefined);
-        map.colorSpace = THREE.SRGBColorSpace;
-        map.flipY = false;
-        this.cloth = new ClothRig(this.rig, this.root, tpl.height, oldCloth, { map });
-        this.lods[0] = (this.lods[0] ?? []).filter((m) => !oldCloth.includes(m));
-      } catch (e) {
-        thienYLog.warn('bỏ qua vải mô phỏng:', e instanceof Error ? e.message : e);
-      }
-    }
     this.applyLod(0);
     const defs: SpringDef[] = [];
     this.rig.traverse((o) => {
@@ -1968,13 +1947,6 @@ export class MannequinCharacter implements CharacterView {
         this.skirtSprings?.reset();
       }
     }
-    if (this.cloth) {
-      const on = this.lodLevel === 0 && this.inner.visible;
-      this.cloth.setActive(on);
-      const sitNow = this.baseName === 'Sitting_Idle_Loop' || this.baseName === 'pose_tam_thien';
-      this.clothSit += ((sitNow ? 1 : 0) - this.clothSit) * Math.min(1, this.acc * 6);
-      if (on) this.cloth.update(this.acc, this.clothSit, !!(this.springs || this.skirtSprings || this.sleeveSprings || this.tasselSprings));
-    }
     if (ANIM_FX.smear && this.lodLevel === 0 && this.inner.visible && PATH_TP[this.tpPath ?? '']?.smear) this.updateSmear();
     this.acc = 0;
   }
@@ -2218,7 +2190,6 @@ export class MannequinCharacter implements CharacterView {
     }
     this.coGear?.dispose();
     this.gear?.dispose();
-    this.cloth?.dispose();
     this.stopPerform();
     this.mixer.stopAllAction();
     this.mixer.uncacheRoot(this.rig);
