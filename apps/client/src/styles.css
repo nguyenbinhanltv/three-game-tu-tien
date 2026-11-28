@@ -1106,6 +1106,10 @@ kbd {
 .debug-row.wrap {
   flex-wrap: wrap;
 }
+/* Ô nhập máu quái (phần trăm) của nhóm Cân bằng: hẹp, chỉ chứa tới 3 chữ số. */
+.debug-row .lab-hp-input {
+  width: 52px;
+}
 .debug-row label {
   display: flex;
   align-items: center;
