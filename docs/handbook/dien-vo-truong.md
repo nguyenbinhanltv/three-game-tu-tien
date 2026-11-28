@@ -466,3 +466,52 @@ Số "94 − 67" ở lượt giao việc đã khớp: 94 loại quái = 27 boss 
 Kết luận: `refSpeed` của 67 loại đã chỉnh hết chỗ đo được và chỉnh được (16/17 đạt, #878); phần còn lại không có tham số này.
 
 **Vạch báo đòn quái trên nền Dạ Họa (28/11, `pnpm shots zonecheck --query style=dahoa --mons <id,...> --tries 1 [--set maskkeep=1]`):** `zonecheck` thêm ba cột về độ NỔI của vạch báo — `Nổi` (chênh sáng TB của điểm vạch so với nền không VFX), `Ấm` (% điểm vạch còn đỏ/cam, đúng HPL2), `Mờ` (% ô vùng thật gần như không thấy) — và `--set khóa=giá trị` để A/B một núm khu Phong cách. Đo ở Kim Dạ Ma Hậu, Hàn Giao, Địa Mạch Long, Thiên Khuyết Thủ Linh, Huyết Nha Lang: **núm "giữ màu thân" (`maskKeep`) cũng cứu vạch báo**, vì vạch nằm trong mặt nạ hậu kỳ. Mức 0 → 0,6: Kim Dạ slam mờ 83% → 13–30%, phủ 33% → 89–99%; Kim Dạ chant mờ 68% → 13–16%; Hàn Giao chant phủ 54% → 94%. Mức 0,6 → 1 (đối chứng lặp mức 0,6 lệch ±3, riêng một ca ±17): mờ giảm thêm 3–11 điểm ở 6/7 chiêu (Hàn Giao slam 29 → 21, chant 17 → 8; Thiên Khuyết slam 27 → 16), phủ 97–100%, độ ấm đỏ/cam giữ nguyên → **mặc định nâng lên 1 ở Dạ Họa** (`apps/client/src/render/post.ts`). A/B 8 cảnh so bộ gốc: SSIM 0,942–0,968, draw call ±3, 0 lỗi console. **Chưa giải quyết được:** Địa Mạch Long slam (vòng r 6) phủ chỉ ~41%, mờ ~62%, không đổi theo núm nào → vạch bị THÂN boss che (boss lớn đứng giữa vòng), không phải do hậu kỳ; hướng sửa nếu cần là nâng vạch lên trước thân hoặc đổi dữ liệu fx (việc của tuyến fx, chưa đề xuất sửa).
+
+
+## Đo lại ngân sách hiệu năng Dạ Họa sau các thay đổi trong ngày (28/11, chiều)
+
+`roomperf` (cùng điều kiện lần đo đầu: Dạ Họa 720p, WebGPU preset Cao, Vite dev, máy dev có GPU rời, một lượt) sau #863, #866, #876, #893, #897, #881 và các commit khác từ sáng. `roomperf` nay có `--maps van_lam,doan_mach` để đo cảnh bản đồ thật trong phiên riêng (không vào phòng tập). Cột là cũ → mới.
+
+| Cảnh | Draw call | Tam giác (nghìn) | CPU ms (tb) | Texture MB |
+| --- | --- | --- | --- | --- |
+| `soi_thuong` | 40 → 45 | 266 → 256 | 1,76 → 3,27 (p95 5,90) | 278 → 313,3 |
+| `soi_vo_the` | 40 → 40 | 268 → 266 | 1,73 → 2,37 (p95 3,00) | 278 → 317,7 |
+| `soi_yeu_diem` | 46 → 46 | 270 → 269 | 1,76 → 2,45 (p95 3,00) | 288,7 → 328,3 |
+| `tinh_anh` | 40 → 40 | 273 → 273 | 1,74 → 2,18 (p95 2,70) | 293,5 → 333,2 |
+| `bay_dong` | 59 → 59 | 354 → 354 | 1,90 → 2,54 (p95 3,10) | 293,5 → 333,2 |
+| `boss` | 49 → 49 | 290 → 289 | 1,76 → 2,59 (p95 3,40) | 322 → 361,7 |
+| `nhan_vat_can` | 33 → 33 | 219 → 219 | 1,55 → 2,17 (p95 2,90) | 322 → 361,7 |
+| `can_bat_dong_kim_than` | 34 → 34 | 217 → 218 | 1,53 → 2,17 (p95 2,80) | 322 → 361,7 |
+| `can_thanh_moc_dan_kinh` | 33 → 33 | 217 → 215 | 1,45 → 2,38 (p95 3,00) | 322 → 361,7 |
+| `can_dan_hon_kinh` | 33 → 33 | 218 → 218 | 1,50 → 2,39 (p95 3,00) | 322 → 361,7 |
+| `can_liet_nhan_dao_kinh` | 28 → 28 | 215 → 219 | 1,75 → 2,51 (p95 3,30) | 322 → 361,7 |
+| `can_co_than_quyet` | 29 → 29 | 214 → 214 | 1,79 → 2,59 (p95 3,40) | 322 → 361,7 |
+| `can_duong_co_kinh` | 29 → 29 | 218 → 218 | 1,49 → 2,08 (p95 2,60) | 322 → 361,7 |
+| `can_cuu_tieu_loi_kinh` | 29 → 29 | 218 → 219 | 1,43 → 1,99 (p95 2,50) | 322 → 361,7 |
+| `can_cam_che_kinh` | 29 → 29 | 216 → 216 | 1,50 → 1,91 (p95 2,50) | 322 → 361,7 |
+| `dao_cu` | 51 → 51 | 285 → 285 | 1,74 → 2,31 (p95 2,90) | 327,5 → 367,2 |
+| `anh_sang` | 39 → 39 | 268 → 268 | 1,60 → 2,31 (p95 3,00) | 334,2 → 373,9 |
+| `kiem_chem_quet` | 66 → 70 | 297 → 297 | 2,29 → 2,97 (p95 4,00) | 334,2 → 373,9 |
+| `kiem_ap_sat` | 66 → 78 | 377 → 371 | 2,02 → 2,69 (p95 3,70) | 334,2 → 373,9 |
+| `kiem_chieu_1` | 54 → 59 | 283 → 293 | 1,96 → 3,02 (p95 4,00) | 334,2 → 373,9 |
+| `kiem_chieu_2` | 47 → 47 | 281 → 285 | 1,88 → 2,40 (p95 2,90) | 334,2 → 373,9 |
+| `kiem_chieu_3` | 60 → 58 | 294 → 295 | 2,03 → 2,42 (p95 3,10) | 334,2 → 373,9 |
+| `kiem_chieu_4` | 48 → 47 | 281 → 281 | 1,90 → 2,42 (p95 3,10) | 334,2 → 373,9 |
+| `crowd_8_dung` | 49 → 53 | 560 → 656 | 1,93 → 2,77 (p95 3,60) | 310,4 → 319,4 |
+| `crowd_8_danh` | 101 → 103 | 752 → 765 | 3,12 → 3,86 (p95 5,20) | 322,7 → 331,7 |
+
+**Bản đồ thật** (phiên riêng, đứng ở chỗ vào level, đo 6 giây):
+
+| Cảnh | Draw call | Tam giác | CPU ms (tb / p95) | GPU ms | Texture MB | fps | Ngân sách |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| `map_van_lam` (Lạc Kiếm Tông, lượt 2) | 171 | 1841 nghìn | 3,81 / 5,80 | 1,16 | 355 | 93 | đạt (tam giác 92% trần 2 triệu) |
+| `map_van_lam` (lượt 1) | 159 | 1705 nghìn | 8,12 / 17,40 | 1,23 | 324 | 28 | **VƯỢT CPU, nhất thời** (xem dưới) |
+| `map_doan_mach` | 70 | 701 nghìn | 3,98 / 5,50 | 0,63 | 289 | 89 | đạt |
+
+**Kết luận: cả 25 cảnh phòng tập đạt.** Lớn nhất: 103 draw call (34% trần), 765 nghìn tam giác (38%), CPU trung bình 3,86 ms và p95 5,9 ms (cảnh đông đang đánh), texture đỉnh 374 MB (73% của 512 MB). Draw call và tam giác gần như đứng yên so với bảng cũ. Hạng mục tăng trên 10% và nguyên nhân:
+
+- **Texture đỉnh 334 → 374 MB (+12%): do thời điểm tầng texture cao, không phải hồi quy.** Bộ tải nền (`game/hires`) nâng mảng mặt đất từ 1024² / 512² lên 1280² / 768² (53,4 → 90,7 MB, +37 MB) sau khoảng 8 giây nếu máy đủ rảnh. Lượt này nâng kịp, lượt cũ thì không. Chứng cứ: lượt lặp ba cảnh tĩnh không bị nâng cho đúng 278 MB như bảng cũ; cảnh đông (vào lại phòng, mảng về gốc) chỉ +3% (319 so với 310 MB). Phần thật sự tăng là atlas sprite Kiếm: nay là 2048×3072 (`vfx_sprites_kiem.817313d1ea`, 32 MB) thay cho 2048² (21,3 MB), +10,7 MB, nghi từ các commit thí điểm flipbook Kiếm Khí Trảm của -300 (đổi `vfx_sprites_kiem` trong `apps/client/src/render/vfx/art.ts`; chưa kiểm từng commit).
+- **`kiem_ap_sat` draw call 66 → 78 (+18%), `soi_thuong` 40 → 45 (+12%):** cảnh đang đánh có hiệu ứng đổi theo thời điểm lấy mẫu; chưa quy về một thay đổi cụ thể và chưa lặp riêng hai cảnh này để biết độ dao động tự nhiên.
+- **`crowd_8_dung` tam giác 560 → 656 nghìn (+17%):** vị trí và tư thế của 8 bot khác nhau giữa các lượt (thêm quái/đạo cụ nằm trong tầm nhìn); `crowd_8_danh` chỉ +2%.
+- **CPU khung +19% đến +86% ở mọi cảnh (kể cả cảnh tĩnh có draw call và tam giác không đổi): CHƯA quy được nguyên nhân.** Lượt lặp (ba cảnh tĩnh) cho cùng chiều: 2,50 / 2,12 / 3,22 ms so với 1,73 / 1,55 / 1,90 ms cũ, trong khi GPU lại thấp hơn (0,9 so với 1,4 ms) và máy đang tải CPU 54–63% do worker khác. Các PR được nêu chỉ đổi giá trị uniform, vật liệu và shader (viền sáng tách nền, `maskKeep`, giữ màu thân, hào quang), không thêm việc JS mỗi khung; `bossMove` của #881 chỉ chạy lúc vùng nổ. CPU `Game.frame()` đo bằng đồng hồ trang nên nhạy với việc máy bận. Mọi giá trị vẫn dưới 8 ms với dư địa lớn. Muốn kết luận phải đo lại khi máy rảnh hoặc A/B từng PR.
+- **`map_van_lam` lượt 1 (CPU 8,12 ms, 28 fps) là nhất thời:** trùng lúc tầng texture cao đang nạp và máy bận; đo lại riêng cho 3,81 ms / 93 fps. Nhưng **tam giác 1,7–1,84 triệu là 85–92% trần 2 triệu**, sát hơn mọi cảnh phòng tập (cùng bậc với `trencao` 1,76 triệu của PERF ngày 20/11, dù khác góc máy và độ phân giải): bản đồ thật, không phải phòng tập, mới là nơi chạm trần.

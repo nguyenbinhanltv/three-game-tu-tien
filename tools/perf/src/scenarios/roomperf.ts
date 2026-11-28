@@ -9,7 +9,7 @@ import type { Page } from 'playwright';
 import { Bots } from '../lib/bots';
 import { sleep } from '../lib/devserver';
 import { num, opt } from '../lib/env';
-import { gm, skipCutscene, waitInGame, waitLevel } from '../lib/game';
+import { enterLevel, gm, shownLevel, skipCutscene, waitInGame, waitLevel } from '../lib/game';
 import type { Scenario } from '../lib/scenario';
 import { snap, writeJson } from '../lib/shot';
 import fs from 'node:fs';
@@ -190,7 +190,7 @@ function verdict(s: Sample): string[] {
 export default {
   name: 'roomperf',
   desc: 'Diễn Võ Trường: đo ngân sách hiệu năng (draw call, tam giác, texture, CPU/GPU ms) ở mọi cảnh mẫu + cảnh đông N bot',
-  usage: '[--query style=dahoa] [--seconds 3] [--bots 8] [--only id1,id2] [--quality high]',
+  usage: '[--query style=dahoa] [--seconds 3] [--bots 8] [--only id1,id2] [--quality high] [--maps van_lam,doan_mach]',
   env: { RATE_LIMIT_EXEMPT: 'loopback' },
   async run(r) {
     const seconds = num('--seconds', 3);
@@ -213,8 +213,14 @@ export default {
     await pg.reload({ waitUntil: 'load' });
     await waitInGame(pg);
     await skipCutscene(pg, 20);
-    await gm(pg, 'dvt');
-    await waitLevel(pg, 'dien_vo');
+    const maps = opt('--maps', '')
+      .split(',')
+      .filter(Boolean);
+    // `--maps`: chỉ đo cảnh bản đồ thật (phiên riêng, không vào phòng tập) ở chỗ đứng đầu tiên của từng level.
+    if (!maps.length) {
+      await gm(pg, 'dvt');
+      await waitLevel(pg, 'dien_vo');
+    }
     const backend = await pg.evaluate(() => (window.__game as unknown as { renderer: { backend: { isWebGPUBackend?: boolean } } }).renderer.backend.isWebGPUBackend);
     const rows: Row[] = [];
     const push = (id: string, kind: Row['kind'], s: Sample) => {
@@ -224,7 +230,7 @@ export default {
         `[roomperf] ${id.padEnd(26)} ${kind.padEnd(9)} draw ${String(s.drawMax).padStart(3)}  tri ${(s.trisMax / 1000).toFixed(0).padStart(5)}k  CPU ${s.cpuAvg.toFixed(2)}/${s.cpuP95.toFixed(2)} ms  GPU ${s.gpuAvg ?? '—'} ms  tex ${s.texMB} MB  ${s.fps} fps${row.over.length ? '  VƯỢT: ' + row.over.join(', ') : ''}`,
       );
     };
-    for (const sc of LAB_SCENES) {
+    for (const sc of maps.length ? [] : LAB_SCENES) {
       if (only.length && !only.includes(sc.id)) continue;
       await gm(pg, 'scene ' + sc.id, 3500);
       if (sc.act) {
@@ -240,7 +246,13 @@ export default {
       } else push(sc.id, 'tĩnh', await measure(pg, seconds));
     }
     // ---- cảnh đông: client + N bot chung một phòng, bầy quái không chết, mình đang đánh ----
-    if (nBots > 0 && (!only.length || only.includes('crowd'))) {
+    for (const lv of maps) {
+      if ((await shownLevel(pg)) !== lv) await enterLevel(pg, lv);
+      await gm(pg, 'god on', 900);
+      await sleep(2500);
+      push('map_' + lv, 'tĩnh', await measure(pg, seconds));
+    }
+    if (nBots > 0 && !maps.length && (!only.length || only.includes('crowd'))) {
       const key = 'perf' + nBots;
       await gm(pg, 'dvt');
       await waitLevel(pg, 'van_lam');
