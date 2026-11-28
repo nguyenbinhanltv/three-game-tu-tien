@@ -114,6 +114,24 @@ describe('MannequinCharacter: chân chạy dưới chiêu nửa trên theo đún
     expect(plain).toBeGreaterThan(0.95);
   });
 
+  it('khựng hình (hit-stop) không làm đứng pha chân: thân vẫn trượt theo server nên chân phải tiếp tục bước', () => {
+    const phaseAfter = (stop: boolean): number => {
+      const m = fake();
+      run(m, anim({ speed: 6, moveAngle: 0 }), 0.5);
+      const priv = m as unknown as { locoPhase: number; hit: { hitStop(dur: number, delay?: number): void } };
+      const p0 = priv.locoPhase;
+      if (stop) priv.hit.hitStop(0.3);
+      run(m, anim({ speed: 6, moveAngle: 0 }), 0.3);
+      const d = priv.locoPhase - p0;
+      return d < 0 ? d + 1 : d;
+    };
+    const free = phaseAfter(false);
+    const stopped = phaseAfter(true);
+    expect(free).toBeGreaterThan(0.1);
+    expect(stopped).toBeGreaterThan(free * 0.9);
+    expect(stopped).toBeLessThan(free * 1.1);
+  });
+
   it('hết chiêu hoặc đứng lại: không còn action chân nào sống', () => {
     const m = fake();
     run(m, anim({ speed: 6, moveAngle: 0 }), 0.6);
