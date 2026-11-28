@@ -59,6 +59,12 @@ export const FEET = {
   hoverTau: 0.5,
   /** Số nhân vật tối đa chạy IK chân trong một khung (bench 50 bot: 6,6 nhân vật ≈ 0,45 ms/khung, ngưỡng 0,3 ms). */
   maxPerFrame: 4,
+  /**
+   * Đích IK chênh cổ chân của clip dưới ngần này (m) và góc bàn chân dưới `idleAng` (rad) thì BỎ giải IK chân đó: kết quả lẽ ra bằng clip, nhưng khi chân gần duỗi
+   * thẳng (chạy lùi) hướng gập gối `perp` của `solveLeg` suy biến và đùi lật 40° trong một khung (đo 28/11: `v3off=feet` đùi trái từ 10112 xuống 2833°/s).
+   */
+  idlePos: 0.004,
+  idleAng: 0.02,
 };
 
 /** Khoảng cách camera của người khác đã xin suất trong khung hiện tại (tăng dần, tối đa `maxPerFrame - 1` phần tử). */
@@ -182,6 +188,8 @@ interface Leg {
 }
 
 const _v = new THREE.Vector3();
+const _cv = new THREE.Vector3();
+const _cq = new THREE.Quaternion();
 const _m3 = new THREE.Matrix3();
 const _s = new THREE.Vector3();
 const _n = new THREE.Vector3();
@@ -374,7 +382,9 @@ export class MqFeet {
       }
     }
     // 2b. Thân nhảy xa khi đứng yên (tp, truyền tống, server sửa vị trí): khóa lại ngay tại chân của clip, không bước từ chỗ cũ.
-    if (this.planted && this.legs.some((l) => Math.hypot(l.plant.p.x - l.pos.x, l.plant.p.z - l.pos.z) > FEET.jump)) {
+    // Chỉ khi vẫn đang muốn đứng (`wantPin`): lúc bắt đầu chạy `pin` còn nhả dần trong ~0,12 s mà thân đã đi quá `jump` so với chỗ khóa, nhánh này khóa lại tức thì
+    // tại chân clip làm đích IK nhảy 0,7 m trong một khung (đùi lật 70°, 7000 đến 14000°/s, tắt `feet` thì hết).
+    if (wantPin && this.planted && this.legs.some((l) => Math.hypot(l.plant.p.x - l.pos.x, l.plant.p.z - l.pos.z) > FEET.jump)) {
       for (const l of this.legs) {
         l.step = null;
         this.plantAt(l, l.pos, l.quat, yaw, base);
@@ -435,6 +445,8 @@ export class MqFeet {
       l.endQ.copy(l.quat);
       if (l.step) {
         const s = l.step;
+        _cv.copy(l.tgt);
+        _cq.copy(l.endQ);
         s.t += dt / FEET.stepTime;
         const u = Math.min(1, s.t);
         const e = ease(u);
@@ -442,6 +454,11 @@ export class MqFeet {
         l.tgt.z = s.from.z + (l.pos.z - s.from.z) * e;
         l.tgt.y = supportY(ground(l.tgt.x, l.tgt.z), base) + l.plant.ankle + stepArc(u);
         l.endQ.copy(s.fromQ).slerp(l.quat, e);
+        // Pha trộn theo `pin` như chân khóa: lúc bắt đầu chạy `pin` nhả dần về 0, đích bước phải trôi về chân clip chứ không bị xóa một khung (đích nhảy 0,7 m, đùi lật 70°).
+        if (this.pin < 1) {
+          l.tgt.lerpVectors(_cv, l.tgt, this.pin);
+          l.endQ.copy(_cq.slerp(l.endQ, this.pin));
+        }
         if (u >= 1) {
           l.step = null;
           this.plantAt(l, l.pos, l.quat, yaw, base);
@@ -472,6 +489,8 @@ export class MqFeet {
     this.pelvis.updateWorldMatrix(true, false);
     for (let i = 0; i < this.bones.length; i++) this.pre[i]!.copy(this.bones[i]!.quaternion);
     for (const l of this.legs) {
+      // Đích trùng clip (chạy/đi trên đất phẳng, không bước, không nghiêng): giữ nguyên tư thế clip, tránh cú lật của `solveLeg` ở chân duỗi thẳng.
+      if (!l.step && !(this.pin > 0.001 && l.plant.has) && l.tgt.distanceToSquared(l.pos) < FEET.idlePos * FEET.idlePos && l.endQ.angleTo(l.quat) < FEET.idleAng) continue;
       refreshWorld(l.up);
       refreshWorld(l.mid);
       refreshWorld(l.foot);
