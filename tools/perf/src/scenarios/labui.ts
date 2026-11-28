@@ -470,8 +470,10 @@ export default {
         // Hàng nhóm con = hàng thứ ba của nhóm Diễn Võ (sau hàng nhóm GM và hàng vào/rời phòng).
         return rows[2] ? [...rows[2].querySelectorAll('button')].map((b) => (b.textContent || '').trim()) : [];
       })()`)) as string[];
-      check('tab Diễn Võ có đủ nhóm con', tabs.length >= 12, tabs.join(' | '));
+      check('tab Diễn Võ có đủ nhóm con', tabs.length >= 13, tabs.join(' | '));
       for (const name of tabs) {
+        // Chỉnh phòng (trình chỉnh phòng của V3) có thể khóa phòng ở chế độ chỉnh: soát nhóm này SAU các nút Cân bằng để không làm sai chúng.
+        if (name === 'Chỉnh phòng') continue;
         const e0 = r.errors.length;
         await pg.locator('.debug-tools .debug-row').nth(2).locator('button', { hasText: new RegExp('^' + name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$') }).click();
         await sleep(450);
@@ -483,21 +485,29 @@ export default {
         check(`nhóm "${name}": mọi nút/ô nằm trong khung 720p, mở không lỗi console`, out.out === 0 && r.errors.length === e0, `${out.n} nút/ô, ${out.out} ngoài khung, ${r.errors.length - e0} lỗi console`);
         await snap(pg, r.out, `panel/${tabs.indexOf(name)}.png`, { wait: 0 });
       }
-      // Lớp vùng trúng thật (nằm trong nhóm Chỉnh phòng): bấm bật rồi tắt, nút phải đổi trạng thái và không sinh lỗi console.
-      if (tabs.includes('Chỉnh phòng')) {
-        await btn(/^Chỉnh phòng$/).click();
-        await sleep(600);
-        const zb = pg.locator('.debug-panel [data-act="zones"]').first();
-        const eZ = r.errors.length;
-        const p0 = await zb.getAttribute('data-pressed');
-        await zb.click();
-        await sleep(700);
-        const p1 = await zb.getAttribute('data-pressed');
-        await snap(pg, r.out, 'panel/vung-trung.png', { wait: 200 });
-        await zb.click();
-        await sleep(400);
-        const p2 = await zb.getAttribute('data-pressed');
-        check('nút "Vùng trúng thật" bật rồi tắt được, không lỗi console', p0 !== p1 && p2 === p0 && r.errors.length === eZ, `data-pressed ${p0} → ${p1} → ${p2}, ${r.errors.length - eZ} lỗi console`);
+      // Lệnh GM: cửa sổ nổi bên phải; mỗi nhóm lệnh mở không lỗi, cả cửa sổ nằm trong khung 720p (danh sách cuộn bên trong), có hàng lệnh.
+      if (tabs.includes('Lệnh GM')) {
+        await btn(/^Lệnh GM$/).click();
+        await sleep(300);
+        await btn('Mở bảng lệnh GM').click();
+        await sleep(500);
+        const groups = (await pg.evaluate(`[...document.querySelectorAll('.gm-win .gm-groups button')].map((b) => (b.textContent || '').trim())`)) as string[];
+        check('cửa sổ Lệnh GM có nhóm lệnh', groups.length >= 1, groups.join(' | '));
+        for (const gname of groups) {
+          const e0 = r.errors.length;
+          await pg.locator('.gm-win .gm-groups button').filter({ hasText: gname }).first().click();
+          await sleep(250);
+          const o = await pg.evaluate(() => {
+            const w = document.querySelector('.gm-win')!.getBoundingClientRect();
+            const rows = document.querySelectorAll('.gm-win .gm-cmd').length;
+            const runs = [...document.querySelectorAll('.gm-win .gm-cmd button')].filter((b) => (b as HTMLButtonElement).disabled).length;
+            return { rows, runs, ok: w.top >= 0 && w.bottom <= innerHeight && w.left >= 0 && w.right <= innerWidth };
+          });
+          check(`cửa sổ Lệnh GM, nhóm "${gname}": nằm trong khung 720p, có hàng lệnh, không lỗi console`, o.ok && o.rows > 0 && r.errors.length === e0, `${o.rows} hàng, ${o.runs} nút Chạy đang khóa, ${r.errors.length - e0} lỗi`);
+        }
+        await snap(pg, r.out, 'panel/lenh-gm.png', { wait: 0 });
+        await pg.locator('.gm-win-head button').click();
+        await sleep(200);
       }
       // Cân bằng / sân boss: bấm nút thật, đối chiếu quái trong phòng.
       const mons = () => pg.evaluate(() => [...window.__game!.view.monsters.values()].filter((m) => m.st !== 4).map((m) => ({ t: m.t, hp: m.hp / m.mhp })));
@@ -506,7 +516,8 @@ export default {
       await btn('Đặt hình nộm').click();
       await sleep(2500);
       const d1 = await mons();
-      check('nút "Đặt hình nộm" để lại đúng một quái', d1.length === 1, d1.map((m) => m.t).join(', '));
+      const chatLast = (await pg.evaluate(`[...document.querySelectorAll('.chat-log *, .log *')].slice(-3).map((e) => (e.textContent || '').trim()).filter(Boolean).join(' / ')`)) as string;
+      check('nút "Đặt hình nộm" để lại đúng một quái', d1.length === 1, d1.map((m) => m.t).join(', ') + (d1.length === 1 ? '' : ' | nhật ký: ' + chatLast.slice(0, 160)));
       await btn('Gọi vào hố boss').click();
       await sleep(3000);
       const b1 = await mons();
@@ -540,6 +551,35 @@ export default {
       await snap(pg, r.out, 'panel/can-bang.png', { wait: 200 });
       await btn('Bỏ hình nộm').click();
       await sleep(1200);
+      // Chỉnh phòng: soát khung 720p/lỗi console của nhóm (bỏ qua ở vòng trên), rồi lớp vùng trúng thật.
+      if (tabs.includes('Chỉnh phòng')) {
+        const e0 = r.errors.length;
+        await btn(/^Chỉnh phòng$/).click();
+        await sleep(450);
+        const out = await pg.evaluate(() => {
+          const lim = Math.min(innerHeight, document.querySelector('.debug-panel')!.getBoundingClientRect().bottom) + 1;
+          const all = [...document.querySelectorAll('.debug-panel button, .debug-panel select, .debug-panel input')];
+          return { n: all.length, out: all.filter((b) => b.getBoundingClientRect().bottom > lim).length };
+        });
+        check('nhóm "Chỉnh phòng": mọi nút/ô nằm trong khung 720p, mở không lỗi console', out.out === 0 && r.errors.length === e0, `${out.n} nút/ô, ${out.out} ngoài khung, ${r.errors.length - e0} lỗi`);
+        await snap(pg, r.out, `panel/${tabs.indexOf('Chỉnh phòng')}.png`, { wait: 0 });
+      }
+      // Lớp vùng trúng thật (nằm trong nhóm Chỉnh phòng): bấm bật rồi tắt, nút phải đổi trạng thái và không sinh lỗi console.
+      if (tabs.includes('Chỉnh phòng')) {
+        await btn(/^Chỉnh phòng$/).click();
+        await sleep(600);
+        const zb = pg.locator('.debug-panel [data-act="zones"]').first();
+        const eZ = r.errors.length;
+        const p0 = await zb.getAttribute('data-pressed');
+        await zb.click();
+        await sleep(700);
+        const p1 = await zb.getAttribute('data-pressed');
+        await snap(pg, r.out, 'panel/vung-trung.png', { wait: 200 });
+        await zb.click();
+        await sleep(400);
+        const p2 = await zb.getAttribute('data-pressed');
+        check('nút "Vùng trúng thật" bật rồi tắt được, không lỗi console', p0 !== p1 && p2 === p0 && r.errors.length === eZ, `data-pressed ${p0} → ${p1} → ${p2}, ${r.errors.length - eZ} lỗi console`);
+      }
       await gm(pg, 'labreset', 1500);
       await pg.keyboard.press('F3');
       await sleep(300);

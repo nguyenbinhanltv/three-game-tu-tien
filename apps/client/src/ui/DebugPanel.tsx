@@ -44,6 +44,7 @@ import { sfxNames, sfxProbe } from '../game/audio/audio';
 import { fxAudioReport } from '../game/debug/fxAudio';
 import { Button } from './u2/win';
 import { CastControls, ClipControls } from './lab/WorkshopLab';
+import { GmLab } from './lab/GmLab';
 import { type DebugPerf, set, useUI } from './store';
 
 /** Ngân sách desktop (CLAUDE.md, skill perf-budget): vượt thì tô đỏ, tới 80% thì tô vàng. */
@@ -134,7 +135,7 @@ const LAB_PINGS = [0, 50, 150, 300];
  * Phím F4 vẫn mở bản nổi của cùng component.
  */
 const RoomEditPanel = import.meta.env.DEV ? lazy(() => import('./lab-editor/RoomEditPanel').then((m) => ({ default: m.RoomEditPanel }))) : null;
-const LAB_TABS_ALL = ['scene', 'mon', 'fx', 'look', 'style', 'ui', 'feel', 'snd', 'anim', 'bal', 'edit', 'time'] as const;
+const LAB_TABS_ALL = ['scene', 'mon', 'fx', 'look', 'style', 'ui', 'feel', 'snd', 'anim', 'bal', 'gm', 'edit', 'time'] as const;
 const LAB_TABS = LAB_TABS_ALL.filter((k) => k !== 'edit' || RoomEditPanel !== null);
 const LAB_STYLE_SLOTS = ['A', 'B'] as const;
 const FX_IDS = [...FX_TIMELINE.keys()].sort();
@@ -973,6 +974,7 @@ function Tools({ compact, onCompact }: { compact: boolean; onCompact: (v: boolea
           {labTab === 'snd' && <SoundLab />}
           {labTab === 'anim' && <PoseLab />}
           {labTab === 'bal' && <BalanceLab />}
+          {labTab === 'gm' && <GmLab />}
           {labTab === 'edit' && RoomEditPanel && (
             <Suspense fallback={null}>
               <RoomEditPanel />

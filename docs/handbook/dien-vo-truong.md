@@ -531,3 +531,23 @@ Kết luận: `refSpeed` của 67 loại đã chỉnh hết chỗ đo được v
 - Renderer báo **1 750 nghìn**; tắt đổ bóng (1 đèn có bóng) còn **1 405 nghìn**: **lượt vẽ bóng chiếm 346 nghìn (20%)**. Trong 1 405 nghìn còn lại, danh sách lưới đang hiện trong khung chỉ cộng được 763 nghìn; phần chênh (~640 nghìn) là các lượt vẽ phụ khác (hậu kỳ có mặt nạ, viền mực nhân vật…) hoặc lưới ngoài khung nhưng chưa bị cắt; **chưa tách được** (cần đếm theo lượt vẽ trong renderer).
 - Thành phần của 763 nghìn nhìn thấy: kiến trúc `arch_lac_kiem_tong` 272 nghìn (36%, lớn nhất: `lac_kiem_tong_7` 91 nghìn, `lac_kiem_tong` 77 nghìn, `_4` 36 nghìn, `_8` 32 nghìn, `_5` 20 nghìn); prop khác (đá rêu, kiếm gãy, tre, đỉnh lư…) 103 nghìn (13,5%); **đèn đá `prop_den_da` + `prop_tc_den_da` 79 nghìn (10,4%)**; tám lưới không tên (địa hình/nền) 74 nghìn (9,7%); vườn tre và hoa 68 nghìn (9%); nhân vật 60 nghìn (7,9%); rừng thẻ 14 nghìn (1,8%).
 - **Đề xuất giữ dưới 80% (1,6 triệu) mà không đổi asset** (cần bớt ~240 nghìn): (1) **cắt đổ bóng theo khoảng cách và theo cỡ**: đèn đá, vườn tre, hoa là lưới nhỏ nhiều bản, nhiều khả năng bóng của chúng đóng góp ít so với số tam giác phải vẽ lại (chưa đo riêng); thử bỏ chúng khỏi lượt vẽ bóng (hoặc chỉ giữ trong 25 m quanh người) và đo lại phần 346 nghìn của lượt bóng; (2) **dùng LOD thấp hơn trong lượt bóng** cho kiến trúc (nếu lượt bóng đang dùng cùng lưới LOD0 với lượt màn hình; chưa kiểm trong mã); (3) **LOD đèn đá theo khoảng cách** (56 nghìn chỉ cho ba lưới đèn gần); (4) nếu vẫn thiếu: giảm bán kính bóng của đèn có bóng duy nhất. Đây là đề xuất, chưa đo từng bước và chưa làm: mỗi bước phải đo lại `--break 1` và so ảnh để chắc không mất bóng ở chỗ nhìn thấy.
+
+## Lệnh GM thành điều khiển trong phòng tập (28/11)
+
+Mọi lệnh `/gm` của server (`apps/server/src/game/gm/index.ts`) thành hàng điều khiển trong **cửa sổ Lệnh GM** (tab Diễn Võ → nhóm con "Lệnh GM" → nút "Mở bảng lệnh GM"). Cửa sổ nổi bên phải, sáu nhóm, danh sách cuộn bên trong nên luôn nằm trọn khung 720p.
+
+- Bảng lệnh: `apps/client/src/ui/lab/gmCommands.ts` (`GM_CMDS`: tên, nhóm, tham số kiểu số/chọn/id có tìm/chữ; `gmBuild` ghép chuỗi lệnh). Giao diện: `ui/lab/GmLab.tsx`.
+- Client chỉ ghép chuỗi `/gm ...` rồi gửi qua chat; server vẫn kiểm quyền GM/tài khoản thử và tham số. Nhãn qua i18n: `ui.gm.cmd.<lệnh>`, `ui.gm.param.<khóa>`, `ui.gm.opt.<giá trị>`; tooltip là dòng trợ giúp của server `gm.cmd.<lệnh>`.
+- Danh sách id (vật phẩm, chiêu, công pháp, quái, bộ, địa điểm...) lấy từ `@dtl/content`, có ô tìm theo tên hoặc id.
+- Test `gmCommands.test.ts` đối chiếu bảng với `case` của server: lệnh mới ở server mà thiếu hàng, hoặc hàng không còn lệnh, đều làm hỏng test; mọi nhãn i18n phải có. `labui --only panel` soát cửa sổ nằm trong khung và mở từng nhóm.
+- Lệnh đã có ở nhóm Cân bằng (dps, dummy, boss, phase, hp, cast) KHÔNG lặp ở đây.
+
+| Nhóm | Lệnh | Trạng thái |
+| --- | --- | --- |
+| Nhân vật | level, realm, dao, xp, gold, god, heal, die, stars, kieu, charge, res, cd, free, trib, build, preset, skills, learn, method, variant, branch, dye | xong (PR đầu) |
+| Đồ | find, kit, roll, set, plus, art, give, bag, outfit, skin, weapon | chờ |
+| Quái / Boss | spawn, killall, hurt, lockhp, freeze, face, state | chờ |
+| Chiến đấu / Đo | tick, labreset, help (dps ở Cân bằng) | chờ |
+| Di chuyển | tp, tele, dvt | chờ |
+| Thế giới | qdone, qev, scene | chờ |
+| Ở Cân bằng | dps, dummy, boss, phase, hp, cast | đã có (#879) |
