@@ -19,6 +19,7 @@ import roomedit from './scenarios/roomedit';
 import zonecheck from './scenarios/zonecheck';
 import daread from './scenarios/daread';
 import danum from './scenarios/danum';
+import danpc from './scenarios/danpc';
 import roomperf from './scenarios/roomperf';
 import bossfaces from './scenarios/bossfaces';
 import dungeon from './scenarios/dungeon';
@@ -154,6 +155,7 @@ const SCENARIOS: Scenario[] = [
   zonecheck,
   daread,
   danum,
+  danpc,
   roomperf,
   xichkhe,
   dungeonart,
