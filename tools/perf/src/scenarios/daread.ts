@@ -69,46 +69,48 @@ export default {
       await pg.evaluate(() => void (window.__game!.timeScale = 0));
       await sleep(300);
       const shots: Buffer[] = [];
+      const bares: Buffer[] = [];
       const perf: unknown[] = [];
+      // Mỗi giá trị chụp MỘT CẶP liền nhau: ảnh có thân rồi ảnh nền (ẩn thân). Quái đứng yên vẫn cử động nhẹ theo đồng hồ thật, nên dùng chung một
+      // ảnh nền/mặt nạ cho mọi giá trị làm điểm tụt dần theo THỨ TỰ chụp (đã kiểm: ba lần cùng giá trị cho 40 → 33 → 32).
       for (const v of vals) {
         await pg.evaluate(([k, x]) => void window.__game!.labStyle(k as string, x as number), [key, v] as [string, number]);
         await step();
         shots.push(await pg.screenshot());
+        await hide(true);
+        await step(2);
+        bares.push(await pg.screenshot());
+        await hide(false);
+        await step(2);
         perf.push(await perfSample(pg));
       }
-      await hide(true);
-      await step();
-      const bare = await pg.screenshot();
-      await hide(false);
-      await step();
       const raw = (b: Buffer) => sharp(b).removeAlpha().raw().toBuffer({ resolveWithObject: true });
-      const bg = await raw(bare);
-      const first = await raw(shots[0]!);
-      const W = bg.info.width;
-      const H = bg.info.height;
-      const mask = new Uint8Array(W * H);
-      let n = 0;
-      for (let p = 0, i = 0; p < W * H; p++, i += 3) {
-        const d = Math.abs(first.data[i]! - bg.data[i]!) + Math.abs(first.data[i + 1]! - bg.data[i + 1]!) + Math.abs(first.data[i + 2]! - bg.data[i + 2]!);
-        if (d > 30) {
-          mask[p] = 1;
-          n++;
-        }
-      }
-      // Dải mép: điểm của mặt nạ có ít nhất một hàng xóm (trong 2 px) nằm ngoài mặt nạ.
-      const edge = new Uint8Array(W * H);
-      let ne = 0;
-      for (let y = 2; y < H - 2; y++)
-        for (let x = 2; x < W - 2; x++) {
-          const p = y * W + x;
-          if (!mask[p]) continue;
-          if (!mask[p - 2] || !mask[p + 2] || !mask[p - 2 * W] || !mask[p + 2 * W]) {
-            edge[p] = 1;
-            ne++;
+      for (let vi = 0; vi < vals.length; vi++) {
+        const a = await raw(shots[vi]!);
+        const bg = await raw(bares[vi]!);
+        const W = bg.info.width;
+        const H = bg.info.height;
+        const mask = new Uint8Array(W * H);
+        let n = 0;
+        for (let p = 0, i = 0; p < W * H; p++, i += 3) {
+          const d = Math.abs(a.data[i]! - bg.data[i]!) + Math.abs(a.data[i + 1]! - bg.data[i + 1]!) + Math.abs(a.data[i + 2]! - bg.data[i + 2]!);
+          if (d > 30) {
+            mask[p] = 1;
+            n++;
           }
         }
-      for (let vi = 0; vi < vals.length; vi++) {
-        const a = vi === 0 ? first : await raw(shots[vi]!);
+        // Dải mép: điểm của mặt nạ có ít nhất một hàng xóm (cách 2 px) nằm ngoài mặt nạ.
+        const edge = new Uint8Array(W * H);
+        let ne = 0;
+        for (let y = 2; y < H - 2; y++)
+          for (let x = 2; x < W - 2; x++) {
+            const p = y * W + x;
+            if (!mask[p]) continue;
+            if (!mask[p - 2] || !mask[p + 2] || !mask[p - 2 * W] || !mask[p + 2 * W]) {
+              edge[p] = 1;
+              ne++;
+            }
+          }
         let sum = 0;
         let sunk = 0;
         let es = 0;

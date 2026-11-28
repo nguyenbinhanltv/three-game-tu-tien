@@ -129,9 +129,9 @@ export const toonDepth = uniform(1);
 
 /**
  * Dạ Cảnh: cường độ VIỀN SÁNG TÁCH NỀN của quái (0 = tắt). Quái xám/nâu trên nền đêm lam tối gần như cùng độ sáng với nền, mà viền mực lại tối trên
- * tối; giả thuyết là một viền fresnel hẹp sắc trăng lạnh ở mép hình bóng sẽ tách khối. ĐO (`pnpm shots daread`, 28/11) cho kết quả NGƯỢC LẠI: quái đọc như
- * bóng tối trên sàn sáng hơn, viền sáng kéo mép thân về gần độ sáng nền (tương phản mép 40,7 → 31,1 ở 1,2) và làm nhạt sắc đỏ của tinh anh/boss.
- * Vì vậy mặc định 0; giữ làm núm thử ở khu Phong cách của phòng thử.
+ * tối; một viền fresnel hẹp sắc trăng lạnh ở mép hình bóng tách khối. ĐO ĐÚNG (`pnpm shots daread`, 28/11, cổng riêng, có đối chứng lặp cùng giá trị lệch ≤ ±1,5):
+ * tách nền tăng ở mức 0,7 / 1,2 so với 0: bầy sói 33 → 39 / 42, tinh anh 26 → 35 / 40, boss 31 → 36 / 40, chìm 3,5% → 1,4% (bầy). NHƯNG ở tinh anh và boss
+ * viền sáng làm thân ngả hồng tím, mất sắc ĐỎ nhận diện (xem ảnh). Vì vậy chưa bật mặc định; dự kiến chỉ bật cho quái thường (xám) và giữ nguyên tinh anh/boss.
  */
 export const DA_SEP_RIM = 0;
 export const daSepRim = uniform(DA_SEP_RIM);
