@@ -396,3 +396,11 @@ Soát ở góc nhìn thật của game trên các cảnh sàn của bộ gốc. 
 **Địa hình (28/11, `pnpm shots daread --at tong_mon,rung,ho,thung_lung,suoi`):** quái trên bản đồ thật tách nền ngang phòng tập (tách 31–44, chìm 4–6%; sân tông môn 64 vì sói tối trên đá lát sáng; yếu nhất là suối 31, thung lũng 34, rừng 35). Các lượt này đã gồm viền sáng quái → KHÔNG sửa mặt đất.
 
 **Hậu kỳ: giữ màu thật cho thân quái khi tối dần ra xa tâm trận — BẬT mặc định 0,6 ở Dạ Họa** (`postParams.maskKeep` ở `apps/client/src/render/post.ts`, `FLAGS.da ? 0.6 : 0`; núm "Giữ màu thân khi nhuộm trận" ở khu Phong cách). Điểm ảnh trong mặt nạ hậu kỳ (thân nhân vật, quái, bảng tên, hiệu ứng) được giữ khỏi lớp tối dần ra xa tâm và lớp nhuộm đỏ của trận tinh anh/boss. Đo đúng (đối chứng lặp lệch ≤ ±2) mức 0 → 1: boss tách 29–30 → 34,6 (chìm 13% → 7%), tinh anh 26–28 → 32,4, bầy sói 37 → 41, sói thường 41–42 → 45; ảnh: tinh anh đỏ rõ hơn, nền vẫn tối nên không khí không đổi. (Lần thử đầu của núm này bị loại nhầm vì phép đo lệch.) A/B 8 cảnh so bộ gốc ở mức 0,6: SSIM 0,944–0,973, draw call không đổi (±0 cảnh quái), 0 lỗi console.
+
+## V4: danh sách gỡ phần thừa, trạng thái cuối (28/11)
+
+- Nhóm A (12 kịch bản chụp cũ lưu trữ): xong, #829.
+- Nhóm D (cờ so trước/sau): xong 13/14 cờ (#831, #835, #841, #843). **`?cloth=1` GIỮ NGUYÊN theo quyết định của người dùng 28/11:** đó là tính năng thí điểm vải mô phỏng Thiên Y (mặc định tắt; `apps/client/src/game/character/thienY.ts`, công cụ bake, kịch bản `clothcheck`), không phải đường cũ để so; mục này đóng.
+- Nhóm E (`?chr=v1`): xong, #842; đường dựng model cũ giữ vì NPC và lùi khi asset v3 lỗi.
+- Nhóm H (xóa ảnh tạm `D:/claude-tmp/dvt-*` cũ): làm sau 13:00 ngày 28/11 theo danh sách đã duyệt (giữ `dvt-golden3` và mọi thư mục dưới 24 giờ hoặc đang được phiên khác dùng).
+- Giữ nguyên theo duyệt: `?animlab`, `?vfxlab`, nhánh phong cách, `?paintedlab`.
