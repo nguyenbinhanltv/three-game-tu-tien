@@ -1,4 +1,4 @@
-import { ARTIFACTS, ITEMS, itemName, METHODS, methodName, MONSTERS, monsterName, OUTFITS, QUESTS, SETS, SKILLS, skillName, t } from '@dtl/content';
+import { ARTIFACTS, ITEMS, LAB_SCENES, itemName, METHODS, methodName, MONSTERS, monsterName, OUTFITS, QUESTS, SETS, SKILLS, skillName, t } from '@dtl/content';
 import { PLACES } from '@dtl/content/places';
 import { EQUIP_SLOTS, MAX_ENHANCE, MAX_LEVEL } from '@dtl/shared';
 
@@ -13,7 +13,7 @@ export type GmGroup = 'char' | 'items' | 'mon' | 'fight' | 'move' | 'world';
 const ALL_GROUPS: readonly GmGroup[] = ['char', 'items', 'mon', 'fight', 'move', 'world'];
 
 /** Nguồn id cho ô chọn có tìm. */
-export type GmSource = 'items' | 'weapons' | 'skins' | 'monsters' | 'skills' | 'methods' | 'sets' | 'outfits' | 'arts' | 'places' | 'quests';
+export type GmSource = 'items' | 'weapons' | 'skins' | 'monsters' | 'skills' | 'methods' | 'sets' | 'outfits' | 'arts' | 'places' | 'quests' | 'scenes';
 
 export interface GmParam {
   /** Khóa nhãn `ui.gm.param.<k>`. */
@@ -38,6 +38,8 @@ export interface GmParam {
 
 export interface GmCmd {
   name: string;
+  /** Khóa nhãn/React khi một lệnh có nhiều hàng (ví dụ `tp` theo địa điểm và theo tọa độ). Mặc định là `name`. */
+  key?: string;
   group: GmGroup;
   params: readonly GmParam[];
   /** Nút phụ không tham số (nhãn `ui.gm.extra.<khóa>`), ví dụ `branch reset`. */
@@ -103,12 +105,40 @@ export const GM_CMDS: readonly GmCmd[] = [
   { name: 'outfit', group: 'items', params: [S('outfit', 'outfits'), P('gender', ['m', 'f'], true)], extra: [{ k: 'list', cmd: 'outfit list' }, { k: 'off', cmd: 'outfit off' }] },
   { name: 'skin', group: 'items', params: [S('skin', 'skins')], extra: [{ k: 'list', cmd: 'skin list' }, { k: 'off', cmd: 'skin off' }] },
   { name: 'weapon', group: 'items', params: [S('weapon', 'weapons'), { ...I('plus', 0, MAX_ENHANCE, '', true), plus: true }], extra: [{ k: 'list', cmd: 'weapon list' }] },
+
+  // ----- Quái / Boss (dummy, boss, phase, hp, cast ở nhóm Cân bằng) -----
+  { name: 'spawn', group: 'mon', params: [S('monster', 'monsters'), I('n', 1, 20, '1', true)], extra: [{ k: 'clear', cmd: 'spawn clear' }] },
+  { name: 'killall', group: 'mon', params: [] },
+  { name: 'hurt', group: 'mon', params: [I('pct', 1, 100, '30')] },
+  { name: 'lockhp', group: 'mon', params: [P('onoff', OnOff, true)] },
+  { name: 'freeze', group: 'mon', params: [P('onoff', OnOff, true)] },
+  { name: 'face', group: 'mon', params: [I('deg', 0, 359, '90', true)] },
+  { name: 'state', group: 'mon', params: [P('state', ['weak', 'break', 'stun', 'chant', 'clear']), I('sec', 1, 600, '10', true)] },
+
+  // ----- Chiến đấu / Đo (dps ở nhóm Cân bằng) -----
+  { name: 'tick', group: 'fight', params: [] },
+  { name: 'labreset', group: 'fight', params: [] },
+  { name: 'help', group: 'fight', params: [X('cmd_name', true)] },
+
+  // ----- Di chuyển -----
+  { name: 'tp', key: 'tp', group: 'move', params: [S('place', 'places')] },
+  { name: 'tp', key: 'tp_xz', group: 'move', params: [I('x', 0, 100000, '2048'), I('z', 0, 100000, '2048')] },
+  { name: 'tele', group: 'move', params: [P('tele', ['all', 'none', 'cd'])] },
+  { name: 'tele', key: 'tele_id', group: 'move', params: [X('pad')] },
+  { name: 'dvt', group: 'move', params: [X('room_key', true)] },
+
+  // ----- Thế giới -----
+  { name: 'qdone', group: 'world', params: [S('quest', 'quests')], extra: [{ k: 'chuong2', cmd: 'qdone chuong2' }] },
+  { name: 'qev', group: 'world', params: [X('qkind'), X('qtarget', true), I('n', 1, 9999, '', true)] },
+  { name: 'scene', group: 'world', params: [S('scene', 'scenes')], extra: [{ k: 'save', cmd: 'scene save' }] },
 ];
 
 /** Chỉ các nhóm đã có lệnh (nhóm trống chưa hiện). */
 export const GM_GROUPS: readonly GmGroup[] = ALL_GROUPS.filter((g) => GM_CMDS.some((c) => c.group === g));
 
 export const GM_NAMES = new Set(GM_CMDS.map((c) => c.name));
+/** Khóa duy nhất của một hàng lệnh. */
+export const gmKey = (c: GmCmd): string => c.key ?? c.name;
 
 const cache = new Map<GmSource, { id: string; label: string }[]>();
 const FROM: Record<GmSource, () => string[]> = {
@@ -123,6 +153,7 @@ const FROM: Record<GmSource, () => string[]> = {
   arts: () => ARTIFACTS.map((a) => a.id),
   places: () => PLACES.map((p) => p.id),
   quests: () => QUESTS.map((q) => q.id),
+  scenes: () => LAB_SCENES.map((x) => x.id),
 };
 const NAME: Partial<Record<GmSource, (id: string) => string>> = {
   items: itemName,

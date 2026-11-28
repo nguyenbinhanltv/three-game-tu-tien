@@ -6,6 +6,7 @@ import {
   type CdMsg,
   type CharView,
   type ChatMsg,
+  type GmReply,
   type DuelMsg,
   type EscortMsg,
   type InviteMsg,
@@ -40,6 +41,7 @@ import { FX_TIMELINE, MONSTER, pathOf, t } from '@dtl/content';
 import { minimapHooks } from '../../ui/minimap/model';
 import { visibleView } from '../net/aoiView';
 import { pushLog, set, useUI } from '../../ui/store';
+import { gmOnReply } from '../debug/gmRpc';
 import { sfx } from '../audio/audio';
 import { BOLT_VIEW_DIST, boltAge } from '../../render/vfx/projectile';
 import { EntityManager, type WorldView } from '../entities/entities';
@@ -312,6 +314,8 @@ export function bindRoom(eng: Game, room: Room): void {
     if (m.hit) sfx('impact', m.hit === eng.sid ? 0.8 : volumeAt(eng, m.x, m.z) * 0.5, m);
   });
   rm.onMessage(S.CHAT, (m: ChatMsg) => pushLog(m.m, m.c === 'party' ? 'party' : 'chat', m.from));
+  // Kênh GM có cấu trúc (phòng tập): chỉ tài khoản thử nhận; giao diện Lệnh GM chờ trả lời theo mã `r`.
+  rm.onMessage(S.GM, (m: GmReply) => gmOnReply(m));
   // Tổ đội và tỉ thí (P3-9): chỉ hiển thị; mọi phán định ở server. Giờ server đổi sang đồng hồ client.
   // Bảng tổng kết trận (U5): số liệu do server tổng hợp, client chỉ hiển thị.
   rm.onMessage(S.RECAP, (m: RecapMsg) => set({ recap: m }));
