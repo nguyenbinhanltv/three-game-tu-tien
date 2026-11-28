@@ -1,5 +1,6 @@
 // Dạ Họa: đo ĐỘ TÁCH NỀN của quái ở góc nhìn thật của game trong các cảnh mẫu của Diễn Võ Trường, để A/B một tham số phong cách bằng số.
-//   pnpm shots daread --out <thư mục> [--query style=dahoa] [--only soi_thuong,tinh_anh,bay_dong,boss] [--key monrim] [--vals 0,0.7,1.2]
+//   pnpm shots daread --out <thư mục> [--query style=dahoa] [--only soi_thuong,tinh_anh,bay_dong,boss] [--key monrim] [--vals 0,0.7,1.2] [--who hero --lv 8]
+// `--who hero`: đo NHÂN VẬT MÌNH thay cho quái (ẩn thân + vỏ viền mực của mình), dựng ở cảnh giới `--lv` (mặc định 30) rồi dọn quái khỏi cảnh.
 // Mỗi cảnh: dừng lớp hình, chụp một ảnh cho từng giá trị của tham số (`Game.labStyle(key, v)`), rồi ẩn mọi thân quái + vỏ viền mực và chụp ảnh nền.
 // Mặt nạ thân = điểm ảnh đổi rõ giữa ảnh giá trị đầu tiên và ảnh nền. Trên mặt nạ đó, với từng giá trị:
 //   - tách = trung bình |độ sáng thân − độ sáng nền ngay sau nó| (0–255);
@@ -8,7 +9,7 @@
 // Ghi `daread.json`, in bảng, và xếp các ảnh cắt quanh giữa màn hình thành một tấm `daread-sheet.png` (hàng = cảnh, cột = giá trị).
 import path from 'node:path';
 import { LAB_SCENES } from '@dtl/content';
-import { opt } from '../lib/env';
+import { num, opt } from '../lib/env';
 import { gm, perfSample, skipCutscene, waitLevel } from '../lib/game';
 import type { Scenario } from '../lib/scenario';
 import sharp from 'sharp';
@@ -20,10 +21,12 @@ const lumOf = (d: Buffer, i: number): number => 0.2126 * d[i]! + 0.7152 * d[i + 
 export default {
   name: 'daread',
   desc: 'Dạ Họa: đo độ tách nền của quái (thân so với nền sau nó) ở các cảnh mẫu, A/B một tham số phong cách',
-  usage: '[--query style=dahoa] [--only soi_thuong,tinh_anh,bay_dong,boss] [--key monrim] [--vals 0,0.7,1.2]',
+  usage: '[--query style=dahoa] [--only soi_thuong,tinh_anh,bay_dong,boss] [--key monrim] [--vals 0,0.7,1.2] [--who mon|hero] [--lv 30]',
   env: { RATE_LIMIT_EXEMPT: 'loopback' },
   async run(r) {
     const key = opt('--key', 'monrim');
+    const who = opt('--who', 'mon');
+    const lv = num('--lv', 30);
     const vals = opt('--vals', '0,0.7,1.2')
       .split(',')
       .map(Number)
@@ -47,12 +50,13 @@ export default {
       await sleep(350);
     };
     const hide = (on: boolean) =>
-      pg.evaluate(`((on) => {
+      pg.evaluate(`((on, who) => {
         var g = window.__game, layer = on ? 31 : 0;
-        for (const m of g.ents.monsters.values()) m.model.root.traverse((o) => o.layers.set(layer));
+        var roots = who === 'hero' ? [g.ents.players.get(g.sid).model.root] : [...g.ents.monsters.values()].map((m) => m.model.root);
+        for (const r of roots) r.traverse((o) => o.layers.set(layer));
         var hulls = g.ents.inkHulls && g.ents.inkHulls.hulls;
-        if (hulls) for (const h of hulls.values()) if (h.mesh) h.mesh.traverse((o) => o.layers.set(layer));
-      })(${on})`);
+        if (hulls) for (const r of roots) { var h = hulls.get(r); if (h && h.mesh) h.mesh.traverse((o) => o.layers.set(layer)); }
+      })(${on}, '${who}')`);
     const rows: Record<string, unknown>[] = [];
     const tiles: { input: Buffer; left: number; top: number }[] = [];
     const CW = 640;
@@ -64,6 +68,12 @@ export default {
       await skipCutscene(pg, 12);
       // `face` quay mọi quái về một hướng và ĐÓNG BĂNG chúng (không dùng `freeze`: đó là công tắc, cảnh đã đóng băng sẵn thì bấm lại là bỏ).
       await gm(pg, 'face 90', 1500);
+      if (who === 'hero') {
+        await gm(pg, `build lac_kiem_quyet ${lv}`, 1800);
+        await gm(pg, 'killall', 1500);
+        await pg.evaluate(() => void window.__game!.setTarget('', 'mon'));
+        await sleep(1200);
+      }
       await pg.evaluate(() => void window.__game!.setTarget?.('', 'mon'));
       await sleep(1500);
       await pg.evaluate(() => void (window.__game!.timeScale = 0));
@@ -134,7 +144,7 @@ export default {
         console.log(`  ${sc.id.padEnd(12)} ${key}=${String(vals[vi]).padEnd(4)} thân ${n} px · tách ${row.sep} · chìm ${row.sunk}% · mép ${row.edge} · ${JSON.stringify(perf[vi])}`);
         tiles.push({
           input: await sharp(shots[vi]!)
-            .extract({ left: Math.round((W - CW) / 2), top: 0, width: CW, height: CH })
+            .extract({ left: Math.round((W - CW) / 2), top: who === 'hero' ? 250 : 0, width: CW, height: CH })
             .png()
             .toBuffer(),
           left: vi * CW,
