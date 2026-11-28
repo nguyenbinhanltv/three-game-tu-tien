@@ -101,6 +101,7 @@ import {
   xfade,
 } from './mannequinAnim';
 import { clipTimeAt, diagStrideGain, PATCH_TABLE, REV_SUFFIX } from './patchLoop';
+import { PlantDetector } from './footPlant';
 import { feetSlot, MqFeet } from './mannequinFeet';
 import { lodOf, mergeLodMeshes } from './mannequinLod';
 import { lowerBodyOf, upperBodyOf, MannequinPoseBank, type MqPose, PoseSource, POSE_SOURCE_ASSET, poseClipName } from './mannequinPoses';
@@ -645,6 +646,10 @@ export class MannequinCharacter implements CharacterView {
   }
   grounded = true;
   steps = 0;
+  /** Số lần bàn chân thật chạm đất và việc khung vừa rồi có lấy mẫu bàn chân không (xem `CharacterView.plants`). */
+  plants = 0;
+  plantSense = false;
+  private plantFeet: { bone: THREE.Object3D; det: PlantDetector }[] = [];
   /** Tỉ lệ đọc từ trên (C2): xương cần scale mỗi khung sau mixer (chỉ người chơi, xem `enableProportions`). */
   private proportions: BoneScale[] = [];
   attacks = 0;
@@ -1009,6 +1014,11 @@ export class MannequinCharacter implements CharacterView {
     if (!shadow && FLAGS.v3Feet) this.feet = MqFeet.from(this.rig, this.root, tpl.height);
     this.inner.add(this.rig);
     this.root.add(this.inner);
+    if (!shadow)
+      for (const n of ['ball_l', 'ball_r']) {
+        const bone = this.rig.getObjectByName(n);
+        if (bone) this.plantFeet.push({ bone, det: new PlantDetector() });
+      }
     this.mixer = new THREE.AnimationMixer(this.rig);
     this.hit = new HitReact(meshes);
     this.mixer.addEventListener('finished', (e) => {
@@ -1936,6 +1946,7 @@ export class MannequinCharacter implements CharacterView {
         });
       } else this.feet.release();
     }
+    this.sensePlants(this.acc, a);
     const drawNow = this.combatT > 0 || !!a.combat;
     if (drawNow !== this.drawn) this.mountBlade(drawNow);
     // Lò xo vạt: chỉ LOD0 và trong khung nhìn; ma trận thế giới của xương phải mới (root vừa được đặt vị trí).
@@ -1964,6 +1975,22 @@ export class MannequinCharacter implements CharacterView {
     }
     if (ANIM_FX.smear && this.lodLevel === 0 && this.inner.visible && PATH_TP[this.tpPath ?? '']?.smear) this.updateSmear();
     this.acc = 0;
+  }
+
+  /**
+   * Dò bàn chân chạm đất (sau mixer, chân bám đất và lớp phụ): đo độ cao mũi bàn chân so với gốc nhân vật. Chỉ LOD0 đang hiện; khi thôi lấy mẫu thì quên đế
+   * để lần lấy lại không bắn tiếng giả. Tiếng bước chân đọc `plants` (xem `audio/footsteps.ts`).
+   */
+  private sensePlants(dt: number, a: AnimState): void {
+    const on = this.plantFeet.length > 0 && this.lodLevel === 0 && this.inner.visible && this.grounded && !a.dead && !a.meditating;
+    if (!on) {
+      if (this.plantSense) for (const f of this.plantFeet) f.det.reset();
+      this.plantSense = false;
+      return;
+    }
+    this.plantSense = true;
+    const y0 = this.root.position.y;
+    for (const f of this.plantFeet) if (f.det.update(dt, f.bone.getWorldPosition(_a0).y - y0)) this.plants++;
   }
 
   /** T4: dải nét kéo bám lưỡi kiếm trong cửa sổ đường chém của pose `_tp`; hết cửa sổ thì tan dần. */
