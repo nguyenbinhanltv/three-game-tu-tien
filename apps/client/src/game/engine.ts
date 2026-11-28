@@ -206,6 +206,7 @@ export const LAB_STYLE = [
   ['night', 0.4, 1.6, 0.1],
   ['fog', 0, 3, 0.25],
   ['monrim', 0, 2, 0.1],
+  ['maskkeep', 0, 1, 0.25],
 ] as const;
 export type LabStyleKey = (typeof LAB_STYLE)[number][0];
 
@@ -1120,6 +1121,7 @@ export class Game {
       night: themeU.nightGain.value,
       fog: themeU.mistGain.value,
       monrim: daSepRim.value,
+      maskkeep: postParams.maskKeep.value,
     };
   }
 
@@ -1165,6 +1167,9 @@ export class Game {
         break;
       case 'monrim':
         daSepRim.value = v;
+        break;
+      case 'maskkeep':
+        postParams.maskKeep.value = v;
         break;
     }
     return true;

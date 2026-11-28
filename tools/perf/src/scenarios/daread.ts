@@ -1,5 +1,6 @@
 // Dạ Họa: đo ĐỘ TÁCH NỀN của quái ở góc nhìn thật của game trong các cảnh mẫu của Diễn Võ Trường, để A/B một tham số phong cách bằng số.
 //   pnpm shots daread --out <thư mục> [--query style=dahoa] [--only soi_thuong,tinh_anh,bay_dong,boss] [--key monrim] [--vals 0,0.7,1.2] [--who hero --lv 8]
+// `--at tong_mon,rung,ho`: đo trên BẢN ĐỒ THẬT thay cho phòng tập: dịch chuyển tới từng địa điểm (`places.json`), gọi 3 sói, đóng băng chúng (`/gm freeze`), rồi đo như thường (dùng để soi MẶT ĐẤT).
 // `--who hero`: đo NHÂN VẬT MÌNH thay cho quái (ẩn thân + vỏ viền mực của mình), dựng ở cảnh giới `--lv` (mặc định 30) rồi dọn quái khỏi cảnh.
 // Mỗi cảnh: dừng lớp hình, chụp một ảnh cho từng giá trị của tham số (`Game.labStyle(key, v)`), rồi ẩn mọi thân quái + vỏ viền mực và chụp ảnh nền.
 // Mặt nạ thân = điểm ảnh đổi rõ giữa ảnh giá trị đầu tiên và ảnh nền. Trên mặt nạ đó, với từng giá trị:
@@ -27,12 +28,13 @@ export default {
     const key = opt('--key', 'monrim');
     const who = opt('--who', 'mon');
     const lv = num('--lv', 30);
+    const at = opt('--at', '').split(',').filter(Boolean);
     const vals = opt('--vals', '0,0.7,1.2')
       .split(',')
       .map(Number)
       .filter((v) => Number.isFinite(v));
     const only = opt('--only', 'soi_thuong,tinh_anh,bay_dong,boss').split(',').filter(Boolean);
-    const scenes = LAB_SCENES.filter((s) => only.includes(s.id));
+    const scenes = at.length ? at.map((id) => ({ id })) : LAB_SCENES.filter((s) => only.includes(s.id));
     const { page: pg } = await r.open({
       name: 'DaRead',
       quality: 'high',
@@ -43,8 +45,14 @@ export default {
       hide: 'hud',
     });
     await skipCutscene(pg, 20);
-    await gm(pg, 'dvt');
-    await waitLevel(pg, 'dien_vo');
+    if (at.length) {
+      await gm(pg, 'level 15');
+      await gm(pg, 'god on');
+    } else {
+      await gm(pg, 'dvt');
+      await waitLevel(pg, 'dien_vo');
+    }
+    let frozen = false;
     const step = async (frames = 3) => {
       await pg.evaluate((n) => void (window.__game!.stepLeft += n), frames);
       await sleep(350);
@@ -64,10 +72,22 @@ export default {
     for (let si = 0; si < scenes.length; si++) {
       const sc = scenes[si]!;
       await pg.evaluate(() => void (window.__game!.timeScale = 1));
-      await gm(pg, `scene ${sc.id}`, 3800);
-      await skipCutscene(pg, 12);
+      if (at.length) {
+        await gm(pg, `tp ${sc.id}`, 3500);
+        await skipCutscene(pg, 12);
+        await gm(pg, 'killall', 1200);
+        await gm(pg, 'spawn mon_soi_xam 3', 2200);
+        if (!frozen) {
+          await gm(pg, 'freeze', 1200);
+          frozen = true;
+        }
+        await sleep(1500);
+      } else {
+        await gm(pg, `scene ${sc.id}`, 3800);
+        await skipCutscene(pg, 12);
       // `face` quay mọi quái về một hướng và ĐÓNG BĂNG chúng (không dùng `freeze`: đó là công tắc, cảnh đã đóng băng sẵn thì bấm lại là bỏ).
       await gm(pg, 'face 90', 1500);
+      }
       if (who === 'hero') {
         await gm(pg, `build lac_kiem_quyet ${lv}`, 1800);
         await gm(pg, 'killall', 1500);
@@ -185,6 +205,6 @@ export default {
         .toFile(path.join(r.out, 'daread-sheet.png'));
     writeJson(r.out, 'daread.json', { key, vals, rows });
     await pg.evaluate(() => void (window.__game!.timeScale = 1));
-    await gm(pg, 'dvt');
+    if (!at.length) await gm(pg, 'dvt');
   },
 } satisfies Scenario;
