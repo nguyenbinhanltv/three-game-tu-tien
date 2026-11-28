@@ -65,7 +65,15 @@ def soft(r):
     return (0.2, 0.15) if big else (0.3, 0.22)
 
 
-def warn_circle_soft(delay, r, yaw_a=35, yaw_b=-50, spark=12):
+def warn_circle_soft(delay, r, yaw_a=35, yaw_b=-50, spark=12, strong=False, extra=False):
+    # strong (28/11, Kim Dạ Ma Hậu): vạch báo ĐẬM như các boss khác (0,9 viền + 0,95 lớp tiến độ, `extra` thêm lớp 0,75 xoay 115°); bản mỏng 0,22/0,10 chỉ phủ 22–26% vùng thật.
+    if strong:
+        return [
+            decal('warn_crack', 0, 4, 2, 'accent', 0.9, 0.04, yaw=yaw_b),
+            *([decal('warn_crack', 0, 4, 2, 'accent', 0.75, 0.04, yaw=115)] if extra else []),
+            decal('warn_crack', 0, 4, 2, 'accent', 0.95, delay, yaw=yaw_a, growUntilDelay=True),
+            parts('spark', 0, spark, 1.7, 1, 0.9, 0.09, 'accent', inward=True, offset=[0, 0.2, 0]),
+        ]
     # Vùng tròn phủ cả đĩa nên hai lớp chồng cộng lại: tổng ≤ ~0,32 (vùng lớn ≤ ~0,24), nền lấp dần chỉ thêm một chút.
     a, b = (0.16, 0.08) if r >= 10 else (0.22, 0.10)
     return [
@@ -84,8 +92,8 @@ def warn_fan_soft(delay, half, r, spark=14):
     ]
 
 
-def warn_strip_soft(delay, length, width, spark=14):
-    a, b = soft(8)
+def warn_strip_soft(delay, length, width, spark=14, strong=False):
+    a, b = (0.9, 0.95) if strong else soft(8)
     return [
         decal('warn_crack', 0, 1, 2, 'accent', a, 0.04, strip=[length, width]),
         decal('warn_crack', 0, 1, 2, 'accent', b, delay, strip=[length, width], growUntilDelay=True),
@@ -138,11 +146,11 @@ def slam_boom(B, move, r, theme, seed, ground=False):
     write(f'mon_boom_circle__{B}__{move}', ev, pal)
 
 
-def circle(B, move, r, delay, theme, seed, cast=False, ground=False):
+def circle(B, move, r, delay, theme, seed, cast=False, ground=False, strong=False, extra=False):
     pal, _, _ = THEMES[theme]
     if cast:
         write('mon_cast__' + B, [decal('rune', 0, r, 3.6, 'accent', 0.3, 0.35, ink=True, untilDelay=False, at='self')], pal)  # viền niệm mảnh, mờ
-    write(f'mon_warn__{B}__{move}', warn_circle_soft(delay, r), pal)
+    write(f'mon_warn__{B}__{move}', warn_circle_soft(delay, r, strong=strong, extra=extra), pal)
     slam_boom(B, move, r, theme, seed, ground)
 
 
@@ -170,11 +178,11 @@ def cone(B, move, r, half, delay, theme, seed):
     )
 
 
-def line(B, move, length, width, delay, theme, seed):
+def line(B, move, length, width, delay, theme, seed, strong=False):
     pal, sp_, dec = THEMES[theme]
     k = clip(length / 8)
     lite = theme in ('kim', 'thuy')  # kim/thủy: ít sprite lớn (1 vệt quét thay 2, vân nhỏ hơn)
-    write(f'mon_warn_line__{B}__{move}', warn_strip_soft(delay, length, width), pal)
+    write(f'mon_warn_line__{B}__{move}', warn_strip_soft(delay, length, width, strong=strong), pal)
     write(
         f'mon_boom_line__{B}__{move}',
         [
@@ -208,9 +216,9 @@ circle(B, 'leap', 5, 1.2, 'hoa', 5130)
 
 # ================= Kim Đả Ma Hầu (kim/xương) =================
 B = 'boss_kim_da_ma_hau'
-circle(B, 'slam', 8, 1.3, 'kim', 5200)
-circle(B, 'chant', 12, 1.0, 'kim', 5210, cast=True)
-line(B, 'line', 24, 4, 1.4, 'kim', 5220)
+circle(B, 'slam', 8, 1.3, 'kim', 5200, strong=True, extra=True)
+circle(B, 'chant', 12, 1.0, 'kim', 5210, cast=True, strong=True)
+line(B, 'line', 24, 4, 1.4, 'kim', 5220, strong=True)
 
 # ================= Xích Tàn Cự Khôi (thổ) =================
 B = 'boss_xich_tan_cu_khoi'
