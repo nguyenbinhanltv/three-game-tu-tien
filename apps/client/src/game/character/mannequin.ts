@@ -235,6 +235,8 @@ const FADE = 0.16;
 const COMBAT_HOLD = 4;
 /** Đuôi của đòn một lần (giây): clip mờ ra trong ngần này trước khi hết, clip nền lên thay. */
 const SHOT_TAIL = FADE * 0.75;
+/** Clip nối bắt đầu sớm chừng này (giây) trước khi clip trước hết để mờ chéo (xem `advanceChain`). */
+const CHAIN_XFADE = 0.1;
 /** Chiêu K-5 mờ vào, và chiêu cũ nhường chỗ mờ ra, trong ngần này giây. */
 const PERF_HANDOVER = 0.06;
 const SWING = ['Sword_Regular_A', 'Sword_Regular_B', 'Sword_Regular_C'];
@@ -1018,7 +1020,7 @@ export class MannequinCharacter implements CharacterView {
       this.shot = null;
       const next = this.chain;
       this.chain = null;
-      // Clip nối (ngã → đứng dậy) bắt đầu đúng tư thế clip trước kết thúc: vào thẳng trọng số 1, không mờ qua clip nền.
+      // Dự phòng: clip trước hết trước khi `advanceChain` kịp mờ chéo (khung dài): clip nối vào thẳng trọng số 1.
       if (next && !this.dead) this.oneShot(next, this.chainRate, false, 0);
       else this.knocking = false;
     });
@@ -1356,7 +1358,11 @@ export class MannequinCharacter implements CharacterView {
       // Đuôi clip: mờ ra trong `SHOT_TAIL` giây cuối để clip nền lên thay đúng nhịp (clip còn nối tiếp thì giữ nguyên tới hết). Áp cả khi đòn đang bị mờ
       // ra (huỷ giữa chừng): khung clip hết, three tắt action và coi trọng số = 0, nên trọng số còn lại ở khung đó biến thành chỗ trống (đo 28/11: tổng 0,28,
       // bắp tay xoay 9645°/s khi người chơi bấm chạy lại lúc clip dừng sắp hết).
-      if (!(this.chain && a === this.shot)) w = Math.min(w, Math.max(0, (dur - a.time) / Math.max(0.1, Math.abs(a.timeScale))) / SHOT_TAIL);
+      if (!(this.chain && a === this.shot)) {
+        const ts = Math.max(1e-3, Math.abs(a.timeScale));
+        // Bước này làm clip chạm cuối: three tắt action ngay trong `mixer.update` (trọng số = 0 ở khung đó), nên đừng giữ trọng số ở khung này.
+        w = dt * ts >= dur - a.time - 1e-6 ? 0 : Math.min(w, (dur - a.time) / Math.max(0.1, ts) / SHOT_TAIL);
+      }
       a.setEffectiveWeight(w);
       if (e.half === 'full') full += w;
       else if (e.half === 'upper') up += w;
@@ -1533,6 +1539,20 @@ export class MannequinCharacter implements CharacterView {
     if (!k) return;
     this.emitAtk(k.fired ? 'end' : 'cancel', k.fired ? 1 : 0);
     this.atk = null;
+  }
+
+  /**
+   * Clip nối (ngã → đứng dậy): bắt đầu `CHAIN_XFADE` giây TRƯỚC khi clip trước hết để hai clip mờ chéo. Trước đó clip nối chỉ bắt đầu khi clip trước đã hết (sự kiện
+   * `finished`) và vào thẳng trọng số 1: tư thế cuối `Hit_Knockback` và đầu `LayToIdle` khác nhau nên xương chậu xoay 10859°/s và bắp tay 6000°/s trong hai khung (đo 28/11).
+   */
+  private advanceChain(): void {
+    const next = this.chain;
+    const s = this.shot;
+    if (!next || !s || this.dead || !s.isScheduled()) return;
+    const rem = (s.getClip().duration - s.time) / Math.max(0.1, Math.abs(s.timeScale));
+    if (rem > CHAIN_XFADE) return;
+    this.chain = null;
+    this.oneShot(next, this.chainRate, false, Math.max(0.04, rem));
   }
 
   /** Phát `hit` đúng lúc clip đòn dự phòng qua mốc chém (đồng hồ clip nên đứng theo hit-stop), `recovery` giữa phần thu về. */
@@ -1868,6 +1888,7 @@ export class MannequinCharacter implements CharacterView {
     if (this.knocking && knockCancelled(a)) this.cancelKnock();
     this.updatePerform(dt, a);
     this.updateAtk(dt);
+    this.advanceChain();
     this.grounded = !(a.flying || a.airborne || a.sky);
     const rawName = baseClipOf({ ...a, combat: a.combat || this.combatT > 0 });
     const name = this.baseFor(a, rawName);
