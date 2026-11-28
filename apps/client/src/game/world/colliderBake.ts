@@ -133,9 +133,13 @@ export function bakeLevel(level: string): InstFile {
   return { ids, p };
 }
 
-/** Level cần file riêng: mọi level trong dữ liệu trừ level dùng chung bố cục (xem `INST_ALIAS`). */
+/**
+ * Level cần file riêng: mọi level trong dữ liệu trừ level dùng chung bố cục (xem `INST_ALIAS`) và phòng tập GM (`dungeon.practice`, Diễn Võ Trường).
+ * Phòng tập KHÔNG bake: va chạm của nó là vòng tròn `r` của từng đạo cụ trong `props.dienvo.layout.json` (`propCollidersOf`), mà file đó chỉnh được
+ * ngay trong phòng bằng trình chỉnh V3; một file bake sẽ thêm va chạm hình GLB chồng lên vòng tròn và lỗi thời sau mỗi lần Lưu.
+ */
 export function bakeLevels(): string[] {
-  return Object.keys(LEVELS).filter((l) => !(l in INST_ALIAS));
+  return Object.keys(LEVELS).filter((l) => !(l in INST_ALIAS) && !LEVELS[l]?.dungeon?.practice);
 }
 
 /** Nội dung file (mỗi prop một dòng để diff đọc được). */
