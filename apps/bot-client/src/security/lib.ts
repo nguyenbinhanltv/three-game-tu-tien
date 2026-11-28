@@ -1,6 +1,6 @@
 // Phần chung của bộ kiểm tra bảo mật: đích HTTP/WS, check(), join(), kiểu, server tạm (R-7, tách từ security-check.ts).
 import { Client, type Room } from 'colyseus.js';
-import { type InitMsg, ROOM_WORLD, S } from '@dtl/shared';
+import { C, type InitMsg, ROOM_WORLD, S } from '@dtl/shared';
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import fs from 'node:fs';
@@ -20,6 +20,30 @@ export async function waitUntil(cond: () => boolean, ms = 5000): Promise<boolean
   const t0 = Date.now();
   while (!cond() && Date.now() - t0 < ms) await W(25);
   return cond();
+}
+/** Mỗi phòng: số tin hệ thống đã nhận và lúc gửi lệnh chat gần nhất (để `gmAck` chờ phản hồi và giữ nhịp). */
+const chatState = new WeakMap<Room, { sys: number; sentAt: number }>();
+/** Khoảng cách tối thiểu giữa hai lệnh chat trên một phòng (server giới hạn 800 ms/lệnh; chừa dư cho máy tải nặng). */
+const CHAT_GAP_MS = 1000;
+/** Chờ phản hồi tối đa; lệnh không phản hồi (hoặc phản hồi lỗi) thì hết hạn này mới đi tiếp. */
+const CHAT_ACK_MS = 1500;
+/** Gửi một lệnh `/gm` rồi CHỜ server phản hồi (tin hệ thống `S.SYS` kế tiếp) thay vì ngủ cố định. Trước khi gửi, chờ đủ `CHAT_GAP_MS` kể từ lệnh trước. */
+export async function gmAck(room: Room, cmd: string): Promise<void> {
+  let st = chatState.get(room);
+  if (!st) {
+    const s = { sys: 0, sentAt: 0 };
+    st = s;
+    chatState.set(room, s);
+    room.onMessage(S.SYS, () => s.sys++);
+  }
+  const wait = st.sentAt + CHAT_GAP_MS - Date.now();
+  if (wait > 0) await W(wait);
+  const n0 = st.sys;
+  st.sentAt = Date.now();
+  room.send(C.CHAT, { m: '/gm ' + cmd });
+  await waitUntil(() => st!.sys > n0, CHAT_ACK_MS);
+  // Một nhịp cho trạng thái (đồng bộ state) tới client sau phản hồi.
+  await W(150);
 }
 /** Số mục HỎNG (dùng chung giữa các nhóm bài). */
 export const stats = { failed: 0 };

@@ -4,7 +4,6 @@
 // Server KHÔNG được bật RATE_LIMIT_EXEMPT (bài 11 kiểm giới hạn /matchmake). Bài 11 làm cạn xô
 // của IP này, chạy lại cả bộ sau khoảng 1 phút.
 
-import { C } from '@dtl/shared';
 import { runHttp } from './security/http';
 import { runTransfer } from './security/transfer';
 import { runMovement } from './security/movement';
@@ -22,7 +21,7 @@ import { runWardrobe } from './security/wardrobe';
 import { runKieu } from './security/kieu';
 import { runRatelimit } from './security/ratelimit';
 import { testParamsChecks } from './security/testparams';
-import { type Ctx, join, M, P, stats, W } from './security/lib';
+import { type Ctx, gmAck, join, M, P, stats, W } from './security/lib';
 
 async function main() {
   // SECURITY_ONLY=testparams: chỉ chạy bài ?god/?at (bài 13) để thử lại nhanh.
@@ -43,10 +42,7 @@ async function main() {
     void client;
     const me = () => (room.state as { players: Map<string, P> }).players.get(init.sid)!;
     const mons = () => (room.state as { monsters: Map<string, M> }).monsters;
-    const gm = async (cmd: string) => {
-      room.send(C.CHAT, { m: '/gm ' + cmd });
-      await W(900);
-    };
+    const gm = (cmd: string) => gmAck(room, cmd);
     await W(500);
     await runAim({ client, room, init, me, mons, gm });
     console.log(stats.failed ? `${stats.failed} mục HỎNG` : 'Tất cả đều ĐẠT');
@@ -74,10 +70,7 @@ async function main() {
   const { client, room, init } = await join('kiemthu');
   const me = () => (room.state as { players: Map<string, P> }).players.get(init.sid)!;
   const mons = () => (room.state as { monsters: Map<string, M> }).monsters;
-  const gm = async (cmd: string) => {
-    room.send(C.CHAT, { m: '/gm ' + cmd });
-    await W(900);
-  };
+  const gm = (cmd: string) => gmAck(room, cmd);
   await W(500);
 
   const ctx: Ctx = { client, room, init, me, mons, gm };
