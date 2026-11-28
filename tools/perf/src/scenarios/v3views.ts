@@ -54,9 +54,8 @@ export default {
           look: { g },
           query: {
             chr: 'v3',
-            ...(env('V3_CLOTH', '') === '1' ? { cloth: '1' } : {}),
             ...Object.fromEntries(new URLSearchParams(env('V3_QUERY', '')).entries()),
-          }, // V3_CLOTH=1: vải mô phỏng Thiên Y
+          },
           hide: 'hud',
           warnings: /models|chr_v3|clip/,
         });
@@ -273,13 +272,6 @@ export default {
         });
         console.log(`[shots:v3views] ${tag} texture: ${tex.join(' | ')}`);
         console.log(`[shots:v3views] ${tag} xương (cao so với chân, m): ${JSON.stringify(bones)}`);
-        const cst = await page.evaluate(() => {
-          const g = window.__game!;
-          return g.ents.players.get(g.sid).model.cloth?.stats ?? null;
-        });
-        console.log(
-          `[shots:v3views] ${tag} vải mô phỏng: ${cst ? `${cst.verts} đỉnh, ${cst.ms.toFixed(3)} ms/khung (trung bình trượt)` : 'tắt'}`,
-        );
         await ctx.close();
         console.log(`[shots:v3views] ${tag} xong`);
       }

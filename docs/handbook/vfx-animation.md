@@ -47,22 +47,9 @@ AoE nhắm điểm thường có bán kính 6 m (`radius` trong `packages/conten
 - Không thêm sự kiện timeline VFX mới (VFX vẫn khớp `hit` của pose); hướng đòn lấy từ vị trí người đánh/nạn nhân như `hitReact` cũ.
 - Quay/chụp: `pnpm shots hitdir --out <thư mục> --mode video [--die front|back] [--gender m|f]` (kịch bản đã gỡ ở tối ưu Đợt C) (webm ~15 s) và `--mode stills` (ảnh +30/+150 ms sau đòn nặng, chết +0,6/+1,8 s).
 
-## Thiên Y (vải mô phỏng, cờ `?cloth=1`, mặc định TẮT)
+## Thiên Y (vải mô phỏng): ĐÃ GỠ 28/11
 
-Chân Cảnh C4: tay áo 2 lớp, vạt, dải lụa hông và bả vai mô phỏng cho các bộ v3 có lưới vải tách (`*_oldsleeve`); voan lấy texture của áo. Mã: `apps/client/src/game/character/thienY.ts` (`ClothRig`, `ClothBudget`), `packages/shared/src/clothfit.ts` + `cloth.ts`; tham số khớp lưới: `fitThienY`. Ngân sách CPU chung `CLOTH_BUDGET` 0,4 ms/khung (`maxLagS` 0,12 s), xa/LOD1+ tắt mô phỏng. Chỉ bật mặc định khi đủ 9 bộ và hết nợ (khung đột biến lúc khởi tạo, xuyên thân tay áo sau/dải lưng).
-
-Kiểm từng bộ: `pnpm shots clothcheck --out <thư mục> --set <bộ> --gender f|m --size 1920x1080|1280x720 [--dpr 2] [--variants lo-xo,thien-y] [--bots 9]` (đứng/chạy/lướt/đòn nặng/đả tọa/ngự kiếm; ảnh cắt đúng độ phân giải gốc; `--bots 9` đo 10 nhân vật). Chỉ chạy MỘT phiên Chromium mỗi lúc.
-
-| Bộ | Cảnh đông 10 nhân vật (ms/khung, TB) | Ghi chú |
-| --- | --- | --- |
-| Tinh Khuyết nữ | pilot #574 | duyệt |
-| Cổ Thanh, Vạn Kinh | #585 | đợt 1 |
-| Lưu Ly | 0,39 (0,44 đo lại) | đợt 2 |
-| Phục Mạch | 0,33 | đợt 2 |
-| Thần Tạng | 0,60 với `maxLagS` 0,08 → 0,36 với 0,12 | đợt 2 |
-| Liệt Mạch | 0,24 | đợt 3 |
-| Kính Quang | 0,37 | đợt 3 |
-| Địa Giáp (`dia_long`) | 0,33 | đợt 3 |
+Thí điểm vải mô phỏng Chân Cảnh C4 (cờ `?cloth=1`, `thienY.ts`, lõi `cloth.ts` + `clothfit.ts` của gói shared, công cụ bake `thienybake.ts` của asset-pipeline, kịch bản `clothcheck`) đã gỡ ở V4 ngày 28/11/2026 theo quyết định của người dùng. Lấy lại từ git: commit ngay TRƯỚC PR gỡ (`git log --diff-filter=D --name-only -- apps/client/src/game/character/thienY.ts` để tìm commit gỡ, lấy từ commit cha của nó). Mesh vải tách `*_oldskirt`/`*_oldsleeve` của `chr_v3.py --split-cloth` và asset nguồn ngoài repo KHÔNG đụng.
 
 ## Clip Patch (CC0) nối locomotion Thân Pháp (Thân Pháp, mặc định bật, cờ `patch`)
 

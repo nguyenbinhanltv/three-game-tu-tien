@@ -10,7 +10,6 @@ import { runScenario, type Scenario } from './lib/scenario';
 import asset from './scenarios/asset';
 import collwalk from './scenarios/collwalk';
 import daotuhit from './scenarios/daotuhit';
-import clothcheck from './scenarios/clothcheck';
 import herocheck from './scenarios/herocheck';
 import herolight from './scenarios/herolight';
 import dienvo from './scenarios/dienvo';
@@ -145,7 +144,6 @@ const SCENARIOS: Scenario[] = [
   neck,
   skinv3,
   daotuhit,
-  clothcheck,
   herocheck,
   herolight,
   dienvo,
