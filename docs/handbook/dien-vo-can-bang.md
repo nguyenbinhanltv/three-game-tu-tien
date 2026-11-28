@@ -200,6 +200,80 @@ Server áp sát thương đúng lúc nhận lệnh + `hitAt` (làm tròn lên m�
 
 Để đo đúng từng đòn: khi người đánh đang bật `/gm dps`, tin sát thương (`S.DMG`) có thêm trường `sk` = id chiêu gây ra đòn đó (`(dot)` cho sát thương theo thời gian, `(khác)` khi chưa ra chiêu nào). Người chơi thường không nhận trường này.
 
+## Đề xuất chờ duyệt: Kiếm tu vượt trung vị từ cấp 10 (28/11, CHƯA chỉnh gì)
+
+**Hiện trạng đo được** (`fight:check --dps 90 --runs 2 --mon mon_thach_giap_te --levels 6,10,13,15,16,18`, quái thường CẬN CHIẾN, bot bấm đủ chiêu, tỉ lệ so với trung vị 9 hướng):
+
+| Cấp | 6 | 10 | 13 | 15 | 16 | 18 |
+| --- | --- | --- | --- | --- | --- | --- |
+| Kiếm tu | 1,26 | 1,45 | 1,40 | 1,42 | 1,52 | 1,43 |
+
+- **Không phải bước nhảy ở cấp 16.** Ở bảng DPS trước (quái thường chọn theo cấp), Kiếm tu hiện 1,0 ở cấp 14–15 rồi 1,45 ở cấp 16, nhưng bãi cấp 14–15 là Sói U Minh, quái đánh XA (giữ 9 m), nên Kiếm tu cận chiến (đòn thường tầm 5 m) bị thiệt; từ cấp 16 mục tiêu là Thạch Giáp Tê cận chiến. Cùng một quái cận chiến thì Kiếm tu đã ~1,4 lần trung vị từ cấp 10; nhánh Phá Mạch ở mốc 16 chỉ cộng thêm khoảng +0,1.
+- **Chiêu nào gây ra** (cấp 10, 90 giây, sát thương/giây): Kiếm tu 148 so với trung vị 99. Đòn thường `skl_phi_kiem` của Kiếm tu (35% = 52/s) bằng Hồn tu (54% của 97 = 52/s) và hơn Đan sư (46/s) không đáng kể, nên **phần dư đến từ chiêu tối thượng `skl_van_kiem_quy_tong` (27% ≈ 40/s; hệ số 4,2, mở ở cấp 8, hồi bằng vòng sạc, ra 4 lần mỗi 90 giây ≈ 900 mỗi lần) và chiêu đặc trưng `skl_phi_kiem_truy_hon` (11%)**, cộng `skl_kiem_khi_tram` (22% = 33/s, Thể tu/Hồn tu ~28/s). Đao tu cùng kiểu nhưng thấp hơn (115; chiêu tối thượng `skl_tram_son_dao` 25%, hệ số 4,5).
+- **Sim (`sim:progress`) đánh giá thấp chênh lệch này**: Kiếm tu hạ quái thường nhanh hơn các hướng khác 8–20% (Trúc Cơ sơ kỳ 5,6 giây so với 6,2–7,5) vì sim tính người thật dùng cơ chế khoảng 60% (`SKILL_EFF`); số 1,4–1,5 ở đây là cận trên khi bấm đủ chiêu.
+
+**Phương án** (cần người dùng chọn; cả ba chỉ cần sửa dữ liệu, không đụng luật server):
+
+- **A. Hệ số cấp thấp cho Kiếm tu** (cơ chế `MethodDef.late` đã có từ PR #838, chỉ cần khai `late` cho `lac_kiem_quyet` ở cấp thấp hơn, hiện là 32/×0,85). Tỉ lệ ≈ 1,45 × hệ số: ×0,8 → 1,16; ×0,75 → 1,09. **Đo sim thật bằng bản vá trong bộ nhớ (không ghi file):**
+  - ×0,8 từ cấp 5: Ngưng Khí 15 từ 3,2 giờ lên **3,6 giờ** (vẫn trong 3–4 giờ), TTK Kiếm tu hạ quái thường 6,5 giây ở Ngưng Khí 15; nhưng sinh 4 dòng LỖI mới (Kiếm tu TTK quái thường 7,4 giây ở chương 2 cấp 16 và 7,3 giây ở chương 7 cấp 44 so với trần 7,3; Kiếm tu đánh tinh anh chương 5 cấp 28 mất 65% máu; `itm_tram_ta_kiem` +5 tốn 1,3 giờ thu nhập).
+  - ×0,75 từ cấp 5: Ngưng Khí 15 lên **3,8 giờ** (sát trần 4), 8 dòng LỖI (thêm: chương 2 ra 4,61 giờ so với 4 ±12%, chương 3 ra 6,73 giờ so với 6 ±12%).
+  - Ưu: gọn, một con số, dễ lùi. Nhược: làm chậm chặng đầu của hướng tu phổ biến nhất (3,2 → 3,6–3,8 giờ), phải nới ngưỡng sim hoặc hạ máu quái chương 2–5 để bù.
+- **B. Hạ riêng chiêu tối thượng và chiêu đặc trưng của Kiếm tu**: `skl_van_kiem_quy_tong` hệ số 4,2 → 3,2 và `skl_phi_kiem_truy_hon` 2,5 → 2,2 (`methods.json`). Ước tính theo tỉ trọng: −(27% × 24% + 11% × 12%) ≈ −8% tổng, tỉ lệ 1,45 → ~1,33 (chỉ thu hẹp một phần). Sim ít bị ảnh hưởng (chỉ hai chiêu); có thể kết hợp với A ở ×0,9.
+- **C. Nâng các hướng thấp** (Đan sư, Cổ Thần, Thể tu, Hồn tu ~+25–35%). Không khuyến nghị: năm hướng đổi số, mọi TTK ngắn đi, nhịp lên cấp nhanh hơn trần 3–4 giờ nên phải nâng đường cong kinh nghiệm theo.
+- **D. Giữ nguyên.** Hướng DPS thuần "vua sát thương" là chủ ý thiết kế (thể hiện ở `role: dps`); chênh thật trong tay người chơi thấp hơn nhiều (60% hiệu suất theo sim). Rủi ro: tinh anh/boss thiết kế theo trung vị thì Kiếm tu qua quá nhanh (xem bảng pha boss bên dưới: boss ngắn nhất do nhóm toàn Kiếm tu).
+
+**Khuyến nghị của tôi: A ở ×0,85 từ cấp 8** (mở chiêu tối thượng) kết hợp với B nhẹ, rồi đo lại bằng `fight:check --dps` và `sim:progress`; chưa chạy cấu hình này (chỉ đã đo ×0,8 và ×0,75 từ cấp 5 ở trên).
+
+## Bảng thời gian từng pha của mọi boss (28/11): `fight:check --bossphases`
+
+`pnpm --filter @dtl/server fight:check --bossphases [--runs 2] [--only-boss <id>] [--party N] [--methods a,b,c] [--strict]`: mỗi boss ở cấp và nơi xuất hiện trong dữ liệu (bãi ngoài thế giới: nhóm 3 người; phó bản: nhóm 4), nhóm toàn cùng một công pháp (mặc định Kiếm tu, Cổ Thần, Đan sư = chặn trên, giữa, dưới), bot bất tử xoay vòng chiêu như `--god`. Ghi lúc boss vào từng pha (qua mốc máu `phases[].hp`). Đánh dấu pha dưới 15 giây và trận trên 300 giây hoặc không hạ trong 600 giây. Dùng chính sim server (cơ chế giáp, chui đất, phản đòn đều chạy thật).
+
+**Giới hạn:** (1) nhóm toàn cùng một công pháp, không có hộ pháp/đan sư thật nên Kiếm tu×4 là nhóm DPS thuần, nhanh hơn nhóm thật; hãy đọc cột Cổ Thần (giữa) làm mốc; (2) bot đứng yên không né, không chơi cơ chế (không đánh đúng lúc phản, không phá neo/mặt, không né vùng nổ), nên các boss có `reflect`, `anchor`, `faces` cho số **cận trên**, không phải thời gian người thật; (3) mốc "ngắn/dài" 15/300 giây là ngưỡng đề xuất của tôi, chưa ai duyệt; (4) boss khe mạch (`boss_tu_quang_duc_chu`) không hạ bằng sát thương nên bỏ qua.
+
+Lượt đo 28/11 (2 lần mỗi ô; tổng giây = pha 0 | pha 1 | …; Kiếm tu / Cổ Thần / Đan sư):
+
+| Boss (cấp, nơi, người) | Kiếm tu | Cổ Thần | Đan sư |
+| --- | --- | --- | --- |
+| boss_han_giao (15, Vân Lam, 3) | 102 = 28 / 38 / 36 | 127 = 42 / 42 / 43 | 151 = 55 / 48 / 48 |
+| boss_kiem_khoi (12, Kiếm Trủng, 4) | **23** = 12 / 11 | 33 = 16 / 17 | 42 = 17 / 25 |
+| boss_huyet_lang_vuong (13, Kiếm Trủng, 4) | **29** = 14 / 15 | 45 = 19 / 25 | 55 = 25 / 29 |
+| boss_thu_mo_tuong (15, Kiếm Trủng, 4) | **37** = 14 / 9 / 13 | 58 = 22 / 15 / 22 | 72 = 25 / 21 / 25 |
+| boss_dia_mach_long (19, Đoạn Mạch, 3) | **47** = 15 / 8 / 9 / 15 | 69 = 19 / 14 / 14 / 22 | 83 = 25 / 20 / 12 / 25 |
+| boss_thach_tam_khoi_vuong (18, Phục Mạch, 4) | **15** = 5 / 6 / 4 | **20** = 6 / 6 / 7 | **29** = 10 / 8 / 11 |
+| boss_thon_mach_ngo_cong_vuong (19, Phục Mạch, 4) | **34** = 15 / 5 / 11 / 3 | 58 = 20 / 18 / 13 / 8 | 79 = 26 / 28 / 18 / 8 |
+| boss_kinh_nguyet_chan_quan (23, Kính Nguyệt, 4) | 55 = 20 / 16 / 19 | 82 = 31 / 24 / 27 | 129 = 45 / 30 / 55 |
+| boss_van_hai_kinh_vuong (23, Vân Hải, 3) | 52 = 16 / **6** / 17 / 14 | 82 = 25 / 19 / 14 / 24 | 109 = 32 / 18 / 25 / 33 |
+| boss_vo_dien_than_quan (27, Thần Tạng, 4) | 83 = 25 / 36 / 23 | 154 = 46 / 54 / 53 | 223 = 63 / 91 / 69 |
+| boss_thien_khuyet_thu_linh (27, Thiên Khuyết, 3) | 74 = 20 / 19 / 16 / 19 | 132 = 39 / 25 / 27 / 41 | 230 = 53 / 38 / 34 / 106 |
+| boss_tam_thu_nguc_khuyen (29, Bắc Hoang, 3) | 82 = 21 / 20 / 20 / 22 | 142 = 41 / 28 / 27 / 44 | 199 = 61 / 38 / 39 / 61 |
+| boss_xich_tan_cu_khoi (28, Xích Tàn Khích, 4) | **24** = 8 / 6 / 10 | 42 = 11 / 15 / 16 | 58 = 25 / 20 / 13 |
+| boss_tu_nhan_ma_tuong (28, Xích Tàn Khích, 4) | **25** = 12 / 13 | 46 = 22 / 25 | 70 = 34 / 36 |
+| boss_tan_hoa_kiem_co (31, Bắc Hoang, 3) | 73 = 25 / 25 / 23 | 132 = 47 / 44 / 41 | 180 = 67 / 58 / 55 |
+| boss_thu_khich_duc_chu (31, Bắc Hoang, 3) | **>600** = 126 / 114 / 360 | **>600** = 173 / — | **>600** = 231 / — |
+| boss_kim_da_ma_hau (31, Bắc Hoang, 3) | 122 = 41 / 41 / 40 | 212 = 73 / 76 / 63 | **>600** = 108 / 130 / 222 |
+| boss_hu_anh_chu (39, Vấn Đỉnh, 3) | 176 = 53 / 42 / 81 | **>600** = 70 / 69 / 445 | **>600** = 126 / — |
+| boss_dinh_linh (43, Vấn Đỉnh, 3) | 174 = 63 / 48 / 63 | 291 = 85 / 71 / 135 | **>600** = 140 / 114 / 324 |
+| boss_phu_chu (42, Giới Trì, 4) | 157 = 49 / 43 / 65 | **395** = 70 / 54 / 271 | **>600** = 114 / 102 / 385 |
+| boss_kieu_thu (47, Cửu Kiều, 3) | 232 = 73 / 60 / 98 | **>600** = 104 / 85 / 411 | **>600** = 168 / 175 / 256 |
+| boss_ve_kieu (46, cầu 4, 4) | 36 | 47 | 79 |
+| boss_thach_tuong (46, cầu 5, 4) | 53 | 57 | 89 |
+| boss_dao_linh (47, cầu 6, 4) | 90 = 33 / 23 / 34 | 119 = 45 / 28 / 46 | 236 = 83 / 50 / 104 |
+
+**Boss quá ngắn** (đáng soi nhất; đề xuất chỉ để người dùng duyệt, chưa sửa):
+
+| Boss | Tổng hiện tại (Cổ Thần) | `hpMul` hiện tại | Đề xuất |
+| --- | --- | --- | --- |
+| `boss_thach_tam_khoi_vuong` | 20 giây, mỗi pha 6–7 giây, kể cả Đan sư chỉ 29 | 26 | ×3 (78) để ~60 giây, pha dài hơn 15 giây |
+| `boss_kiem_khoi` (boss phó bản đầu) | 33 giây | 32 | ×2 (64) để ~65 giây |
+| `boss_huyet_lang_vuong` | 45 giây | 37 | ×1,5 (55) |
+| `boss_xich_tan_cu_khoi` | 42 giây, pha 11 / 15 / 16 | 40 | ×1,5 (60) |
+| `boss_tu_nhan_ma_tuong` | 46 giây | 45 | ×1,3 (58) |
+| `boss_thon_mach_ngo_cong_vuong` | 58 giây nhưng pha cuối chỉ 3–8 giây (ngưỡng pha cuối 10% máu) | 75 | đổi ngưỡng pha cuối 0,1 → 0,2 |
+
+**Boss quá dài hoặc không hạ được** (bot không chơi cơ chế, chỉ là cận trên): `boss_thu_khich_duc_chu` (phản đòn + neo; pha 0 đã 126–231 giây), `boss_hu_anh_chu` (phản đòn), `boss_phu_chu` (hai mặt + phản đòn; pha cuối 271–385 giây với Cổ Thần/Đan sư), `boss_kieu_thu` và `boss_dinh_linh` (pha cuối 135–411 giây), `boss_kim_da_ma_hau` (gương, chú). Đề xuất: KHÔNG sửa số trước khi có lượt chơi thật các cơ chế này; nếu muốn một mốc nhanh, đặt máu pha cuối bằng ~30% tổng (ngưỡng `hp` 0,3) như đa số boss khác, và `hpMul` các boss Vấn Đỉnh → Cửu Kiều giảm ~20%.
+
+**Boss ổn** (mọi hướng 40–230 giây, pha đều): `boss_han_giao`, `boss_kinh_nguyet_chan_quan`, `boss_vo_dien_than_quan`, `boss_thien_khuyet_thu_linh`, `boss_tam_thu_nguc_khuyen`, `boss_tan_hoa_kiem_co`, `boss_dao_linh`, `boss_ve_kieu`, `boss_thach_tuong` (hai boss cầu không có pha).
+
 ## Mô hình `sim:progress` đã sửa (28/11)
 
 - Đòn quét của đòn thường cận chiến (`CLEAVE_EXTRA`): bản 27/11 sáng tính trọn một quái đứng cạnh cho MỌI phép tính thời gian hạ, kể cả tinh anh là mục tiêu đơn, nên Kiếm tu ra số nhanh giả (tinh anh Xích Diễm Hồ 19 giây trong sim). Nay: kéo `PULL` con thì bình quân (`PULL` − 1) / 2 con đứng cạnh (= `PULL_FACTOR` − 1), và các phép tính tinh anh truyền 0 (`playerDps(..., 'avg', 0)`).

@@ -15,6 +15,10 @@
 //     và hồi đầy mỗi nhịp trong chừng đó giây (mặc định 60), quái vẫn đánh lại (để hướng tích tài nguyên khi bị đánh có tài nguyên), bot bất tử.
 //     Số lấy từ đồng hồ `/gm dps` của server. In kèm tỉ lệ so với trung vị của cấp đó; "!" = lệch quá ±35%.
 //     Thêm --skills: dưới mỗi cấp in phần đóng góp của từng chiêu (lần đo cuối của mỗi hướng tu), để thấy sát thương đến từ đâu.
+//   --bossphases [--party N] [--methods a,b,c]: BẢNG THỜI GIAN TỪNG PHA của mọi boss (bàn cân bằng V2e). Mỗi boss ở cấp và nơi nó xuất hiện trong dữ liệu
+//     (bãi ngoài thế giới: nhóm 3 người, phó bản: nhóm 4; `--party` ép số người), nhóm toàn công pháp `--methods` (mặc định kiếm tu, Cổ Thần, đan sư:
+//     chặn trên, giữa, dưới), bot bất tử xoay vòng chiêu như ở `--god`. Ghi lúc boss vào từng pha (qua mốc máu của `phases`) nên có cả cơ chế thật
+//     (giáp, chui đất, miễn sát thương, phản đòn). Đánh dấu pha < 15 s ("ngắn": không kịp thấy cơ chế mới) và trận > 300 s hoặc không hạ được trong 600 s ("dài").
 //   Cấp thử từ 32 trở lên mặc bộ 7 ô bậc 5 phẩm Huyền theo ilvl = cấp; `--tier 6` mặc bộ bậc 6 (mốc mặc trọn; người chơi thật pha dần, xem `CH6_GEAR_FRAC` ở sim.ts). Ở cấp 43 với `--tier 6`: Kiếm tu 3,0 s, còn lại 3,1–5,8 s.
 process.env.DB_FILE = ':memory:';
 
@@ -47,13 +51,16 @@ const RUNS = Number(arg('runs', '6'));
 const LEVELS = arg('levels', '4,10,15,20,28').split(',').map(Number);
 const FORCE_MON = arg('mon', '');
 let TARGET = arg('target', '');
-const PARTY = Number(arg('party', '1'));
+let PARTY = Number(arg('party', '1'));
 const PULL = Number(arg('pull', '2'));
 const NOGEAR = process.argv.includes('--nogear');
+/** `--only-boss <id>`: chỉ đo một boss trong `--bossphases`. */
+const ONLY_BOSS = arg('only-boss', '');
 /** `--god`: người chơi không chết (hồi đầy máu mỗi nhịp), để đo thời gian hạ mục tiêu thuần theo sát thương (boss mà bot đứng yên bị đánh chết trước khi hạ được). */
 let GOD = process.argv.includes('--god');
 /** `--dps [giây]`: > 0 thì `fightOnce` đánh hình nộm khóa máu trong chừng đó giây và trả sát thương mỗi giây ở trường `ttk`. */
 let DUMMY_SECS = 0;
+const BOSSPH = process.argv.includes('--bossphases');
 /** Phần đóng góp từng chiêu của lần đo hình nộm gần nhất (`--dps --skills`). */
 let lastSkills = '';
 /** `--nostance`: bot không vào tư thế (đo riêng phần đóng góp của tư thế, VS-2e). */
@@ -145,6 +152,8 @@ function pickTarget(level: number): { def: MonsterDef; mlv: number; extra: boole
 }
 
 interface Result {
+  /** Lúc (giây từ đầu trận) boss vào từng pha (chỉ khi đo `--bossphases`); phần tử k = lúc vào pha k. */
+  phaseAt?: number[];
   ttk: number;
   lost: number;
   dead: boolean;
@@ -210,6 +219,7 @@ function fightOnce(level: number, method: string | undefined): Result {
   const skills = usable.filter((s) => s.kind !== 'stance' && !s.stanceOf);
   const hpAll = mons.reduce((n, m) => n + m.s.hp, 0);
   const t0 = fake;
+  const phaseAt: number[] = [];
   const lead = party[0]!.p;
   if (DUMMY_SECS) {
     sim.gmSys.run(lead, ['lockhp', 'on']);
@@ -223,7 +233,8 @@ function fightOnce(level: number, method: string | undefined): Result {
     // Hình nộm: hồi đầy mỗi nhịp (bot luôn thấy "trận còn dài" nên dùng cả tư thế).
     if (DUMMY_SECS) for (const m of mons) m.s.hp = m.s.mhp;
     if (GOD) for (const a of party) a.char.hp = a.char.mhp;
-    if (party.every((a) => a.char.hp <= 0)) return { ttk: (fake - t0) / 1000, lost: 1, dead: true };
+    if (BOSSPH) for (let ph = phaseAt.length; ph <= mons[0]!.phase; ph++) phaseAt.push((fake - t0) / 1000);
+    if (party.every((a) => a.char.hp <= 0)) return { ttk: (fake - t0) / 1000, lost: 1, dead: true, phaseAt };
     const target = mons.find((m) => m.state !== MS_DEAD);
     if (!target) break;
     for (const { char, p } of party) {
@@ -269,7 +280,7 @@ function fightOnce(level: number, method: string | undefined): Result {
     labMeter.stop(lead);
     return { ttk: total / DUMMY_SECS, lost: avgLost(), dead: false };
   }
-  return { ttk: (fake - t0) / 1000 / count, lost: avgLost() / count, dead: false };
+  return { ttk: (fake - t0) / 1000 / count, lost: avgLost() / count, dead: mons.some((m) => m.state !== MS_DEAD), phaseAt };
 }
 
 const STRICT = process.argv.includes('--strict');
@@ -315,6 +326,63 @@ if (process.argv.includes('--elites')) {
   }
   if (bad.length) console.log(`\nNgoài khoảng ${LO}–${HI} s (${bad.length} ô):\n  ` + bad.join('\n  '));
   process.exit(STRICT && bad.length ? 1 : 0);
+}
+
+if (BOSSPH) {
+  GOD = true;
+  const methods = arg('methods', 'lac_kiem_quyet,co_than_quyet,thanh_moc_dan_kinh').split(',');
+  const forced = process.argv.includes('--party');
+  const SHORT = 15;
+  const LONG = 300;
+  const cap = 600;
+  /** Nơi boss xuất hiện: bãi ngoài thế giới (cấp lớn nhất của bãi) hoặc đợt phó bản (cấp quái trong đợt). */
+  const where = (id: string): { lv: number; map: string; dungeon: boolean } | null => {
+    for (const l of Object.values(LV)) {
+      for (const sp of levelSpawns(l)) if (sp.mon === id) return { lv: sp.levelMax, map: l.id, dungeon: false };
+      for (const w of l.dungeon?.waves ?? []) for (const m of w.mons ?? []) if (m.id === id) return { lv: m.level, map: l.id, dungeon: true };
+    }
+    return null;
+  };
+  console.log(`Thời gian từng pha của boss (sim server, bot bất tử, nhóm cùng công pháp). Pha ngắn < ${SHORT} s, trận dài > ${LONG} s hoặc không hạ được trong ${cap} s.`);
+  console.log('Cột: công pháp: tổng giây = pha0 | pha1 | ...   (giây ở mỗi pha)');
+  const flagged: string[] = [];
+  for (const def of MONSTER.values()) {
+    if (!def.boss || (ONLY_BOSS && def.id !== ONLY_BOSS)) continue;
+    const w = where(def.id);
+    if (!w) continue;
+    if (def.rift) {
+      console.log(`~ ${def.id} (cấp ${w.lv}, ${w.map}): khe mạch, không hạ bằng sát thương (chỉ gột tầng cháy), bỏ qua`);
+      continue;
+    }
+    PARTY = forced ? Number(arg('party', '1')) : w.dungeon ? 4 : 3;
+    TARGET = `${def.id}:${w.lv}`;
+    console.log(`${def.id} (cấp ${w.lv}, ${w.map}, ${PARTY} người, ${def.phases?.length ?? 0} lần đổi pha):`);
+    const issues = new Set<string>();
+    for (const m of methods) {
+      const rs = Array.from({ length: RUNS }, () => fightOnce(w.lv, m));
+      const total = rs.reduce((n, r) => n + r.ttk, 0) / rs.length;
+      const unkilled = rs.some((r) => r.dead);
+      const n = (def.phases?.length ?? 0) + 1;
+      const durs: string[] = [];
+      for (let k = 0; k < n; k++) {
+        const a = rs.map((r) => r.phaseAt?.[k]);
+        const b = rs.map((r) => (k + 1 < n ? r.phaseAt?.[k + 1] : r.ttk));
+        const ok = a.every((x) => x !== undefined) && b.every((x) => x !== undefined);
+        const d = ok ? a.reduce((x, _v, i) => x + ((b[i] as number) - (a[i] as number)), 0) / rs.length : NaN;
+        durs.push(Number.isNaN(d) ? '—' : d.toFixed(0));
+        // Pha cuối kết thúc khi boss chết; pha không tới được (—) không xét ngắn/dài.
+        if (!Number.isNaN(d) && d < SHORT) issues.add(`pha ${k} ngắn (${m}: ${d.toFixed(0)} s)`);
+      }
+      if (unkilled || total > LONG) issues.add(`trận dài (${m}: ${unkilled ? '> ' + cap : total.toFixed(0)} s)`);
+      console.log(`    ${m.padEnd(20)} ${unkilled ? '>' + cap : total.toFixed(0).padStart(4)} s = ${durs.join(' | ')}`);
+    }
+    if (issues.size) {
+      console.log(`  ! ${[...issues].join('; ')}`);
+      flagged.push(`${def.id}: ${[...issues].join('; ')}`);
+    }
+  }
+  if (flagged.length) console.log(`\nBoss đáng soi (${flagged.length}):\n  ` + flagged.join('\n  '));
+  process.exit(STRICT && flagged.length ? 1 : 0);
 }
 
 if (process.argv.includes('--dps')) {
