@@ -450,3 +450,14 @@ Soát theo mục "Quét boss theo pha, đủ 27 boss": chín boss không khai `m
 - **Giới hạn:** cú đập thủ tục là một động tác chung (tay vung xuống, thân chúi); chưa có phần gồng báo trước dài như clip đòn lớn của model có xương, nên "đúng mốc" nhưng chưa "đẹp". Chưa soi ảnh từng boss khi đập.
 
 **Bảng tên sát mép trên khung nhìn (28/11, sửa cho MỌI phong cách):** quái đứng sát mép trên màn hình (boss ở cảnh `boss`, hàng sói xa ở `bay_dong`) bị cắt mất dòng cấp ("tầng 29") vì nhãn là vật thể 3D nằm trên đầu quái. `apps/client/src/game/entities/labelBatch.ts`: đỉnh vẽ chặn MÉP TRÊN của nhãn không vượt `1 − TOP_MARGIN` (0,012 của nửa màn hình) bằng cách dịch nhãn xuống đúng phần thừa trong không gian clip (không đổi cỡ, độ sâu hay draw call); quái ở giữa màn hình không bị ảnh hưởng. Thanh máu trên đầu (`headBars.ts`) không đổi: nó nằm sát thân, ít bị cắt hơn; nếu sau này thấy cắt thì áp cùng công thức. A/B với bộ gốc 4 cảnh (Dạ Họa): SSIM 0,949–0,970, draw call ±4, 0 lỗi console; soi ảnh: dòng cấp và tên boss hiện đủ.
+
+
+### 29 loại chưa đo được: không còn gì để chỉnh bằng `refSpeed` (28/11)
+
+Số "94 − 67" ở lượt giao việc đã khớp: 94 loại quái = 27 boss (quét ở mục trên) + 67 tinh anh và quái thường (quét ở mục này). 29 trong 67 loại không đo được trượt chân khi chạy; soát từng con:
+
+- **21 model khối thủ tục, không có xương nên không có `refSpeed`** (nhịp chân là mã trong `MonsterModel.update`: `phase += dt·(5 + tốc độ·1,5)`): `elite_anh_hac_vuong`, `elite_hu_anh_nhan`, `elite_sa_tuong`, `elite_may_lang_vuong`, `elite_lo_thach_tuong`, `mon_tam_ma`, `mon_anh_hac`, `mon_bong_re`, `mon_hu_anh_ve`, `mon_quy_ho`, `mon_sa_no`, `mon_dong_giap_khoi`, `mon_kim_van_thu`, `mon_hoa_dieu`, `mon_lo_thach_ve`, `mon_may_lang`, `mon_bia_linh`, `mon_may_ho`, `mon_lo_xa`, `mon_thien_lo_su`, `mon_lo_anh`. Chỉnh nhịp chân của chúng là sửa hằng số chung của model khối, không phải việc theo từng quái.
+- **7 con có xương nhưng `legs: 'none'`** (rắn, chim bay, bóng không chân, không có bàn chân để đo chân trụ): `elite_xich_sa_ngo_cong`, `elite_van_hac_vuong`, `mon_ngo_cong_au`, `mon_van_hac`, `mon_bich_ngoc_kim_thien`, `mon_kim_da_bong`, `mon_kd_bong_mac_ca`.
+- **1 con đứng yên:** `mon_kinh_anh_gia` (bóng giả của Kính Nguyệt, tốc độ 0,1, không chạy; dùng chung `refSpeed` 1,3 đã chạm trần tốc độ phát của Kính Nguyệt).
+
+Kết luận: `refSpeed` của 67 loại đã chỉnh hết chỗ đo được và chỉnh được (16/17 đạt, #878); phần còn lại không có tham số này.
