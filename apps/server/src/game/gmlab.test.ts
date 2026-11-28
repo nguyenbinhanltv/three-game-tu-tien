@@ -309,3 +309,74 @@ describe('bàn cân bằng và sân boss (V2e)', () => {
     expect(b.sweepAt).toBe(at);
   });
 });
+
+describe('/gm preset: dựng nhân vật thử đúng mốc (cân bằng Đan sư/Thể tu)', () => {
+  const METHODS = { dansu: 'thanh_moc_dan_kinh', hophap: 'bat_dong_kim_than' } as const;
+  // [cấp, số nhánh đã chọn (mốc 16/20/24/28 đã tới), bậc bộ đồ kỳ vọng (0 = đồ nhiệm vụ: kiếm + bào)]
+  const CASES: [number, number, number][] = [
+    [10, 0, 0],
+    [16, 1, 2],
+    [31, 4, 5],
+  ];
+
+  for (const [br, method] of Object.entries(METHODS)) {
+    it.each(CASES)(`${br} cấp %i: đúng công pháp, nhánh, đồ có yêu cầu ≤ cấp, chiêu còn hồi chiêu (không free)`, async (lv, nBranch, tier) => {
+      const { ITEM, SKILL } = await import('@dtl/content');
+      const { skillLevelOf } = await import('./method');
+      const { sim, p, gm } = setup();
+      p.gmFree = true; // đang free từ /gm build trước đó: preset phải tắt
+      gm(`preset ${br} ${lv}`);
+      const c = p.char;
+      expect(c.level).toBe(lv);
+      expect(c.meta.method).toBe(method);
+      expect(p.gmFree).toBe(false);
+      expect(c.hp).toBe(c.mhp);
+      expect(Object.keys(c.branches[method] ?? {})).toHaveLength(nBranch);
+      const worn = Object.entries(c.equip).filter(([slot, it]) => it && slot !== 'artifact');
+      expect(worn.length).toBeGreaterThan(0);
+      for (const [, it] of worn) expect(ITEM.get(it!.id)!.reqLevel ?? 1, it!.id).toBeLessThanOrEqual(lv);
+      if (tier >= 2) {
+        // Bậc cao nhất mặc được: đủ bộ của bậc đó (không lẫn bộ bậc thấp hơn).
+        const sets = new Set(worn.map(([, it]) => ITEM.get(it!.id)!.set).filter(Boolean));
+        expect(sets.size).toBeGreaterThan(0);
+        expect([...sets].every((s) => (s ?? '').length > 0)).toBe(true);
+      }
+      // Chiêu cấp mặc định 1 (như phép đo fight:check).
+      const own = [...SKILL.values()].find((s) => s.method === method)!;
+      expect(skillLevelOf(c.meta, own.id)).toBe(1);
+      sim.tick(50);
+    });
+  }
+
+  it('chạy lại ở cấp khác thu hồi đồ cũ (không còn món quá cấp), tham số phẩm và cấp chiêu có hiệu lực, tham số sai không đổi gì', async () => {
+    const { ITEM } = await import('@dtl/content');
+    const { skillLevelOf } = await import('./method');
+    const { MAX_SKILL_LEVEL } = await import('@dtl/shared');
+    const { p, gm } = setup();
+    gm('preset dansu 31');
+    const ids31 = Object.values(p.char.equip).filter(Boolean).map((it) => it!.id);
+    expect(ids31.length).toBeGreaterThan(0);
+    gm('preset dansu 10 3 3');
+    const c = p.char;
+    for (const it of Object.values(c.equip)) if (it) expect(ITEM.get(it.id)!.reqLevel ?? 1).toBeLessThanOrEqual(10);
+    for (const id of ids31) expect(Object.values(c.equip).some((it) => it?.id === id)).toBe(false);
+    expect(Object.values(c.equip).some((it) => it && (it.inst?.q ?? -1) === 3)).toBe(true);
+    const sk = [...(await import('@dtl/content')).SKILL.values()].find((s) => s.method === 'thanh_moc_dan_kinh')!;
+    expect(skillLevelOf(c.meta, sk.id)).toBe(3);
+    expect(skillLevelOf(c.meta, sk.id)).toBeLessThanOrEqual(MAX_SKILL_LEVEL);
+    // Tham số sai: không đổi gì.
+    const lv = c.level;
+    for (const bad of ['preset', 'preset khong_co 10', 'preset dansu 3', 'preset dansu 999', 'preset dansu 10 9', 'preset dansu 10 2 9']) {
+      gm(bad);
+      expect(c.level, bad).toBe(lv);
+    }
+  });
+
+  it('tài khoản thường gõ lệnh không có tác dụng', () => {
+    const { p, gm } = setup(false);
+    const lv = p.char.level;
+    gm('preset dansu 31');
+    expect(p.char.level).toBe(lv);
+    expect(p.char.meta.method).not.toBe('thanh_moc_dan_kinh');
+  });
+});

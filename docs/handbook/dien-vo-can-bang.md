@@ -57,6 +57,31 @@ Chưa chắc chắn / giới hạn:
 
 Lượt đo 28/11: **92 loại quái, mọi hướng đều tới được, không lỗi** (không có quái kẹt hay đứng im khi gọi bằng lệnh).
 
+## Dựng nhanh nhân vật để chơi thử cân bằng: `/gm preset` (28/11)
+
+Để người dùng chơi thử Đan sư/Thể tu (và Kiếm tu để so) ở cấp 10, 16, 31 đúng đồ và chiêu mà phép đo bot/sim giả định. Chỉ tài khoản thử (`AUTH_DEV_BYPASS`) dùng được; mọi đổi đồ qua giao dịch + sổ cái như `/gm kit`.
+
+`/gm preset <kiem|hophap|dansu> <cấp> [phẩm 0-5] [chiêu 1-5]` (`kiem` = Kiếm tu, `hophap` = Thể tu, `dansu` = Đan sư; cấp từ 5 tới cấp tối đa):
+
+- đặt **cấp chính xác** và công pháp (hồi đầy máu/linh lực);
+- **đồ theo mốc**: bộ bậc cao nhất mà cả bộ mặc được ở cấp đó (bậc 1 đòi cấp 15, bậc 2: 16, bậc 3: 20, bậc 4: 24, bậc 5: 28, bậc 6: 32), phẩm mặc định 2, +0; dưới cấp 15 mặc **đồ nhiệm vụ** (kiếm + bào tốt nhất có yêu cầu ≤ cấp) như người chơi thật và như `fight:check`; đồ cũ (trừ pháp bảo) được thu hồi qua sổ cái nên chạy lại ở cấp khác không lẫn đồ;
+- **chiêu** mở theo cấp như thường; cấp chiêu mặc định 1 (giống phép đo `fight:check`; thêm tham số thứ tư để đo ở cấp chiêu khác, ví dụ 3 như nhịp lên cấp của sim);
+- **nhánh**: nhánh đầu tiên của mỗi mốc 16 / 20 / 24 / 28 đã tới (như bot); đổi bằng `/gm branch <mốc> <id>`;
+- **không bật `free`** (khác `/gm build`): chiêu còn hồi chiêu, tốn linh lực như thật; lệnh còn tắt `free` đang bật từ lần trước.
+
+Kết quả của lệnh ở ba cấp (đồ phẩm 2):
+
+| Lệnh | Công pháp | Đồ | Nhánh | Công kích / giáp / khí huyết |
+| --- | --- | --- | --- | --- |
+| `/gm preset dansu 10` | Thanh Mộc Đan Kinh | nhiệm vụ: Thanh Phong Kiếm, Linh Ti Bào | chưa tới mốc | 93 / 35 / 502 |
+| `/gm preset dansu 16` | Thanh Mộc Đan Kinh | bậc 2, 8 món (`set_phuc_mach`) | 16 `moc_linh` | 281 / 143 / 2091 |
+| `/gm preset dansu 31` | Thanh Mộc Đan Kinh | bậc 5, 8 món (`set_tinh_dan_bao`) | 16 `moc_linh`, 20 `ho_dan`, 24 `hoa_than`, 28 `truong_duoc` | 1724 / 899 / 13503 |
+| `/gm preset hophap 10` | Bất Động Kim Thân | nhiệm vụ: Thanh Phong Kiếm, Linh Ti Bào | chưa tới mốc | 92 / 41 / 650 |
+| `/gm preset hophap 16` | Bất Động Kim Thân | bậc 2, 8 món (`set_dia_giap`) | 16 `chan_dia` | 294 / 175 / 2636 |
+| `/gm preset hophap 31` | Bất Động Kim Thân | bậc 5, 8 món (`set_tan_thiet`) | 16 `chan_dia`, 20 `son_nhac`, 24 `thiet_than`, 28 `bat_dong` | 1932 / 1087 / 18438 |
+
+Gợi ý quy trình chơi thử: `/gm preset dansu 16` → ra bản đồ (hoặc `/gm dvt` vào Diễn Võ Trường) → đánh quái; để đo, `/gm dps` rồi `/gm dummy` (hình nộm) hoặc `/gm boss <id>`; so với `/gm preset kiem 16`. Công pháp khác ngoài ba lối trên chưa có preset (dùng `/gm build <công pháp> [cấp]`, không có đồ và bật `free`). Mã: `apps/server/src/game/gm/index.ts` (`case 'preset'`), test `apps/server/src/game/gmlab.test.ts`.
+
 ## Bảng tinh anh theo luật thật: `fight:check --elites`
 
 `pnpm --filter @dtl/server fight:check --elites [--runs 3] [--strict]`
