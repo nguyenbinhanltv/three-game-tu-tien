@@ -247,7 +247,8 @@ function ch5Timeline(id: MethodId) {
         console.error(`LỖI: chương 5 cấp ${r.level} ${METHOD_NAME[id]} TTK tinh anh ${r.eliteTtk.toFixed(0)}s ngoài 18–40 s`);
         process.exitCode = 1;
       }
-      if (r.eliteLostPct > 0.6) {
+      // Nới 0,6 → 0,65 (28/11, người dùng chọn): sau khi Kiếm tu đổi ×0,85 từ cấp 8, tinh anh bãi cấp 28 hạ chậm hơn (21 → 25 giây) nên Kiếm tu mất 62% (Hồn tu 58%).
+      if (r.eliteLostPct > 0.65) {
         console.error(`LỖI: chương 5 cấp ${r.level} ${METHOD_NAME[id]} đánh tinh anh mất ${pct(r.eliteLostPct)} máu`);
         process.exitCode = 1;
       }
