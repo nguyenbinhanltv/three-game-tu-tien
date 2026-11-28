@@ -13,6 +13,8 @@ interface Cfg {
   crystal?: boolean;
   /** Cây/tre cao: mờ khi che nhân vật (xem `sight` ở props.ts). */
   sight?: boolean;
+  /** LOD và cắt khung nhìn theo từng bản (xem `dense` ở props.ts). */
+  dense?: boolean;
 }
 
 const SMALL: Cfg = { range: 110, lod: [20, 55], decor: true };
@@ -30,7 +32,7 @@ const TC_NAMES: Record<string, Cfg> = {
   lo_luyen_dan: MEDIUM,
   chuong_dong: LARGE,
   trong: MEDIUM,
-  den_da: { range: 260, lod: [40, 110] },
+  den_da: { range: 260, lod: [40, 110], dense: true },
   lu_huong: MEDIUM,
   ban_ghe_da: MEDIUM,
   // chợ / làng

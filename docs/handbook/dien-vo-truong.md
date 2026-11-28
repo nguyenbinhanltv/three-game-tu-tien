@@ -551,3 +551,21 @@ Mọi lệnh `/gm` của server (`apps/server/src/game/gm/index.ts`) thành hàn
 | Di chuyển | tp, tele, dvt | chờ |
 | Thế giới | qdone, qev, scene | chờ |
 | Ở Cân bằng | dps, dummy, boss, phase, hp, cast | đã có (#879) |
+
+### Vân Lam xuống dưới 80% trần tam giác (28/11, chiều muộn, không đổi asset)
+
+`roomperf` thêm `--spots tong_mon,cong` (đo thêm ở điểm trong `places.json`), `--snap 1` (ảnh từng điểm) và trong `--break 1`: số tam giác lượt bóng tính theo lưới `castShadow` trong hộp bóng, và lượt vẽ THẬT theo từng vật (bọc `renderer.info.update`). Nên chạy kèm `--query "style=dahoa&shadowhz=0"` để bóng vẽ mọi khung (số tam giác ổn định). Phát hiện: lưới `frustumCulled=false` (kiến trúc tông môn 270 nghìn tam giác, vài lưới 20–90 nghìn trải cả tông môn) bị vẽ đủ ở cả lượt cảnh và lượt bóng; cỏ Họa Cảnh (`env-grass-painted`) tốn ~350 nghìn tam giác mỗi khung (chưa động tới, đề xuất cho tuyến Họa Cảnh).
+
+| Điểm đo (Dạ Họa 720p) | Trước | + bóng trúc | + chia ô kiến trúc | + LOD đèn đá |
+| --- | --- | --- | --- | --- |
+| Vân Lam, sân tông môn (tam giác) | 1842k | 1806k | 1466k | **1453k (73%)** |
+| Vân Lam, điểm `cong` | 2139k (**vượt trần**) | 2103k | 1559k | **1558k (78%)** |
+| Lượt bóng (sân / cổng) | 358k / 352k | 322k / 316k | 163k / 43k | giữ |
+| Draw call (sân / cổng) | 171 / 220 | 170 / 219 | 220 / 205 | 222 / 206 |
+| Đoạn Mạch (đối chứng) | 701k, 70 draw | | | 692k, 71 draw |
+
+- **Bóng thân trúc vườn** tắt (`lacKiemGarden.ts`): -36 nghìn lượt bóng.
+- **Chia lưới `arch_sect` theo ô 32 m lúc nạp** (`world/meshCells.ts`, `levelLoad.ts`): mỗi tam giác sang lưới của ô chứa trọng tâm, ô < 600 tam giác gộp vào ô lớn gần nhất; lưới con bật cắt khung nhìn nên lượt cảnh và lượt bóng bỏ phần ngoài khung. Cái giá: draw call +50 (170 → 220, vẫn dưới 300).
+- **Đèn đá `prop_den_da`/`prop_tc_den_da` chuyển sang `dense`** (LOD và cắt khung theo từng bản, trước là theo tâm ô 128 m): -13 nghìn; nhỏ vì phần đáng kể của bước này nằm ở kiến trúc.
+- A/B ảnh (3 điểm, so bản gốc): sai khác trung bình ≤ 0,9/255, điểm lệch > 20 chỉ 0,6–0,9% (cỏ và dither). CPU khung dao động 4,4–8,9 ms theo tải máy (máy dùng chung), không rút ra hồi quy; draw call là phần tăng thật.
+- Còn lại nếu cần thêm dư địa: cỏ Họa Cảnh (~350 nghìn/khung, vòng `wide` rộng hơn khung camera chéo), đưa instancing lớn của `lacKiemSky` (kiếm đài 84 nghìn, sky-props 84 nghìn) và `glb-prop_tc_da_reu` (45 nghìn) vào ô cắt khung.
