@@ -5,6 +5,8 @@ description: Viết shader và hiệu ứng hình ảnh cho Đạp Thiên Lộ b
 
 # Shader và VFX bằng TSL
 
+Kỹ thuật bổ sung (tiếng Anh, MIT, 28/11): skill `threejs-aaa-vfx-builder` (5 nhịp thời gian, SDF vòng/chớp/sigil, khói fbm + xói mòn, ruy-băng, hậu kỳ quang học; `assets/vfx-kit/*.ts` là GLSL, chỉ tham khảo và port sang TSL), `threejs-aaa-graphics-builder` (vật liệu, chấm 10 hạng mục) và `threejs-debug-profiler` (NaN/đen bloom, đo). Quy ước dự án (TSL, HPL2, cổng `pnpm shots dienvo --gate/--fxperf`) thắng khi xung đột.
+
 Đọc theo thứ tự: nguyên tắc → phong cách → kiến trúc VFX → thêm hiệu ứng chiêu mới → đặc tả → ngân sách → bẫy → kiểm.
 Chi tiết từng đợt: `docs/vfx-v1/` (nền tảng), `vfx-v2/` (Kiếm tu), `vfx-v3/` (Hộ pháp, Đan sư), `vfx-v4/` (pháp tướng, đột phá, độ kiếp), `vfx-v5/` (quái, boss), `docs/k6-vfx/` (ba pha K-6, gộp draw call).
 

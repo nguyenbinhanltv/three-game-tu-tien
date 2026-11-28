@@ -7,7 +7,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
-const SKIP_DIRS = ['.claude/skills/guizang-game-skill'];
+const SKIP_DIRS = ['.claude/skills/guizang-game-skill', '.claude/skills/threejs-aaa-vfx-builder', '.claude/skills/threejs-aaa-graphics-builder', '.claude/skills/threejs-debug-profiler'];
 /** Thư mục gốc để thử khi đường dẫn viết tắt (`game/engine.ts`, `ui/store.ts`, `levels/van_lam.json`...). */
 const BASES = ['', 'apps/client/src', 'apps/client', 'apps/server/src', 'apps/server', 'apps/bot-client/src', 'packages', 'packages/shared/src', 'packages/content', 'packages/content/data', 'packages/content/src', 'tools', 'assets', 'docs'];
 /** File chỉ có sau khi chạy lệnh (không nằm trong git). */

@@ -121,6 +121,7 @@ Skill trong `.claude/skills/`, subagent trong `.claude/agents/`. Dùng skill tư
 - `colyseus-server`: rooms, schema, xác thực input, AOI, lưu DB
 - `game-content`: thêm quái, skill, vật phẩm, nhiệm vụ, cảnh giới, cân bằng
 - `perf-budget`: đo và giữ ngân sách hiệu năng
+- `threejs-aaa-vfx-builder`, `threejs-aaa-graphics-builder`, `threejs-debug-profiler` (bên ngoài, MIT, `majidmanzarpour/threejs-game-skills`, tiếng Anh; chép 28/11 bỏ phần gọi API ngoài): kỹ thuật VFX (5 nhịp, SDF vòng/chớp, khói fbm, ruy-băng, hậu kỳ quang học), kỹ thuật vật liệu/chấm điểm hình ảnh, gỡ lỗi + đo hiệu năng. Mã GLSL trong `vfx-kit` chỉ tham khảo, port sang TSL; khi xung đột quy ước dự án thắng (mỗi SKILL.md có mục "Áp dụng cho Đạp Thiên Lộ")
 - `playtest`: chạy cả stack local, bot, kiểm tra trong trình duyệt
 - `guizang-game-skill` (bên ngoài, AGPL-3.0, tiếng Trung): chỉ để tham khảo khi làm cảm giác đòn đánh, animation IK, VFX, camera, lỗi input. Viết cho game offline một file HTML nên khi xung đột thì quy ước dự án thắng (WebGPU/TSL, server quyết định, i18n, ngân sách). Không chép code từ repo gốc
 - MCP `blender` (`.mcp.json`, `uvx mcp-for-blender`): điều khiển Blender đang mở để xem và thử dựng. Pipeline chính vẫn là script headless `tools/blender/` (xem `blender-pipeline`)
