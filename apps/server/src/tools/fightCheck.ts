@@ -19,6 +19,8 @@
 //     (bãi ngoài thế giới: nhóm 3 người, phó bản: nhóm 4; `--party` ép số người), nhóm toàn công pháp `--methods` (mặc định kiếm tu, Cổ Thần, đan sư:
 //     chặn trên, giữa, dưới), bot bất tử xoay vòng chiêu như ở `--god`. Ghi lúc boss vào từng pha (qua mốc máu của `phases`) nên có cả cơ chế thật
 //     (giáp, chui đất, miễn sát thương, phản đòn). Đánh dấu pha < 15 s ("ngắn": không kịp thấy cơ chế mới) và trận > 300 s hoặc không hạ được trong 600 s ("dài").
+//     What-if (ghi đè trong bộ nhớ, không ghi file): `--hp id:hpMul,id:hpMul` đổi máu boss, `--phase id:số_pha:ngưỡng` đổi ngưỡng máu vào pha
+//     (số_pha tính từ 1), ví dụ `--hp boss_thach_tam_khoi_vuong:78 --phase boss_thon_mach_ngo_cong_vuong:3:0.2`.
 //   Cấp thử từ 32 trở lên mặc bộ 7 ô bậc 5 phẩm Huyền theo ilvl = cấp; `--tier 6` mặc bộ bậc 6 (mốc mặc trọn; người chơi thật pha dần, xem `CH6_GEAR_FRAC` ở sim.ts). Ở cấp 43 với `--tier 6`: Kiếm tu 3,0 s, còn lại 3,1–5,8 s.
 process.env.DB_FILE = ':memory:';
 
@@ -54,7 +56,7 @@ let TARGET = arg('target', '');
 let PARTY = Number(arg('party', '1'));
 const PULL = Number(arg('pull', '2'));
 const NOGEAR = process.argv.includes('--nogear');
-/** `--only-boss <id>`: chỉ đo một boss trong `--bossphases`. */
+/** `--only-boss <id[,id…]>`: chỉ đo các boss này trong `--bossphases`. */
 const ONLY_BOSS = arg('only-boss', '');
 /** `--god`: người chơi không chết (hồi đầy máu mỗi nhịp), để đo thời gian hạ mục tiêu thuần theo sát thương (boss mà bot đứng yên bị đánh chết trước khi hạ được). */
 let GOD = process.argv.includes('--god');
@@ -330,6 +332,18 @@ if (process.argv.includes('--elites')) {
 
 if (BOSSPH) {
   GOD = true;
+  for (const kv of arg('hp', '').split(',').filter(Boolean)) {
+    const [id, v] = kv.split(':');
+    const d = MONSTER.get(id!);
+    if (!d || !(Number(v) > 0)) throw new Error(`--hp: ${kv}`);
+    (d as { hpMul: number }).hpMul = Number(v);
+  }
+  for (const kv of arg('phase', '').split(',').filter(Boolean)) {
+    const [id, k, v] = kv.split(':');
+    const ph = MONSTER.get(id!)?.phases?.[Number(k) - 1];
+    if (!ph || !(Number(v) > 0 && Number(v) < 1)) throw new Error(`--phase: ${kv}`);
+    (ph as { hp: number }).hp = Number(v);
+  }
   const methods = arg('methods', 'lac_kiem_quyet,co_than_quyet,thanh_moc_dan_kinh').split(',');
   const forced = process.argv.includes('--party');
   const SHORT = 15;
@@ -347,7 +361,7 @@ if (BOSSPH) {
   console.log('Cột: công pháp: tổng giây = pha0 | pha1 | ...   (giây ở mỗi pha)');
   const flagged: string[] = [];
   for (const def of MONSTER.values()) {
-    if (!def.boss || (ONLY_BOSS && def.id !== ONLY_BOSS)) continue;
+    if (!def.boss || (ONLY_BOSS && !ONLY_BOSS.split(',').includes(def.id))) continue;
     const w = where(def.id);
     if (!w) continue;
     if (def.rift) {
