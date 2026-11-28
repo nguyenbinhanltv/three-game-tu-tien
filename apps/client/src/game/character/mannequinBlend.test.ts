@@ -22,6 +22,8 @@ function fake(): MannequinCharacter {
   for (const band of ['Walk', 'Jog', 'Sprint']) for (const d of ['Bwd', 'StrafeL', 'StrafeR']) names.push(`${band}_${d}_Loop`);
   const clips = new Map(names.map((n) => [n, clip(n, 1, 'pelvis', 'spine_02')]));
   clips.set('Shot', clip('Shot', 0.5, 'pelvis', 'spine_02'));
+  clips.set('Hit_Knockback', clip('Hit_Knockback', 0.5, 'pelvis', 'spine_02'));
+  clips.set('LayToIdle', clip('LayToIdle', 0.6, 'pelvis', 'spine_02'));
   clips.set('Shot2', clip('Shot2', 0.5, 'pelvis', 'spine_02'));
   clips.set('Sword_Regular_A', clip('Sword_Regular_A', 0.8, 'pelvis', 'spine_02'));
   clips.set('Sword_Regular_B', clip('Sword_Regular_B', 0.8, 'pelvis', 'spine_02'));
@@ -87,6 +89,30 @@ const weightOf = (m: MannequinCharacter, name: string): number => {
   for (const a of priv(m).mixer._actions) if (a.getClip().name === name && a.isScheduled() && a.enabled) return a.getEffectiveWeight();
   return 0;
 };
+
+describe('MannequinCharacter: clip nối mờ chéo', () => {
+  it('ngã → đứng dậy: LayToIdle mờ vào chồng lên đuôi Hit_Knockback, không có bước nhảy trọng số cứng, tổng không thiếu', () => {
+    const m = fake();
+    const acc = run(m, anim(), 0.2);
+    m.knockdown();
+    let last = 0;
+    let worstJump = 0;
+    let overlap = false;
+    for (let i = 0; i < 240; i++) {
+      m.update(1 / 60, anim());
+      const w = weightOf(m, 'LayToIdle');
+      worstJump = Math.max(worstJump, Math.abs(w - last));
+      last = w;
+      if (w > 0.05 && weightOf(m, 'Hit_Knockback') > 0.05) overlap = true;
+      const s = sums(m);
+      acc.min = Math.min(acc.min, s.u, s.l);
+    }
+    expect(overlap).toBe(true);
+    expect(worstJump).toBeLessThan(0.45);
+    expect(acc.min).toBeGreaterThan(0.97);
+    expect(priv(m).shots.size).toBe(0);
+  });
+});
 
 describe('MannequinCharacter: tổng trọng số không bao giờ tụt dưới 1', () => {
   it('đứng → chạy → đứng: mờ chéo giữa hai clip nền bù nhau đúng', () => {
