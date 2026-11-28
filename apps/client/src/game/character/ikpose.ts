@@ -527,6 +527,9 @@ function setWorldQ(bone: THREE.Object3D, q: THREE.Quaternion): void {
   refreshWorld(bone);
 }
 
+/** Góc gối (sin so với trục chân) dưới mức này thì `solveLeg` bắt đầu trộn hướng gập `hint` (≈ 20°). */
+export const STRAIGHT_KNEE = 0.35;
+
 /**
  * IK hai đốt không cấp phát cho chân (bám đất mỗi khung): đưa `end` tới `target`, gối về phía `pole`; bàn chân giữ hướng
  * `endQ`. Dùng thẳng `matrixWorld` (đã làm mới), không gọi lại chuỗi cha như `getWorldPosition`.
@@ -538,6 +541,7 @@ export function solveLeg(
   target: THREE.Vector3,
   pole: THREE.Vector3,
   endQ: THREE.Quaternion,
+  hint?: THREE.Vector3,
 ): void {
   const a = _sa.setFromMatrixPosition(upper.matrixWorld);
   const bp = _sb.setFromMatrixPosition(mid.matrixWorld);
@@ -550,6 +554,23 @@ export function solveLeg(
   else _dir.copy(bp).sub(a).normalize();
   const cosA = THREE.MathUtils.clamp((l1 * l1 + d * d - l2 * l2) / (2 * l1 * d), -1, 1);
   _perp.copy(pole).addScaledVector(_dir, -pole.dot(_dir));
+  // Chân gần duỗi thẳng: thành phần vuông góc của `pole` (vectơ gối của clip) nhỏ và nhiễu, hướng gập gối lật theo nó (đo 28/11 trên file clip: chạy lùi, pha 0,52 và
+  // 0,62, đích gần hơn chân clip 3 cm làm đùi lật 30° trong khi clip đổi 1°). Có `hint` (hướng gối phải gập tới, vd. phía trước thân) thì pha trộn dần vào khi góc gối
+  // lệch trục dưới `STRAIGHT_KNEE` (sin), nên hướng gập ổn định và liên tục.
+  if (hint) {
+    const pl = pole.length() || 1;
+    const sinK = Math.sqrt(_perp.lengthSq()) / pl;
+    const w = THREE.MathUtils.clamp((STRAIGHT_KNEE - sinK) / STRAIGHT_KNEE, 0, 1);
+    if (w > 0) {
+      _w1.copy(hint).addScaledVector(_dir, -hint.dot(_dir));
+      if (_w1.lengthSq() > 1e-8) {
+        _w1.normalize();
+        if (_perp.lengthSq() > 1e-8) _perp.normalize();
+        else _perp.copy(_w1);
+        _perp.lerp(_w1, w);
+      }
+    }
+  }
   if (_perp.lengthSq() < 1e-8) _perp.set(0, 0, 1).addScaledVector(_dir, -_dir.z);
   _perp.normalize();
   _elb
