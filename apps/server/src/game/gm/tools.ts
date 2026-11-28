@@ -117,7 +117,7 @@ export function parsePlus(v: string | undefined, max: number): number | null {
   return m ? Math.min(max, Number(m[1])) : null;
 }
 
-const fold = (s: string): string => s.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D').toLowerCase();
+export const fold = (s: string): string => s.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D').toLowerCase();
 
 interface FindHit {
   kind: 'item' | 'skill' | 'set' | 'mon' | 'method';

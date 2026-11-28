@@ -38,6 +38,8 @@ import {
   type TribId,
   xpNeed,
   sanitizeStars,
+  type GmErr,
+  type GmState,
 } from '@dtl/shared';
 import {
   ARTIFACT,
@@ -302,6 +304,55 @@ export class GmSystem {
     return sc;
   }
 
+  /** Kết quả đang gom của `exec` (kênh C.GM); null khi lệnh đi qua chat. */
+  private cap: { lines: string[]; ok: boolean; e?: GmErr; d?: unknown } | null = null;
+
+  /** Gắn dữ liệu có cấu trúc vào kết quả của `exec` (bỏ qua khi lệnh đi qua chat). */
+  private data(d: unknown): void {
+    if (this.cap) this.cap.d = d;
+  }
+
+  /**
+   * Chạy một lệnh GM và trả kết quả CÓ CẤU TRÚC cho kênh C.GM: các dòng in ra (không gửi chat), thành công hay lỗi (+ mã lỗi), dữ liệu kèm theo.
+   * Chỉ gọi cho tài khoản thử (nơi gọi kiểm `p.dev`); đường chạy là đúng `run`, nên mọi kiểm tham số/quyền/phòng giữ nguyên.
+   */
+  exec(p: PlayerEnt, a: string[]): { ok: boolean; e?: GmErr; m: string[]; d?: unknown } {
+    const prev = this.cap;
+    const cap: NonNullable<GmSystem['cap']> = { lines: [], ok: true };
+    this.cap = cap;
+    try {
+      this.run(p, a);
+    } finally {
+      this.cap = prev;
+    }
+    return { ok: cap.ok, ...(cap.e ? { e: cap.e } : {}), m: cap.lines, ...(cap.d !== undefined ? { d: cap.d } : {}) };
+  }
+
+  /** Trạng thái phòng thử/nhân vật cho giao diện (công tắc, số đo, quái đã gọi). */
+  state(p: PlayerEnt): GmState {
+    const lab = this.c.lab();
+    const lv = this.c.level();
+    return {
+      level: p.char.level,
+      levelId: lv.id,
+      practice: !!lv.dungeon?.practice,
+      method: p.char.meta.method ?? null,
+      branches: Object.fromEntries(Object.entries(picksOf(p.char) ?? {}).map(([tier, id]) => [tier, String(id)])),
+      stars: p.char.meta.stars ?? 0,
+      god: p.god,
+      free: !!p.gmFree,
+      freeze: lab.gmFreeze,
+      lockhp: lab.gmLockHp,
+      phaseLock: lab.gmPhaseLock,
+      dummy: this.dummy,
+      loop: this.loop,
+      meter: labMeter.active(p),
+      spawned: [...this.spawned]
+        .filter((m) => m.state !== MS_DEAD)
+        .map((m) => ({ id: m.id, def: m.def.id, hp: m.s.hp, mhp: m.s.mhp, phase: m.phase, state: m.state })),
+    };
+  }
+
   /** Quái gọi bằng `/gm spawn` (để `spawn clear` dọn). */
   readonly spawned = new Set<MonEnt>();
   /** `/gm dummy`: quái gọi bằng lệnh là hình nộm (cạn máu thì tính một lần hạ rồi hồi đầy). */
@@ -356,6 +407,7 @@ export class GmSystem {
   private meterSay(p: PlayerEnt): void {
     const r = labMeter.report(p);
     if (!r) return;
+    this.data(r);
     for (const line of meterLines(
       r,
       (id) => (SKILL.has(id) ? skillName(id) : id),
@@ -420,13 +472,25 @@ export class GmSystem {
   /** Lệnh GM, chỉ dành cho tài khoản dev khi AUTH_DEV_BYPASS bật. */
   run(p: PlayerEnt, a: string[]): void {
     const c = p.char;
-    const say = (m: string) => this.c.sys(p, 'sys.gm', { m }, 'info');
+    // Kênh C.GM (`exec`): gom dòng in ra thay vì gửi chat; `fail`/`usage` đánh dấu lỗi (ngoài kênh đó chúng chỉ in như `say`).
+    const say = (m: string): void => {
+      if (this.cap) this.cap.lines.push(m);
+      else this.c.sys(p, 'sys.gm', { m }, 'info');
+    };
+    const fail = (m: string, e: GmErr = 'fail'): void => {
+      if (this.cap) {
+        this.cap.ok = false;
+        this.cap.e ??= e;
+      }
+      say(m);
+    };
+    const usage = (m: string): void => fail(m, 'usage');
     switch (a[0]) {
       case 'level':
       case 'realm': {
         // `level N` hoặc `realm nk1…nk15 | tc | tc1…tc3`: cùng một đường đặt cấp.
         const lv = a[0] === 'realm' ? parseRealmCode(a[1] ?? '') : Math.max(1, Math.min(MAX_LEVEL, Number(a[1]) | 0));
-        if (lv === null) return say('realm nk1…nk15 | tc | tc1…tc3');
+        if (lv === null) return usage('realm nk1…nk15 | tc | tc1…tc3');
         this.setLevel(p, lv);
         return say('level = ' + c.level);
       }
@@ -434,7 +498,7 @@ export class GmSystem {
         // /gm dao <kim|moc|thuy|hoa|tho|loi|clear>: đặt hoặc xóa Đạo (TN-3), không cần đủ cấp Vấn Đỉnh.
         if (a[1] === 'clear') delete c.meta.dao;
         else if (isRootId(a[1])) c.meta.dao = a[1];
-        else return say('dao ' + ROOT_IDS.join(' | ') + ' | clear');
+        else return usage('dao ' + ROOT_IDS.join(' | ') + ' | clear');
         c.recalc();
         c.charDirty = true;
         return say('dao = ' + (c.meta.dao ?? 'không'));
@@ -442,7 +506,7 @@ export class GmSystem {
       case 'kieu': {
         // /gm kieu <0..9>: đặt số cầu Cửu Kiều đã qua (TN-7) để thử; không phát thưởng, không đổi cấp.
         const n = Number(a[1]);
-        if (!Number.isInteger(n) || n < 0 || n > 9) return say('kieu 0..9');
+        if (!Number.isInteger(n) || n < 0 || n > 9) return usage('kieu 0..9');
         c.meta.kieu = n;
         c.recalc();
         c.charDirty = true;
@@ -451,11 +515,9 @@ export class GmSystem {
       }
       case 'trib':
         // /gm trib [id]: kích độ kiếp ngay (mặc định Trúc Cơ: Ngưng Khí 15 viên mãn + Trúc Cơ Đan nếu thiếu).
-        return say(
-          a[1] && !(a[1] in TRIB_DEFS)
-            ? `trib ${Object.keys(TRIB_DEFS).join(' | ')}`
-            : this.tribulation(p, (a[1] as TribId | undefined) ?? 'truc_co', a[2] ? Number(a[2]) : undefined),
-        );
+        if (a[1] && !(a[1] in TRIB_DEFS)) return usage(`trib ${Object.keys(TRIB_DEFS).join(' | ')}`);
+        const tr = this.tribulation(p, (a[1] as TribId | undefined) ?? 'truc_co', a[2] ? Number(a[2]) : undefined);
+        return tr.startsWith('trib: không') ? fail(tr) : say(tr);
       case 'xp':
         this.c.giveXp(p, Math.max(0, Number(a[1]) | 0));
         return;
@@ -467,7 +529,7 @@ export class GmSystem {
         const q = Math.min(QUALITY_COUNT - 1, Math.max(0, Number(a[2] ?? 0) | 0));
         const il = Math.max(1, Number(a[3] ?? c.level) | 0);
         const ok = c.tx('gm', null, (d) => d.addRolled(a[1] ?? '', il, q as Quality));
-        return say(ok ? `đã roll ${a[1]} phẩm ${q} ilvl ${il}` : 'roll <mẫu trang bị> [phẩm 0-5] [ilvl]');
+        return ok ? say(`đã roll ${a[1]} phẩm ${q} ilvl ${il}`) : usage('roll <mẫu trang bị> [phẩm 0-5] [ilvl]');
       }
       case 'plus': {
         // Đặt cấp cường hóa của món đang mặc ở ô `a[2]` (mặc định pháp kiếm) để thử VFX +7/+10 và rớt cấp.
@@ -481,7 +543,7 @@ export class GmSystem {
           return true;
         });
         if (ok) c.recalc();
-        return say(ok ? `${slot} +${n}` : 'plus <0-10> [ô]: ô chưa mặc đồ');
+        return ok ? say(`${slot} +${n}`) : fail('plus <0-10> [ô]: ô chưa mặc đồ');
       }
       case 'art': {
         // /gm art <id pháp bảo> [cấp 1-5]: có và đeo luôn (không cần chế); `art off` cất vào túi. Chỉ để thử.
@@ -496,9 +558,9 @@ export class GmSystem {
             return true;
           });
           if (ok) c.recalc();
-          return say(ok ? 'đã cất pháp bảo' : 'túi đầy');
+          return ok ? say('đã cất pháp bảo') : fail('túi đầy');
         }
-        if (!ARTIFACT.has(a[1] ?? '')) return say('art ' + [...ARTIFACT.keys()].join(' | ') + ' | off');
+        if (!ARTIFACT.has(a[1] ?? '')) return usage('art ' + [...ARTIFACT.keys()].join(' | ') + ' | off');
         const ok = c.tx('gm:art', null, (d) => {
           const prev = d.equip.artifact;
           if (prev) {
@@ -510,7 +572,7 @@ export class GmSystem {
           d.bump(a[1] ?? '', 1);
           return true;
         });
-        if (!ok) return say('không đeo được');
+        if (!ok) return fail('không đeo được');
         const lv = Math.max(1, Math.min(ARTIFACT_MAX_LEVEL, Number(a[2] ?? 1) | 0));
         c.meta.art ??= {};
         c.meta.art[a[1] ?? ''] = { lv, qi: 0 };
@@ -520,7 +582,7 @@ export class GmSystem {
       }
       case 'give': {
         const ok = c.tx('gm', null, (d) => d.add(a[1] ?? '', Math.max(1, Number(a[2] ?? 1) | 0)));
-        return say(ok ? 'đã thêm ' + a[1] : 'không thêm được');
+        return ok ? say('đã thêm ' + a[1]) : fail('không thêm được');
       }
       case 'set': {
         // `set <id bộ> [số món]`: roll rồi mặc luôn các món của bộ (Địa phẩm) để thử hiệu ứng 2/4 món và màu áo; `set off` cởi hết.
@@ -538,33 +600,31 @@ export class GmSystem {
             return true;
           });
           if (ok) c.recalc();
-          return say(t(ok ? 'gm.msg.set_off' : 'gm.msg.bag_full'));
+          return ok ? say(t('gm.msg.set_off')) : fail(t('gm.msg.bag_full'));
         }
         const st = SET.get(a[1] ?? '');
-        if (!st) return say('set off | ' + SETS.map((x) => x.id).join(' | ') + ' [số món]');
+        if (!st) return usage('set off | ' + SETS.map((x) => x.id).join(' | ') + ' [số món]');
         const n = Math.max(1, Math.min(st.pieces.length, Number(a[2] ?? st.pieces.length) | 0));
-        return say(
-          this.wearSet(p, st, n)
-            ? t('gm.msg.set_worn', { n, total: st.pieces.length, name: t('set.' + st.id + '.name') })
-            : t('gm.msg.bag_full'),
-        );
+        return this.wearSet(p, st, n)
+          ? say(t('gm.msg.set_worn', { n, total: st.pieces.length, name: t('set.' + st.id + '.name') }))
+          : fail(t('gm.msg.bag_full'));
       }
       case 'tp': {
         // `tp x z` hoặc `tp <địa điểm>` (bảng packages/content/data/places.json, cùng bảng với ?at=).
         if (a.length === 2) {
           const pl = PLACE.get(a[1] ?? '');
-          if (!pl) return say('tp ' + this.c.placeIds().join(' | '));
+          if (!pl) return usage('tp ' + this.c.placeIds().join(' | '));
           if (pl.level !== this.c.level().id) {
             const ok = !LEVELS[pl.level]?.dungeon && this.c.transferLevel(p, pl.level, { x: pl.x, z: pl.z }, { force: true });
-            return say(ok ? `tp ${pl.id} → ${pl.level}` : `${pl.id} thuộc ${pl.level}, không chuyển được`);
+            return ok ? say(`tp ${pl.id} → ${pl.level}`) : fail(`${pl.id} thuộc ${pl.level}, không chuyển được`);
           }
           this.c.teleportTo(p, pl.x, pl.z);
           return say(`tp ${pl.id} (${pl.x}, ${pl.z})`);
         }
-        if (a.length === 1) return say('tp x z | tp ' + this.c.placeIds().join(' | '));
+        if (a.length === 1) return usage('tp x z | tp ' + this.c.placeIds().join(' | '));
         const x = Number(a[1]);
         const z = Number(a[2]);
-        if (!Number.isFinite(x) || !Number.isFinite(z)) return say('tp x z | tp <địa điểm>');
+        if (!Number.isFinite(x) || !Number.isFinite(z)) return usage('tp x z | tp <địa điểm>');
         this.c.teleportTo(p, x, z);
         return say(`tp ${x} ${z}`);
       }
@@ -578,7 +638,7 @@ export class GmSystem {
             : QUEST.has(a[1] ?? '')
               ? [a[1]!]
               : [];
-        if (!ids.length) return say('qdone <id nhiệm vụ> | chuong2');
+        if (!ids.length) return usage('qdone <id nhiệm vụ> | chuong2');
         for (const id of ids) {
           delete p.char.quests.active[id];
           if (!p.char.quests.done.includes(id)) p.char.quests.done.push(id);
@@ -604,7 +664,7 @@ export class GmSystem {
       case 'branch': {
         // /gm branch <mốc> <id> | reset: chọn nhánh công pháp ngay (bỏ kiểm cảnh giới/giao chiến) hoặc xóa hết nhánh, không tốn linh thạch.
         const mdef = methodOf(c.meta);
-        if (!mdef) return say('chưa chọn công pháp');
+        if (!mdef) return fail('chưa chọn công pháp');
         if (a[1] === 'reset') {
           c.tx('gm:branch:reset', null, (d) => d.clearBranches(mdef.id));
           p.mth.dirty = true;
@@ -612,7 +672,7 @@ export class GmSystem {
         }
         const tier = Number(a[1]);
         const br = mdef.branches.find((b) => b.tier === tier && b.id === a[2]);
-        if (!br) return say('branch <mốc> <id>: ' + mdef.branches.map((b) => `${b.tier} ${b.id}`).join(' | '));
+        if (!br) return usage('branch <mốc> <id>: ' + mdef.branches.map((b) => `${b.tier} ${b.id}`).join(' | '));
         c.tx('gm:branch:pick', null, (d) => d.setBranch(mdef.id, br.tier, br.id));
         p.mth.dirty = true;
         return say(`nhánh ${br.tier} = ${br.id}; đang có: ${JSON.stringify(picksOf(c) ?? {})}`);
@@ -620,7 +680,7 @@ export class GmSystem {
       case 'res': {
         // /gm res [n]: đặt tài nguyên riêng của công pháp (mặc định đầy).
         const rdef = resourceOf(c.meta);
-        if (!rdef) return say('chưa chọn công pháp');
+        if (!rdef) return fail('chưa chọn công pháp');
         p.mth.res = Math.max(0, Math.min(rdef.max, a[1] === undefined ? rdef.max : Number(a[1]) || 0));
         // Giờ của sim là `Date.now()` mỗi tick.
         p.mth.resAt = Date.now();
@@ -652,7 +712,7 @@ export class GmSystem {
         // /gm variant <id chiêu> <a|b>: chọn biến thức ngay (không cần cấp 3, ngoài combat, hồi chờ) để chụp ảnh/thử.
         const sk = SKILL.get(a[1] ?? '');
         if (!sk || !VARIANTS[sk.id] || (a[2] !== 'a' && a[2] !== 'b'))
-          return say('variant <skill> a|b — skill: ' + Object.keys(VARIANTS).join(' | '));
+          return usage('variant <skill> a|b — skill: ' + Object.keys(VARIANTS).join(' | '));
         if (skillLevelOf(c.meta, sk.id) < VARIANT_MIN_LEVEL) setSkillLevel(c.meta, sk.id, VARIANT_MIN_LEVEL);
         c.meta.skillVar ??= {};
         c.meta.skillVar[sk.id] = a[2];
@@ -661,7 +721,7 @@ export class GmSystem {
       }
       case 'method': {
         // /gm method <id> [cấp chiêu]: chọn công pháp ngay (không cần tầng/NPC/linh thạch); cấp chiêu áp cho mọi chiêu mở.
-        if (!METHOD.has(a[1] ?? '')) return say('method ' + [...METHOD.keys()].join(' | '));
+        if (!METHOD.has(a[1] ?? '')) return usage('method ' + [...METHOD.keys()].join(' | '));
         c.meta.method = a[1] ?? '';
         grantPathOf(c.meta);
         const lv = Math.max(1, Math.min(MAX_SKILL_LEVEL, Number(a[2] ?? 1) | 0));
@@ -674,7 +734,7 @@ export class GmSystem {
       case 'dye': {
         // Thử đổi màu áo lúc đang chơi (người khác thấy qua schema); vẫn kiểm như lúc tạo nhân vật.
         const ap = parseAppearance(APPEARANCE, { g: c.appearance.g, dye: a[1], hair: c.appearance.hair });
-        if (!ap) return say('dye ' + APPEARANCE.dyes.map((d) => d.id).join(' | '));
+        if (!ap) return usage('dye ' + APPEARANCE.dyes.map((d) => d.id).join(' | '));
         c.setAppearance(ap);
         p.s.g = ap.g;
         p.s.dye = ap.dye;
@@ -722,7 +782,7 @@ export class GmSystem {
           return say(t('gm.msg.spawn_clear', { n }));
         }
         const def = MONSTER.get(a[1] ?? '');
-        if (!def) return say(t('gm.msg.no_mon', { id: a[1] ?? '' }));
+        if (!def) return fail(t('gm.msg.no_mon', { id: a[1] ?? '' }));
         const n = Math.max(1, Math.min(GM_SPAWN_MAX, Math.floor(Number(a[2]) || 1)));
         const fwd = p.s.yaw;
         // Phòng tập: quái thường xếp vòng trong sàn đấu, boss vào hố boss (luôn nằm trong khung camera, không phụ thuộc hướng người gọi).
@@ -745,7 +805,10 @@ export class GmSystem {
       }
       case 'help': {
         // /gm help [lệnh]: cú pháp + ví dụ mọi lệnh (chuỗi ở i18n `gm.cmd.*`).
-        if (a[1]) return say(helpLine(a[1]) ?? t('gm.msg.help_none', { c: a[1] }));
+        if (a[1]) {
+          const hl = helpLine(a[1]);
+          return hl ? say(hl) : fail(t('gm.msg.help_none', { c: a[1] }), 'unknown');
+        }
         say(t('gm.help.head'));
         for (const g of GM_GROUPS) {
           say(t('gm.group.' + g.id));
@@ -774,7 +837,7 @@ export class GmSystem {
           c.recalc();
           return say(t('gm.msg.skills_max', { n, lv: MAX_SKILL_LEVEL }));
         }
-        if (mode !== 'list') return say(helpLine('skills')!);
+        if (mode !== 'list') return usage(helpLine('skills')!);
         const own = [...SKILL.values()].filter((sk) => !sk.method || sk.method === c.meta.method);
         say(t('gm.msg.skills_head', { m: c.meta.method ? methodName(c.meta.method) : '—', n: own.length }));
         for (let i = 0; i < own.length; i += 4) {
@@ -790,7 +853,7 @@ export class GmSystem {
       case 'learn': {
         // /gm learn <id chiêu> [cấp]: chuyển sang công pháp của chiêu, nâng tới cấp mở khóa, đặt cấp chiêu.
         const sk = SKILL.get(a[1] ?? '');
-        if (!sk) return say(t('gm.msg.no_skill', { id: a[1] ?? '' }));
+        if (!sk) return fail(t('gm.msg.no_skill', { id: a[1] ?? '' }));
         const lv = Math.max(1, Math.min(MAX_SKILL_LEVEL, Number(a[2] ?? MAX_SKILL_LEVEL) | 0 || MAX_SKILL_LEVEL));
         if (sk.method && c.meta.method !== sk.method) {
           c.meta.method = sk.method;
@@ -807,14 +870,14 @@ export class GmSystem {
         // /gm kit <bậc 1-4> <kiem|hophap|dansu> [+N] [m|f]: trọn bộ theo bậc/nhánh, phẩm cao nhất, kèm công pháp và pháp bảo của nhánh.
         const tier = Number(a[1]);
         const br = a[2];
-        if (!Number.isInteger(tier) || tier < 1 || tier > GM_MAX_TIER || !isGmBranch(br)) return say(helpLine('kit')!);
+        if (!Number.isInteger(tier) || tier < 1 || tier > GM_MAX_TIER || !isGmBranch(br)) return usage(helpLine('kit')!);
         let plus = 0;
         let g: 'm' | 'f' | undefined;
         for (const x of a.slice(3)) {
           if (x === 'm' || x === 'f') g = x;
           else {
             const n = parsePlus(x, MAX_ENHANCE);
-            if (n === null) return say(helpLine('kit')!);
+            if (n === null) return usage(helpLine('kit')!);
             plus = n;
           }
         }
@@ -825,7 +888,7 @@ export class GmSystem {
         grantPathOf(c.meta);
         for (const sk of SKILL.values()) if (!sk.method || sk.method === c.meta.method) setSkillLevel(c.meta, sk.id, MAX_SKILL_LEVEL);
         p.mth.reset();
-        if (!this.equipPieces(p, plan.pieces, plus)) return say(t('gm.msg.bag_full'));
+        if (!this.equipPieces(p, plan.pieces, plus)) return fail(t('gm.msg.bag_full'));
         if (g) this.gender(p, g);
         this.run(p, ['art', KIT_ARTIFACT[br], '5']);
         c.hp = c.mhp;
@@ -850,7 +913,7 @@ export class GmSystem {
         const q = a[3] === undefined ? 2 : Math.floor(Number(a[3]));
         const sl = a[4] === undefined ? 1 : Math.floor(Number(a[4]));
         if (!isGmBranch(br) || !(lv >= METHOD_UNLOCK_LEVEL && lv <= MAX_LEVEL) || !(q >= 0 && q < QUALITY_COUNT) || !(sl >= 1 && sl <= MAX_SKILL_LEVEL))
-          return say(helpLine('preset')!);
+          return usage(helpLine('preset')!);
         this.setLevel(p, lv);
         c.meta.method = BRANCH_METHOD[br];
         grantPathOf(c.meta);
@@ -891,13 +954,14 @@ export class GmSystem {
           }
           return true;
         });
-        if (!this.equipPieces(p, pieces, 0, q as Quality)) return say(t('gm.msg.bag_full'));
+        if (!this.equipPieces(p, pieces, 0, q as Quality)) return fail(t('gm.msg.bag_full'));
         p.gmFree = false;
         p.cds.clear();
         p.gcdAt = 0;
         this.c.sendCd(p);
         c.recalc();
         this.c.heal(p);
+        this.data({ branch: br, level: lv, tier, pieces: pieces.length, quality: q, skillLevel: sl, branches: picksOf(c) ?? {} });
         return say(
           `preset ${br} cấp ${lv}: ${methodName(c.meta.method!)}, ${tier > 0 ? 'đồ bậc ' + tier : 'đồ nhiệm vụ'} (${pieces.length} món, phẩm ${q}), chiêu cấp ${sl}, nhánh ${JSON.stringify(picksOf(c) ?? {})}`,
         );
@@ -913,13 +977,11 @@ export class GmSystem {
         if (a[1] === 'off') return this.run(p, ['set', 'off']);
         const st = SET.get(a[1]);
         if (!st || !st.pieces.length)
-          return say(t(st || hasOutfitAsset(a[1]) ? 'gm.msg.outfit_asset_only' : 'gm.msg.outfit_none', { id: a[1] }));
+          return fail(t(st || hasOutfitAsset(a[1]) ? 'gm.msg.outfit_asset_only' : 'gm.msg.outfit_none', { id: a[1] }));
         if (a[2] === 'm' || a[2] === 'f') this.gender(p, a[2]);
-        return say(
-          this.wearSet(p, st, st.pieces.length)
-            ? t('gm.msg.outfit', { id: st.id, name: t('set.' + st.id + '.name'), n: st.pieces.length })
-            : t('gm.msg.bag_full'),
-        );
+        return this.wearSet(p, st, st.pieces.length)
+          ? say(t('gm.msg.outfit', { id: st.id, name: t('set.' + st.id + '.name'), n: st.pieces.length }))
+          : fail(t('gm.msg.bag_full'));
       }
       case 'weapon': {
         // /gm weapon <id|list> [+N]: lấy và cầm kiếm (phẩm cao nhất), +10 = dạng cuối, vỏ lưng.
@@ -932,14 +994,12 @@ export class GmSystem {
             );
           return;
         }
-        if (!ids.includes(a[1])) return say(t('gm.msg.no_weapon', { id: a[1] }));
+        if (!ids.includes(a[1])) return fail(t('gm.msg.no_weapon', { id: a[1] }));
         const plus = a[2] === undefined ? 0 : parsePlus(a[2], MAX_ENHANCE);
-        if (plus === null) return say(helpLine('weapon')!);
-        return say(
-          this.equipPieces(p, [{ slot: 'weapon', id: a[1] }], plus)
-            ? t('gm.msg.weapon', { name: itemName(a[1]), plus })
-            : t('gm.msg.bag_full'),
-        );
+        if (plus === null) return usage(helpLine('weapon')!);
+        return this.equipPieces(p, [{ slot: 'weapon', id: a[1] }], plus)
+          ? say(t('gm.msg.weapon', { name: itemName(a[1]), plus }))
+          : fail(t('gm.msg.bag_full'));
       }
       case 'skin': {
         // /gm skin <id|list|off>: lấy (nếu chưa có) và mặc skin vào ô ngoại hình; off = tháo về túi. Skin không có chỉ số.
@@ -957,11 +1017,11 @@ export class GmSystem {
             delete d.equip.skin;
             return true;
           });
-          return say(ok ? t('gm.msg.skin_off') : t('gm.msg.skin_none'));
+          return ok ? say(t('gm.msg.skin_off')) : fail(t('gm.msg.skin_none'));
         }
         const id = a[1];
-        if (!ids.includes(id)) return say(t('gm.msg.no_skin', { id }));
-        if (!wearableBy(ITEM.get(id), c.appearance.g)) return say(t('sys.equip_gender'));
+        if (!ids.includes(id)) return fail(t('gm.msg.no_skin', { id }));
+        if (!wearableBy(ITEM.get(id), c.appearance.g)) return fail(t('sys.equip_gender'));
         if (c.equip.skin?.id === id) return say(t('gm.msg.skin', { name: itemName(id) }));
         const ok = c.tx('gm:skin', null, (d) => {
           // Chưa có trong túi thì thêm một cái (ghi sổ cái), rồi đổi chỗ với skin đang mặc.
@@ -972,12 +1032,12 @@ export class GmSystem {
           d.inv[i] = prev ? { ...prev } : null;
           return true;
         });
-        return say(ok ? t('gm.msg.skin', { name: itemName(id) }) : t('gm.msg.bag_full'));
+        return ok ? say(t('gm.msg.skin', { name: itemName(id) })) : fail(t('gm.msg.bag_full'));
       }
       case 'find': {
         // /gm find <từ khóa>: tìm id vật phẩm/chiêu/bộ/quái/công pháp theo tên hoặc id (bỏ dấu cũng được).
         const hits = findIds(a.slice(1).join(' '), GM_FIND_MAX);
-        if (!hits.length) return say(t('gm.msg.find_none'));
+        if (!hits.length) return fail(t('gm.msg.find_none'));
         for (const h of hits) say(`${t('gm.kind.' + h.kind)}: ${h.id} — ${h.name}`);
         return;
       }
@@ -989,9 +1049,9 @@ export class GmSystem {
             for (let i = 0; i < INV_SIZE; i++) d.inv[i] = next[i] ?? null;
             return true;
           });
-          return say(ok ? t('gm.msg.bag_sort') : t('gm.msg.bag_fail'));
+          return ok ? say(t('gm.msg.bag_sort')) : fail(t('gm.msg.bag_fail'));
         }
-        if (a[1] !== 'clear') return say(helpLine('bag')!);
+        if (a[1] !== 'clear') return usage(helpLine('bag')!);
         let n = 0;
         const ok = c.tx('gm:bag', null, (d) => {
           for (let i = 0; i < d.inv.length; i++) {
@@ -1003,7 +1063,7 @@ export class GmSystem {
           }
           return true;
         });
-        return say(ok ? t('gm.msg.bag_clear', { n }) : t('gm.msg.bag_fail'));
+        return ok ? say(t('gm.msg.bag_clear', { n })) : fail(t('gm.msg.bag_fail'));
       }
       case 'freeze':
       case 'lockhp': {
@@ -1016,9 +1076,9 @@ export class GmSystem {
       case 'face': {
         // /gm face [độ]: mọi quái còn sống trong PHÒNG TẬP quay về hướng này (0 = +z, 90 = +x) và bị đóng băng để giữ hướng. Dùng cho cổng duyệt VFX:
         // mục tiêu đứng ngang so với camera thì mặt nạ thân to và ổn định.
-        if (!this.c.level().dungeon?.practice) return say(t('gm.msg.scene_no'));
+        if (!this.c.level().dungeon?.practice) return fail(t('gm.msg.scene_no'));
         const deg = Number(a[1] ?? 90);
-        if (!Number.isFinite(deg)) return say('face [độ]');
+        if (!Number.isFinite(deg)) return usage('face [độ]');
         const yaw = ((((deg % 360) + 360) % 360) * Math.PI) / 180;
         let n = 0;
         for (const m of this.c.monsters()) {
@@ -1040,13 +1100,13 @@ export class GmSystem {
         // /gm scene save [id]: in cảnh đang dựng thành một mục JSON để dán vào scenes.json (không ghi file: dữ liệu game chỉ đổi qua commit).
         if (a[1] === 'save') return say(JSON.stringify(this.sceneOf(p, a[2] ?? 'canh_moi')));
         const sc = LAB_SCENES.find((s) => s.id === a[1]);
-        if (!sc) return say('scene save [id] | scene ' + LAB_SCENES.map((s) => s.id).join(' | '));
-        if (!this.c.level().dungeon?.practice) return say(t('gm.msg.scene_no'));
+        if (!sc) return usage('scene save [id] | scene ' + LAB_SCENES.map((s) => s.id).join(' | '));
+        if (!this.c.level().dungeon?.practice) return fail(t('gm.msg.scene_no'));
         return say(this.scene(p, sc));
       }
       case 'build': {
         // /gm build <công pháp> [cấp]: dựng nhân vật thử một nút: đặt cấp (mặc định 30), theo công pháp, mọi chiêu cấp tối đa, chiêu không hồi, hồi đầy.
-        if (!METHOD.has(a[1] ?? '')) return say('build ' + [...METHOD.keys()].join(' | ') + ' [cấp]');
+        if (!METHOD.has(a[1] ?? '')) return usage('build ' + [...METHOD.keys()].join(' | ') + ' [cấp]');
         this.setLevel(p, a[2] ? Number(a[2]) | 0 : 30);
         this.run(p, ['method', a[1]!, String(MAX_SKILL_LEVEL)]);
         p.gmFree = true;
@@ -1074,7 +1134,7 @@ export class GmSystem {
       case 'dps': {
         // /gm dps [start|stop]: đồng hồ sát thương của riêng mình. Lần đầu gõ = bắt đầu đo; gõ lại = xem số (vẫn đo tiếp); stop = xem rồi dừng.
         if (a[1] === 'stop' || a[1] === 'off') {
-          if (!labMeter.active(p)) return say('dps: chưa đo');
+          if (!labMeter.active(p)) return fail('dps: chưa đo');
           this.meterSay(p);
           labMeter.stop(p);
           return say('dps: đã dừng');
@@ -1087,13 +1147,13 @@ export class GmSystem {
       }
       case 'dummy': {
         // /gm dummy [id quái] [cấp] | off: hình nộm đo sát thương trong phòng tập: một con đứng yên, khóa máu, cạn máu thì tính một lần hạ rồi hồi đầy.
-        if (!this.c.level().dungeon?.practice) return say(t('gm.msg.scene_no'));
+        if (!this.c.level().dungeon?.practice) return fail(t('gm.msg.scene_no'));
         if (a[1] === 'off') {
           this.dummy = false;
           return say('dummy off');
         }
         const def = MONSTER.get(a[1] ?? 'mon_soi_xam');
-        if (!def) return say(t('gm.msg.no_mon', { id: a[1] ?? '' }));
+        if (!def) return fail(t('gm.msg.no_mon', { id: a[1] ?? '' }));
         const lv = Math.max(1, Math.min(MAX_LEVEL, Math.floor(Number(a[2]) || c.level)));
         this.clearLab();
         const at = dienVoSpawnAt(0, 1, !!def.boss);
@@ -1108,10 +1168,10 @@ export class GmSystem {
       case 'boss': {
         // /gm boss <id> [cấp]: sân boss của phòng tập: dọn quái cũ, gọi boss/tinh anh vào hố boss ở cấp cho trước (mặc định cấp mình), AI chạy thật,
         // mình bất tử, đồng hồ đo từ 0. Đi kèm /gm phase, /gm hp, /gm cast.
-        if (!this.c.level().dungeon?.practice) return say(t('gm.msg.scene_no'));
+        if (!this.c.level().dungeon?.practice) return fail(t('gm.msg.scene_no'));
         const def = MONSTER.get(a[1] ?? '');
         if (!def || !(def.boss || def.elite))
-          return say(
+          return usage(
             'boss <id> [cấp] — ' +
               [...MONSTER.values()]
                 .filter((m) => m.boss)
@@ -1130,6 +1190,7 @@ export class GmSystem {
         labMeter.start(p, Date.now());
         const kinds = new Set<string>();
         for (const ai of [def.ai, ...(def.phases ?? []).map((ph) => ph.ai)]) for (const k of CAST_KINDS) if (ai?.[k]) kinds.add(k);
+        this.data({ id: m.id, def: def.id, level: lv, hp: m.s.mhp, phases: def.phases?.length ?? 0, kinds: [...kinds] });
         return say(
           `boss ${def.id} cấp ${lv}: máu ${m.s.mhp}, ${def.phases?.length ?? 0} lần đổi pha, chiêu ${[...kinds].join(', ') || 'không'}; god on, đồng hồ đang đo`,
         );
@@ -1142,7 +1203,7 @@ export class GmSystem {
           return say('phase: bỏ khóa, pha đổi theo máu');
         }
         const n = Number(a[1]);
-        if (!Number.isInteger(n) || n < 0) return say(helpLine('phase')!);
+        if (!Number.isInteger(n) || n < 0) return usage(helpLine('phase')!);
         let k = 0;
         for (const m of this.near(p)) {
           if (!m.def.phases?.length) continue;
@@ -1156,7 +1217,7 @@ export class GmSystem {
       case 'hp': {
         // /gm hp <pct>: tua máu quái quanh mình về đúng pct% (lên hoặc xuống, không qua sát thương). Chưa khóa pha thì pha đặt lại theo mức máu mới.
         const pct = Number(a[1]);
-        if (!(pct >= 1 && pct <= 100)) return say(helpLine('hp')!);
+        if (!(pct >= 1 && pct <= 100)) return usage(helpLine('hp')!);
         const lab = this.c.lab();
         const ms = this.near(p);
         for (const m of ms) {
@@ -1179,7 +1240,7 @@ export class GmSystem {
         const has = kind ? live.filter((m) => this.castKinds(m).includes(kind)) : [];
         if (!kind || !has.length) {
           const all = [...new Set(live.flatMap((m) => this.castKinds(m)))];
-          return say('cast <loại> [loop] | off — pha hiện tại có: ' + (all.join(', ') || 'không có (gọi quái bằng /gm boss hoặc /gm spawn trước)'));
+          return usage('cast <loại> [loop] | off — pha hiện tại có: ' + (all.join(', ') || 'không có (gọi quái bằng /gm boss hoặc /gm spawn trước)'));
         }
         const lab = this.c.lab();
         lab.gmFreeze = false;
@@ -1200,12 +1261,12 @@ export class GmSystem {
       case 'dvt':
         // /gm dvt: vào Diễn Võ Trường (phòng tập riêng); gõ lại trong phòng để ra. Nhân vật được trả về nguyên trạng khi ra.
         // /gm dvt <khóa>: nhiều tài khoản GM gõ CÙNG khóa thì vào chung một phòng (đo đám đông bằng bot). Khóa chỉ gồm chữ thường, số, `_`, `-`, tối đa 24 ký tự.
-        if (a[1] !== undefined && !PRACTICE_KEY_RE.test(a[1])) return say(t('gm.msg.dvt_key'));
-        return this.c.practice(p, a[1]) ? undefined : say(t('gm.msg.dvt_no'));
+        if (a[1] !== undefined && !PRACTICE_KEY_RE.test(a[1])) return fail(t('gm.msg.dvt_key'));
+        return this.c.practice(p, a[1]) ? undefined : fail(t('gm.msg.dvt_no'));
       case 'tick':
         return say(`tick p95 ${this.c.tickP95().toFixed(2)}ms, ${this.c.playerCount()} người, ${this.c.monsters().length} quái`);
       default:
-        return say(t('gm.msg.unknown'));
+        return fail(t('gm.msg.unknown'), 'unknown');
     }
   }
 }
