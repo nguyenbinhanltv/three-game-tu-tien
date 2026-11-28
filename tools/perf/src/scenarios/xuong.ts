@@ -102,6 +102,7 @@ interface TraceSeg {
   plants: number[];
   steps: number[];
   stride: AnimSnap['stride'];
+  slide?: AnimSnap['slide'];
   blends: AnimSnap['blends'];
 }
 
@@ -508,7 +509,7 @@ export default {
       const seg = async (name: string, fn: () => Promise<void>) => {
         await pg.evaluate(`(() => { const x = window.__xuong; x.ws.setSubject('me'); x.ws.start(); x.ws.resetStats(); x.probe.rows.length = 0; window.__tr.rows.length = 0; window.__tr.on = true; })()`);
         await fn();
-        const got = (await pg.evaluate(`(() => { const x = window.__xuong; window.__tr.on = false; return { rows: window.__tr.rows.slice(), plants: x.ws.plants.slice(), steps: x.probe.rows.filter((r) => r.name.indexOf('step_') === 0).map((r) => r.at), stride: x.ws.snapshot().stride, blends: x.ws.snapshot().blends }; })()`)) as TraceSeg;
+        const got = (await pg.evaluate(`(() => { const x = window.__xuong; window.__tr.on = false; return { rows: window.__tr.rows.slice(), plants: x.ws.plants.slice(), steps: x.probe.rows.filter((r) => r.name.indexOf('step_') === 0).map((r) => r.at), stride: x.ws.snapshot().stride, slide: x.ws.snapshot().slide, blends: x.ws.snapshot().blends }; })()`)) as TraceSeg;
         return { name, ...got };
       };
       const key = async (k: string, ms: number) => {
@@ -549,6 +550,34 @@ export default {
           await sleep(900);
         }),
       );
+      // 1c) A/B pha chân dùng dt thật (`LOCO_TUNE.realDt`): cùng kịch bản chạy + chiêu + đòn thường, lặp 3 lần mỗi bên xen kẽ; in trượt cm/m theo clip (`FootSlide`).
+      if (opt('--ab', '')) {
+        const ab = async (on: boolean, tag: string) => {
+          await pg.evaluate(`import('/src/game/character/mannequin.ts').then((m) => { m.LOCO_TUNE.realDt = ${on}; })`);
+          segs.push(
+            await seg(`ab-${tag}`, async () => {
+              await pg.keyboard.down('KeyA');
+              await sleep(500);
+              for (let k = 0; k < 3; k++)
+                for (const slot of [1, 0]) {
+                  await pg.evaluate((i) => window.__game!.useSkill(i), slot);
+                  await sleep(1400);
+                }
+              await pg.evaluate(() => void ((window.__game as unknown as { autoAttack: boolean }).autoAttack = false));
+              await pg.keyboard.up('KeyA');
+              await sleep(700);
+            }),
+          );
+        };
+        for (const [on, tag] of [[false, 'cu1'], [true, 'moi1'], [false, 'cu2'], [true, 'moi2']] as const) await ab(on, tag);
+        await pg.evaluate(`import('/src/game/character/mannequin.ts').then((m) => { m.LOCO_TUNE.realDt = true; })`);
+        for (const sg of segs.filter((q) => q.name.startsWith('ab-'))) {
+          const rows = (sg.slide ?? []).filter((q) => /upper|\|lower|Bwd|Strafe|Sprint/.test(q.key) && q.travel > 1);
+          const trav = rows.reduce((a, q) => a + q.travel, 0);
+          const sl = rows.reduce((a, q) => a + q.slide, 0);
+          console.log(`  A/B ${sg.name}: trượt tổng ${(sl * 100).toFixed(0)} cm trên ${trav.toFixed(1)} m (${trav ? ((sl / trav) * 100).toFixed(1) : '-'} cm/m) · ${rows.map((q) => `${q.key} ${q.cmPerM === null ? '-' : q.cmPerM.toFixed(0)}`).join(' | ')}`);
+        }
+      }
       // 2) chạy lại khi clip dừng còn phát: dừng rồi bấm chạy lại sau 150 / 350 / 600 / 900 ms.
       for (const gap of [150, 350, 600, 900])
         segs.push(
@@ -654,6 +683,7 @@ export default {
         const row = {
           path: p.id,
           stride: ground.stride,
+          slide: ground.slide,
           over,
           steps: { n: steps.steps, plants: steps.plants, med: med(steps.off), worst: steps.off.reduce((w, v) => (Math.abs(v) > Math.abs(w) ? v : w), 0), off: steps.off },
           ground: flag(ground.blends),
@@ -664,6 +694,13 @@ export default {
         out.push(row);
         console.log(`\n  ${p.id} (${method})`);
         for (const s of ground.stride ?? []) console.log(`    sải ${s.key.padEnd(18)} ${String(s.n).padStart(4)} mẫu · thân ${s.speed.toFixed(1)} m/s · chân trụ trôi ${(s.slip * 100).toFixed(0)}%${Math.abs(s.slip) > 0.25 ? ' (QUÁ NGƯỠNG)' : ''}`);
+        {
+          // Thước chân TRỤ thật (FootSlide, cm trượt mỗi mét đi; báo từ 12): ổn hơn phân vị 15% của `sải` với clip có chân trụ ngắn (clip lùi, chạy nhanh).
+          const rows = (ground.slide ?? []).filter((q) => q.travel > 1);
+          const trav = rows.reduce((a, q) => a + q.travel, 0);
+          const sl = rows.reduce((a, q) => a + q.slide, 0);
+          console.log(`    chân trụ trượt (FootSlide): ${trav ? ((sl / trav) * 100).toFixed(1) : '-'} cm/m trên ${trav.toFixed(1)} m · ${rows.map((q) => `${q.key} ${q.cmPerM === null ? '-' : q.cmPerM.toFixed(0)}`).join(' | ')}`);
+        }
         for (const o of over) console.log(`    đang chạy, bấm ô ${o.slot + 1}: đồng hồ chiêu "${o.clock || 'KHÔNG CÓ'}" · ${o.active}`);
         console.log(`    bước chân: ${row.steps.n} tiếng / ${row.steps.plants} lần chân chạm đất · lệch trung vị ${row.steps.med} ms, xấu nhất ${row.steps.worst} ms`);
         console.log(`    chuyển clip mặt đất: ${ground.blends.length} lần, đáng soi: ${row.ground.join(' ‖ ') || 'không'}`);

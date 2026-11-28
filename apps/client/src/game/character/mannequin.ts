@@ -597,6 +597,9 @@ function shadowMaterial(): THREE.MeshStandardNodeMaterial {
  */
 export const PATCH_TUNE = { stopFade: 0.06 };
 
+/** `realDt`: pha chân dồn thời gian THẬT (không trừ khựng hình). Công tắc để so A/B trong xưởng (`pnpm shots xuong --only trace --ab 1`); chỉ đổi trong phiên. */
+export const LOCO_TUNE = { realDt: true };
+
 /** Hướng của một clip trong bộ đi/chạy: bốn hướng của `dirMix` + hai bản chéo-lùi (`lb` = đi sang trái khi đang lùi, `rb` = sang phải). */
 type LegDir = LocoDirKey | 'lb' | 'rb';
 
@@ -657,6 +660,8 @@ export class MannequinCharacter implements CharacterView {
   private lodDist: [number, number] = [22, 55];
   private interval = 0;
   private acc = mixerPhase(++phaseSeq, 1 / 12);
+  /** Thời gian THẬT dồn cho pha chân (không bị khựng hình trừ đi): thân vẫn trượt theo vị trí server trong lúc khựng nên chân phải tiếp tục bước. Dồn/xả cùng nhịp với `acc`. */
+  private locoAcc = 0;
   private base: THREE.AnimationAction | null = null;
   private baseName = '';
   private shot: THREE.AnimationAction | null = null;
@@ -1900,9 +1905,10 @@ export class MannequinCharacter implements CharacterView {
     }
     // Giảm tần số cập nhật xương cho người ở xa.
     this.acc += dt;
+    this.locoAcc += realDt;
     if (this.interval > 0 && !mixerDue(this.acc, this.interval)) return;
     this.blendBases(this.acc);
-    if (this.loco && this.base) this.syncLoco(this.acc);
+    if (this.loco && this.base) this.syncLoco(LOCO_TUNE.realDt ? this.locoAcc : this.acc);
     this.syncLegs();
     this.labHook.pre?.();
     this.mixer.update(this.acc);
@@ -1949,6 +1955,7 @@ export class MannequinCharacter implements CharacterView {
     }
     if (ANIM_FX.smear && this.lodLevel === 0 && this.inner.visible && PATH_TP[this.tpPath ?? '']?.smear) this.updateSmear();
     this.acc = 0;
+    this.locoAcc = 0;
   }
 
   /**
