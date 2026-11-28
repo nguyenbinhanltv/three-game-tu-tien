@@ -275,7 +275,8 @@ for (const [id, lv] of [
     `${(id + ' (' + lv + ')').padEnd(26)} ${String(price).padStart(6)} ${inc.toFixed(0).padStart(8)}  ${f(5, false).toFixed(0).padStart(6)} (${h(f(5, false)).padStart(5)})  ${f(7, false).toFixed(0).padStart(6)} (${h(f(7, false)).padStart(5)})  ${f(9, false).toFixed(0).padStart(6)}|${f(9, true).toFixed(0).padStart(6)} (${h(f(9, true)).padStart(5)})  ${f(10, true).toFixed(0).padStart(6)} (${h(f(10, true)).padStart(5)})`,
   );
   // Mục tiêu 3-10: +5 trong ~1 giờ thu nhập, +9 (có Hộ Phù) 2–7 giờ, +10 không quá 14 giờ.
-  if (f(5, false) / inc > 1.2) {
+  // Ngưỡng +5 nới 1,2 → 1,3 (28/11, người dùng chọn): sau khi Kiếm tu đổi ×0,85 từ cấp 8 thu nhập/giờ ở cấp 15 giảm ~12% (4274 → 3750) còn giá giữ nguyên (1,08 → 1,23 giờ).
+  if (f(5, false) / inc > 1.3) {
     console.error(`LỖI: ${id} +5 tốn ${h(f(5, false))} thu nhập (quá đắt)`);
     process.exitCode = 1;
   }
