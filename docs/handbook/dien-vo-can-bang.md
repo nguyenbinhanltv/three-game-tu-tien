@@ -288,7 +288,7 @@ Lượt đo 28/11 (2 lần mỗi ô; tổng giây = pha 0 | pha 1 | …; Kiếm 
 | Boss | Tổng hiện tại (Cổ Thần) | `hpMul` hiện tại | Đề xuất |
 | --- | --- | --- | --- |
 | `boss_thach_tam_khoi_vuong` | 20 giây, mỗi pha 6–7 giây, kể cả Đan sư chỉ 29 | 26 | ×3 (78) để ~60 giây, pha dài hơn 15 giây |
-| `boss_kiem_khoi` (boss phó bản đầu) | 33 giây | 32 | ×2 (64) để ~65 giây |
+| `boss_kiem_khoi` (boss phó bản đầu) | 33 giây | 32 | ×1,75 (56) để ~68 giây |
 | `boss_huyet_lang_vuong` | 45 giây | 37 | ×1,5 (55) |
 | `boss_xich_tan_cu_khoi` | 42 giây, pha 11 / 15 / 16 | 40 | ×1,5 (60) |
 | `boss_tu_nhan_ma_tuong` | 46 giây | 45 | ×1,3 (58) |
@@ -299,7 +299,7 @@ Lượt đo 28/11 (2 lần mỗi ô; tổng giây = pha 0 | pha 1 | …; Kiếm 
 | Boss | `hpMul` | Trước | Sau | Pha sau (Cổ Thần) |
 | --- | --- | --- | --- | --- |
 | `boss_thach_tam_khoi_vuong` | 26 → **78** | 19 / 21 / 30 | 53 / 64 / 84 | 22 \| 19 \| 23 |
-| `boss_kiem_khoi` | 32 → **64** | 27 / 33 / 43 | 69 / 82 / 96 | 34 \| 48 |
+| `boss_kiem_khoi` | 32 → **56** (đề xuất cuối) | 27 / 33 / 43 | 59 / 68 / 80 | 27 \| 41 |
 | `boss_huyet_lang_vuong` | 37 → **55** | 38 / 46 / 54 | 79 / 74 / 88 | 29 \| 45 |
 | `boss_xich_tan_cu_khoi` | 40 → **60** | 30 / 44 / 56 | 47 / 61 / 92 | 18 \| 24 \| 19 |
 | `boss_tu_nhan_ma_tuong` | 45 → **58** | 30 / 46 / 70 | 44 / 60 / 92 | 27 \| 33 |
@@ -309,6 +309,37 @@ Lượt đo 28/11 (2 lần mỗi ô; tổng giây = pha 0 | pha 1 | …; Kiếm 
 - Còn sót (nhóm toàn Kiếm tu×4 là cận trên, nhóm thật có hộ pháp/đan sư chậm hơn): pha đầu `boss_xich_tan_cu_khoi` 14 giây và hai pha cuối `boss_thon_mach_ngo_cong_vuong` 12–13 giây với Kiếm tu. Cổ Thần (mốc giữa) mọi pha ≥ 18 giây. Hai boss `boss_thu_mo_tuong` (58 giây) và `boss_dia_mach_long` (69 giây) có pha 14–15 giây ở Cổ Thần nên chưa đề xuất sửa.
 - Tác động: chỉ thời gian trận của chín boss phó bản/bãi nói trên; `hpMul` cao hơn làm boss đánh người không đổi (sát thương theo `atkMul`), phần thưởng không đổi. thời gian trận đo được dài thêm 14–49 giây mỗi boss (Cổ Thần: Thạch Tâm +43, Kiếm Khôi +49, Huyết Lang +28, Xích Tàn +17, Tử Nhân +14, Thôn Mạch +28). `sim:progress` mục phó bản (E2-C) dùng `hpMul` để tính thời gian dẹp phó bản (mục tiêu ~20 phút), nên cần chạy lại sim trước khi áp; chưa chạy.
 - Cách áp (nếu duyệt): sửa `hpMul` và `phases[].hp` trong `packages/content/data/monsters.json`, chạy `pnpm sim:progress`, `pnpm --filter @dtl/server fight:check --bossphases` và `content:check`.
+
+### Số máu đề xuất cho 5 boss hạ quá nhanh (28/11, CHỜ NGƯỜI DÙNG DUYỆT, chưa chỉnh số)
+
+**Mục tiêu TTK** (nhóm 4 người cùng công pháp, đo bằng `fight:check --bossphases`, bot bất tử, SAU khi Kiếm tu đã đổi ×0,85 từ cấp 8): nhóm **Cổ Thần (mốc giữa) hạ trong 60–90 giây, mọi pha dài ít nhất 15 giây** (đủ thấy và né ít nhất một lượt chiêu của pha đó), Đan sư (chậm nhất) không quá ~100 giây. Lý do: các boss cùng hạng đang "ổn" nằm ở 82–154 giây (Hàn Giao 127, Kính Nguyệt 82, Vô Diện Thần Quân 154); năm boss dưới đây là boss phó bản/bãi mở màn hoặc phụ nên nhắm vào cận dưới của dải đó, không phải ngang các boss chính. Nhóm toàn Kiếm tu×4 là cận trên (nhanh hơn nhóm có hộ pháp/đan sư).
+
+| Boss (cấp, nơi) | `hpMul` hiện tại → đề xuất | Ngưỡng pha `hp` (không đổi) | Mục tiêu (Cổ Thần) |
+| --- | --- | --- | --- |
+| `boss_thach_tam_khoi_vuong` (18, Phục Mạch) | 26 → **78** (×3) | 0,66 / 0,33 | 60–70 giây |
+| `boss_kiem_khoi` (12, Kiếm Trủng, boss đầu) | 32 → **56** (×1,75) | 0,5 | ~70 giây |
+| `boss_huyet_lang_vuong` (13, Kiếm Trủng) | 37 → **55** (×1,5) | 0,5 | ~75 giây |
+| `boss_xich_tan_cu_khoi` (28, Xích Tàn Khích) | 40 → **60** (×1,5) | 0,66 / 0,33 | ~60 giây |
+| `boss_tu_nhan_ma_tuong` (28, Xích Tàn Khích) | 45 → **58** (×1,3) | 0,5 | ~60 giây |
+
+**TTK theo pha, trước → sau** (giây; tổng = pha 0 \| pha 1 \| …; 2 lần mỗi ô, sai số khoảng ±10%):
+
+| Boss | Kiếm tu | Cổ Thần | Đan sư |
+| --- | --- | --- | --- |
+| `boss_thach_tam_khoi_vuong` | 19 = 7 \| 7 \| 5 → **53** = 19 \| 16 \| 18 | 21 = 6 \| 6 \| 8 → **64** = 22 \| 19 \| 23 | 30 = 10 \| 9 \| 11 → **84** = 31 \| 26 \| 27 |
+| `boss_kiem_khoi` | 27 = 14 \| 14 → **59** = 23 \| 36 | 33 = 16 \| 17 → **68** = 27 \| 41 | 43 = 17 \| 26 → **80** = 38 \| 42 |
+| `boss_huyet_lang_vuong` | 38 = 17 \| 21 → **79** = 29 \| 51 | 46 = 19 \| 27 → **74** = 29 \| 45 | 54 = 24 \| 30 → **88** = 38 \| 51 |
+| `boss_xich_tan_cu_khoi` | 30 = 11 \| 8 \| 11 → **47** = 14 \| 17 \| 16 | 44 = 11 \| 16 \| 17 → **61** = 18 \| 24 \| 19 | 56 = 21 \| 23 \| 12 → **92** = 33 \| 30 \| 29 |
+| `boss_tu_nhan_ma_tuong` | 30 = 15 \| 15 → **44** = 20 \| 23 | 46 = 23 \| 23 → **60** = 27 \| 33 | 70 = 34 \| 35 → **92** = 47 \| 45 |
+
+**Lý do từng boss:**
+- **Thạch Tâm Khôi Vương**: `hpMul` 26 thấp hẳn so với cùng phó bản/tầng (Thôn Mạch Ngô Công Vương 75 cùng Phục Mạch, Địa Mạch Long 66 cấp 19). Hiện chết trong 21 giây, mỗi pha 6–8 giây, nên không kịp thấy lượt chiêu nhảy đập (`leap`) và lộ yếu điểm (`reveal`) lần thứ hai. ×3 ngang nhóm boss tầng đó.
+- **Kiếm Khôi** (boss phó bản đầu, 4 người): hiện 33 giây (pha 16 \| 17). ×1,75 cho 68 giây; thử ×2 (64) ra 82 giây nhưng khi đó vượt cả Huyết Lang Vương (74 giây) là boss sau nó, nên chọn 56.
+- **Huyết Lang Vương**: 46 giây, đòn chuỗi + quét. ×1,5 cho 74 giây, đặt trên Kiếm Khôi (68) và Thủ Mộ Tướng (58, 3 pha + chú, không đổi) để thứ tự thời gian Kiếm Trủng là 68 → 74 → 58 (Thủ Mộ Tướng nhiều pha nên cảm giác dài hơn thực tế).
+- **Xích Tàn Cự Khôi** và **Tử Nhân Ma Tướng** (cùng Xích Tàn Khích): 44 và 46 giây; mỗi pha 11–23 giây. ×1,5 và ×1,3 đưa cả hai về ~60 giây, pha 18–33 giây. Tử Nhân tăng ít hơn vì đã có triệu hồi đệ tử kéo dài trận.
+
+**Tác động:** chỉ thời gian trận của năm boss; sát thương boss gây ra (`atkMul`) và phần thưởng không đổi. Trận dài thêm (Cổ Thần): Thạch Tâm +43, Kiếm Khôi +35, Huyết Lang +28, Xích Tàn +17, Tử Nhân +14 giây. Mục phó bản của `sim:progress` (E2-C, mục tiêu ~20 phút mỗi phó bản) tính theo `hpMul` nên phải chạy lại sim sau khi áp; chưa chạy. Còn sót (nhóm toàn Kiếm tu, cận trên): pha đầu Xích Tàn Cự Khôi 14 giây.
+**Cách áp khi duyệt:** sửa `hpMul` trong `packages/content/data/monsters.json`, rồi `pnpm sim:progress`, `pnpm --filter @dtl/server fight:check --bossphases --only-boss <5 id>`, `content:check`. Thử trước không ghi file: `--hp boss_thach_tam_khoi_vuong:78,boss_kiem_khoi:56,boss_huyet_lang_vuong:55,boss_xich_tan_cu_khoi:60,boss_tu_nhan_ma_tuong:58`.
 
 **Boss quá dài hoặc không hạ được** (bot không chơi cơ chế, chỉ là cận trên): `boss_thu_khich_duc_chu` (phản đòn + neo; pha 0 đã 126–231 giây), `boss_hu_anh_chu` (phản đòn), `boss_phu_chu` (hai mặt + phản đòn; pha cuối 271–385 giây với Cổ Thần/Đan sư), `boss_kieu_thu` và `boss_dinh_linh` (pha cuối 135–411 giây), `boss_kim_da_ma_hau` (gương, chú). Đề xuất: KHÔNG sửa số trước khi có lượt chơi thật các cơ chế này; nếu muốn một mốc nhanh, đặt máu pha cuối bằng ~30% tổng (ngưỡng `hp` 0,3) như đa số boss khác, và `hpMul` các boss Vấn Đỉnh → Cửu Kiều giảm ~20%.
 
