@@ -148,6 +148,7 @@ export class PlayerVis {
     this.model = skins.create(this.look);
     this.skinPending = skins.pending(this.look);
     this.label = makeLabel(s.name, local ? '#bfe8ff' : '#ffffff', realmTag(s.lv), realmTagColor(s.lv));
+    this.label.priority = this.local ? 1.5 : 1;
     this.lv = s.lv;
     this.label.position.y = labelY(this.model);
     this.model.root.add(this.label);
@@ -161,6 +162,7 @@ export class PlayerVis {
     this.model.root.remove(this.label);
     disposeLabel(this.label);
     this.label = makeLabel(this.s.name, this.local ? '#bfe8ff' : '#ffffff', realmTag(this.s.lv), realmTagColor(this.s.lv));
+    this.label.priority = this.local ? 1.5 : 1;
     this.label.position.y = labelY(this.model);
     this.model.root.add(this.label);
     this.lv = this.s.lv;

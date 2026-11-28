@@ -267,6 +267,7 @@ export class EntityManager {
       this.npcSkins.preload();
       for (const n of here) {
         const label = makeLabel(t(`npc.${n.id}.name`), '#ffe9a8', t(`npc.${n.id}.title`), '#e8d6a0');
+        label.priority = 2;
         const marker = new THREE.Sprite(
           new THREE.SpriteMaterial({ map: this.markerNew, transparent: true, depthWrite: false, fog: false }),
         );
@@ -317,6 +318,7 @@ export class EntityManager {
     }
     if (!e) {
       const label = makeLabel(t(`npc.${m.npc}.name`), '#ffe9a8', t(`npc.${m.npc}.title`), '#e8d6a0');
+      label.priority = 2;
       const marker = new THREE.Sprite(new THREE.SpriteMaterial({ map: this.markerNew, transparent: true, depthWrite: false, fog: false }));
       marker.visible = false;
       e = {
@@ -821,7 +823,8 @@ export class EntityManager {
     }
     // Nhãn NPC không có chỗ nào khác đặt lại (luôn hiện), nên gán theo cờ mỗi khung để hiện lại khi hết cảnh.
     for (const n of this.npcs) n.label.visible = !this.tagsHidden;
-    LABELS.update();
+    const tgtLabel = this.monsters.get(targetId)?.label ?? this.players.get(targetId)?.label ?? this.npcs.find((n) => n.id === targetId)?.label ?? null;
+    LABELS.update(this.camera, tgtLabel);
 
     // ----- vòng chọn mục tiêu -----
     const tm = this.monsters.get(targetId);

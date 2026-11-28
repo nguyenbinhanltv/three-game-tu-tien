@@ -44,6 +44,8 @@ export class Label extends THREE.Object3D {
   /** Giữ cùng dạng với `SpriteMaterial` để chỗ gọi cũ (`label.material.opacity`) không phải đổi. */
   readonly material = { opacity: 1 };
   readonly key: string;
+  /** Thứ tự giữ chỗ khi nhãn chồng nhau: nhãn ưu tiên thấp bị đẩy lên cao (mục tiêu 5 > NPC 2 > mình 1,5 > người khác/quái 1). */
+  priority = 1;
   constructor(readonly spec: LabelSpec) {
     super();
     this.key = keyOf(spec);
@@ -60,6 +62,15 @@ interface Cell {
 const _v = new THREE.Vector3();
 const _s = new THREE.Vector3();
 const _q = new THREE.Quaternion();
+const _up = new THREE.Vector3();
+const _vp = new THREE.Vector3();
+
+/** Phần chữ thật chiếm trong ô nhãn (ô có viền trong suốt): dùng để xét chồng nhau, nhỏ hơn ô một chút. */
+const FILL_W = 0.62;
+const FILL_H = 0.8;
+/** Khoảng hở giữa hai nhãn sau khi tách (m, theo chiều cao nhãn) và số lần đẩy tối đa của một nhãn. */
+const GAP = 0.05;
+const MAX_PUSH = 3;
 
 class LabelBatch {
   readonly mesh: THREE.InstancedMesh;
@@ -74,6 +85,13 @@ class LabelBatch {
   private g: CanvasRenderingContext2D | null = null;
   private tex: THREE.CanvasTexture | null = null;
   private frame = 0;
+  private live: Label[] = [];
+  /** Tọa độ tâm trong không gian nhìn (x, y) của từng instance, để xét chồng nhãn. */
+  private vx = new Float32Array(CAPACITY);
+  private vy = new Float32Array(CAPACITY);
+  private order: number[] = [];
+  /** Số cặp nhãn đã tách ở khung gần nhất (đo, kiểm thử). */
+  pushed = 0;
   /** Số lần vẽ lại ô atlas (đo, kiểm thử). */
   redraws = 0;
 
@@ -199,12 +217,66 @@ class LabelBatch {
     return idx;
   }
 
+  /**
+   * Né chồng nhãn: xét các nhãn theo ưu tiên giảm dần; nhãn nào đè lên một nhãn đã đặt thì bị đẩy LÊN cao (dọc theo trục lên của camera)
+   * vừa đủ hết chồng. Làm trong không gian nhìn (nhãn là billboard cùng hướng camera) và ghi lại vào vị trí thế giới của instance.
+   * Chi phí ~ n² phép so nhưng chỉ khi hai nhãn gần nhau trên màn hình, n ≤ CAPACITY.
+   */
+  private spread(cam: THREE.Camera, n: number, focus: Label | null): void {
+    const view = cam.matrixWorldInverse;
+    _up.setFromMatrixColumn(cam.matrixWorld, 1);
+    for (let k = 0; k < n; k++) {
+      const i = k * 4;
+      _vp.set(this.a[i]!, this.a[i + 1]!, this.a[i + 2]!).applyMatrix4(view);
+      this.vx[k] = _vp.x;
+      this.vy[k] = _vp.y;
+    }
+    const ord = this.order;
+    ord.length = 0;
+    for (let k = 0; k < n; k++) ord.push(k);
+    const pr = (k: number) => (this.live[k] === focus ? 99 : this.live[k]!.priority);
+    ord.sort((p, q) => pr(q) - pr(p) || p - q);
+    this.pushed = 0;
+    for (let oi = 1; oi < ord.length; oi++) {
+      const k = ord[oi]!;
+      const hw = this.a[k * 4 + 3]! * FILL_W * 0.5;
+      const hh = this.a[k * 4 + 3]! * (CELL_H / CELL_W) * FILL_H * 0.5;
+      let moved = false;
+      for (let pass = 0; pass < MAX_PUSH; pass++) {
+        let need = 0;
+        for (let oj = 0; oj < oi; oj++) {
+          const j = ord[oj]!;
+          const jw = this.a[j * 4 + 3]! * FILL_W * 0.5;
+          const jh = this.a[j * 4 + 3]! * (CELL_H / CELL_W) * FILL_H * 0.5;
+          if (Math.abs(this.vx[k]! - this.vx[j]!) >= hw + jw) continue;
+          const over = this.vy[j]! + jh - (this.vy[k]! - hh);
+          // Chồng khi nhãn k còn nằm dưới mép trên của j và nhãn j không nằm hẳn dưới k.
+          if (over > 0 && this.vy[j]! - jh < this.vy[k]! + hh && over > need) need = over;
+        }
+        if (need <= 0) break;
+        this.vy[k] = this.vy[k]! + need + GAP * hh * 2;
+        moved = true;
+      }
+      if (moved) {
+        const i = k * 4;
+        // Chỉ đổi phần Y trong không gian nhìn: dịch thế giới theo trục lên camera đúng lượng đã đẩy.
+        const orig = _v.set(this.a[i]!, this.a[i + 1]!, this.a[i + 2]!).applyMatrix4(view).y;
+        const d = this.vy[k]! - orig;
+        this.a[i] = this.a[i]! + _up.x * d;
+        this.a[i + 1] = this.a[i + 1]! + _up.y * d;
+        this.a[i + 2] = this.a[i + 2]! + _up.z * d;
+        this.pushed++;
+      }
+    }
+  }
+
   /** Gom nhãn đang hiện vào instance. Gọi mỗi khung sau khi `visible`/`scale`/`opacity` của nhãn đã được đặt. */
   /** Phòng thử (`__vfxlab.tags(false)`): ẩn mọi bảng tên để chụp điểm trúng không bị che. */
   hidden = false;
 
-  update(): void {
+  update(camera?: THREE.Camera | null, focus?: Label | null): void {
     this.frame++;
+    this.live.length = 0;
     let n = 0;
     let drew = false;
     const before = this.redraws;
@@ -231,7 +303,9 @@ class LabelBatch {
         // CanvasTexture lật trục V: hàng 0 nằm ở đỉnh ảnh.
         this.b[i + 1] = 1 - (Math.floor(idx / COLS) + 1) / ROWS;
         this.b[i + 2] = l.material.opacity;
+        this.live.push(l);
       }
+      if (camera && n > 1) this.spread(camera, n, focus ?? null);
       drew = this.redraws !== before;
     }
     if (drew && this.tex) this.tex.needsUpdate = true;
