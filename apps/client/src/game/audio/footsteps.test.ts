@@ -41,6 +41,7 @@ interface P {
   z: number;
   speed: number;
   s: { fl: number; gr?: boolean };
+  model?: { plants?: number; plantSense?: boolean };
 }
 interface M {
   x: number;
@@ -136,6 +137,71 @@ describe('FootstepDriver', () => {
     r.players.set('me', me);
     r.monsters.set('dead', { x: SECT.x + 3, z: 2090, speed: 5, s: { st: MS_DEAD } });
     r.run(3, 5, me);
+    expect(r.calls.length).toBe(0);
+  });
+});
+
+describe('FootstepDriver: bàn chân thật (CharacterView.plants)', () => {
+  const sect = () => ({ x: SECT.x - 20, z: SECT.z - 44 });
+  it('model có plantSense: tiếng phát đúng khung số lần chạm đất tăng, không theo quãng đường', () => {
+    const r = rig();
+    const model = { plants: 0, plantSense: true };
+    const me: P = { ...sect(), speed: 5, s: { fl: 0 }, model };
+    r.players.set('me', me);
+    r.run(0.5, 0, me); // khung đầu chỉ ghi mốc: không có tiếng giả
+    expect(r.calls.length).toBe(0);
+    // thân đứng yên (không đi quãng đường nào) mà chân chạm đất hai lần ở hai khung khác nhau: đúng hai tiếng, đúng khung đó
+    const at = (t: number) => r.d.update({ players: r.players, monsters: r.monsters }, 'me', me, false, t);
+    model.plants = 1;
+    at(1000);
+    expect(r.calls.length).toBe(1);
+    at(1016);
+    expect(r.calls.length).toBe(1);
+    model.plants = 2;
+    at(1033);
+    expect(r.calls.length).toBe(2);
+  });
+  it('bước cuối của nhịp dừng (tốc độ đã về 0) vẫn có tiếng; bay/chết/thiền thì im', () => {
+    const r = rig();
+    const model = { plants: 0, plantSense: true };
+    const me: P = { ...sect(), speed: 0, s: { fl: 0 }, model };
+    r.players.set('me', me);
+    r.run(0.2, 0, me);
+    model.plants = 1;
+    r.run(0.1, 0, me);
+    expect(r.calls.length).toBe(1);
+    for (const fl of [PF_FLYING, PF_MEDITATING, PF_DEAD]) {
+      me.s.fl = fl;
+      model.plants++;
+      r.run(0.1, 0, me, 5000);
+    }
+    expect(r.calls.length).toBe(1);
+  });
+  it('mất plantSense thì quay về đếm quãng đường; có lại thì không bắn dồn các bước đã bỏ lỡ', () => {
+    const r = rig();
+    const model = { plants: 0, plantSense: false };
+    const me: P = { ...sect(), speed: 5, s: { fl: 0 }, model };
+    r.players.set('me', me);
+    r.run(3, 5, me);
+    const byDistance = r.calls.length;
+    expect(byDistance).toBeGreaterThan(3);
+    model.plants = 40;
+    model.plantSense = true;
+    r.run(0.1, 5, me, 10000);
+    expect(r.calls.length).toBe(byDistance);
+    model.plants = 41;
+    r.run(0.1, 5, me, 11000);
+    expect(r.calls.length).toBe(byDistance + 1);
+  });
+  it('người khác ở xa hơn tầm nghe không phát dù model báo chạm đất', () => {
+    const r = rig();
+    const me: P = { ...sect(), speed: 0, s: { fl: 0 } };
+    const model = { plants: 0, plantSense: true };
+    r.players.set('me', me);
+    r.players.set('far', { x: SECT.x + HEAR + 30, z: SECT.z, speed: 5, s: { fl: 0 }, model });
+    r.run(0.1, 0, me);
+    model.plants = 3;
+    r.run(0.1, 0, me, 100);
     expect(r.calls.length).toBe(0);
   });
 });

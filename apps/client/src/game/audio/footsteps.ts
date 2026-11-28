@@ -81,6 +81,8 @@ interface PlayerV {
   z: number;
   speed: number;
   s: { fl: number; gr?: boolean };
+  /** Model có dò bàn chân thật (`CharacterView.plants`/`plantSense`): tiếng bước phát đúng lúc chân hạ xuống thay vì theo quãng đường. */
+  model?: { plants?: number; plantSense?: boolean };
 }
 interface MonV {
   x: number;
@@ -105,6 +107,8 @@ interface Pending {
 
 export class FootstepDriver {
   private clocks = new Map<string, StepClock>();
+  /** Số lần chạm đất đã thấy của từng người chơi đang được dò bằng bàn chân thật. */
+  private plantSeen = new Map<string, number>();
   private seen = new Set<string>();
   private recent: number[] = [];
   private cand: Pending[] = [];
@@ -142,7 +146,18 @@ export class FootstepDriver {
       this.seen.add(key);
       const fl = v.s.fl;
       const grounded = local ? !localAirborne : v.s.gr !== false;
-      const walking = v.speed > MOVE_MIN && grounded && (fl & (PF_FLYING | PF_DEAD | PF_MEDITATING)) === 0;
+      const onFoot = grounded && (fl & (PF_FLYING | PF_DEAD | PF_MEDITATING)) === 0;
+      const walking = v.speed > MOVE_MIN && onFoot;
+      // Bàn chân thật: phát đúng khung chân hạ xuống (kể cả bước cuối của nhịp dừng, lúc tốc độ đã về 0); đồng hồ quãng đường chỉ giữ vị trí.
+      const m = v.model;
+      if (m?.plantSense) {
+        const n = m.plants ?? 0;
+        const prev = this.plantSeen.get(key);
+        this.plantSeen.set(key, n);
+        this.tickPlant(key, v, onFoot && prev !== undefined && n > prev, local, me);
+        continue;
+      }
+      this.plantSeen.delete(key);
       this.tick(key, v, walking, local, false, me);
     }
     for (const [id, v] of src.monsters) {
@@ -151,7 +166,20 @@ export class FootstepDriver {
       this.tick(key, v, v.speed > MOVE_MIN && v.s.st !== MS_DEAD, false, true, me);
     }
     for (const k of this.clocks.keys()) if (!this.seen.has(k)) this.clocks.delete(k);
+    for (const k of this.plantSeen.keys()) if (!this.seen.has(k)) this.plantSeen.delete(k);
     this.flush(now);
+  }
+
+  /** Người chơi dò bằng bàn chân thật: `stepNow` = có một chân vừa chạm đất ở khung này. Xa quá tầm nghe thì bỏ. */
+  private tickPlant(key: string, v: { x: number; y?: number; z: number; speed: number }, stepNow: boolean, local: boolean, me: { x: number; z: number }): void {
+    let c = this.clocks.get(key);
+    if (!c) this.clocks.set(key, (c = new StepClock()));
+    // Giữ vị trí trong đồng hồ quãng đường để khi model lùi về đếm quãng đường không bị nhảy cóc.
+    c.advance(v.x, v.z, v.speed, false);
+    if (!stepNow) return;
+    const d = Math.hypot(v.x - me.x, v.z - me.z);
+    if (!local && d > HEAR) return;
+    this.cand.push({ local, x: v.x, z: v.z, d: local ? 0 : d, monster: false, surface: surfaceAt(v.x, v.z, this.level, v.y) });
   }
 
   private tick(

@@ -104,6 +104,12 @@ export interface CharacterView {
    * `hasSword`: có kiếm sau lưng; `grounded`: đang đứng trên đất ở khung gần nhất.
    */
   readonly steps?: number;
+  /**
+   * Số lần bàn chân THẬT chạm đất (dò từ độ cao mũi bàn chân sau mọi lớp animation, `character/footPlant.ts`), và `plantSense`: khung vừa rồi model có
+   * lấy mẫu bàn chân hay không (chỉ LOD0 đang hiện). Tiếng bước chân (`audio/footsteps.ts`) phát theo `plants` khi `plantSense`, không thì theo quãng đường.
+   */
+  readonly plants?: number;
+  readonly plantSense?: boolean;
   readonly attacks?: number;
   readonly hasSword?: boolean;
   /** Gốc và mũi lưỡi kiếm (thế giới) nếu kiếm đang cầm tay (K-6). */
