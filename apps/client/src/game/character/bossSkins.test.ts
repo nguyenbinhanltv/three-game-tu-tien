@@ -206,7 +206,8 @@ describe('boss có xương (asset thật)', () => {
     expect(skins.pending(def)).toBe(false);
     const m = skins.create(def);
     expect(m).toBeInstanceOf(MonsterModel);
-    expect(m.bossMove).toBeUndefined();
+    // Model khối cũng có đòn lớn (cú đập thủ tục hẹn theo lúc vùng nổ, `MonsterModel.bossMove`).
+    expect(m.bossMove).toBeTypeOf('function');
     expect(loaded).toEqual([]);
     skins.dispose();
   });
