@@ -173,6 +173,7 @@ export class Vfx {
       'sprite_dp',
       'sprite_hq',
       'sprite_chung',
+      'proc_chung_hexweb',
       'sprite_ngu',
       'sprite_canh',
       'sprite_kiep',

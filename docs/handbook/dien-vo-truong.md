@@ -569,3 +569,15 @@ Mọi lệnh `/gm` của server (`apps/server/src/game/gm/index.ts`) thành hàn
 - **Đèn đá `prop_den_da`/`prop_tc_den_da` chuyển sang `dense`** (LOD và cắt khung theo từng bản, trước là theo tâm ô 128 m): -13 nghìn; nhỏ vì phần đáng kể của bước này nằm ở kiến trúc.
 - A/B ảnh (3 điểm, so bản gốc): sai khác trung bình ≤ 0,9/255, điểm lệch > 20 chỉ 0,6–0,9% (cỏ và dither). CPU khung dao động 4,4–8,9 ms theo tải máy (máy dùng chung), không rút ra hồi quy; draw call là phần tăng thật.
 - Còn lại nếu cần thêm dư địa: cỏ Họa Cảnh (~350 nghìn/khung, vòng `wide` rộng hơn khung camera chéo), đưa instancing lớn của `lacKiemSky` (kiếm đài 84 nghìn, sky-props 84 nghìn) và `glb-prop_tc_da_reu` (45 nghìn) vào ô cắt khung.
+
+## Sprite → code (procSprites, 28/11)
+
+Thay ô sprite vẽ tay bằng shader TSL giải tích (`apps/client/src/render/vfx/procSprites.ts`). Ô thủ tục trả (độ sáng, độ sáng, độ sáng, alpha) như một ô vẽ tay, cắm vào `spriteNodesFor(group, tile)` (`render/vfx/stylized.ts`) nên bảng màu theo `spriteStyle`, độ tan, seed và JSON fx giữ nguyên. Mỗi ô trong `PROC_TILES` có một loại vật liệu `proc_<tên ô>` (`render/materials/vfx.ts`, nạp trước ở `game/fx/vfx.ts`); `fxTimeline.mesh()` chọn loại này khi tên ô có trong bảng. **Cờ `?procfx=1` bật ô thủ tục, mặc định TẮT** (chưa ô nào qua đủ cổng; `art.ts` và JSON fx không đổi).
+
+Quy trình chấm mỗi ô (chỉ thay khi đạt): ảnh sprite cạnh code ở 3 mốc thời gian; cổng VFX của mọi chiêu dùng ô (`pnpm shots dienvo --query "style=dahoa&procfx=0|1&mute=1" --fx <id> --gate 1 --floor light --repeat 3`, so trung vị che/nổi); `--fxperf 1 --repeat 3` (khung không tăng quá 0,1 ms mỗi chiêu); tự nhìn ảnh, ghi lý do.
+
+**Nhóm `chung`, ô L (6 ô):**
+- `chung_hexweb` (`fx_st_ward`, `fx_st_yin`; hàm `hexDome`): cỡ đo từ atlas (bbox bán kính 0,42 ô; lưới ~6 ô ngang, nét 10–12 px/512). Lượt cuối, trung vị 3 lượt: ward che 24% → 15%, nổi 21% → 20%; yin che 14% → 17%, nổi 16% → 16%; khung TB 9,60 → 9,56 ms (ward), 9,62 → 9,48 ms (yin); draw call như nhau, 0 lỗi console. Bài học: che tỷ lệ độ dày nét, và `fx_st_yin` dùng quad scale 1,8 nên nhạy hơn `fx_st_ward` (1,2); lớp nền alpha trong mái vòm không phải nguyên nhân. **Chưa đạt** (yin che +3 điểm; nét code mảnh, nhẹ hơn bản vẽ, thiếu nút sáng và độ đậm tay vẽ) → giữ sprite mặc định, ô thủ tục còn sau `?procfx=1` để so A/B.
+- `chung_pool` (`fx_st_real`; hàm `inkPool`, không có trong `PROC_TILES`): bản code chỉ có các vòng trắng trơn, mất gợn sóng xanh mực trên nền tối của bản vẽ → loại, giữ sprite.
+- `chung_stab`, `chung_hexring`: không chiêu nào dùng; chỉ bị gỡ khi dọn atlas cả nhóm.
+- `chung_dodge` (`fx_evade`, bóng người mờ vệt), `chung_spear` (`fx_hit_stab`): tranh mực vẽ tay, chưa làm (khó đạt ngang bằng code; thử sau cùng, ô nào không đạt giữ sprite).
