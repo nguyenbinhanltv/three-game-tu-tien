@@ -770,7 +770,7 @@ export class Game {
     this.canvas.tabIndex = 0;
     this.stage.appendChild(this.canvas);
     const layer = document.createElement('div');
-    layer.className = 'dmg-layer';
+    layer.className = FLAGS.da ? 'dmg-layer da' : 'dmg-layer';
     this.stage.appendChild(layer);
     this.dmg = new DamageNumbers(layer);
     const offLayer = document.createElement('div');
