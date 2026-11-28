@@ -404,3 +404,33 @@ Soát ở góc nhìn thật của game trên các cảnh sàn của bộ gốc. 
 - Nhóm E (`?chr=v1`): xong, #842; đường dựng model cũ giữ vì NPC và lùi khi asset v3 lỗi.
 - Nhóm H (xóa ảnh tạm `D:/claude-tmp/dvt-*` cũ): làm sau 13:00 ngày 28/11 theo danh sách đã duyệt (giữ `dvt-golden3` và mọi thư mục dưới 24 giờ hoặc đang được phiên khác dùng).
 - Giữ nguyên theo duyệt: `?animlab`, `?vfxlab`, nhánh phong cách, `?paintedlab`.
+
+## Quét tinh anh và quái thường: trượt chân khi chạy (28/11)
+
+`pnpm --filter @dtl/perf exec tsx src/bossscan.ts --out <thư mục> --query style=dahoa --spawn elite|mon|all [--bosses id1,id2]` (chế độ `--spawn` của `bossscan`: `/gm spawn`, hai vòng chạy ra xa / áp sát, đo sải chân và xoay khớp; không ép đòn lớn). 67 loại (20 tinh anh, 47 quái thường), Dạ Họa 720p. Chỉnh `refSpeed` như với boss (clip chạy nhanh hơn thân thì nhân `1 − trượt`), đo lại, CHỈ giữ chỗ đạt (trong ±25% với ≥ 60 mẫu): **16/17 đạt**.
+
+| Quái | Chân trụ trôi trước | Sau | Kết quả |
+| --- | --- | --- | --- |
+| `elite_liet_cot_bao` | +53% | +32% | trả về cũ (còn trên 25%) |
+| `elite_ho_mach_khoi_tuong` | -33% | +1% | giữ |
+| `elite_hoi_giac_cu_thu` | -57% | -9% | giữ |
+| `elite_kd_huyet_giac_ma_tuong` | -56% | -6% | giữ |
+| `mon_khai_mach_khoi_loi` | -37% | -9% | giữ |
+| `mon_mach_thuong_ho_ve` | -34% | -2% | giữ |
+| `mon_kinh_linh` | -36% | -3% | giữ |
+| `mon_tt_cot_ve` | -36% | +1% | giữ |
+| `mon_tt_thach_tuong` | -50% | +2% | giữ |
+| `mon_tt_chien_ma` | -35% | -4% | giữ |
+| `mon_thach_tuong_vo_si` | -35% | +7% | giữ |
+| `mon_cot_ve_kiem_thu` | -35% | -2% | giữ |
+| `mon_co_thanh_chien_ma` | -44% | +1% | giữ |
+| `mon_liet_hoa_ma_nguu` | +28% | +18% | giữ |
+| `mon_tan_chung` | -70% | -3% | giữ |
+| `mon_giac_kiem_trong_binh` | -62% | +0% | giữ |
+| `mon_kd_trien_bo_cham_ba` | -67% | +3% | giữ |
+
+Giá trị `refSpeed` nằm ở `apps/client/src/game/character/eliteSkins.ts` (tinh anh Vân Lam, Đoạn Mạch, Vân Hải…) và `apps/client/src/game/character/monsterSkins.ts` (quái thường, tinh anh dùng model Mixamo).
+
+- **Chưa chữa:** `elite_liet_cot_bao` (+53%, thử 4,7 → 3,43 xuống +32% rồi trả về): clip chạy phát quá chậm so với thân; cần thử mức thấp hơn (nội suy cho ~3,0, chưa đo) hoặc dựng clip. `elite_cu_nham_vien` (+26%) quá sát ngưỡng nên để nguyên.
+- **Chưa đo được (29 loại):** năm tinh anh (`elite_anh_hac_vuong`, `elite_hu_anh_nhan`, `elite_sa_tuong`, `elite_may_lang_vuong`, `elite_lo_thach_tuong`) và nhiều quái nhỏ không có cổng soi model (model khối hoặc dựng thủ tục chưa có xương soi được) hoặc không đủ mẫu chạy đuổi (đứng yên, bay, chui đất như `elite_xich_sa_ngo_cong`, `elite_van_hac_vuong`). Việc kế: dựng cổng soi cho model khối, hoặc đo bằng cách khác.
+- **Xoay khớp lúc chuyển clip** (cao nhất: `mon_tam_ma` 9347°/s `Sword_Regular_A→Sword_Idle`, `mon_thach_vien` 8809 `attack→run`, `mon_tt_cot_ve` 8389 `attack→run`, `mon_tan_chung` 6892, `mon_khai_mach_khoi_loi` 5705, `mon_giac_kiem_trong_binh` 5165): chưa xử lý. Theo kết luận A/B ở mục trên, phép đo này lẫn chuyển động thật của clip đòn nên không dùng để chỉnh thời gian mờ; cần đo khác (so tư thế xương cũ và mới đúng lúc chuyển).
