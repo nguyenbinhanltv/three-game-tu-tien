@@ -71,6 +71,147 @@ const INSTALL = `(async () => {
   return { probe: !!audio.sfxProbe, meter: !!audio.busMeter && audio.busMeter(true) };
 })()`;
 
+/** Một khung của vết nhân vật mình (đọc thẳng trường nội bộ của `MannequinCharacter`: chỉ để chẩn đoán). */
+interface TraceRow {
+  t: number;
+  x: number;
+  z: number;
+  yaw: number;
+  sp: number;
+  ma: number;
+  base: string;
+  shot: string;
+  perf: string;
+  env: number;
+  lb: string;
+  patch: string;
+  dir: number[];
+  mix: number[];
+  ph: number;
+  acts: [string, number, number][];
+  ua: number[];
+  fl: number[];
+  fr: number[];
+}
+interface TraceSeg {
+  rows: TraceRow[];
+  plants: number[];
+  steps: number[];
+  stride: AnimSnap['stride'];
+  blends: AnimSnap['blends'];
+}
+
+const TRACE_INSTALL = `(() => {
+  const g = window.__game, tr = (window.__tr = { rows: [], on: false });
+  const r3 = (v) => Math.round(v * 1000) / 1000;
+  const f = () => {
+    requestAnimationFrame(f);
+    if (!tr.on) return;
+    const e = g.ents.players.get(g.sid), m = e && e.model;
+    if (!m || !m.mixer) return;
+    if (tr.model !== m) {
+      tr.model = m; tr.b = {};
+      m.rig.traverse((o) => { if (['upperarm_r', 'ball_l', 'ball_r'].includes(o.name)) tr.b[o.name] = o; });
+    }
+    const a = m.lastAnim || {}, mx = m.mixer, acts = [];
+    for (const x of mx._actions) if (x.enabled && mx._isActiveAction(x) && x.getEffectiveWeight() > 1e-3) acts.push([x.getClip().name, r3(x.getEffectiveWeight()), r3(x.time)]);
+    const wp = (b) => { const p = b.getWorldPosition(new b.position.constructor()); return [r3(p.x), r3(p.z), r3(p.y)]; };
+    const q = tr.b.upperarm_r ? tr.b.upperarm_r.quaternion : { x: 0, y: 0, z: 0, w: 1 };
+    tr.rows.push({
+      t: Math.round(performance.now() * 10) / 10, x: r3(m.root.position.x), z: r3(m.root.position.z), yaw: r3(m.root.rotation.y + m.inner.rotation.y),
+      sp: r3(a.speed || 0), ma: r3(a.moveAngle || 0), base: m.baseName, shot: m.shot ? m.shot.getClip().name : '', perf: m.perf ? m.perf.id : '', env: m.perf ? r3(m.perf.env) : 0,
+      lb: acts.filter((x) => x[0].endsWith('|lower')).map((x) => x[0].replace('|lower', '') + ' ' + x[1].toFixed(2)).join(' + '), patch: m.patchShot ? m.patchKind : '',
+      dir: [m.dir.f, m.dir.b, m.dir.l, m.dir.r].map(r3), mix: [m.mix.walk, m.mix.jog, m.mix.sprint].map(r3), ph: r3(m.locoPhase), acts,
+      ua: [q.x, q.y, q.z, q.w].map((v) => Math.round(v * 1e5) / 1e5), fl: tr.b.ball_l ? wp(tr.b.ball_l) : [0, 0, 0], fr: tr.b.ball_r ? wp(tr.b.ball_r) : [0, 0, 0],
+    });
+  };
+  requestAnimationFrame(f);
+  return true;
+})()`;
+
+/** Tổng trọng số hiệu dụng lên nửa trên / nửa dưới (clip tách nửa thân mang hậu tố `upper` / `lower`). Dưới 1 thì three trộn thêm tư thế gốc. */
+const halfSums = (acts: TraceRow['acts']): { u: number; l: number } => {
+  let u = 0;
+  let l = 0;
+  for (const [n, w] of acts) {
+    if (!/[|_]lower$/.test(n)) u += w;
+    if (!/[|_]upper$/.test(n)) l += w;
+  }
+  return { u, l };
+};
+
+function traceSummary(s: { name: string } & TraceSeg): void {
+  const rows = s.rows;
+  console.log(`\n  VẾT ${s.name}: ${rows.length} khung`);
+  if (rows.length < 3) return;
+  const t0 = rows[0]!.t;
+  const actStr = (r: TraceRow) => r.acts.map(([n, w]) => `${n} ${w.toFixed(2)}`).join(' | ');
+  // Tốc độ xoay bắp tay phải từng khung và tổng trọng số nhỏ nhất.
+  let minU = { v: 9, i: 0 };
+  let minL = { v: 9, i: 0 };
+  const spins: { i: number; v: number }[] = [];
+  for (let i = 1; i < rows.length; i++) {
+    const a = rows[i - 1]!;
+    const b = rows[i]!;
+    const dt = (b.t - a.t) / 1000;
+    const dot = Math.min(1, Math.abs(a.ua[0]! * b.ua[0]! + a.ua[1]! * b.ua[1]! + a.ua[2]! * b.ua[2]! + a.ua[3]! * b.ua[3]!));
+    const v = dt > 4e-3 ? ((2 * Math.acos(dot) * 180) / Math.PI) / dt : 0;
+    spins.push({ i, v });
+    const h = halfSums(b.acts);
+    if (h.u < minU.v) minU = { v: h.u, i };
+    if (h.l < minL.v) minL = { v: h.l, i };
+  }
+  const at = (i: number) => `${Math.round(rows[i]!.t - t0)} ms`;
+  console.log(`    tổng trọng số nhỏ nhất: nửa trên ${minU.v.toFixed(2)} lúc ${at(minU.i)} [${actStr(rows[minU.i]!)}] · nửa dưới ${minL.v.toFixed(2)} lúc ${at(minL.i)} [${actStr(rows[minL.i]!)}]`);
+  const top = [...spins].sort((p, q) => q.v - p.v).slice(0, 4);
+  for (const sp of top) {
+    console.log(`    bắp tay phải ${Math.round(sp.v)}°/s lúc ${at(sp.i)}:`);
+    for (let j = Math.max(1, sp.i - 2); j <= Math.min(rows.length - 1, sp.i + 2); j++) {
+      const r = rows[j]!;
+      const h = halfSums(r.acts);
+      console.log(`      ${String(Math.round(r.t - t0)).padStart(5)} ms  ${Math.round(spins[j - 1]!.v).toString().padStart(5)}°/s  v ${r.sp.toFixed(1)}  nền ${r.base}  shot ${r.shot || '-'}${r.patch ? '(' + r.patch + ')' : ''}  perf ${r.perf || '-'}  Σtrên ${h.u.toFixed(2)} Σdưới ${h.l.toFixed(2)}  [${actStr(r)}]`);
+    }
+  }
+  // Vừa chạy vừa đánh: chân trụ trôi (phân vị 15% của vận tốc bàn chân dọc hướng đi ÷ tốc độ thân) tách theo có/không có chiêu, kèm hướng trộn.
+  const ratio = (sel: (r: TraceRow) => boolean): { n: number; p15: number } => {
+    const out: number[] = [];
+    for (let i = 1; i < rows.length; i++) {
+      const a = rows[i - 1]!;
+      const b = rows[i]!;
+      if (!sel(b)) continue;
+      const dt = (b.t - a.t) / 1000;
+      const bx = b.x - a.x;
+      const bz = b.z - a.z;
+      const bd = Math.hypot(bx, bz);
+      if (dt < 1e-3 || bd / dt < 1) continue;
+      for (const k of ['fl', 'fr'] as const) out.push(((b[k][0]! - a[k][0]!) * bx + (b[k][1]! - a[k][1]!) * bz) / bd / bd);
+    }
+    out.sort((p, q) => p - q);
+    return { n: out.length, p15: out.length ? out[Math.floor(out.length * 0.15)]! : 0 };
+  };
+  const withPerf = ratio((r) => !!r.perf);
+  const noPerf = ratio((r) => !r.perf && !r.shot);
+  console.log(`    chân trụ trôi: không chiêu ${(noPerf.p15 * 100).toFixed(0)}% (${noPerf.n} mẫu) · đang diễn chiêu ${(withPerf.p15 * 100).toFixed(0)}% (${withPerf.n} mẫu)`);
+  if (withPerf.n) {
+    console.log('    lúc diễn chiêu (mỗi ~80 ms): ms · tốc độ · góc đi so với mặt (°) · hướng trộn f/b/l/r · clip chân · pha');
+    let last = -1e9;
+    for (const r of rows) {
+      if (!r.perf || r.t - last < 80) continue;
+      last = r.t;
+      console.log(`      ${String(Math.round(r.t - t0)).padStart(5)}  v ${r.sp.toFixed(1)}  góc ${Math.round((r.ma * 180) / Math.PI).toString().padStart(4)}  ${r.dir.map((d) => d.toFixed(2)).join('/')}  ${r.perf} env ${r.env.toFixed(2)}  chân: ${r.lb || '-'}  pha ${r.ph.toFixed(2)}`);
+    }
+  }
+  // Tiếng bước so với lúc chân chạm đất, kèm pha chung lúc chạm đất.
+  if (s.steps.length && s.plants.length) {
+    const off = s.steps.map((st) => s.plants.reduce((best, p) => (Math.abs(st - p) < Math.abs(best) ? st - p : best), 1e9)).filter((v) => Math.abs(v) < 400).map(Math.round);
+    const phaseAt = (t: number) => rows.reduce((best, r) => (Math.abs(r.t - t) < Math.abs(best.t - t) ? r : best), rows[0]!);
+    const sorted = [...off].sort((p, q) => p - q);
+    console.log(`    tiếng bước ${s.steps.length} / chân chạm đất ${s.plants.length}: lệch trung vị ${sorted[sorted.length >> 1]} ms, từ ${sorted[0]} đến ${sorted[sorted.length - 1]} ms · [${off.join(', ')}]`);
+    console.log(`    pha chung lúc chân chạm đất: ${s.plants.map((p) => { const r = phaseAt(p); return `${r.ph.toFixed(2)}${r.base === 'Jog_Fwd_Loop' ? '' : '(' + r.base + ')'}`; }).join(' ')}`);
+  }
+  for (const b of s.blends.filter((x) => x.pop >= 0.25 || x.spin >= 2000)) console.log(`    chuyển clip đáng soi: ${b.from} → ${b.to}: ${b.ms} ms, nhảy ${b.pop}, ${b.spin}°/s ${b.bone ?? ''}`);
+}
+
 const clearLogs = (pg: Page) => pg.evaluate(`(() => { const x = window.__xuong; x.cast.castMarks.rows.length = 0; x.probe.rows.length = 0; })()`);
 const readCasts = (pg: Page) =>
   pg.evaluate(`(() => { const x = window.__xuong; const rows = x.cast.castRows(x.cast.castMarks.rows, x.probe.rows); return { rows, sum: x.cast.castSummary(rows), marks: x.cast.castMarks.rows.length, sfx: x.probe.rows.length }; })()`) as Promise<{
@@ -329,6 +470,68 @@ export default {
       await pg.evaluate(`window.__xuong.ws.setSubject('me')`);
       report.anim = { slide: moved.slide, blends: moved.blends, clips: moved.clips, monClips: mon.clips, monBones, checks, trace, feetTrace };
       save();
+    }
+
+    // Vết TỪNG KHUNG của nhân vật mình (chỉ khi gọi đích danh `--only trace`): trọng số mọi action, hướng trộn, góc quay, bàn chân, tiếng bước.
+    // Ghi `trace.json` (đọc bằng script ngoài) và in tóm tắt ba chuyện: vừa chạy vừa đánh, chạy lại khi clip dừng còn phát, tiếng bước so với chân chạm đất.
+    if (only.includes('trace')) {
+      const method = (PATHS.find((p) => pathIds.includes(p.id)) ?? PATHS[0]!).methods[0]!;
+      await gm(pg, 'scene soi_thuong', 3500);
+      await gm(pg, `build ${method} 30`, 1600);
+      await gm(pg, 'lockhp on', 900);
+      const aim = await aimNearest(pg);
+      if (aim) await tp(pg, aim.x, aim.z - 4);
+      await sleep(500);
+      await aimNearest(pg);
+      await pg.evaluate(TRACE_INSTALL);
+      const seg = async (name: string, fn: () => Promise<void>) => {
+        await pg.evaluate(`(() => { const x = window.__xuong; x.ws.setSubject('me'); x.ws.start(); x.ws.resetStats(); x.probe.rows.length = 0; window.__tr.rows.length = 0; window.__tr.on = true; })()`);
+        await fn();
+        const got = (await pg.evaluate(`(() => { const x = window.__xuong; window.__tr.on = false; return { rows: window.__tr.rows.slice(), plants: x.ws.plants.slice(), steps: x.probe.rows.filter((r) => r.name.indexOf('step_') === 0).map((r) => r.at), stride: x.ws.snapshot().stride, blends: x.ws.snapshot().blends }; })()`)) as TraceSeg;
+        return { name, ...got };
+      };
+      const key = async (k: string, ms: number) => {
+        await pg.keyboard.down(k);
+        await sleep(ms);
+        await pg.keyboard.up(k);
+      };
+      const segs: ({ name: string } & TraceSeg)[] = [];
+      // 1) vừa chạy vừa đánh: chạy ngang (A) rồi chiêu ô 2 và đòn thường, như phần `player`.
+      segs.push(
+        await seg('chay-danh', async () => {
+          await pg.keyboard.down('KeyA');
+          await sleep(600);
+          for (const slot of [1, 0]) {
+            await pg.evaluate((i) => window.__game!.useSkill(i), slot);
+            await sleep(1300);
+          }
+          await pg.evaluate(() => void ((window.__game as unknown as { autoAttack: boolean }).autoAttack = false));
+          await pg.keyboard.up('KeyA');
+          await sleep(900);
+        }),
+      );
+      // 2) chạy lại khi clip dừng còn phát: dừng rồi bấm chạy lại sau 150 / 350 / 600 / 900 ms.
+      for (const gap of [150, 350, 600, 900])
+        segs.push(
+          await seg(`chay-lai-${gap}`, async () => {
+            await key('KeyW', 1500);
+            await sleep(gap);
+            await key('KeyS', 900);
+            await sleep(1300);
+          }),
+        );
+      // 3) tiếng bước: chạy thẳng, dừng, chạy lùi.
+      segs.push(
+        await seg('buoc-chan', async () => {
+          await key('KeyW', 2600);
+          await sleep(900);
+          await key('KeyS', 2000);
+          await sleep(900);
+        }),
+      );
+      await pg.evaluate(`window.__xuong.ws.stop()`);
+      writeJson(r.out, 'trace.json', segs);
+      for (const s of segs) traceSummary(s);
     }
 
     if (want('player')) {

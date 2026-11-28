@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { LOCO, locoClipName, locoMix } from './mannequinAnim';
-import { clipTimeAt, PATCH_LOCO, PATCH_PHASE, PATCH_TABLE, phaseOffsetOf, STRIDE_SCALE } from './patchLoop';
+import { clipTimeAt, PATCH_LOCO, PATCH_PHASE, PATCH_TABLE, phaseOffsetOf, STRIDE_SCALE, REV_PHASE, diagStrideGain } from './patchLoop';
 
 describe('vòng chạy Patch: bảng và pha', () => {
   it('bảng Patch: đi bộ UAL, chạy/chạy nhanh là PM_Run/PM_Sprint với tên clip khớp locoClipName', () => {
@@ -42,6 +42,33 @@ describe('vòng chạy Patch: bảng và pha', () => {
     // pha 0 của clip UAL = thời gian 0; clip Patch lệch -0,029 chu kỳ
     expect(clipTimeAt('Jog_Fwd_Loop', 0.933, 0)).toBe(0);
     expect(clipTimeAt('PM_Run', 1, 0.029)).toBeCloseTo(0, 6);
+  });
+
+  it('bản đọc ngược của clip ngang (chéo-lùi): thời gian giảm khi pha tăng, luôn trong [0, dur), kể cả clip tách nửa dưới', () => {
+    const dur = 0.8;
+    expect(clipTimeAt('Jog_StrafeR_Loop|rev', dur, REV_PHASE)).toBeCloseTo(0, 9);
+    expect(clipTimeAt('Jog_StrafeR_Loop|rev', dur, REV_PHASE - 0.25)).toBeCloseTo(0.25 * dur, 9);
+    expect(clipTimeAt('Jog_StrafeR_Loop|rev|lower', dur, REV_PHASE - 0.25)).toBeCloseTo(0.25 * dur, 9);
+    for (const ph of [0, 0.3, 0.53, 0.75, 0.999]) {
+      const t = clipTimeAt('Sprint_StrafeL_Loop|rev', dur, ph);
+      expect(t).toBeGreaterThanOrEqual(0);
+      expect(t).toBeLessThan(dur);
+    }
+    // clip thường không đổi
+    expect(clipTimeAt('Jog_StrafeR_Loop', dur, 0.25)).toBeCloseTo(0.25 * dur, 9);
+  });
+
+  it('bù sải chéo-tới: 1 ở tới hẳn và ngang hẳn, nhỏ nhất quanh 60–70% hướng tới, đi bộ không bù', () => {
+    expect(diagStrideGain(1, 1)).toBe(1);
+    expect(diagStrideGain(0, 1)).toBe(1);
+    expect(diagStrideGain(0.7, 1)).toBeCloseTo(0.83, 6);
+    expect(diagStrideGain(0.65, 1)).toBeCloseTo(0.8325, 6);
+    expect(diagStrideGain(0.7, 0)).toBe(1);
+    expect(diagStrideGain(0.7, 0.5)).toBeCloseTo(0.915, 6);
+    for (let f = 0; f <= 1.001; f += 0.05) {
+      expect(diagStrideGain(f, 1)).toBeGreaterThanOrEqual(0.83 - 1e-9);
+      expect(diagStrideGain(f, 1)).toBeLessThanOrEqual(1);
+    }
   });
 
   it('chu kỳ theo hướng: chạy tới theo clip Patch, lùi/ngang (clip UAL) theo chu kỳ UAL, chéo trộn; bảng UAL không đổi theo hướng', () => {
