@@ -18,7 +18,7 @@ const CLIPS: ClipMap = { idle: 'idle', run: 'run', attack: 'attack', hit: 'hit_l
 export const ELITE_SKINS_NEW: Record<string, MonsterSkin> = {
   // Đoạn Mạch Cổ Cốc (E-2). Ngô công: thân dài 6 m, 17 xương đốt, không chân bám đất.
   elite_xich_sa_ngo_cong: { asset: 'elite_xich_sa_ngo_cong', clips: CLIPS, refSpeed: 5, legs: 'none', tint: '#ffffff', lazy: true },
-  elite_ho_mach_khoi_tuong: { asset: 'elite_ho_mach_khoi_tuong', clips: CLIPS, refSpeed: 2.9, legs: 'biped', tint: '#ffffff', lazy: true },
+  elite_ho_mach_khoi_tuong: { asset: 'elite_ho_mach_khoi_tuong', clips: CLIPS, refSpeed: 3.86, legs: 'biped', tint: '#ffffff', lazy: true },
   elite_liet_cot_bao: { asset: 'elite_liet_cot_bao', clips: CLIPS, refSpeed: 4.7, legs: 'quad', tint: '#ffffff', lazy: true },
   // Vân Hải Phù Đảo (E-3). Hạc: sải cánh 7 m, thân đặt trên đất trong GLB, E-3 nâng lơ lửng 3 m bằng transform.
   elite_loi_van_su_vuong: { asset: 'elite_loi_van_su_vuong', clips: CLIPS, refSpeed: 5.3, legs: 'quad', tint: '#ffffff', lazy: true },
