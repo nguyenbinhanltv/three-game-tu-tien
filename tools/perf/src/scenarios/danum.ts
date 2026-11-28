@@ -13,6 +13,9 @@ const lin = (c: number): number => ((c /= 255) <= 0.03928 ? c / 12.92 : ((c + 0.
 const lum = (r: number, g: number, b: number): number => 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
 const contrast = (a: number, b: number): number => (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
 
+/** Màu viền mực của chữ (tutien.css `--u-x-rgba-8-12-20`). Viền sát nét chữ là mực, nên chữ tách nền nhờ mực so với nền (cột "mực") chứ không chỉ chữ so với nền. */
+const INK = lum(8, 12, 20);
+
 type Box = { cls: string; x: number; y: number; w: number; h: number; c: number[] };
 
 export default {
@@ -57,26 +60,32 @@ export default {
       await st.evaluate((e) => (e as HTMLElement).remove());
       const { data, info } = await sharp(bg).removeAlpha().raw().toBuffer({ resolveWithObject: true });
       const per = new Map<string, number[]>();
+      const inks = new Map<string, number[]>();
       for (const b of boxes) {
         const x0 = Math.max(0, Math.floor(b.x));
         const y0 = Math.max(0, Math.floor(b.y));
         const x1 = Math.min(info.width, Math.ceil(b.x + b.w));
         const y1 = Math.min(info.height, Math.ceil(b.y + b.h));
         const arr = per.get(b.cls) ?? [];
+        const ink = inks.get(b.cls) ?? [];
         for (let y = y0; y < y1; y += 2)
           for (let x = x0; x < x1; x += 2) {
             const i = (y * info.width + x) * 3;
             const a = b.c[3]!;
             const fg = lum(b.c[0]! * a + data[i]! * (1 - a), b.c[1]! * a + data[i + 1]! * (1 - a), b.c[2]! * a + data[i + 2]! * (1 - a));
             arr.push(contrast(fg, lum(data[i]!, data[i + 1]!, data[i + 2]!)));
+            ink.push(contrast(INK, lum(data[i]!, data[i + 1]!, data[i + 2]!)));
           }
         per.set(b.cls, arr);
+        inks.set(b.cls, ink);
       }
       for (const [cls, arr] of per) {
         arr.sort((p, q) => p - q);
         const row = { place, cls, n: arr.length, p10: Math.round(arr[Math.floor(arr.length * 0.1)]! * 100) / 100, median: Math.round(arr[Math.floor(arr.length * 0.5)]! * 100) / 100 };
-        all.push(row);
-        console.log(`  ${place.padEnd(10)} ${cls.padEnd(14)} p10 ${row.p10} · giữa ${row.median} (${arr.length} mẫu)`);
+        const k = (inks.get(cls) ?? []).sort((p, q) => p - q);
+        const rowK = { ...row, inkP10: Math.round(k[Math.floor(k.length * 0.1)]! * 100) / 100, inkMedian: Math.round(k[Math.floor(k.length * 0.5)]! * 100) / 100 };
+        all.push(rowK);
+        console.log(`  ${place.padEnd(10)} ${cls.padEnd(14)} chữ p10 ${row.p10} · giữa ${row.median} | mực p10 ${rowK.inkP10} · giữa ${rowK.inkMedian} (${arr.length} mẫu)`);
       }
       await sleep(2500);
     }
