@@ -1,25 +1,86 @@
 import { useEffect, useState, useSyncExternalStore } from 'react';
 import { createRoot } from 'react-dom/client';
-import { C } from '@dtl/shared';
+import type { GmListKind, GmState } from '@dtl/shared';
 import { t } from '@dtl/content';
-import { Game } from '../../game/engine';
+import { gmList, gmRefreshState, gmRun, gmStateNow, gmStateSub } from '../../game/debug/gmRpc';
 import { Button } from '../u2/win';
 import './gmlab.css';
-import { GM_CMDS, GM_GROUPS, gmBuild, gmDefaults, gmOptions, type GmCmd, type GmGroup, type GmParam, type GmValues } from './gmCommands';
+import { GM_CMDS, GM_GROUPS, gmBuild, gmDefaults, gmKey, gmOptions, type GmCmd, type GmGroup, type GmParam, type GmValues } from './gmCommands';
 
-/** Gửi lệnh GM qua chat: server kiểm quyền (chỉ tài khoản thử) và tham số rồi mới làm; client không tự đổi gì. */
-function send(cmd: string): void {
-  Game.current?.send(C.CHAT, { m: '/gm ' + cmd });
+/** Kết quả lệnh gần nhất (ok/lỗi rõ ràng, dòng kết quả đầu của server). */
+interface Result {
+  cmd: string;
+  ok: boolean;
+  text: string;
+}
+let lastResult: Result | null = null;
+const resultSubs = new Set<() => void>();
+const useResult = () =>
+  useSyncExternalStore(
+    (f) => {
+      resultSubs.add(f);
+      return () => void resultSubs.delete(f);
+    },
+    () => lastResult,
+  );
+
+/** Chạy một lệnh qua kênh GM có cấu trúc; kết quả (hoặc lỗi mạng/quyền) hiện ở dải kết quả. Server kiểm quyền tài khoản thử và tham số. */
+async function run(cmd: string): Promise<void> {
+  let r: Result;
+  try {
+    const m = await gmRun(cmd.split(/\s+/));
+    const first = m.m[0] ?? '';
+    r = { cmd, ok: m.ok, text: m.ok ? first : `${m.e ?? 'fail'}${first ? ': ' + first : ''}` };
+  } catch (e) {
+    r = { cmd, ok: false, text: e instanceof Error && e.message === 'timeout' ? t('ui.gm.lab.gm.timeout') : t('ui.gm.lab.gm.nogame') };
+  }
+  lastResult = r;
+  for (const f of resultSubs) f();
 }
 
 const MAX_SHOWN = 60;
+/** Nguồn id → loại danh sách của kênh GM (`GM_LIST_KINDS`). Nguồn không có loại (trang phục) dựng từ nội dung game. */
+const KIND: Partial<Record<NonNullable<GmParam['src']>, GmListKind>> = {
+  items: 'item',
+  weapons: 'weapon',
+  skins: 'skin',
+  monsters: 'mon',
+  skills: 'skill',
+  methods: 'method',
+  sets: 'set',
+  arts: 'art',
+  places: 'place',
+  quests: 'quest',
+  scenes: 'scene',
+};
 
-/** Ô chọn id có tìm: gõ để lọc theo tên hoặc id, chọn trong danh sách đã lọc (tối đa MAX_SHOWN dòng). */
+type Opt = { id: string; label: string };
+
+/**
+ * Ô chọn id có tìm: gõ để lọc; danh sách lấy từ kênh GM (`list`, lọc không dấu giống `/gm find`, có tên và ghi chú).
+ * Khi kênh không trả lời (không phải tài khoản thử, chưa vào phòng) dùng danh sách dựng sẵn từ nội dung game.
+ */
 function SrcField({ p, value, onChange }: { p: GmParam; value: string; onChange: (v: string) => void }) {
   const [q, setQ] = useState('');
-  const all = gmOptions(p.src!);
+  const kind = KIND[p.src!];
+  const [srv, setSrv] = useState<Opt[] | null>(null);
+  useEffect(() => {
+    if (!kind) return;
+    let live = true;
+    const h = window.setTimeout(() => {
+      gmList(kind, q.trim(), MAX_SHOWN)
+        .then((r) => live && setSrv(r.items.map((i) => ({ id: i.id, label: `${i.name && i.name !== i.id ? i.name + ' (' + i.id + ')' : i.id}${i.sub ? ' · ' + i.sub : ''}` }))))
+        .catch(() => live && setSrv(null));
+    }, 200);
+    return () => {
+      live = false;
+      window.clearTimeout(h);
+    };
+  }, [kind, q]);
   const k = q.trim().toLowerCase();
-  const list = (k ? all.filter((o) => o.label.toLowerCase().includes(k)) : all).slice(0, MAX_SHOWN);
+  const local = gmOptions(p.src!);
+  // Server trả danh sách rỗng khi không lọc (ví dụ địa điểm trong phòng tập không có bản đồ): dùng danh sách dựng sẵn thay vì ô chọn trống.
+  const list = srv && (srv.length || k) ? srv : (k ? local.filter((o) => o.label.toLowerCase().includes(k)) : local).slice(0, MAX_SHOWN);
   const cur = list.some((o) => o.id === value) ? value : (list[0]?.id ?? '');
   useEffect(() => {
     if (cur !== value) onChange(cur);
@@ -70,19 +131,56 @@ function CmdRow({ c }: { c: GmCmd }) {
   const help = t('gm.cmd.' + c.name);
   const tip = help.startsWith('gm.cmd.') || help.startsWith('[') ? undefined : help;
   return (
-    <div className="debug-row wrap gm-cmd" data-cmd={c.name}>
-      <b title={tip}>{t('ui.gm.cmd.' + c.name)}</b>
+    <div className="debug-row wrap gm-cmd" data-cmd={gmKey(c)}>
+      <b title={tip}>{t('ui.gm.cmd.' + gmKey(c))}</b>
       {c.params.map((p) => (
         <Field key={p.k} p={p} value={v[p.k] ?? ''} onChange={(x) => setV((o) => ({ ...o, [p.k]: x }))} />
       ))}
-      <Button size="s" variant="primary" disabled={!cmd} title={cmd ? '/gm ' + cmd : undefined} onClick={() => cmd && send(cmd)}>
+      <Button size="s" variant="primary" disabled={!cmd} title={cmd ? '/gm ' + cmd : undefined} onClick={() => cmd && void run(cmd)}>
         {t('ui.gm.lab.gm.run')}
       </Button>
       {c.extra?.map((x) => (
-        <Button key={x.k} size="s" onClick={() => send(x.cmd)}>
+        <Button key={x.k} size="s" onClick={() => void run(x.cmd)}>
           {t('ui.gm.extra.' + x.k)}
         </Button>
       ))}
+    </div>
+  );
+}
+
+const SWITCHES = ['god', 'free', 'freeze', 'lockhp', 'phaseLock', 'dummy'] as const;
+
+/** Trạng thái phòng thử/nhân vật từ server (`GmState`): cấp, công pháp, phòng tập, các công tắc đang bật. Làm mới khi mở cửa sổ và sau mỗi lệnh. */
+function StateBar() {
+  const [st, setSt] = useState<GmState | null>(gmStateNow());
+  useEffect(() => {
+    const off = gmStateSub(setSt);
+    void gmRefreshState().catch(() => setSt(null));
+    return off;
+  }, []);
+  if (!st) return <div className="gm-state gm-off">{t('ui.gm.lab.gm.nostate')}</div>;
+  return (
+    <div className="gm-state">
+      <span>{t('ui.gm.lab.gm.st_level', { n: st.level })}</span>
+      {st.method && <span>{st.method}</span>}
+      <span>{st.practice ? t('ui.gm.lab.gm.st_practice') : st.levelId}</span>
+      {SWITCHES.filter((k) => st[k]).map((k) => (
+        <span key={k} className="gm-on">
+          {t('ui.gm.sw.' + k)}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+/** Dải kết quả lệnh gần nhất: xanh ok / đỏ lỗi, kèm lệnh đã gửi. */
+function ResultBar() {
+  const r = useResult();
+  if (!r) return null;
+  return (
+    <div className={'gm-result ' + (r.ok ? 'gm-ok' : 'gm-bad')} role="status">
+      <b>{r.ok ? t('ui.gm.lab.gm.ok') : t('ui.gm.lab.gm.fail')}</b> /gm {r.cmd}
+      {r.text ? ` — ${r.text}` : ''}
     </div>
   );
 }
@@ -129,7 +227,9 @@ function GmWindow() {
           </Button>
         ))}
       </div>
-      <div className="gm-list">{rows.length ? rows.map((c) => <CmdRow key={c.name} c={c} />) : <div className="debug-row">{t('ui.gm.lab.gm.empty')}</div>}</div>
+      <StateBar />
+      <ResultBar />
+      <div className="gm-list">{rows.length ? rows.map((c) => <CmdRow key={gmKey(c)} c={c} />) : <div className="debug-row">{t('ui.gm.lab.gm.empty')}</div>}</div>
     </div>
   );
 }

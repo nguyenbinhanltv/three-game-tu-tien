@@ -505,6 +505,17 @@ export default {
           });
           check(`cửa sổ Lệnh GM, nhóm "${gname}": nằm trong khung 720p, có hàng lệnh, không lỗi console`, o.ok && o.rows > 0 && r.errors.length === e0, `${o.rows} hàng, ${o.runs} nút Chạy đang khóa, ${r.errors.length - e0} lỗi`);
         }
+        // Kênh GM có cấu trúc: bấm "Chạy" của lệnh heal → dải kết quả báo OK; thanh trạng thái có cấp; ô chọn địa điểm của tp có dữ liệu từ server.
+        await pg.locator('.gm-win .gm-groups button').filter({ hasText: 'Nhân vật' }).first().click();
+        await sleep(200);
+        await pg.locator('.gm-win .gm-cmd[data-cmd="heal"] button').first().click();
+        await sleep(700);
+        const rs = await pg.evaluate(() => ({ ok: !!document.querySelector('.gm-win .gm-result.gm-ok'), bad: !!document.querySelector('.gm-win .gm-result.gm-bad'), st: (document.querySelector('.gm-win .gm-state')?.textContent || '').trim() }));
+        check('Lệnh GM: bấm "Chạy" heal → dải kết quả OK, thanh trạng thái có cấp', rs.ok && !rs.bad && /Cấp/.test(rs.st), `ok=${rs.ok} bad=${rs.bad} trạng thái="${rs.st.slice(0, 60)}"`);
+        await pg.locator('.gm-win .gm-groups button').filter({ hasText: 'Di chuyển' }).first().click();
+        await sleep(900);
+        const places = await pg.evaluate(() => document.querySelectorAll('.gm-win .gm-cmd[data-cmd="tp"] select option').length);
+        check('Lệnh GM: ô chọn địa điểm của tp có danh sách', places >= 3, `${places} địa điểm`);
         await snap(pg, r.out, 'panel/lenh-gm.png', { wait: 0 });
         await pg.locator('.gm-win-head button').click();
         await sleep(200);
