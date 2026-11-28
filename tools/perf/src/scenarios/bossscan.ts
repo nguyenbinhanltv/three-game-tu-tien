@@ -29,6 +29,8 @@ interface Snap {
   stride?: { key: string; n: number; speed: number; slip: number }[];
 }
 interface MoveSample {
+  /** Có đòn lớn khác đang phát lúc vạch báo tới (đòn mới bị bỏ qua, không đo). */
+  busy: boolean;
   shape: string;
   delay: number;
   /** Clip đang phát ~60 ms sau khi vạch báo tới, và có phải đòn lớn (`bossMove`) không. */
@@ -83,6 +85,8 @@ const SAMPLE = `(async (mon, ms) => {
     // Vết đồng hồ clip đòn: mỗi ~35 ms ghi (ms so với lúc server phán định, tên clip, giây trong clip) tới 400 ms sau mốc.
     const trace = [];
     let moved = false, clip0 = null;
+    // Đòn lớn trước còn đang phát lúc vạch báo tới: model cố ý bỏ qua đòn lớn kế (playMove), nên phép đo này không đo được đòn mới.
+    const busy = !!(mdl.shot && mdl.shot.move && mdl.shot.action && mdl.shot.action.time > 0.15);
     while (performance.now() < e.at + 400) {
       const s = mdl.shot, act = s && s.action;
       const name = act ? act.getClip().name : null;
@@ -94,7 +98,7 @@ const SAMPLE = `(async (mon, ms) => {
     const snd = window.__bscan.probe.rows
       .filter((r) => Math.abs(r.at + (r.delayMs || 0) - e.at) < 350)
       .map((r) => ({ name: r.name, off: Math.round(r.at + (r.delayMs || 0) - e.at), why: r.why }));
-    return { shape: e.zone.kind, delay: Math.round(e.at - e.t0) / 1000, clip0, move: moved, impact: def ? def.impact : null, moveClip: def ? def.clip : null, snd, trace };
+    return { busy, shape: e.zone.kind, delay: Math.round(e.at - e.t0) / 1000, clip0, move: moved, impact: def ? def.impact : null, moveClip: def ? def.clip : null, snd, trace };
   }
   return null;
 })`;
@@ -137,7 +141,7 @@ const aim = (pg: Page) =>
 export default {
   name: 'bossscan',
   desc: 'Xưởng animation: quét boss theo từng pha (sải chân, chuyển clip giật, clip đòn lớn so với mốc trúng của server, tiếng quanh mốc)',
-  usage: '[--query style=dahoa] [--bosses id1,id2 | all] [--runms 2200]',
+  usage: '[--query style=dahoa] [--bosses id1,id2 | all] [--runms 2200] [--ab 1 [--levels 0.22,0.32,0.45]]',
   env: { RATE_LIMIT_EXEMPT: 'loopback' },
   async run(r) {
     const want = opt('--bosses', '');
@@ -159,6 +163,50 @@ export default {
     await gm(pg, 'build lac_kiem_quyet 30', 1500);
     await pg.evaluate(INSTALL);
     const rows: PhaseRow[] = [];
+    // `--ab 1`: thử A/B thời gian chuyển nền (`SKIN_TUNE.baseFade` ở skinned.ts). Mỗi boss, mỗi mức: ba vòng chạy ra xa → đứng lại cho boss áp sát và đánh;
+    // ghi xoay khớp lớn nhất lúc clip mới lên theo từng cặp chuyển clip, rồi in trung vị và lớn nhất theo mức.
+    if (opt('--ab', '') === '1') {
+      const levels = opt('--levels', '0.22,0.32,0.45').split(',').map(Number);
+      await pg.evaluate(`(async () => { window.__bscan.sk = await import('/src/game/character/skinned.ts'); })()`);
+      const base = (await pg.evaluate(`window.__bscan.sk.SKIN_TUNE.baseFade`)) as number;
+      const ab: { boss: string; fade: number; pairs: Record<string, number[]>; worst: number }[] = [];
+      for (const id of ids) {
+        await gm(pg, 'boss ' + id, 3000);
+        if ((await aim(pg)) !== id) {
+          console.log(`[bossscan] ${id}: /gm boss không gọi được`);
+          continue;
+        }
+        await gm(pg, 'free', 950);
+        await pg.evaluate(`(() => { const w = window.__bscan.ws; w.setSubject('target'); w.start(); })()`);
+        for (const fade of levels) {
+          await pg.evaluate(`(() => { window.__bscan.sk.SKIN_TUNE.baseFade = ${fade}; window.__bscan.ws.resetStats(); })()`);
+          for (let k = 0; k < 3; k++)
+            for (const key of ['KeyW', 'KeyS']) {
+              await pg.keyboard.down(key);
+              await sleep(runMs);
+              await pg.keyboard.up(key);
+              await sleep(2600);
+            }
+          const sn = (await pg.evaluate(`window.__bscan.ws.snapshot()`)) as Snap;
+          const pairs: Record<string, number[]> = {};
+          for (const b of sn.blends) (pairs[`${b.from}→${b.to}`] ??= []).push(b.spin);
+          const worst = Math.max(0, ...sn.blends.map((b) => b.spin));
+          ab.push({ boss: id, fade, pairs, worst });
+          const med = (xs: number[]) => [...xs].sort((p, q) => p - q)[xs.length >> 1] ?? 0;
+          console.log(
+            `[bossscan] A/B ${id} chuyển nền ${fade.toFixed(2)} s: ${sn.blends.length} lần · lớn nhất ${worst}°/s · ` +
+              Object.entries(pairs)
+                .filter(([, v]) => v.length >= 1)
+                .map(([k, v]) => `${k} x${v.length} trung vị ${med(v)} max ${Math.max(...v)}`)
+                .join(' | '),
+          );
+        }
+        await pg.evaluate(`(() => { const w = window.__bscan.ws; w.stop(); w.setSubject('me'); })()`);
+      }
+      await pg.evaluate(`window.__bscan.sk.SKIN_TUNE.baseFade = ${base}`);
+      writeJson(r.out, 'bossscan-ab.json', { levels, ab });
+      return;
+    }
     for (const id of ids) {
       const def = all.find((m) => m.id === id);
       if (!def) continue;
@@ -191,7 +239,8 @@ export default {
           }
           let errMs: number | null = null;
           let note = '';
-          if (s.impact === null) note = 'model không khai clip đòn lớn cho loại này';
+          if (s.busy) note = 'đòn lớn trước còn đang phát: đòn này bị bỏ qua (cố ý, `playMove`), không đo';
+          else if (s.impact === null) note = 'model không khai clip đòn lớn cho loại này';
           else if (!s.move) note = `đòn lớn KHÔNG phát (đang phát ${s.clip0 ?? 'không clip nào'})`;
           else {
             errMs = crossMs(s.trace, s.moveClip ?? '', s.impact);
