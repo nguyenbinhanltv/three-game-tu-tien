@@ -19,7 +19,7 @@ import type { MonsterDef } from '@dtl/shared';
 import { MONSTER } from '@dtl/content';
 import { type AssetCache, type AssetHandle, assets } from '../core/assets';
 import { MonsterModel } from '../core/models';
-import { adoptGltfMaterials, toonBands } from '../../render/materials/world';
+import { adoptGltfMaterials, DA_SEP_ELITE_K, toonBands } from '../../render/materials/world';
 import { FLAGS } from '../../base/flags';
 import { markVfxMask } from '../../render/post';
 import { type BossMove, SkinnedMonster } from './skinned';
@@ -944,7 +944,7 @@ export class MonsterSkins {
     }
     // Dạ Cảnh: quái cũng tô bóng chia bậc như nhân vật (quái bán trong suốt `ghost` giữ nguyên).
     if (FLAGS.da && s.ghost === undefined) {
-      toonBands(m, true);
+      toonBands(m, def.boss || def.elite ? DA_SEP_ELITE_K : true);
       markVfxMask(m);
     }
     this.mats.set(def.id, m);
