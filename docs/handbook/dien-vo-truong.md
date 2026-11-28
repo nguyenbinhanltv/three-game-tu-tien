@@ -371,3 +371,24 @@ Soát ở góc nhìn thật của game trên các cảnh sàn của bộ gốc. 
 - **Quyết định:** giữ `baseFade` = 0,22 s (không đổi hành vi game). Muốn kết luận phải đo khác: so tư thế xương của clip cũ và clip mới ĐÚNG lúc chuyển (tư thế đầu của clip mới so với tư thế cuối của clip cũ), hoặc xem video từng cặp; làm một lượt với 3 mẫu mỗi mức là không đủ.
 
 **Nhân vật mình (28/11, `pnpm shots daread --who hero --lv <cấp>`):** ở cấp 8 và 16 nhân vật tách nền rất tốt (tách 62–68 so với sói 43; chìm dưới 1%), viền mực mặc định đủ; nhân viền mực ×2 làm thân thành mảng đen (tách 66 → 56) nên KHÔNG đổi. Ở cấp 30 (Hóa Thần) thân trắng xóa, mất chi tiết áo: nguồn là ánh viền emissive của hào quang cảnh giới cộng vào vật liệu thân (`apps/client/src/game/fx/realmAura.ts`, `au.rimCol = RIM[stage].hex × r.k × …`, từ Nguyên Anh trở lên) — việc của tuyến fx; hướng sửa: ở Dạ Họa nhân `r.k` với ~0,5 hoặc kẹp tổng cường độ.
+
+### Clip đòn vung quá nhanh: Kính Nguyệt, Tử Nhân Ma Tướng (28/11, chỉ đề xuất, chưa đổi asset)
+
+Đọc trực tiếp bộ xương của GLB (`gltf-transform`, tốc độ xoay giữa hai key liền nhau = góc ÷ khoảng key, đỉnh theo từng xương), so với chuyển clip đo ở `bossscan`:
+
+| Clip | Thời lượng | Xương | Đỉnh | Ghi chú |
+| --- | --- | --- | --- | --- |
+| `boss_kinh_nguyet_chan_quan` `attack` | 1,10 s | `R_Upperarm` | **3363°/s** | MỘT khoảng key duy nhất: 0,367 → 0,400 s xoay 112° trong 33 ms (key 12). Các key kề chỉ 531–702°/s |
+| `boss_kinh_nguyet_chan_quan` `run` | 1,00 s | mọi xương | 56°/s | gần như đứng yên: cánh tay và chân gần như không đung đưa |
+| `boss_kinh_nguyet_chan_quan` `slam` / `sweep` | 1,9 / 1,6 s | tay | 1447 / 1232°/s | không có bước nhảy đơn lẻ |
+| `elite_cot_kiem_thong_linh` (model của Tử Nhân Ma Tướng) `attack` | 0,90 s | `mixamorig_rightarm` | **1700°/s** | 57° trong 33 ms (0,400 → 0,433 s); các key kề 1199–1254°/s |
+| `elite_cot_kiem_thong_linh` `run` | 0,60 s | tay | 464°/s | bình thường |
+
+**Kết luận:** giật của hai clip đòn là NẰM TRONG CLIP, đúng như A/B ở mục trước gợi ý: nhát vung chỉ có MỘT key dài 33 ms ở khung ra đòn, nên ở bất kỳ tốc độ mờ nào xương cũng phải xoay hết góc đó trong một bước. Số 6496°/s ở `attack → run` của Kính Nguyệt là đỉnh 3363°/s của clip đòn cộng bước trộn, không phải lỗi `skinned.ts`. Đây là nhát chém có chủ ý (khung trúng, hitstop) nên một phần "nhanh" là đúng chất đòn; vấn đề là nó nhảy trong một khung hình 30 Hz.
+
+**Ba hướng, từ rẻ đến đắt (chưa làm, chờ duyệt):**
+1. **Cắt thêm hai key trung gian** quanh khoảng key lớn nhất (key 12 của Kính Nguyệt, key 13 của Cốt Kiếm) bằng nội suy cầu có làm chậm đầu và nhanh cuối: nhát vung vẫn nhanh nhưng trải ra 3 khung thay vì 1, đỉnh còn khoảng 1200°/s. Chưa tìm thấy script sinh clip của hai model này trong `tools/blender/` (clip có thể nằm sẵn trong GLB do người dùng dựng), nên cần truy nguồn trước rồi `assets:build`; mốc `impact` không đổi nếu giữ nguyên key trước và sau.
+2. **Phát clip đòn chậm lại** (`SkinnedCharacter` có bảng `rates` theo trạng thái nhưng `monsterSkins.ts` chưa có tham số để đặt riêng cho từng quái; phải thêm, ví dụ 0,8×): đỉnh còn 2690°/s (Kính Nguyệt) và 1360°/s (Cốt Kiếm), không cần dựng lại asset, nhưng ĐÒN KÉO DÀI 25% và phải kiểm lại cửa sổ trúng / tiếng (`hitAt` của đòn quái đang theo giờ server).
+3. **Thay clip** bằng một nhát chém dựng lại có chuẩn bị, trọng lượng và thu về (đắt nhất, làm trong luồng animation quái; đáng làm nếu hai boss này là điểm nhấn).
+
+Đề xuất của mình: hướng 1 cho Kính Nguyệt (đỉnh vượt xa mọi clip khác, tới 3363°/s), để nguyên Cốt Kiếm (1700°/s ngang các đòn lớn như `slam` 1232°/s). Clip `run` của Kính Nguyệt chỉ 56°/s là chuyện riêng: nó đứng yên khi chạy nên trượt chân +44% và không chữa được bằng `refSpeed`; cần clip chạy có đung đưa tay chân.
