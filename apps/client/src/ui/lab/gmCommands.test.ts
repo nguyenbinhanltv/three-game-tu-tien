@@ -10,7 +10,7 @@ const serverCmds = [...new Set([...server.matchAll(/^ {6}case '([a-z]+)':/gm)].m
 /** Lệnh nội bộ (đối số con của `state`, bí danh) không cần hàng riêng. */
 const SUB = new Set(['break', 'stun', 'weak', 'chant', 'clear']);
 /** Nhóm lệnh chưa có hàng điều khiển (làm ở các PR kế tiếp); danh sách này chỉ được rút ngắn. */
-const PENDING = new Set(['help', 'find', 'kit', 'outfit', 'weapon', 'spawn', 'bag', 'give', 'tp', 'killall', 'tick', 'roll', 'plus', 'art', 'set', 'skin', 'tele', 'qdone', 'qev', 'scene', 'labreset', 'dvt', 'state', 'face', 'freeze', 'lockhp', 'hurt']);
+const PENDING = new Set(['help', 'spawn', 'tp', 'killall', 'tick', 'tele', 'qdone', 'qev', 'scene', 'labreset', 'dvt', 'state', 'face', 'freeze', 'lockhp', 'hurt']);
 
 describe('bảng lệnh GM của tab Lệnh GM', () => {
   it('mọi lệnh server đều có hàng, nằm ở Cân bằng, là lệnh con, hoặc đang chờ PR kế', () => {
@@ -43,6 +43,11 @@ describe('bảng lệnh GM của tab Lệnh GM', () => {
     expect(gmBuild(by('trib'), { trib: 'ngu_suy', stage: '3' })).toBe('trib ngu_suy 3');
     expect(gmBuild(by('trib'), { trib: '', stage: '3' })).toBeNull();
     expect(gmBuild(by('dye'), { dye: 'a b' })).toBeNull();
+    expect(gmBuild(by('kit'), { tier: '2', branch: 'kiem', plus: '10', gender: 'm' })).toBe('kit 2 kiem +10 m');
+    expect(gmBuild(by('kit'), { tier: '2', branch: 'kiem', plus: '', gender: 'f' })).toBe('kit 2 kiem f');
+    expect(gmBuild(by('find'), { keyword: 'liet mach' })).toBe('find liet mach');
+    expect(gmBuild(by('weapon'), { weapon: 'itm_liet_mach_kiem', plus: '10' })).toBe('weapon itm_liet_mach_kiem +10');
+    expect(gmBuild(by('plus'), { plus_n: '10', slot: '' })).toBe('plus 10');
     expect(gmBuild(by('build'), { method: 'lac_kiem_quyet', level: '30' })).toBe('build lac_kiem_quyet 30');
   });
   it('mỗi nguồn id có danh sách không rỗng', () => {

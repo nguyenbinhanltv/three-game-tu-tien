@@ -1,6 +1,6 @@
 import { ARTIFACTS, ITEMS, itemName, METHODS, methodName, MONSTERS, monsterName, OUTFITS, QUESTS, SETS, SKILLS, skillName, t } from '@dtl/content';
 import { PLACES } from '@dtl/content/places';
-import { MAX_LEVEL } from '@dtl/shared';
+import { EQUIP_SLOTS, MAX_ENHANCE, MAX_LEVEL } from '@dtl/shared';
 
 /**
  * Bảng lệnh `/gm` cho tab "Lệnh GM" của phòng tập (Diễn Võ Trường): mỗi lệnh là một hàng điều khiển (ô chọn có tìm, ô số, nút).
@@ -30,6 +30,10 @@ export interface GmParam {
   opt?: boolean;
   /** Ghép vào lệnh dạng `+N` (kiếm, bộ kit) thay vì `N`. */
   plus?: boolean;
+  /** Cho phép dấu cách trong giá trị (từ khóa tìm kiếm). */
+  spaces?: boolean;
+  /** Đuôi lệnh nhận đối số theo dấu hiệu chứ không theo vị trí: để trống tham số này không buộc các tham số sau phải trống. */
+  loose?: boolean;
 }
 
 export interface GmCmd {
@@ -49,6 +53,7 @@ const I = (k: string, min: number, max: number, def?: string, opt = false): GmPa
 const P = (k: string, opts: readonly string[], opt = false): GmParam => ({ k, kind: 'pick', opts, opt });
 const S = (k: string, src: GmSource, opt = false): GmParam => ({ k, kind: 'src', src, opt });
 const X = (k: string, opt = false): GmParam => ({ k, kind: 'text', opt });
+const Loose = (p: GmParam): GmParam => ({ ...p, loose: true });
 const OnOff = ['on', 'off'] as const;
 const Branch = ['kiem', 'hophap', 'dansu'] as const;
 
@@ -81,6 +86,23 @@ export const GM_CMDS: readonly GmCmd[] = [
   { name: 'variant', group: 'char', params: [S('skill', 'skills'), P('variant', ['a', 'b'])] },
   { name: 'branch', group: 'char', params: [I('tier', 1, MAX_LEVEL, '16'), X('branch_id')], extra: [{ k: 'reset', cmd: 'branch reset' }] },
   { name: 'dye', group: 'char', params: [X('dye')] },
+
+  // ----- Đồ -----
+  { name: 'find', group: 'items', params: [{ ...X('keyword'), spaces: true }] },
+  {
+    name: 'kit',
+    group: 'items',
+    params: [I('tier', 1, 6, '2'), P('branch', Branch), Loose({ ...I('plus', 0, MAX_ENHANCE, '', true), plus: true }), Loose(P('gender', ['m', 'f'], true))],
+  },
+  { name: 'roll', group: 'items', params: [S('item', 'items'), I('quality', 0, 5, '5', true), I('ilvl', 1, 200, '', true)] },
+  { name: 'set', group: 'items', params: [S('set', 'sets'), I('pieces', 1, 12, '', true)], extra: [{ k: 'off', cmd: 'set off' }] },
+  { name: 'plus', group: 'items', params: [I('plus_n', 0, MAX_ENHANCE, '10'), P('slot', EQUIP_SLOTS, true)] },
+  { name: 'art', group: 'items', params: [S('art', 'arts'), I('art_lv', 1, 5, '5', true)], extra: [{ k: 'off', cmd: 'art off' }] },
+  { name: 'give', group: 'items', params: [S('item', 'items'), I('n', 1, 9999, '1', true)] },
+  { name: 'bag', group: 'items', params: [P('bag', ['clear', 'sort'])] },
+  { name: 'outfit', group: 'items', params: [S('outfit', 'outfits'), P('gender', ['m', 'f'], true)], extra: [{ k: 'list', cmd: 'outfit list' }, { k: 'off', cmd: 'outfit off' }] },
+  { name: 'skin', group: 'items', params: [S('skin', 'skins')], extra: [{ k: 'list', cmd: 'skin list' }, { k: 'off', cmd: 'skin off' }] },
+  { name: 'weapon', group: 'items', params: [S('weapon', 'weapons'), { ...I('plus', 0, MAX_ENHANCE, '', true), plus: true }], extra: [{ k: 'list', cmd: 'weapon list' }] },
 ];
 
 /** Chỉ các nhóm đã có lệnh (nhóm trống chưa hiện). */
@@ -149,7 +171,7 @@ export function gmBuild(c: GmCmd, v: GmValues): string | null {
     const raw = (v[p.k] ?? '').trim();
     if (!raw) {
       if (!p.opt) return null;
-      skipRest = true;
+      if (!p.loose) skipRest = true;
       continue;
     }
     if (skipRest) return null;
@@ -158,7 +180,7 @@ export function gmBuild(c: GmCmd, v: GmValues): string | null {
       if (!Number.isInteger(n) || n < (p.min ?? -Infinity) || n > (p.max ?? Infinity)) return null;
       parts.push(p.plus ? `+${n}` : String(n));
     } else {
-      if (/\s/.test(raw)) return null;
+      if (!p.spaces && /\s/.test(raw)) return null;
       parts.push(raw);
     }
   }
