@@ -256,6 +256,10 @@ const SPEC = {
     scorch('target', [0, 0.02, 0], 3.8, 0.04, 2.6),
     after('target', [0, 2.9, 0], 3.6, 0.24, 1.4),
     sparks('target', [0, 1.4, 0], 12, 0),
+    // PROC-DTD (28/11): lớp thủ tục (không sprite): cột ánh đao dọc `kite`, chớp lõi, sóng vành thép; nhịp trúng t=0.
+    mesh({ shape: 'kite', t: 0, dur: 0.35, at: 'target', offset: [0, 4, 1.6], rot: [-90, 0, 0], scale: [0.8, 0.8, 9], sweep: 0.15, erodeFrom: 0.5, ragged: 0.6, tone: 'rim', alpha: 1 }),
+    mesh({ shape: 'shock_cone', t: 0.02, dur: 0.3, at: 'target', offset: [0, 0.05, 0.8], scale: [1, 1, 1], scaleTo: [5.5, 5.5, 5.5], alpha: 0.75, sweep: 0.3, erodeFrom: 0.2, tone: 'body', shadow: false }),
+    mesh({ shape: 'burst', t: 0.02, dur: 0.1, at: 'target', offset: [0, 0.8, 1.6], scale: 4, billboard: true, tone: 'rim', cross: true }),
   ],
 };
 
