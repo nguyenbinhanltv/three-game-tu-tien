@@ -3,6 +3,7 @@ import { markVfxMask } from '../../render/post';
 import {
   cameraProjectionMatrix,
   cameraViewMatrix,
+  float,
   instancedBufferAttribute,
   positionGeometry,
   texture,
@@ -26,6 +27,8 @@ const CELL_H = 128;
 const COLS = 4;
 const ROWS = 8;
 const CAPACITY = 96;
+/** Khoảng chừa ở mép trên khung nhìn (nửa chiều cao màn hình = 1): nhãn không vượt quá mép này. */
+const TOP_MARGIN = 0.012;
 
 interface LabelSpec {
   text: string;
@@ -82,7 +85,13 @@ class LabelBatch {
     const h = w.mul(CELL_H / CELL_W);
     const viewCenter = cameraViewMatrix.mul(vec4(A.xyz, 1)).xyz;
     const corner = positionGeometry.xy; // −0,5..0,5
-    mat.vertexNode = cameraProjectionMatrix.mul(vec4(viewCenter.add(vec3(corner.x.mul(w), corner.y.mul(h), 0)), 1));
+    // Mép trên khung nhìn: nhãn của quái đứng sát mép trên màn hình (boss ở camera chéo, hàng quái xa) bị cắt mất dòng cấp. Chặn MÉP TRÊN của quad không vượt
+    // `1 − TOP_MARGIN` (toạ độ chuẩn hóa) bằng cách dịch nhãn xuống đúng phần thừa, trong không gian clip để không đổi cỡ hay độ sâu. Quái ở giữa màn hình không bị ảnh hưởng.
+    const clipC = cameraProjectionMatrix.mul(vec4(viewCenter, 1));
+    const halfNdc = h.mul(0.5).mul(cameraProjectionMatrix.mul(vec4(0, 1, 0, 0)).y).div(clipC.w.max(float(0.001)));
+    const over = clipC.y.div(clipC.w.max(float(0.001))).add(halfNdc).sub(float(1 - TOP_MARGIN)).max(float(0));
+    const clip = cameraProjectionMatrix.mul(vec4(viewCenter.add(vec3(corner.x.mul(w), corner.y.mul(h), 0)), 1));
+    mat.vertexNode = vec4(clip.x, clip.y.sub(over.mul(clip.w)), clip.z, clip.w);
     // Atlas được dựng lười ở lần `update()` đầu có canvas; trước đó dùng texture rỗng 1×1.
     const placeholder = new THREE.Texture();
     this.texNode = texture(placeholder);
