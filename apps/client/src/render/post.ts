@@ -101,9 +101,9 @@ export const postParams = {
   moodW: uniform(0),
   /**
    * Dạ Họa: mức GIỮ MÀU THẬT cho điểm ảnh trong mặt nạ hậu kỳ (thân nhân vật, quái, bảng tên, hiệu ứng) trước lớp tối dần ra xa tâm trận và lớp
-   * nhuộm trận: 0 = như cũ (chỉ điểm ảnh sáng được giữ), 1 = giữ hẳn. Quái đứng xa tâm khung không bị nhuộm lẫn vào nền. Mặc định 0,6 ở Dạ Họa (`da`), 0 ở Họa Cảnh thường.
+   * nhuộm trận: 0 = như cũ (chỉ điểm ảnh sáng được giữ), 1 = giữ hẳn. Quái đứng xa tâm khung không bị nhuộm lẫn vào nền. Mặc định 1 ở Dạ Họa (`da`; nâng từ 0,6 sau khi đo vạch báo), 0 ở Họa Cảnh thường.
    */
-  maskKeep: uniform(FLAGS.da ? 0.6 : 0),
+  maskKeep: uniform(FLAGS.da ? 1 : 0),
   moodTint: uniform(new THREE.Color(0.5, 0.06, 0.09)),
 };
 
