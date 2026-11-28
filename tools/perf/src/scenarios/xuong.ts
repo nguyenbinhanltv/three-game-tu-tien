@@ -175,6 +175,7 @@ function traceSummary(s: { name: string } & TraceSeg): void {
     const dot = Math.min(1, Math.abs(a.ta[0]! * b.ta[0]! + a.ta[1]! * b.ta[1]! + a.ta[2]! * b.ta[2]! + a.ta[3]! * b.ta[3]!));
     tspin.push({ i, v: dt > 4e-3 ? ((2 * Math.acos(dot) * 180) / Math.PI) / dt : 0 });
   }
+  console.log(`    đùi trái: ${tspin.filter((x) => x.v >= 3000).length} cú ≥ 3000°/s, ${tspin.filter((x) => x.v >= 1500).length} cú ≥ 1500°/s trong ${rows.length} khung`);
   for (const sp of [...tspin].sort((p, q) => q.v - p.v).slice(0, 3)) {
     console.log(`    ĐÙI trái ${Math.round(sp.v)}°/s lúc ${at(sp.i)}:`);
     for (let j = Math.max(1, sp.i - 2); j <= Math.min(rows.length - 1, sp.i + 2); j++) {
@@ -558,6 +559,21 @@ export default {
             await sleep(1300);
           }),
         );
+      // 2b) chạy lùi / chéo-lùi DÀI (`--lui`): nhiều chu kỳ chân mỗi lượt để tái hiện cú đùi hiếm khi chạy lùi.
+      if (opt('--lui', '')) {
+        const holdKeys = async (ks: string[], ms: number) => {
+          for (const k of ks) await pg.keyboard.down(k);
+          await sleep(ms);
+          for (const k of ks) await pg.keyboard.up(k);
+        };
+        for (const [name, ks] of [['lui-dai', ['KeyS']], ['lui-trai', ['KeyS', 'KeyA']], ['lui-phai', ['KeyS', 'KeyD']], ['cheo-toi', ['KeyW', 'KeyA']]] as const)
+          segs.push(
+            await seg(name, async () => {
+              await holdKeys([...ks], 7000);
+              await sleep(900);
+            }),
+          );
+      }
       // 3) tiếng bước: chạy thẳng, dừng, chạy lùi.
       segs.push(
         await seg('buoc-chan', async () => {

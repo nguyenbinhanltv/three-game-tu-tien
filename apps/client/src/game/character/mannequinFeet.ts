@@ -190,6 +190,8 @@ interface Leg {
 const _v = new THREE.Vector3();
 const _cv = new THREE.Vector3();
 const _cq = new THREE.Quaternion();
+const _fwd = new THREE.Vector3();
+const _rq = new THREE.Quaternion();
 const _m3 = new THREE.Matrix3();
 const _s = new THREE.Vector3();
 const _n = new THREE.Vector3();
@@ -250,6 +252,7 @@ export class MqFeet {
     pelvis: THREE.Bone,
     legs: Leg[],
     private lim: number,
+    private rigRoot: THREE.Object3D,
   ) {
     this.pelvis = pelvis;
     this.legs = legs;
@@ -285,7 +288,7 @@ export class MqFeet {
         g: Number.NaN,
       });
     }
-    return new MqFeet(root, pelvis, legs, FEET.hipLim * height);
+    return new MqFeet(root, pelvis, legs, FEET.hipLim * height, rig);
   }
 
   /** Số chân đang bước (cho test). */
@@ -488,13 +491,15 @@ export class MqFeet {
     // 5. IK.
     this.pelvis.updateWorldMatrix(true, false);
     for (let i = 0; i < this.bones.length; i++) this.pre[i]!.copy(this.bones[i]!.quaternion);
+    // Hướng gối phải gập tới (+z của rig, quay theo thế giới): `solveLeg` trộn vào khi chân gần duỗi thẳng để hướng gập không lật (đùi lật 30° ở pha 0,52/0,62 khi chạy lùi).
+    _fwd.set(0, 0, 1).applyQuaternion(this.rigRoot.getWorldQuaternion(_rq));
     for (const l of this.legs) {
       // Đích trùng clip (chạy/đi trên đất phẳng, không bước, không nghiêng): giữ nguyên tư thế clip, tránh cú lật của `solveLeg` ở chân duỗi thẳng.
       if (!l.step && !(this.pin > 0.001 && l.plant.has) && l.tgt.distanceToSquared(l.pos) < FEET.idlePos * FEET.idlePos && l.endQ.angleTo(l.quat) < FEET.idleAng) continue;
       refreshWorld(l.up);
       refreshWorld(l.mid);
       refreshWorld(l.foot);
-      solveLeg(l.up, l.mid, l.foot, l.tgt, l.knee, l.endQ);
+      solveLeg(l.up, l.mid, l.foot, l.tgt, l.knee, l.endQ, _fwd);
     }
     for (let i = 0; i < this.bones.length; i++) this.post[i]!.copy(this.bones[i]!.quaternion);
     this.pelPost.copy(this.pelvis.position);
