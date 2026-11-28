@@ -1,5 +1,9 @@
 // Phép thử QUÁI BỎ ĐUỔI và KẸT VẬT CẢN (bàn cân bằng V2e) trong sim server thật, đồng hồ giả, không mạng.
-// Chạy: pnpm --filter @dtl/server leash:check [--levels van_lam,doan_mach] [--per 3] [--only <id quái>] [--verbose] [--strict]
+// Chạy: pnpm --filter @dtl/server leash:check [--levels van_lam,doan_mach] [--per 3] [--only <id quái>] [--practice] [--verbose] [--strict]
+//   --practice: thay vì các bản đồ thế giới, thử QUÁI GỌI BẰNG LỆNH ở sân Diễn Võ Trường (level dien_vo): mỗi loại quái trong dữ liệu được gọi bằng
+//   `/gm boss` (boss, tinh anh) hoặc `/gm spawn` (quái thường) vào hố boss/sàn đấu, rồi chỉ chạy phép 3 (tám hướng). Hai phép chạy không áp dụng ở sân:
+//   phòng giới hạn người chơi trong ~36 m quanh hố (không kéo quái ra tới tầm bỏ đuổi 48/80 m được). Quái mồi nhử (tốc độ < 1, như Kính Ảnh Giả) đứng yên
+//   theo thiết kế nên bị bỏ qua. Quái gọi bằng lệnh không có điểm sinh (`spawn` null, không hồi sinh); nhà của nó là chỗ được gọi.
 //   Mỗi bản đồ lấy `--per` con (mặc định 3: đầu, giữa, cuối danh sách) của TỪNG loại quái đang có trong room, rồi với mỗi con:
 //   1. "kéo chạy": người chơi bất tử đứng sát cho quái vào trận, rồi chạy thẳng ra xa nhà quái (9 m/s, nhanh hơn quái). Mong đợi: quái bỏ đuổi
 //      khi rời nhà quá tầm (48 m, boss 80 m) hoặc mục tiêu xa hơn 70 m, chạy về, hồi đầy máu, đứng yên tại nhà trong ≤ 45 giây.
@@ -20,6 +24,7 @@ const LEVELS = arg('levels', 'van_lam,doan_mach,van_hai,thien_khuyet,bac_hoang,v
 const PER = Math.max(1, Number(arg('per', '3')));
 const ONLY = arg('only', '');
 const VERBOSE = process.argv.includes('--verbose');
+const PRACTICE = process.argv.includes('--practice');
 const STRICT = process.argv.includes('--strict');
 
 let fake = Date.now();
@@ -28,7 +33,7 @@ Date.now = () => fake;
 const { GameSim } = await import('../game/sim');
 const { WorldState } = await import('../state');
 const { Character } = await import('../game/character');
-const { LEVELS: LV } = await import('@dtl/content');
+const { LEVELS: LV, MONSTERS } = await import('@dtl/content');
 const { LEASH } = await import('../game/combat/consts');
 type Sim = InstanceType<typeof GameSim>;
 type Mon = Sim['monsters'][number];
@@ -148,6 +153,9 @@ function runAway(sim: Sim, p: Ply, sys: MonSysPriv, m: Mon, pace: boolean): RunO
   return { ok: true, why: '', ...out };
 }
 
+/** Kết quả giả cho phép thử không áp dụng. */
+const OK_SKIP: RunOut = { ok: true, why: '', far: 0, gaveAt: 0, idleAt: 0 };
+
 interface DirOut {
   reach: number;
   /** Đứng vòng ngoài chờ ô cận chiến (không bị vật cản giữ). */
@@ -189,6 +197,56 @@ function eightWays(sim: Sim, p: Ply, sys: MonSysPriv, m: Mon): DirOut {
 const bad: string[] = [];
 console.log('Phép thử quái bỏ đuổi và kẹt vật cản (sim server, đồng hồ giả). Cột: kéo chạy / dắt đi = giây tới lúc bỏ đuổi → giây về tới nhà (xa nhà nhất);');
 console.log('tám hướng = số hướng tới được / đứng vòng ngoài chờ lượt / bị vật cản nên bỏ đuổi đúng cách / KẸT.');
+/** Chạy ba phép thử cho các con `pick` của loại `id` và in một dòng; lỗi gom vào `bad`. */
+function checkType(label: string, sim: Sim, p: Ply, sys: MonSysPriv, id: string, pick: Mon[], eightOnly = false): void {
+  const errs: string[] = [];
+  const cells = { a: [] as string[], b: [] as string[], reach: 0, wait: 0, evade: 0, stuck: 0 };
+  for (const m of pick) {
+    const at = `${id} tại (${m.homeX.toFixed(0)}, ${m.homeZ.toFixed(0)})`;
+    const a = eightOnly ? OK_SKIP : runAway(sim, p, sys, m, false);
+    const b = eightOnly ? OK_SKIP : runAway(sim, p, sys, m, true);
+    const c = eightWays(sim, p, sys, m);
+    home(sim, sys, m);
+    if (eightOnly) {
+      cells.a.push('—');
+      cells.b.push('—');
+    } else cells.a.push(a.ok ? `${a.gaveAt.toFixed(0)}→${a.idleAt.toFixed(0)}s (${a.far.toFixed(0)}m)` : 'LỖI');
+    if (!eightOnly) cells.b.push(b.ok ? `${b.gaveAt.toFixed(0)}→${b.idleAt.toFixed(0)}s (${b.far.toFixed(0)}m)` : 'LỖI');
+    cells.reach += c.reach;
+    cells.wait += c.wait;
+    cells.evade += c.evade;
+    cells.stuck += c.stuck.length;
+    if (!a.ok) errs.push(`${at} kéo chạy: ${a.why}`);
+    if (!b.ok) errs.push(`${at} dắt đi: ${b.why}`);
+    for (const s of c.stuck) errs.push(`${at} ${s}`);
+  }
+  const flag = errs.length ? '!' : ' ';
+  console.log(
+    `${flag} ${id.padEnd(30)} ×${String(pick.length).padEnd(2)} kéo chạy ${cells.a.join(', ').padEnd(46)} dắt đi ${cells.b.join(', ').padEnd(46)} tám hướng ${cells.reach}/${cells.wait}/${cells.evade}/${cells.stuck}`,
+  );
+  if (errs.length && VERBOSE) for (const e of errs) console.log('      ' + e);
+  bad.push(...errs.map((e) => `${label}: ${e}`));
+}
+
+if (PRACTICE) {
+  const { sim, p, sys } = makeSim('dien_vo');
+  console.log('\n== dien_vo (quái gọi bằng lệnh) ==');
+  for (const def of MONSTERS) {
+    if (ONLY && def.id !== ONLY) continue;
+    if (def.speed < 1) continue; // mồi nhử đứng yên
+    // Boss/tinh anh vào hố boss bằng `/gm boss`; quái thường bằng `/gm spawn` (xếp vòng trong sàn đấu).
+    sim.gmSys.run(p, ['labreset']);
+    sim.gmSys.run(p, def.boss || def.elite ? ['boss', def.id, '30'] : ['spawn', def.id, '1']);
+    const m = sim.monsters.find((x) => x.state !== MS_DEAD && x.def.id === def.id && !x.minionOf);
+    if (!m) {
+      bad.push(`dien_vo: ${def.id} không gọi được bằng lệnh`);
+      console.log(`! ${def.id.padEnd(30)} không gọi được`);
+      continue;
+    }
+    p.god = true;
+    checkType('dien_vo', sim, p, sys, def.id, [m], true);
+  }
+} else
 for (const levelId of LEVELS) {
   const { sim, p, sys } = makeSim(levelId);
   const by = new Map<string, Mon[]>();
@@ -200,30 +258,7 @@ for (const levelId of LEVELS) {
   console.log(`\n== ${levelId}: ${sim.monsters.length} quái, ${by.size} loại ==`);
   for (const [id, all] of by) {
     const pick = all.length <= PER ? all : Array.from({ length: PER }, (_, i) => all[Math.round((i * (all.length - 1)) / (PER - 1 || 1))]!);
-    const errs: string[] = [];
-    const cells = { a: [] as string[], b: [] as string[], reach: 0, wait: 0, evade: 0, stuck: 0 };
-    for (const m of pick) {
-      const at = `${id} tại (${m.homeX.toFixed(0)}, ${m.homeZ.toFixed(0)})`;
-      const a = runAway(sim, p, sys, m, false);
-      const b = runAway(sim, p, sys, m, true);
-      const c = eightWays(sim, p, sys, m);
-      home(sim, sys, m);
-      cells.a.push(a.ok ? `${a.gaveAt.toFixed(0)}→${a.idleAt.toFixed(0)}s (${a.far.toFixed(0)}m)` : 'LỖI');
-      cells.b.push(b.ok ? `${b.gaveAt.toFixed(0)}→${b.idleAt.toFixed(0)}s (${b.far.toFixed(0)}m)` : 'LỖI');
-      cells.reach += c.reach;
-      cells.wait += c.wait;
-      cells.evade += c.evade;
-      cells.stuck += c.stuck.length;
-      if (!a.ok) errs.push(`${at} kéo chạy: ${a.why}`);
-      if (!b.ok) errs.push(`${at} dắt đi: ${b.why}`);
-      for (const s of c.stuck) errs.push(`${at} ${s}`);
-    }
-    const flag = errs.length ? '!' : ' ';
-    console.log(
-      `${flag} ${id.padEnd(30)} ×${String(pick.length).padEnd(2)} kéo chạy ${cells.a.join(', ').padEnd(46)} dắt đi ${cells.b.join(', ').padEnd(46)} tám hướng ${cells.reach}/${cells.wait}/${cells.evade}/${cells.stuck}`,
-    );
-    if (errs.length && VERBOSE) for (const e of errs) console.log('      ' + e);
-    bad.push(...errs.map((e) => `${levelId}: ${e}`));
+    checkType(levelId, sim, p, sys, id, pick);
   }
 }
 if (bad.length) console.log(`\nLỗi (${bad.length}):\n  ` + bad.join('\n  '));
