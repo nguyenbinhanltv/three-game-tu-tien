@@ -1,7 +1,7 @@
 // Bài kiểm tra bảo mật: Ngự kiếm/ra chiêu khi lơ lửng, rơi, ngắt chú boss, chết và hồi sinh (R-7, tách từ security-check.ts).
 import { type Room } from 'colyseus.js';
 import { C, IN_FLY, IN_UP, MF_CHANT, MF_STUN, MS_DEAD, S } from '@dtl/shared';
-import { W, check, join, type Ctx, type P, type M, waitUntil } from './lib';
+import { W, check, gmAck, join, type Ctx, type P, type M, waitUntil } from './lib';
 
 export async function runMovement(ctx: Ctx): Promise<void> {
   const { room, me, mons, gm } = ctx;
@@ -59,10 +59,8 @@ export async function runMovement(ctx: Ctx): Promise<void> {
   {
     const a = await join('kiemthu2');
     const b = await join('kiemthu3');
-    const say = async (r: Room, cmd: string) => {
-      r.send(C.CHAT, { m: '/gm ' + cmd });
-      await W(900); // chat giới hạn 800ms/lệnh
-    };
+    // Chờ server phản hồi từng lệnh (và giữ nhịp ≥ 1 s/lệnh theo phòng) thay vì ngủ cố định 900 ms: máy tải nặng làm rớt lệnh chat (giới hạn 800 ms).
+    const say = (r: Room, cmd: string) => gmAck(r, cmd);
     for (const r of [a.room, b.room]) {
       await say(r, 'level 18');
       await say(r, 'heal');
