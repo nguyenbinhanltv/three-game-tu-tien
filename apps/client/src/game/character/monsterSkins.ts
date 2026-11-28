@@ -353,7 +353,8 @@ export const MONSTER_SKINS: Record<string, MonsterSkin> = {
     lift: 0.35,
     metalness: 0.35,
     lazy: true,
-    moves: { slam: { clip: 'slam', impact: 1.0 } },
+    // GLB chỉ có clip `slam` (không có `sweep`): đòn quét cũng dùng cú nện đó, cùng mốc chạm.
+    moves: { slam: { clip: 'slam', impact: 1.0 }, sweep: { clip: 'slam', impact: 1.0 } },
   },
   // DV-2 đợt 1 (chương 5, Dị Vực): bản điêu khắc CC BY giảm lưới + rig bằng tools/blender/sculpt_rig.py + anim_quadruped.py (attack `gore`).
   // Chưa đặt vào bản đồ (không `level`): chỉ nạp khi xuất hiện (/gm spawn). Lông đen nên nâng sáng nền để đọc được trong bóng.
@@ -535,7 +536,8 @@ export const MONSTER_SKINS: Record<string, MonsterSkin> = {
     level: 'xich_tan_khich',
     moves: BIPED_MOVES,
   },
-  boss_tu_nhan_ma_tuong: { ...ELITE_SKINS_NEW.elite_cot_kiem_thong_linh!, tint: '#b89098', level: 'xich_tan_khich' },
+  // Tử Nhân Ma Tướng dùng model Cốt Kiếm Thông Linh: GLB có sẵn clip `slam` (1,9 s) và `sweep` (1,6 s) cùng thời lượng bộ clip người của Kính Nguyệt nên dùng chung mốc chạm.
+  boss_tu_nhan_ma_tuong: { ...ELITE_SKINS_NEW.elite_cot_kiem_thong_linh!, tint: '#b89098', level: 'xich_tan_khich', moves: BIPED_MOVES },
   boss_tu_quang_duc_chu: {
     asset: 'boss_vo_dien_than_quan',
     clips: CHANT_BOSS_CLIPS,

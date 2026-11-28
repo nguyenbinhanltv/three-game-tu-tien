@@ -31,6 +31,10 @@ interface Snap {
 interface MoveSample {
   /** Có đòn lớn khác đang phát lúc vạch báo tới (đòn mới bị bỏ qua, không đo). */
   busy: boolean;
+  /** Model khối: có đo góc tay không, thời điểm (ms so với mốc phán định) và độ lớn của cú đập đỉnh. */
+  block: boolean;
+  peakDt: number | null;
+  peakV: number;
   shape: string;
   delay: number;
   /** Clip đang phát ~60 ms sau khi vạch báo tới, và có phải đòn lớn (`bossMove`) không. */
@@ -82,6 +86,9 @@ const SAMPLE = `(async (mon, ms) => {
     g.ents.monsters.forEach((m) => { if (!mdl && m.s && m.s.t === mon) mdl = m.model; });
     if (!mdl) return null;
     const def = mdl.moves ? mdl.moves[e.zone.kind === 'circle' ? 'slam' : 'sweep'] : null;
+    // Model khối (không clip, không shot): đo góc tay trước của xương 1; cú đập đỉnh khi tay vung hết cỡ (-rotation.x).
+    const arm = !mdl.shot && mdl.mesh && mdl.mesh.skeleton ? mdl.mesh.skeleton.bones[1] : null;
+    let peakDt = null, peakV = 0;
     // Vết đồng hồ clip đòn: mỗi ~35 ms ghi (ms so với lúc server phán định, tên clip, giây trong clip) tới 400 ms sau mốc.
     const trace = [];
     let moved = false, clip0 = null;
@@ -92,13 +99,14 @@ const SAMPLE = `(async (mon, ms) => {
       const name = act ? act.getClip().name : null;
       if (clip0 === null && name) clip0 = name;
       if (s && s.move) moved = true;
+      if (arm && -arm.rotation.x > peakV) { peakV = -arm.rotation.x; peakDt = Math.round(performance.now() - e.at); }
       trace.push([Math.round(performance.now() - e.at), s && s.move ? name : null, act ? Math.round(act.time * 1000) / 1000 : null, mdl.pendingMove ? 1 : 0]);
       await wait(35);
     }
     const snd = window.__bscan.probe.rows
       .filter((r) => Math.abs(r.at + (r.delayMs || 0) - e.at) < 350)
       .map((r) => ({ name: r.name, off: Math.round(r.at + (r.delayMs || 0) - e.at), why: r.why }));
-    return { busy, shape: e.zone.kind, delay: Math.round(e.at - e.t0) / 1000, clip0, move: moved, impact: def ? def.impact : null, moveClip: def ? def.clip : null, snd, trace };
+    return { block: !!arm, peakDt, peakV, busy, shape: e.zone.kind, delay: Math.round(e.at - e.t0) / 1000, clip0, move: moved, impact: def ? def.impact : null, moveClip: def ? def.clip : null, snd, trace };
   }
   return null;
 })`;
@@ -141,12 +149,15 @@ const aim = (pg: Page) =>
 export default {
   name: 'bossscan',
   desc: 'Xưởng animation: quét boss theo từng pha (sải chân, chuyển clip giật, clip đòn lớn so với mốc trúng của server, tiếng quanh mốc)',
-  usage: '[--query style=dahoa] [--bosses id1,id2 | all] [--runms 2200] [--ab 1 [--levels 0.22,0.32,0.45]]',
+  usage: '[--query style=dahoa] [--bosses id1,id2 | all] [--runms 2200] [--ab 1 [--levels 0.22,0.32,0.45]] [--spawn elite|mon|all]',
   env: { RATE_LIMIT_EXEMPT: 'loopback' },
   async run(r) {
     const want = opt('--bosses', '');
-    const all = MONSTERS.filter((m) => m.boss);
-    const ids = want === 'all' || !want ? all.map((m) => m.id) : want.split(',');
+    // `--spawn elite|mon|all`: quét tinh anh / quái thường (không phải boss) bằng `/gm spawn`, một pha, chỉ đo chạy đuổi (không ép đòn lớn).
+    const spawnMode = opt('--spawn', '');
+    const all = MONSTERS.filter((m) => (spawnMode ? !m.boss : m.boss));
+    const pick = (m: { id: string }) => (spawnMode === 'elite' ? m.id.startsWith('elite_') : spawnMode === 'mon' ? !m.id.startsWith('elite_') : true);
+    const ids = want === 'all' || !want ? all.filter(pick).map((m) => m.id) : want.split(',');
     const runMs = num('--runms', 2200);
     const { page: pg } = await r.open({
       name: 'BossScan',
@@ -207,9 +218,44 @@ export default {
       writeJson(r.out, 'bossscan-ab.json', { levels, ab });
       return;
     }
+    if (spawnMode) await gm(pg, 'god on', 900);
     for (const id of ids) {
       const def = all.find((m) => m.id === id);
       if (!def) continue;
+      if (spawnMode) {
+        await gm(pg, 'spawn clear', 1100);
+        await gm(pg, `spawn ${id} 1`, 3200);
+        if ((await aim(pg)) !== id) {
+          console.log(`[bossscan] ${id}: không gọi được`);
+          continue;
+        }
+        await pg.evaluate(`(() => { const w = window.__bscan.ws; w.setSubject('target'); w.start(); w.resetStats(); })()`);
+        for (const key of ['KeyW', 'KeyS', 'KeyW', 'KeyS']) {
+          await pg.keyboard.down(key);
+          await sleep(runMs);
+          await pg.keyboard.up(key);
+          await sleep(2400);
+        }
+        const sn = (await pg.evaluate(`window.__bscan.ws.snapshot()`)) as Snap;
+        const hard = sn.blends.filter((b) => b.pop >= 0.5);
+        const worst = sn.blends.reduce<Snap['blends'][number] | null>((w, b) => (!w || b.spin > w.spin ? b : w), null);
+        const row: PhaseRow = {
+          boss: id,
+          phase: 0,
+          stride: sn.stride ?? [],
+          hard: [...new Set(hard.map((b) => `${b.from}→${b.to}`))],
+          spin: worst?.spin ?? 0,
+          spinAt: worst ? `${worst.from}→${worst.to}${worst.bone ? ' ' + worst.bone : ''}` : '',
+          moves: [],
+        };
+        rows.push(row);
+        const st = row.stride
+          .filter((x) => x.n >= 20)
+          .map((x) => `${x.key} ${(x.slip * 100).toFixed(0)}%${Math.abs(x.slip) > SLIP ? '!' : ''} (${x.n}, ${x.speed.toFixed(1)} m/s)`)
+          .join(', ');
+        console.log(`[bossscan] ${id}: ${sn.ok ? '' : 'KHÔNG CÓ CỔNG SOI · '}sải [${st || 'không đủ mẫu'}] · clip ${sn.clips.map((c) => c.name).join('/')} · đổi cứng ${row.hard.length ? row.hard.join(', ') : '0'} · xoay ${row.spin}°/s ${row.spinAt}`);
+        continue;
+      }
       await gm(pg, 'boss ' + id, 3000);
       if ((await aim(pg)) !== id) {
         console.log(`[bossscan] ${id}: /gm boss không gọi được`);
@@ -239,7 +285,10 @@ export default {
           }
           let errMs: number | null = null;
           let note = '';
-          if (s.busy) note = 'đòn lớn trước còn đang phát: đòn này bị bỏ qua (cố ý, `playMove`), không đo';
+          if (s.block) {
+            if (s.peakV < 1.5) note = `model khối: không thấy cú đập (tay vung tối đa ${s.peakV.toFixed(2)} rad)`;
+            else errMs = s.peakDt;
+          } else if (s.busy) note = 'đòn lớn trước còn đang phát: đòn này bị bỏ qua (cố ý, `playMove`), không đo';
           else if (s.impact === null) note = 'model không khai clip đòn lớn cho loại này';
           else if (!s.move) note = `đòn lớn KHÔNG phát (đang phát ${s.clip0 ?? 'không clip nào'})`;
           else {

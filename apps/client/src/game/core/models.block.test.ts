@@ -84,3 +84,51 @@ describe('mergeRigid', () => {
     for (let i = 0; i < 6; i++) expect([wgt.getX(i), wgt.getY(i), wgt.getZ(i), wgt.getW(i)]).toEqual([1, 0, 0, 0]);
   });
 });
+
+describe('MonsterModel (model khối): đòn lớn của boss (bossMove)', () => {
+  /** Thời điểm (giây) tay trước vung hết cỡ sau khi hẹn đòn với `delay`; đo bằng bước khung 1/60 s. */
+  function peakAt(model: string, delay: number): { t: number; smash: number } {
+    const m = new MonsterModel(byModel(model));
+    expect(m.bossMove('slam', delay)).toBe(true);
+    const arm = m.mesh.skeleton.bones[1]!; // tay trước (xương 1 của model ape)
+    const idle = { speed: 0, dead: false } as never;
+    let best = { t: -1, smash: 0 };
+    for (let k = 0; k <= 60 * (delay + 1); k++) {
+      m.update(1 / 60, idle);
+      const smash = -arm.rotation.x;
+      if (smash > best.smash) best = { t: (k + 1) / 60, smash };
+    }
+    m.dispose();
+    return best;
+  }
+
+  it.each([0.9, 1.5, 1.7, 2.0])('ape: tay đập hết cỡ đúng lúc vùng nổ sau %s s (lệch dưới 50 ms)', (delay) => {
+    const p = peakAt('ape', delay);
+    expect(p.smash).toBeGreaterThan(2);
+    expect(Math.abs(p.t - delay)).toBeLessThan(0.05);
+  });
+
+  it('vùng báo ngắn hơn cú đập: đập ngay, không âm giờ', () => {
+    const p = peakAt('ape', 0.1);
+    expect(p.smash).toBeGreaterThan(2);
+    expect(p.t).toBeLessThan(0.35);
+  });
+
+  it('hai vùng liên tiếp giữ lần hẹn sớm nhất', () => {
+    const m = new MonsterModel(byModel('ape'));
+    m.bossMove('slam', 1.5);
+    m.bossMove('sweep', 0.9);
+    const arm = m.mesh.skeleton.bones[1]!; // tay trước (xương 1 của model ape)
+    let peak = 0;
+    let best = 0;
+    for (let k = 1; k <= 60 * 2; k++) {
+      m.update(1 / 60, { speed: 0, dead: false } as never);
+      if (-arm.rotation.x > best) {
+        best = -arm.rotation.x;
+        peak = k / 60;
+      }
+    }
+    expect(Math.abs(peak - 0.9)).toBeLessThan(0.05);
+    m.dispose();
+  });
+});
