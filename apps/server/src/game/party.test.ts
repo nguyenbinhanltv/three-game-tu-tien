@@ -396,7 +396,8 @@ describe('tỉ thí', () => {
     hit(s, a, b);
     expect(b.char.hp).toBeLessThan(hp0);
     // Đánh tới khi một bên cạn máu: trận kết thúc, người thua còn ≥1 máu.
-    b.char.hp = 3;
+    // Mỗi đòn tỉ thí gây ít nhất 1 sát thương (`Math.max(1, …)`) nhưng mức cụ thể là ngẫu nhiên (`Math.random` trong duelStrike): để máu 2 thì MỌI đòn đều đưa về ≤ 1 và kết thúc trận. Trước đây đặt 3 nên đòn nhẹ có xác suất nhỏ không kết thúc được (test rớt ngẫu nhiên).
+    b.char.hp = 2;
     hit(s, a, b);
     expect(s.sim.duel.inDuel(a)).toBe(false);
     expect(b.char.hp).toBeGreaterThanOrEqual(1);
