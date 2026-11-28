@@ -200,7 +200,7 @@ Server áp sát thương đúng lúc nhận lệnh + `hitAt` (làm tròn lên m�
 
 Để đo đúng từng đòn: khi người đánh đang bật `/gm dps`, tin sát thương (`S.DMG`) có thêm trường `sk` = id chiêu gây ra đòn đó (`(dot)` cho sát thương theo thời gian, `(khác)` khi chưa ra chiêu nào). Người chơi thường không nhận trường này.
 
-## Đề xuất chờ duyệt: Kiếm tu vượt trung vị từ cấp 10 (28/11, CHƯA chỉnh gì)
+## Kiếm tu vượt trung vị từ cấp 10 (28/11): đề xuất và kết quả (đã chọn A×0,85 từ cấp 8 + B nhẹ)
 
 **Hiện trạng đo được** (`fight:check --dps 90 --runs 2 --mon mon_thach_giap_te --levels 6,10,13,15,16,18`, quái thường CẬN CHIẾN, bot bấm đủ chiêu, tỉ lệ so với trung vị 9 hướng):
 
@@ -223,6 +223,30 @@ Server áp sát thương đúng lúc nhận lệnh + `hitAt` (làm tròn lên m�
 - **D. Giữ nguyên.** Hướng DPS thuần "vua sát thương" là chủ ý thiết kế (thể hiện ở `role: dps`); chênh thật trong tay người chơi thấp hơn nhiều (60% hiệu suất theo sim). Rủi ro: tinh anh/boss thiết kế theo trung vị thì Kiếm tu qua quá nhanh (xem bảng pha boss bên dưới: boss ngắn nhất do nhóm toàn Kiếm tu).
 
 **Khuyến nghị của tôi: A ở ×0,85 từ cấp 8** (mở chiêu tối thượng) kết hợp với B nhẹ, rồi đo lại bằng `fight:check --dps` và `sim:progress`; chưa chạy cấu hình này (chỉ đã đo ×0,8 và ×0,75 từ cấp 5 ở trên).
+
+### Đã áp dụng (28/11, người dùng chọn): A ×0,85 từ cấp 8 + B nhẹ
+
+| Thay đổi | Trước | Sau | Ở đâu |
+| --- | --- | --- | --- |
+| Hệ số đòn lên quái của Kiếm tu (`late`) | ×0,85 từ cấp 32 | ×0,85 từ **cấp 8** | `methods.json` (`lac_kiem_quyet.late.level` 32 → 8) |
+| Vạn Kiếm Quy Tông (`skl_van_kiem_quy_tong`) | hệ số 4,2 (420%) | 3,7 (370%) | `methods.json`, mô tả ở `vi.json` |
+| Phi Kiếm Truy Hồn (`skl_phi_kiem_truy_hon`) | hệ số 2,5 (250%) | 2,3 (230%) | như trên |
+| Cận dưới `late.level` ở `content:check` | ≥ 16 | ≥ cấp mở công pháp (5) | `packages/content/src/checkparts/fabao.ts` |
+
+Dự kiến ban đầu: tỉ lệ ~1,18. **Đo sau** (`fight:check --dps 90`, tỉ lệ Kiếm tu so với trung vị 9 hướng; quái cận chiến Thạch Giáp Tê ở cấp 6–20, quái thường chọn theo cấp ở cấp 31–47):
+
+| Cấp | 6 | 10 | 13 | 15 | 16 | 18 | 20 | 31 | 32 | 36 | 40 | 44 | 47 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Trước | 1,26 | 1,45 | 1,40 | 1,42 | 1,52 | 1,43 | 1,41 | 1,36 | 1,24 | 1,33 | 1,20 | 1,21 | 1,31 |
+| Sau | 1,29 | 1,09 | 1,12 | 1,11 | 1,19 | 1,17 | 1,12 | 1,13 | 1,22 | 1,16 | 1,19 | 1,24 | 1,21 |
+
+(Cấp 6 dưới mốc 8 nên không đổi. Cấp 32, 36, 47 là trung bình 4 lần; lượt đo 2 lần đầu ra 1,28 / 1,28 / 1,26, sai số giữa các lượt khoảng ±0,05. "Trước" cấp 31–47 lấy từ lượt đo sau PR #838 và #846.)
+
+**Thời gian hạ tinh anh** (`fight:check --elites`, bot bấm đủ chiêu, Kiếm tu, giây; khoảng mong muốn 18–40): xích diễm hổ (10) 16 → 19, liệt cốt báo (17) 16 → 19, xích sa ngô công (19) 16 → 18, hôi giác cự thú (28) 16 → 23, Ảnh Hạc Vương (32) 17 → 17, Hư Ảnh Nhân (37) 18 → 17, Sa Tướng (41) 17 → 19, Mây Lang Vương (44) 18 → 20, Lô Thạch Tướng (46) 21 → 21. Số ô Kiếm tu dưới 18 giây giảm từ 7 xuống 2 (cả hai sát 17).
+
+**`sim:progress`:** Ngưng Khí 15 từ **3,2 giờ lên 3,5 giờ** (trong 3–4 giờ, đạt yêu cầu ≤ 4 giờ); mốc Trúc Cơ 4 giờ: 4,0 → 4,3 giờ (trong ±12%). Số dòng LỖI từ 0 lên 2, cả hai sát ngưỡng mềm: `itm_tram_ta_kiem` cường hóa +5 tốn ~1,2 giờ thu nhập (ngưỡng 1,2 giờ) và Kiếm tu đánh tinh anh chương 5 cấp 28 mất 62% máu (ngưỡng 60%). Không còn dòng LỖI TTK quái thường nào. Kiểm: `pnpm --filter @dtl/server test` 1240/1240, shared 418/418, content 140/140, `content:check` đạt.
+
+Còn quan sát: Ảnh Hạc Vương (32) và Hư Ảnh Nhân (37) vẫn 17 giây với Kiếm tu, dưới khoảng 18 giây một giây (sai số giữa các lượt ±1–2 giây); không chỉnh thêm vì còn sát và cùng mức với Đao tu.
 
 ## Bảng thời gian từng pha của mọi boss (28/11): `fight:check --bossphases`
 
