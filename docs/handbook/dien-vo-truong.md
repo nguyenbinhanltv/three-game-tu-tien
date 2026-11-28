@@ -565,7 +565,7 @@ Mọi lệnh `/gm` của server (`apps/server/src/game/gm/index.ts`) thành hàn
 | Đoạn Mạch (đối chứng) | 701k, 70 draw | | | 692k, 71 draw |
 
 - **Bóng thân trúc vườn** tắt (`lacKiemGarden.ts`): -36 nghìn lượt bóng.
-- **Chia lưới `arch_sect` theo ô 32 m lúc nạp** (`world/meshCells.ts`, `levelLoad.ts`): mỗi tam giác sang lưới của ô chứa trọng tâm, ô < 600 tam giác gộp vào ô lớn gần nhất; lưới con bật cắt khung nhìn nên lượt cảnh và lượt bóng bỏ phần ngoài khung. Cái giá: draw call +50 (170 → 220, vẫn dưới 300).
+- **Chia lưới `arch_sect` theo ô 32 m lúc nạp** (`apps/client/src/game/world/meshCells.ts`, `apps/client/src/game/engine/levelLoad.ts`): mỗi tam giác sang lưới của ô chứa trọng tâm, ô < 600 tam giác gộp vào ô lớn gần nhất; lưới con bật cắt khung nhìn nên lượt cảnh và lượt bóng bỏ phần ngoài khung. Cái giá: draw call +50 (170 → 220, vẫn dưới 300).
 - **Đèn đá `prop_den_da`/`prop_tc_den_da` chuyển sang `dense`** (LOD và cắt khung theo từng bản, trước là theo tâm ô 128 m): -13 nghìn; nhỏ vì phần đáng kể của bước này nằm ở kiến trúc.
 - A/B ảnh (3 điểm, so bản gốc): sai khác trung bình ≤ 0,9/255, điểm lệch > 20 chỉ 0,6–0,9% (cỏ và dither). CPU khung dao động 4,4–8,9 ms theo tải máy (máy dùng chung), không rút ra hồi quy; draw call là phần tăng thật.
 - Còn lại nếu cần thêm dư địa: cỏ Họa Cảnh (~350 nghìn/khung, vòng `wide` rộng hơn khung camera chéo), đưa instancing lớn của `lacKiemSky` (kiếm đài 84 nghìn, sky-props 84 nghìn) và `glb-prop_tc_da_reu` (45 nghìn) vào ô cắt khung.
