@@ -145,7 +145,7 @@ export function findIds(q: string, limit = 30): FindHit[] {
 export const GM_GROUPS: readonly { id: string; cmds: readonly string[] }[] = [
   {
     id: 'char',
-    cmds: ['help', 'level', 'realm', 'trib', 'xp', 'gold', 'god', 'heal', 'die', 'charge', 'res', 'branch', 'cd', 'free', 'build', 'dye', 'dao'],
+    cmds: ['help', 'level', 'realm', 'trib', 'xp', 'gold', 'god', 'heal', 'die', 'charge', 'res', 'branch', 'cd', 'free', 'build', 'preset', 'dye', 'dao'],
   },
   { id: 'skill', cmds: ['skills', 'learn', 'method', 'variant'] },
   { id: 'gear', cmds: ['kit', 'roll', 'set', 'plus', 'art', 'give', 'bag'] },

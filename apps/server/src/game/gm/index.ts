@@ -10,6 +10,7 @@ import {
   wearableBy,
   MAX_ENHANCE,
   MAX_SKILL_LEVEL,
+  METHOD_UNLOCK_LEVEL,
   VARIANT_MIN_LEVEL,
   type EquipSlot,
   type Quality,
@@ -385,7 +386,7 @@ export class GmSystem {
    * Roll và mặc trực tiếp từng món (phẩm cao nhất, cường hóa `plus`); món đang mặc ở ô đó bị thu hồi qua sổ cái (-1).
    * Một transaction: túi đầy hoặc id lạ thì không đổi gì.
    */
-  equipPieces(p: PlayerEnt, pieces: { slot: EquipSlot; id: string }[], plus: number): boolean {
+  equipPieces(p: PlayerEnt, pieces: { slot: EquipSlot; id: string }[], plus: number, quality: Quality = 4): boolean {
     const c = p.char;
     const ok = c.tx('gm:kit', null, (d) => {
       for (const { slot, id } of pieces) {
@@ -397,7 +398,7 @@ export class GmSystem {
           delete d.equip[slot];
         }
         const i = d.inv.findIndex((x) => !x);
-        if (i < 0 || !d.addRolled(id, Math.max(c.level, def.reqLevel ?? 1), 4 as Quality)) return false;
+        if (i < 0 || !d.addRolled(id, Math.max(c.level, def.reqLevel ?? 1), quality)) return false;
         const it = d.inv[i]!;
         d.inv[i] = null;
         d.equip[slot] = plus > 0 ? { ...it, plus } : it;
@@ -838,6 +839,67 @@ export class GmSystem {
             plus,
             m: methodName(c.meta.method!),
           }) + (plan.used < plan.tier ? ' ' + t('gm.msg.kit_cap', { used: plan.used }) : ''),
+        );
+      }
+      case 'preset': {
+        // /gm preset <kiem|hophap|dansu> <cấp> [phẩm 0-5] [chiêu 1-5]: dựng nhân vật thử ĐÚNG MỐC để chơi thử cân bằng: đặt cấp, công pháp, bộ đồ bậc cao nhất đã mặc được
+        // ở cấp đó (chỉ món có yêu cầu ≤ cấp, phẩm mặc định 2, +0), chiêu cấp mặc định 1 (như phép đo của fight:check), nhánh đầu tiên của mỗi mốc đã tới. Khác /gm build:
+        // KHÔNG bật free (chiêu còn hồi chiêu và tốn linh lực như thật), không pháp bảo. Đổi nhánh bằng /gm branch. Chạy lại để dựng ở cấp khác (đồ cũ bị thu hồi qua sổ cái).
+        const br = a[1];
+        const lv = Math.floor(Number(a[2]));
+        const q = a[3] === undefined ? 2 : Math.floor(Number(a[3]));
+        const sl = a[4] === undefined ? 1 : Math.floor(Number(a[4]));
+        if (!isGmBranch(br) || !(lv >= METHOD_UNLOCK_LEVEL && lv <= MAX_LEVEL) || !(q >= 0 && q < QUALITY_COUNT) || !(sl >= 1 && sl <= MAX_SKILL_LEVEL))
+          return say(helpLine('preset')!);
+        this.setLevel(p, lv);
+        c.meta.method = BRANCH_METHOD[br];
+        grantPathOf(c.meta);
+        for (const sk of SKILL.values()) if (!sk.method || sk.method === c.meta.method) setSkillLevel(c.meta, sk.id, sl);
+        p.mth.reset();
+        const mdef = methodOf(c.meta)!;
+        const picked = new Set<number>();
+        c.tx('gm:preset:branch', null, (d) => {
+          d.clearBranches(mdef.id);
+          for (const b of mdef.branches) {
+            if (b.tier > lv || picked.has(b.tier)) continue;
+            picked.add(b.tier);
+            d.setBranch(mdef.id, b.tier, b.id);
+          }
+          return true;
+        });
+        p.mth.dirty = true;
+        // Bậc đồ cao nhất mà cả bộ (cả món cao nhất) mặc được ở cấp này. Chưa có bậc nào trọn (cấp < 15: bậc 1 đòi cấp 15) thì mặc đồ phần thưởng nhiệm vụ như người
+        // chơi thật và như `fight:check` (kiếm + bào tốt nhất có yêu cầu ≤ cấp), bậc 0.
+        const need = (k: number) => Math.max(...planKit(k, br).pieces.map((x) => ITEM.get(x.id)?.reqLevel ?? 1));
+        let tier = 0;
+        for (let k = 1; k <= GM_MAX_TIER; k++) if (need(k) <= lv) tier = k;
+        const best = (ids: string[]) => ids.filter((id) => (ITEM.get(id)?.reqLevel ?? 1) <= lv).pop();
+        const questPieces = (
+          [
+            ['weapon', best(['itm_moc_kiem', 'itm_thiet_kiem', 'itm_thanh_phong_kiem'])],
+            ['robe', best(['itm_bo_y', 'itm_dao_bao', 'itm_linh_ti_bao'])],
+          ] as const
+        ).flatMap(([slot, id]) => (id ? [{ slot: slot as EquipSlot, id }] : []));
+        const pieces = tier > 0 ? planKit(tier, br).pieces : questPieces;
+        // Gỡ đồ cũ (trừ pháp bảo) rồi mặc bộ mới trong các giao dịch có sổ cái.
+        c.tx('gm:preset:unequip', null, (d) => {
+          for (const slot of EQUIP_SLOTS) {
+            const old = d.equip[slot];
+            if (slot === 'artifact' || !old) continue;
+            d.bump(old.id, -(old.n || 1));
+            delete d.equip[slot];
+          }
+          return true;
+        });
+        if (!this.equipPieces(p, pieces, 0, q as Quality)) return say(t('gm.msg.bag_full'));
+        p.gmFree = false;
+        p.cds.clear();
+        p.gcdAt = 0;
+        this.c.sendCd(p);
+        c.recalc();
+        this.c.heal(p);
+        return say(
+          `preset ${br} cấp ${lv}: ${methodName(c.meta.method!)}, ${tier > 0 ? 'đồ bậc ' + tier : 'đồ nhiệm vụ'} (${pieces.length} món, phẩm ${q}), chiêu cấp ${sl}, nhánh ${JSON.stringify(picksOf(c) ?? {})}`,
         );
       }
       case 'outfit': {
