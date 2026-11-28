@@ -242,7 +242,8 @@ export class LacKiemGarden {
       const mesh = new THREE.InstancedMesh(geo, mat, Math.max(1, pts.length));
       mesh.name = 'garden-bamboo';
       mesh.frustumCulled = false;
-      mesh.castShadow = true;
+      // Thân trúc mảnh (36 nghìn tam giác, một lưới cả vườn không cắt được theo khoảng cách): bóng gần như không thấy, bỏ khỏi lượt bóng (28/11, giữ Vân Lam dưới 80% trần tam giác).
+      mesh.castShadow = false;
       this.bambooMats = [];
       this.bambooCols = [];
       pts.forEach((p, i) => {
