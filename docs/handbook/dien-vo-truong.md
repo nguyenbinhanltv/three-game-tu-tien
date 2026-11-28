@@ -402,7 +402,7 @@ Soát ở góc nhìn thật của game trên các cảnh sàn của bộ gốc. 
 - Nhóm A (12 kịch bản chụp cũ lưu trữ): xong, #829.
 - Nhóm D (cờ so trước/sau): xong 13/14 cờ (#831, #835, #841, #843). **`?cloth=1` GIỮ NGUYÊN theo quyết định của người dùng 28/11:** đó là tính năng thí điểm vải mô phỏng Thiên Y (mặc định tắt; `apps/client/src/game/character/thienY.ts`, công cụ bake, kịch bản `clothcheck`), không phải đường cũ để so; mục này đóng.
 - Nhóm E (`?chr=v1`): xong, #842; đường dựng model cũ giữ vì NPC và lùi khi asset v3 lỗi.
-- Nhóm H (xóa ảnh tạm `D:/claude-tmp/dvt-*` cũ): làm sau 13:00 ngày 28/11 theo danh sách đã duyệt (giữ `dvt-golden3` và mọi thư mục dưới 24 giờ hoặc đang được phiên khác dùng).
+- Nhóm H (xóa ảnh tạm `D:/claude-tmp/dvt-*` cũ): **đợt 1 xong 13:08 ngày 28/11**: xóa 70 thư mục có MỌI tệp quá 24 giờ, giữ 126 thư mục (có tệp dưới 24 giờ) và `dvt-golden3`, `dvt-weak-low3`, `dvt-weak-med3`, `dvt-gate-all6`. Các tệp lẻ `dvt-*.png` không đụng. Ổ D giải phóng ~1 GB; ổ C vẫn sát đầy (96%, không liên quan thư mục này). Các thư mục còn lại đủ điều kiện xóa dần khi tuổi vượt 24 giờ.
 - Giữ nguyên theo duyệt: `?animlab`, `?vfxlab`, nhánh phong cách, `?paintedlab`.
 
 ## Quét tinh anh và quái thường: trượt chân khi chạy (28/11)
