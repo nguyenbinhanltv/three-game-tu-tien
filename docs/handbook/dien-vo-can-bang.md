@@ -28,7 +28,28 @@ Ví dụ đo một tinh anh: `/gm build lac_kiem_quyet 10` → `/gm dummy elite_
 
 `/gm cast` chỉ đổi mốc hẹn giờ; khoảng cách, tầm với và việc đang niệm dở vẫn do AI thật kiểm (đứng quá xa thì boss phải tới gần rồi mới ra chiêu). Lệnh cũ vẫn dùng: `/gm hurt`, `/gm state`, `/gm freeze`, `/gm lockhp`, `/gm spawn`.
 
-Chưa có: nút trên tab Diễn Võ (hiện gõ lệnh ở khung chat), lớp vẽ vùng trúng thật đè lên vạch báo, phép thử quái bỏ đuổi và kẹt vật cản.
+Chưa có: nút trên tab Diễn Võ cho nhóm lệnh này (hiện gõ lệnh ở khung chat). Lớp vẽ vùng trúng thật và phép thử quái bỏ đuổi/kẹt vật cản đã có (xem các mục dưới).
+
+## Phép thử quái bỏ đuổi và kẹt vật cản: `leash:check`
+
+`pnpm --filter @dtl/server leash:check [--levels van_lam,doan_mach] [--per 3] [--only <id quái>] [--verbose] [--strict]` (mã `apps/server/src/tools/leashCheck.ts`, sim server thật, đồng hồ giả, CSDL trong bộ nhớ). Mỗi bản đồ lấy `--per` con (đầu, giữa, cuối danh sách) của TỪNG loại quái đang có, mỗi con ba phép:
+
+1. **Kéo chạy:** người chơi bất tử vào trận rồi chạy thẳng ra xa nhà 9 m/s. Mong đợi: quái bỏ đuổi ở mép tầm (48 m, boss 80 m), về nhà, hồi đầy, đứng yên (IDLE) trong 45 giây.
+2. **Dắt đi:** như trên nhưng người chơi chỉ nhanh ngang quái (quái bám sát). Vẫn phải bỏ ở mép tầm.
+3. **Tám hướng:** người chơi đứng yên cách nhà 14 m theo 8 hướng. Mỗi hướng phải ngã ngũ trong 16 giây: quái tới tầm đánh, đứng vòng ngoài chờ ô cận chiến, hoặc bị vật rắn chặn thì bỏ đuổi + miễn sát thương (`evadeUntil`). Còn trượt quanh vật rắn sau 16 giây = KẸT.
+
+`--strict` thoát mã 1 khi có lỗi. Lượt đo 28/11 (3 con mỗi loại): Vân Lam 10 loại, Đoạn Mạch 8, Vân Hải 8, Thiên Khuyết 8, Bắc Hoang 12, Vấn Đỉnh 13, Cửu Kiều 9, tức 69 loại, **sau khi sửa không có lỗi nào**.
+
+Lỗi phép thử bắt được và đã sửa (`apps/server/src/game/monsters/tickMonster.ts`, `index.ts`): sói xám ở Vân Lam có điểm nhà sát vật rắn (khoảng 2090, 2464). Bỏ đuổi xong nó chạy về nhà nhưng bị vật chắn giữ cách nhà ~2 m, không bao giờ tới nơi nên ở trạng thái "đang về" mãi (không đứng yên nên không tự thấy người chơi, không hồi sinh bãi). Thêm `returnStalled`: đang về mà bị vật rắn giữ liên tục 2,5 giây không tiến gần nhà thêm 1 m thì coi như đã về (xa hơn 4 m thì đặt thẳng về nhà, gần hơn thì đứng lại tại chỗ), hồi đầy, đứng yên. Test `apps/server/src/game/leash.test.ts`.
+
+Chưa chắc chắn / giới hạn:
+- Lượt đo đầu còn báo Kinh Linh ở Vân Hải kẹt hai hướng (trượt quanh vật 16 giây). Ở lượt chạy sau sửa không tái hiện; điểm sinh có độ lệch ngẫu nhiên giữa các lượt nên không xác nhận được là bản sửa hay may mắn. Cần chạy lặp (`--per 6`) nếu nghi ngờ.
+- Không phủ sân boss của Diễn Võ Trường (quái gọi bằng `/gm boss`, không có điểm sinh); AI về nhà dùng chung mã nên lỗi trên áp dụng như nhau.
+- Phép thử không có tìm đường: quái bị vật chắn giữa đường tới người chơi vẫn chỉ trượt quanh rồi bỏ đuổi sau 4 giây (`BLOCK_STALL_MS`), đúng thiết kế hiện tại.
+
+## Vạch báo so với vùng thật (28/11, theo đo của -307, `docs/handbook/dien-vo-truong.md`)
+
+-307 đo 16 chiêu: không chiêu nào vẽ sai cỡ/sai hình, bán kính trong dữ liệu khớp `ai` của quái, nên **không có lệch ở dữ liệu quái hay server**. Lệch thật duy nhất là phía hiệu ứng (Kim Dạ Ma Hậu thiếu vạch trên sàn), thuộc tuyến VFX. Nghi vấn "các quái đo sau Kim Dạ Ma Hậu không ra chiêu nữa" cũng đã thử ở server: gọi lần lượt `boss_kim_da_ma_hau` (đập, niệm chú, triệu hồi), `boss_tan_hoa_kiem_co`, `elite_xich_sa_ngo_cong`, `elite_kinh_dien_ma_quan` bằng `/gm boss` + `/gm cast <loại> loop` trong CÙNG một phòng: boss nào cũng ra chiêu đều (4–16 vùng nổ trong 15 giây). Vậy server không đóng chiêu của quái đo sau, nguyên nhân (nếu có) nằm ở kịch bản chụp/client.
 
 ## Bảng tinh anh theo luật thật: `fight:check --elites`
 
