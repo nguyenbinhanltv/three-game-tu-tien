@@ -355,3 +355,17 @@ Soát ở góc nhìn thật của game trên các cảnh sàn của bộ gốc. 
 - **Chín boss KHÔNG có clip đòn lớn nào** cho các loại đòn họ có (42 đòn không đo được): `boss_hu_anh_chu`, `boss_dinh_linh`, `boss_phu_chu`, `boss_kieu_thu`, `boss_dao_linh`, `boss_lo_linh` (không loại nào), `boss_thach_tuong` (`slam`, `line`), `boss_tu_nhan_ma_tuong` (`line`, `sweep`), `boss_tam_thu_nguc_khuyen` (`sweep`). Server vẫn thả vạch báo và đánh đúng giờ; ở client model không có clip nào căn theo mốc nổ (chưa soi ảnh từng boss để biết nó chơi clip gì lúc vùng nổ). Sửa cần khai `moves` trong `apps/client/src/game/character/monsterSkins.ts` trỏ tới clip có sẵn trong model (nếu có) hoặc dựng clip (việc của tuyến animation/asset).
 - **Trượt chân của clip chạy:** sau khi chỉnh `refSpeed` (PR #862) còn lệch quá 25%: `boss_thien_khuyet_thu_linh` (-43…-49%; tăng `refSpeed` 2,5 → 3,45 không đổi số, nghi tốc độ phát chạm trần), `boss_kinh_nguyet_chan_quan` (+44%, `refSpeed` 1,3 đã chạm trần tốc độ phát 2,6 lần), `boss_tam_thu_nguc_khuyen` (+55…70%, clip đi).
 - **Chuyển clip giật (xoay khớp lớn nhất lúc clip mới lên):** `boss_thu_khich_duc_chu` 6073–8635°/s (chạy → đánh, chạy ↔ đi cương thi, khớp đùi), `boss_tu_nhan_ma_tuong` 8252 (đi ↔ chạy), `boss_kinh_nguyet_chan_quan` 4527–6496 (đòn → chạy, bắp tay), `boss_kim_da_ma_hau` 3821–5731 (đi ↔ chạy), `boss_tan_hoa_kiem_co` 4512–5607 (đòn kiếm → chạy/đi). Năm boss này chuyển giữa các clip tên Mixamo/UAL (`Jog_Fwd_Loop`, `Walk_Loop`, `Sword_Attack`, `Zombie_Walk_Fwd_Loop`) hoặc `attack`/`run` thủ tục; chưa kiểm xem số lớn đến từ thời gian mờ hay từ chính clip (xem phép thử A/B bên dưới khi có).
+
+### A/B thời gian chuyển nền (28/11): KHÔNG có tác dụng, giữ 0,22 s
+
+`pnpm --filter @dtl/perf exec tsx src/bossscan.ts --out <thư mục> --ab 1 --bosses <id,...> [--levels 0.22,0.32,0.45]`: mỗi mức `SKIN_TUNE.baseFade` ba vòng chạy ra xa / áp sát đánh, ghi xoay khớp lớn nhất theo từng cặp chuyển clip. Thử trên ba boss có số xoay cao nhất:
+
+| Boss | 0,22 s | 0,32 s | 0,45 s |
+| --- | --- | --- | --- |
+| `boss_tu_nhan_ma_tuong` (lớn nhất, °/s) | 3109 | 2769 | 1474 |
+| `boss_kinh_nguyet_chan_quan` | 1480 | **5612** | 2528 |
+| `boss_thu_mo_tuong` | 3023 | 3899 | 2666 |
+
+- Không mức nào thắng đều: Kính Nguyệt xấu nhất ở mức giữa (5612), hai boss kia chỉ tốt hơn ở mức 0,45 và lẫn lộn ở mức 0,32. Cùng một cặp clip cũng nhảy rất xa giữa các mức (`attack→run` của Kính Nguyệt: trung vị 1204, 161, 2267 trên 3 mẫu mỗi mức), và số lần gặp mỗi cặp khác nhau giữa các lượt.
+- Nên chưa có bằng chứng thời gian mờ là nguyên nhân: con số "xoay khớp lớn nhất lúc clip mới lên" gồm cả chuyển động thật của chính clip (đùi xoay 500–1100°/s ngay trong một nhịp chạy bình thường) và những lần nhảy lẻ (5612, 8252) có thể do thời điểm lấy mẫu xương thưa của boss ở xa, không phải do trộn clip. Phép đo này không phân biệt được hai thứ.
+- **Quyết định:** giữ `baseFade` = 0,22 s (không đổi hành vi game). Muốn kết luận phải đo khác: so tư thế xương của clip cũ và clip mới ĐÚNG lúc chuyển (tư thế đầu của clip mới so với tư thế cuối của clip cũ), hoặc xem video từng cặp; làm một lượt với 3 mẫu mỗi mức là không đủ.
